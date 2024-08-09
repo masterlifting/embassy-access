@@ -17,7 +17,21 @@ type City =
     | Hague
     | Ljubljana
 
-    member this.Name = nameof this
+    member this.Name =
+        match this with
+        | Belgrade -> "Belgrade"
+        | Berlin -> "Berlin"
+        | Budapest -> "Budapest"
+        | Sarajevo -> "Sarajevo"
+        | Podgorica -> "Podgorica"
+        | Tirana -> "Tirana"
+        | Paris -> "Paris"
+        | Rome -> "Rome"
+        | Dublin -> "Dublin"
+        | Bern -> "Bern"
+        | Helsinki -> "Helsinki"
+        | Hague -> "Hague"
+        | Ljubljana -> "Ljubljana"
 
 type Country =
     | Serbia of City
@@ -33,7 +47,21 @@ type Country =
     | Netherlands of City
     | Slovenia of City
 
-    member this.Name = nameof this
+    member this.Name =
+        match this with
+        | Serbia _ -> "Serbia"
+        | Germany _ -> "Germany"
+        | Bosnia _ -> "Bosnia"
+        | Montenegro _ -> "Montenegro"
+        | Albania _ -> "Albania"
+        | Hungary _ -> "Hungary"
+        | Ireland _ -> "Ireland"
+        | Switzerland _ -> "Switzerland"
+        | Finland _ -> "Finland"
+        | France _ -> "France"
+        | Netherlands _ -> "Netherlands"
+        | Slovenia _ -> "Slovenia"
+
     member this.City =
         match this with
         | Serbia city -> city
@@ -57,8 +85,15 @@ type Embassy =
     | German of Country
     | British of Country
 
-    member this.Name = nameof this
-    
+    member this.Name =
+        match this with
+        | Russian _ -> "Russian"
+        | Spanish _ -> "Spanish"
+        | Italian _ -> "Italian"
+        | French _ -> "French"
+        | German _ -> "German"
+        | British _ -> "British"
+
     member this.Country =
         match this with
         | Russian country -> country
@@ -96,8 +131,13 @@ type RequestState =
     | Running
     | Completed
     | Failed
-    
-    member this.Name = nameof this
+
+    member this.Name = 
+        match this with
+        | Created -> "Created"
+        | Running -> "Running"
+        | Completed -> "Completed"
+        | Failed -> "Failed"
 
 type Request =
     { Id: RequestId

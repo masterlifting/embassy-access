@@ -49,14 +49,13 @@ module Query =
                         let filter (requests: Request list) =
                             requests
                             |> List.filter (fun x ->
-                                filter.Ids = []
-                                || filter.Ids |> List.contains x.Id
-                                   && filter.Embassy
-                                      |> Option.map (fun embassy -> x.Embassy = embassy)
-                                      |> Option.defaultValue true
-                                   && filter.Modified
-                                      |> Option.map (fun predicate -> predicate x.Modified)
-                                      |> Option.defaultValue true)
+                                (filter.Ids = [] || filter.Ids |> List.contains x.Id)
+                                && filter.Embassy
+                                   |> Option.map (fun embassy -> x.Embassy = embassy)
+                                   |> Option.defaultValue true
+                                && filter.Modified
+                                   |> Option.map (fun predicate -> predicate x.Modified)
+                                   |> Option.defaultValue true)
                             |> paginate
                             <| filter.Pagination
 
