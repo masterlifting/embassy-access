@@ -7,8 +7,8 @@ open EmbassyAccess.Domain
 let toCity (city: External.City) : Result<City, Error'> =
     Reflection.getUnionCases<City> ()
     |> Result.bind (fun cities ->
-        match cities |> Array.tryFind (fun city -> city.Name = city.Name) with
-        | Some city -> Ok city
+        match cities |> Array.tryFind (fun x -> x.Name = city.Name) with
+        | Some result -> Ok result
         | None -> Error <| NotSupported $"City {city.Name}.")
 
 let toCountry (country: External.Country) : Result<Country, Error'> =
@@ -16,8 +16,8 @@ let toCountry (country: External.Country) : Result<Country, Error'> =
     |> Result.bind (fun city ->
         Reflection.getUnionCases<Country> ()
         |> Result.bind (fun countries ->
-            match countries |> Array.tryFind (fun country -> country.City = city) with
-            | Some country -> Ok country
+            match countries |> Array.tryFind (fun x -> x.City = city) with
+            | Some result -> Ok result
             | None -> Error <| NotSupported $"Country {country.Name}."))
 
 let toEmbassy (embassy: External.Embassy) : Result<Embassy, Error'> =
@@ -25,8 +25,8 @@ let toEmbassy (embassy: External.Embassy) : Result<Embassy, Error'> =
     |> Result.bind (fun country ->
         Reflection.getUnionCases<Embassy> ()
         |> Result.bind (fun embassies ->
-            match embassies |> Array.tryFind (fun embassy -> embassy.Country = country) with
-            | Some embassy -> Ok embassy
+            match embassies |> Array.tryFind (fun x -> x.Country = country) with
+            | Some result -> Ok result
             | None -> Error <| NotSupported $"Embassy {embassy.Name}."))
 
 let toConfirmation (confirmation: External.Confirmation option) : Confirmation option =
@@ -45,9 +45,9 @@ let toAppointment (appointment: External.Appointment) : Appointment =
 let toRequest (request: External.Request) : Result<Request, Error'> =
     toEmbassy request.Embassy
     |> Result.bind (fun embassy ->
-        Reflection.getUnionCases<RequestState> ()
+        Reflection.getUnionCases<RequestState>()
         |> Result.bind (fun states ->
-            match states |> Array.tryFind (fun state -> state.Name = request.State) with
+            match states |> Array.tryFind (fun x -> x.Name = request.State) with
             | Some state ->
                 { Id = RequestId request.Id
                   Value = request.Value
@@ -55,7 +55,7 @@ let toRequest (request: External.Request) : Result<Request, Error'> =
                   State = state
                   Embassy = embassy
                   Appointments = request.Appointments |> Seq.map toAppointment |> Set.ofSeq
-                  Description = 
+                  Description =
                     match request.Description with
                     | AP.IsString x -> Some x
                     | _ -> None
@@ -67,25 +67,25 @@ module External =
 
     let toCity (city: City) : External.City =
         let result = External.City()
-        
+
         result.Name <- city.Name
-        
+
         result
 
     let toCountry (country: Country) : External.Country =
         let result = External.Country()
-        
+
         result.Name <- country.Name
         result.City <- toCity country.City
-        
+
         result
 
     let toEmbassy (embassy: Embassy) : External.Embassy =
         let result = External.Embassy()
-        
+
         result.Name <- embassy.Name
         result.Country <- toCountry embassy.Country
-        
+
         result
 
     let toConfirmation (confirmation: Confirmation option) : External.Confirmation option =
@@ -94,7 +94,7 @@ module External =
         | Some confirmation ->
             let result = External.Confirmation()
             result.Description <- confirmation.Description
-            
+
             Some result
 
     let toAppointment (appointment: Appointment) : External.Appointment =
