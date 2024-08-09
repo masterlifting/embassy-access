@@ -5,29 +5,51 @@ open Infrastructure
 open EmbassyAccess.Domain
 
 let toCity (city: External.City) : Result<City, Error'> =
-    Reflection.getUnionCases<City> ()
-    |> Result.bind (fun cities ->
-        match cities |> Array.tryFind (fun x -> x.Name = city.Name) with
-        | Some result -> Ok result
-        | None -> Error <| NotSupported $"City {city.Name}.")
+    match city.Name with
+    | Constants.City.Belgrade -> Ok Belgrade
+    | Constants.City.Berlin -> Ok Berlin
+    | Constants.City.Budapest -> Ok Budapest
+    | Constants.City.Sarajevo -> Ok Sarajevo
+    | Constants.City.Podgorica -> Ok Podgorica
+    | Constants.City.Tirana -> Ok Tirana
+    | Constants.City.Paris -> Ok Paris
+    | Constants.City.Rome -> Ok Rome
+    | Constants.City.Dublin -> Ok Dublin
+    | Constants.City.Bern -> Ok Bern
+    | Constants.City.Helsinki -> Ok Helsinki
+    | Constants.City.Hague -> Ok Hague
+    | Constants.City.Ljubljana -> Ok Ljubljana
+    | _ -> Error <| NotSupported $"City {city.Name}."
 
 let toCountry (country: External.Country) : Result<Country, Error'> =
     toCity country.City
     |> Result.bind (fun city ->
-        Reflection.getUnionCases<Country> ()
-        |> Result.bind (fun countries ->
-            match countries |> Array.tryFind (fun x -> x.City = city) with
-            | Some result -> Ok result
-            | None -> Error <| NotSupported $"Country {country.Name}."))
+        match country.Name with
+        | Constants.Country.Serbia -> Ok(Serbia city)
+        | Constants.Country.Germany -> Ok(Germany city)
+        | Constants.Country.Bosnia -> Ok(Bosnia city)
+        | Constants.Country.Montenegro -> Ok(Montenegro city)
+        | Constants.Country.Albania -> Ok(Albania city)
+        | Constants.Country.Hungary -> Ok(Hungary city)
+        | Constants.Country.Ireland -> Ok(Ireland city)
+        | Constants.Country.Switzerland -> Ok(Switzerland city)
+        | Constants.Country.Finland -> Ok(Finland city)
+        | Constants.Country.Netherlands -> Ok(Netherlands city)
+        | Constants.Country.Slovenia -> Ok(Slovenia city)
+        | Constants.Country.France -> Ok(France city)
+        | _ -> Error <| NotSupported $"Country {country.Name}.")
+
 
 let toEmbassy (embassy: External.Embassy) : Result<Embassy, Error'> =
     toCountry embassy.Country
     |> Result.bind (fun country ->
-        Reflection.getUnionCases<Embassy> ()
-        |> Result.bind (fun embassies ->
-            match embassies |> Array.tryFind (fun x -> x.Country = country) with
-            | Some result -> Ok result
-            | None -> Error <| NotSupported $"Embassy {embassy.Name}."))
+        match embassy.Name with
+        | Constants.Embassy.Russian -> Ok(Russian country)
+        | Constants.Embassy.German -> Ok(German country)
+        | Constants.Embassy.French -> Ok(French country)
+        | Constants.Embassy.Italian -> Ok(Italian country)
+        | Constants.Embassy.British -> Ok(British country)
+        | _ -> Error <| NotSupported $"Embassy {embassy.Name}.")
 
 let toConfirmation (confirmation: External.Confirmation option) : Confirmation option =
     confirmation |> Option.map (fun x -> { Description = x.Description })
@@ -42,26 +64,32 @@ let toAppointment (appointment: External.Appointment) : Appointment =
         | AP.IsString x -> Some x
         | _ -> None }
 
+let toRequestState (state: string) : Result<RequestState, Error'> =
+    match state with
+    | Constants.RequestState.Created -> Ok Created
+    | Constants.RequestState.Running -> Ok Running
+    | Constants.RequestState.Completed -> Ok Completed
+    | Constants.RequestState.Failed -> Ok Failed
+    | _ -> Error <| NotSupported $"Request state {state}."
+
 let toRequest (request: External.Request) : Result<Request, Error'> =
     toEmbassy request.Embassy
     |> Result.bind (fun embassy ->
-        Reflection.getUnionCases<RequestState>()
-        |> Result.bind (fun states ->
-            match states |> Array.tryFind (fun x -> x.Name = request.State) with
-            | Some state ->
-                { Id = RequestId request.Id
-                  Value = request.Value
-                  Attempt = request.Attempt
-                  State = state
-                  Embassy = embassy
-                  Appointments = request.Appointments |> Seq.map toAppointment |> Set.ofSeq
-                  Description =
-                    match request.Description with
-                    | AP.IsString x -> Some x
-                    | _ -> None
-                  Modified = request.Modified }
-                |> Ok
-            | None -> Error <| NotSupported $"Request state {request.State}."))
+        request.State
+        |> toRequestState
+        |> Result.bind (fun state ->
+            { Id = RequestId request.Id
+              Value = request.Value
+              Attempt = request.Attempt
+              State = state
+              Embassy = embassy
+              Appointments = request.Appointments |> Seq.map toAppointment |> Set.ofSeq
+              Description =
+                match request.Description with
+                | AP.IsString x -> Some x
+                | _ -> None
+              Modified = request.Modified }
+            |> Ok))
 
 module External =
 
