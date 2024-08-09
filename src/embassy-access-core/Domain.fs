@@ -1,6 +1,7 @@
 ﻿module EmbassyAccess.Domain
 
 open System
+open EmbassyAccess.Constants
 
 type City =
     | Belgrade
@@ -19,19 +20,19 @@ type City =
 
     member this.Name =
         match this with
-        | Belgrade -> "Belgrade"
-        | Berlin -> "Berlin"
-        | Budapest -> "Budapest"
-        | Sarajevo -> "Sarajevo"
-        | Podgorica -> "Podgorica"
-        | Tirana -> "Tirana"
-        | Paris -> "Paris"
-        | Rome -> "Rome"
-        | Dublin -> "Dublin"
-        | Bern -> "Bern"
-        | Helsinki -> "Helsinki"
-        | Hague -> "Hague"
-        | Ljubljana -> "Ljubljana"
+        | Belgrade -> City.Belgrade
+        | Berlin -> City.Berlin
+        | Budapest -> City.Budapest
+        | Sarajevo -> City.Sarajevo
+        | Podgorica -> City.Podgorica
+        | Tirana -> City.Tirana
+        | Paris -> City.Paris
+        | Rome -> City.Rome
+        | Dublin -> City.Dublin
+        | Bern -> City.Bern
+        | Helsinki -> City.Helsinki
+        | Hague -> City.Hague
+        | Ljubljana -> City.Ljubljana
 
 type Country =
     | Serbia of City
@@ -49,18 +50,18 @@ type Country =
 
     member this.Name =
         match this with
-        | Serbia _ -> "Serbia"
-        | Germany _ -> "Germany"
-        | Bosnia _ -> "Bosnia"
-        | Montenegro _ -> "Montenegro"
-        | Albania _ -> "Albania"
-        | Hungary _ -> "Hungary"
-        | Ireland _ -> "Ireland"
-        | Switzerland _ -> "Switzerland"
-        | Finland _ -> "Finland"
-        | France _ -> "France"
-        | Netherlands _ -> "Netherlands"
-        | Slovenia _ -> "Slovenia"
+        | Serbia _ -> Country.Serbia
+        | Germany _ -> Country.Germany
+        | Bosnia _ -> Country.Bosnia
+        | Montenegro _ -> Country.Montenegro
+        | Albania _ -> Country.Albania
+        | Hungary _ -> Country.Hungary
+        | Ireland _ -> Country.Ireland
+        | Switzerland _ -> Country.Switzerland
+        | Finland _ -> Country.Finland
+        | France _ -> Country.France
+        | Netherlands _ -> Country.Netherlands
+        | Slovenia _ -> Country.Slovenia
 
     member this.City =
         match this with
@@ -87,12 +88,12 @@ type Embassy =
 
     member this.Name =
         match this with
-        | Russian _ -> "Russian"
-        | Spanish _ -> "Spanish"
-        | Italian _ -> "Italian"
-        | French _ -> "French"
-        | German _ -> "German"
-        | British _ -> "British"
+        | Russian _ -> Embassy.Russian
+        | Spanish _ -> Embassy.Spanish
+        | Italian _ -> Embassy.Italian
+        | French _ -> Embassy.French
+        | German _ -> Embassy.German
+        | British _ -> Embassy.British
 
     member this.Country =
         match this with
@@ -132,12 +133,12 @@ type RequestState =
     | Completed
     | Failed
 
-    member this.Name = 
+    member this.Name =
         match this with
-        | Created -> "Created"
-        | Running -> "Running"
-        | Completed -> "Completed"
-        | Failed -> "Failed"
+        | Created -> RequestState.Created
+        | Running -> RequestState.Running
+        | Completed -> RequestState.Completed
+        | Failed -> RequestState.Failed
 
 type Request =
     { Id: RequestId

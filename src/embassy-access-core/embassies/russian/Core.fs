@@ -35,8 +35,9 @@ module Http =
         create $"https://{host}" headers
 
     let createClient =
-        ResultAsync.bind (fun credentials ->
-            credentials.City.Name
+        ResultAsync.bind (fun (credentials: Credentials) ->
+            let city, _, _, _ = credentials.Value
+            city
             |> createClient'
             |> Result.map (fun httpClient -> httpClient, credentials))
 
@@ -520,12 +521,12 @@ module private ConfirmationPage =
 module private Request =
 
     let private validateCredentials request credentials =
-        match request.Embassy.Country.City.Name = credentials.City.Name with
+        match request.Embassy.Country.City = credentials.City with
         | true -> Ok credentials
         | false ->
             Error
             <| NotSupported
-                $"Embassy city '{request.Embassy.Country.City.Name}' is not matched with the requested City '{credentials.City.Name}'."
+                $"Embassy city '{request.Embassy.Country.City}' is not matched with the requested City '{credentials.City}'."
 
     let createCredentials =
         ResultAsync.bind (fun request -> createCredentials request.Value |> Result.bind (validateCredentials request))

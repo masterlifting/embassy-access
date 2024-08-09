@@ -64,7 +64,7 @@ module private SearchAppointments =
             | _ ->
                 match request.Appointments.IsEmpty with
                 | true -> Ok <| Info "No appointments found."
-                | false -> Ok <| Info $"Found {request.Appointments.Count} appointments."
+                | false -> Ok <| Success $"Found {request.Appointments.Count} appointments."
 
     let run country =
         fun _ ct ->
