@@ -12,4 +12,4 @@ let getAppointments deps request =
 
 let bookAppointment deps option request =
     match deps with
-    | BookAppointmentDeps.Russian deps -> request |> Embassies.Russian.Core.bookAppointment deps option
+    | Russian deps -> request |> Embassies.Russian.Core.bookAppointment deps option

@@ -15,7 +15,7 @@ type SortBy<'a> =
     | Asc of OrderBy<'a>
     | Desc of OrderBy<'a>
 
-type Predicate<'a> = 'a -> bool
+type predicate<'a> = 'a -> bool
 
 type Pagination<'a> =
     { Page: int
@@ -24,6 +24,9 @@ type Pagination<'a> =
 
 type Request =
     { Pagination: Pagination<Domain.Request> option
-      Ids: Domain.RequestId list
-      Embassy: Domain.Embassy option
-      Modified: Predicate<DateTime> option }
+      Ids: Domain.RequestId Set option
+      Embassies: Domain.Embassy Set option
+      HasAppointments: bool
+      HasConfirmations: bool
+      HasStates: predicate<Domain.RequestState> option
+      WasModified: predicate<DateTime> option }
