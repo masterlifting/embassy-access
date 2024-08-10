@@ -1,16 +1,6 @@
 [<RequireQualifiedAccess>]
 module EmbassyAccess.Constant
 
-module RequestState =
-    [<Literal>]
-    let Created = "Created"
-    [<Literal>]
-    let InProcess = "InProcess"
-    [<Literal>]
-    let Completed = "Completed"
-    [<Literal>]
-    let Failed = "Failed"
-
 module City =
     [<Literal>]
     let Belgrade = "Belgrade"

@@ -584,9 +584,8 @@ module private Request =
     let fail (error: Error') updateRequest request =
         let request =
             { request with
-                State = Failed
+                State = Failed error
                 Attempt = request.Attempt + 1
-                Description = Some error.Message
                 Modified = DateTime.UtcNow }
 
         request |> updateRequest |> ResultAsync.map (fun _ -> request)

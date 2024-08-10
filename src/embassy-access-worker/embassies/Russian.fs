@@ -53,12 +53,7 @@ module private SearchAppointments =
                     | Error error -> return! innerLoop requestsTail (errors @ [ error ])
                     | Ok result ->
                         match result.State with
-                        | Failed ->
-                            let error =
-                                Operation
-                                    { Message = result.Description |> Option.defaultValue "Unknown error."
-                                      Code = Some(__SOURCE_FILE__ + __LINE__) }
-
+                        | Failed error->
                             return! innerLoop requestsTail (errors @ [ error ])
                         | _ -> return Ok <| Some result
             }
@@ -70,11 +65,7 @@ module private SearchAppointments =
         | None -> Ok <| Info "No appointments found."
         | Some request ->
             match request.State with
-            | Failed ->
-                Error
-                <| Operation
-                    { Message = request.Description |> Option.defaultValue "Unknown error."
-                      Code = Some(__SOURCE_FILE__ + __LINE__) }
+            | Failed error -> Error error
             | _ ->
                 Ok
                 <| match request.Appointments.IsEmpty with
