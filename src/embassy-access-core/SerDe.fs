@@ -6,56 +6,53 @@ open Infrastructure
 [<RequireQualifiedAccess>]
 module Json =
     open System.Text.Json
-
-    module Converters =
+    
+    module Converter =
         open System.Text.Json.Serialization
-        open EmbassyAccess.Domain
 
-        type ErrorConverter() =
-            inherit JsonConverter<Error'>()
+        type RequestState() =
+            inherit JsonConverter<Domain.RequestState>()
 
-            override _.Read(reader: byref<Utf8JsonReader>, typeToConvert: Type, options: JsonSerializerOptions) =
-                let mutable result: Error' option = None
+            [<Literal>]
+            let CreatedState = "Created"
+            [<Literal>]
+            let InProcessState = "InProcess"
+            [<Literal>]
+            let CompletedState = "Completed"
+            [<Literal>]
+            let FailedType = "Failed"
+            [<Literal>]
+            let ErrorType = "Error"
 
-                if reader.TokenType = JsonTokenType.StartObject then
-                    let error = JsonSerializer.Deserialize<Error'> (reader,options)
-                    result <- Some error
-               
-
-        type RequestStateConverter() =
-            inherit JsonConverter<RequestState>()
-
-            override _.Read(reader: byref<Utf8JsonReader>, typeToConvert: Type, options: JsonSerializerOptions) =
-                options.Converters.Add (ErrorConverter())
-
-                let mutable result: RequestState option = None
-
-                if reader.TokenType = JsonTokenType.String then
-                    let value = reader.GetString()
-
-                    result <-
-                        match value with
-                        | "Created" -> Some Created
-                        | "InProcess" -> Some InProcess
-                        | "Completed" -> Some Completed
-                        | _ -> None
-
-                if reader.TokenType = JsonTokenType.StartObject then
-                    let error = JsonSerializer.Deserialize<Error'> (reader,options)
-                    result <- Some(Failed error)
-
-                match result with
-                | Some state -> state
-                | None -> raise (JsonException($"Unknown request state {reader.GetString()}"))
-
-            override _.Write(writer: Utf8JsonWriter, value: RequestState, options: JsonSerializerOptions) =
-                options.Converters.Add (ErrorConverter())
+            override _.Write(writer: Utf8JsonWriter, value: Domain.RequestState, options: JsonSerializerOptions) =
                 
                 match value with
-                | Created -> writer.WriteStringValue("Created")
-                | InProcess -> writer.WriteStringValue("InProcess")
-                | Completed -> writer.WriteStringValue("Completed")
-                | Failed error ->
+                | Domain.Created -> writer.WriteStringValue(CreatedState)
+                | Domain.InProcess -> writer.WriteStringValue(InProcessState)
+                | Domain.Completed -> writer.WriteStringValue(CompletedState)
+                | Domain.Failed error ->
                     writer.WriteStartObject()
-                    JsonSerializer.Serialize(writer, error, options)
+                    let errorConverter = options.GetConverter(typeof<Error'>) :?> JsonConverter<Error'>
+                    errorConverter.Write(writer, error, options)
                     writer.WriteEndObject()
+
+            override _.Read(reader: byref<Utf8JsonReader>, typeToConvert: Type, options: JsonSerializerOptions) =
+
+                let token = reader.TokenType
+
+                if token = JsonTokenType.String then
+                    let state = reader.GetString()
+                    match state with
+                    | CreatedState -> Domain.Created
+                    | InProcessState -> Domain.InProcess
+                    | CompletedState -> Domain.Completed
+                    | _ -> raise <| JsonException($"Unexpected state: {state}")
+                elif token = JsonTokenType.StartObject then
+                    let errorConverter = options.GetConverter(typeof<Error'>) :?> JsonConverter<Error'>
+                    let error = errorConverter.Read(&reader, typeof<Error'>, options)
+                    Domain.Failed error
+                else
+                    raise <| JsonException("Expected String or StartObject")
+
+                
+

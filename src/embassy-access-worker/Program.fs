@@ -40,8 +40,8 @@ let main _ =
                           ("https://belgrad.kdmid.ru/queue/orderinfo.aspx?id=72096&cd=7FE4D97C&ems=7EE040C9",
                            Serbia Belgrade)
                           ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20779&cd=99CEBA38", Bosnia Sarajevo)
-                          ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20780&cd=4FC17A57", Bosnia Sarajevo)
-                          ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20781&cd=F23CB539", Bosnia Sarajevo)
+                          //("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20780&cd=4FC17A57", Bosnia Sarajevo)
+                          //("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20781&cd=F23CB539", Bosnia Sarajevo)
                           ("https://podgorica.kdmid.ru/queue/orderinfo.aspx?id=57123&cd=c73761c3&ems=09C3476F",
                            Montenegro Podgorica)
                           ("https://dublin.kdmid.ru/queue/orderinfo.aspx?id=22609&cd=2831b69e&ems=C7E84DE3",
@@ -71,7 +71,7 @@ let main _ =
         Graph.Node(
             rootNode,
             [ //Countries.Albania.Node
-              //Countries.Bosnia.Node
+              Countries.Bosnia.Node
               //Countries.Finland.Node
               //Countries.France.Node
               //Countries.Germany.Node
@@ -81,7 +81,7 @@ let main _ =
               //Countries.Netherlands.Node
               //Countries.Serbia.Node
               //Countries.Slovenia.Node
-              Countries.Switzerland.Node 
+              //Countries.Switzerland.Node 
               ]
         )
 
