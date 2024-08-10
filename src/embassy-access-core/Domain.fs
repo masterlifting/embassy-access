@@ -1,6 +1,7 @@
 ﻿module EmbassyAccess.Domain
 
 open System
+open Infrastructure
 
 type City =
     | Belgrade
@@ -130,14 +131,7 @@ type RequestState =
     | Created
     | InProcess
     | Completed
-    | Failed
-
-    member this.Name =
-        match this with
-        | Created -> Constant.RequestState.Created
-        | InProcess -> Constant.RequestState.InProcess
-        | Completed -> Constant.RequestState.Completed
-        | Failed -> Constant.RequestState.Failed
+    | Failed of Error'
 
 type Request =
     { Id: RequestId

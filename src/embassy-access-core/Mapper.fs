@@ -3,6 +3,7 @@ module internal EmbassyAccess.Mapper
 open System
 open Infrastructure
 open EmbassyAccess.Domain
+open EmbassyAccess.SerDe.Json.Converters
 
 let private _cities =
     [ Constant.City.Belgrade, Belgrade
@@ -43,14 +44,6 @@ let private _embassies =
       Constant.Embassy.British, British ]
     |> Map
 
-let private _requestStates =
-    [ Constant.RequestState.Created, Created
-      Constant.RequestState.InProcess, InProcess
-      Constant.RequestState.Completed, Completed
-      Constant.RequestState.Failed, Failed ]
-    |> Map
-
-
 let toCity (city: External.City) : Result<City, Error'> =
     _cities
     |> Map.tryFind city.Name
@@ -87,10 +80,8 @@ let toAppointment (appointment: External.Appointment) : Appointment =
         | _ -> None }
 
 let toRequestState (state: string) : Result<RequestState, Error'> =
-    _requestStates
-    |> Map.tryFind state
-    |> Option.map Ok
-    |> Option.defaultValue (Error <| NotSupported $"Request state {state}.")
+    let converter = RequestStateConverter()
+    state |> Json.deserialize'<RequestState> (Json.OptionType.DU converter)
 
 let toRequest (request: External.Request) : Result<Request, Error'> =
     toEmbassy request.Embassy
@@ -140,7 +131,7 @@ module External =
         confirmation
         |> Option.map (fun x ->
             let result = External.Confirmation()
-            
+
             result.Description <- x.Description
 
             result)
@@ -161,7 +152,14 @@ module External =
         result.Id <- request.Id.Value
         result.Value <- request.Value
         result.Attempt <- request.Attempt
-        result.State <- request.State.Name
+
+        let stateConverter = RequestStateConverter()
+
+        result.State <-
+            match request.State |> Json.serialize' (Json.OptionType.DU stateConverter) with
+            | Ok x -> x
+            | Error error -> failwith error.Message
+
         result.Embassy <- request.Embassy |> toEmbassy
         result.Appointments <- request.Appointments |> Seq.map toAppointment |> Seq.toArray
         result.Description <- request.Description |> Option.defaultValue ""
