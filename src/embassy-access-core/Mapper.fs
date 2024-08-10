@@ -3,7 +3,9 @@ module internal EmbassyAccess.Mapper
 open System
 open Infrastructure
 open EmbassyAccess.Domain
-open EmbassyAccess.SerDe.Json.Converters
+open EmbassyAccess.SerDe
+
+let private _requestStateConverter = Json.Converter.RequestState()
 
 let private _cities =
     [ Constant.City.Belgrade, Belgrade
@@ -80,8 +82,7 @@ let toAppointment (appointment: External.Appointment) : Appointment =
         | _ -> None }
 
 let toRequestState (state: string) : Result<RequestState, Error'> =
-    let converter = RequestStateConverter()
-    state |> Json.deserialize'<RequestState> (Json.OptionType.DU converter)
+    state |> Json.deserialize'<RequestState> (Json.OptionType.DU _requestStateConverter)
 
 let toRequest (request: External.Request) : Result<Request, Error'> =
     toEmbassy request.Embassy
@@ -153,10 +154,8 @@ module External =
         result.Value <- request.Value
         result.Attempt <- request.Attempt
 
-        let stateConverter = RequestStateConverter()
-
         result.State <-
-            match request.State |> Json.serialize' (Json.OptionType.DU stateConverter) with
+            match request.State |> Json.serialize' (Json.OptionType.DU _requestStateConverter) with
             | Ok x -> x
             | Error error -> failwith error.Message
 

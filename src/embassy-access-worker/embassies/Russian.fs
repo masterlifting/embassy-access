@@ -35,9 +35,10 @@ module private SearchAppointments =
                 match requests with
                 | [] ->
                     return
-                        match errors.IsEmpty with
-                        | true -> Ok None
-                        | false ->
+                        match errors.Length with
+                        | 0 -> Ok None
+                        | 1 -> Error errors[0]
+                        | _ ->
                             let msg =
                                 errors
                                 |> List.mapi (fun i error -> $"{i + 1}.{error.Message}")
@@ -46,7 +47,7 @@ module private SearchAppointments =
                             Error
                             <| Operation
                                 { Message = $"Multiple errors: \n{msg}"
-                                  Code = Some(__SOURCE_FILE__ + __LINE__) }
+                                  Code = None }
 
                 | request :: requestsTail ->
                     match! request |> getAppointments with
