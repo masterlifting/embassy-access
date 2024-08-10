@@ -1,10 +1,11 @@
-module EmbassyAccess.Constants
+[<RequireQualifiedAccess>]
+module EmbassyAccess.Constant
 
 module RequestState =
     [<Literal>]
     let Created = "Created"
     [<Literal>]
-    let Running = "Running"
+    let InProcess = "InProcess"
     [<Literal>]
     let Completed = "Completed"
     [<Literal>]

@@ -70,18 +70,19 @@ let main _ =
     let handlersGraph =
         Graph.Node(
             rootNode,
-            [ Countries.Albania.Node
-              Countries.Bosnia.Node
-              Countries.Finland.Node
-              Countries.France.Node
-              Countries.Germany.Node
-              Countries.Hungary.Node
-              Countries.Ireland.Node
-              Countries.Montenegro.Node
-              Countries.Netherlands.Node
-              Countries.Serbia.Node
-              Countries.Slovenia.Node
-              Countries.Switzerland.Node ]
+            [ //Countries.Albania.Node
+              //Countries.Bosnia.Node
+              //Countries.Finland.Node
+              //Countries.France.Node
+              //Countries.Germany.Node
+              //Countries.Hungary.Node
+              //Countries.Ireland.Node
+              //Countries.Montenegro.Node
+              //Countries.Netherlands.Node
+              //Countries.Serbia.Node
+              //Countries.Slovenia.Node
+              Countries.Switzerland.Node 
+              ]
         )
 
     "Scheduler"

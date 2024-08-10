@@ -15,9 +15,12 @@ module private SearchAppointments =
                 <| { Page = 1
                      PageSize = 5
                      SortBy = Filter.Desc(Filter.Date(_.Modified)) }
-              Ids = []
-              Embassy = Some <| Russian country
-              Modified = None }
+              Embassies = Some <| Set [ Russian country ]
+              HasStates = Some(fun state -> state <> InProcess)
+              Ids = None
+              HasAppointments = false
+              HasConfirmations = false
+              WasModified = None }
 
         storage |> Repository.Query.Request.get ct filter
 
@@ -43,12 +46,21 @@ module private SearchAppointments =
                             Error
                             <| Operation
                                 { Message = $"Multiple errors: \n{msg}"
-                                  Code = None }
+                                  Code = Some(__SOURCE_FILE__ + __LINE__) }
 
                 | request :: requestsTail ->
-                    match! getAppointments request with
-                    | Error error' -> return! innerLoop requestsTail (errors @ [ error' ])
-                    | Ok request -> return Ok <| Some request
+                    match! request |> getAppointments with
+                    | Error error -> return! innerLoop requestsTail (errors @ [ error ])
+                    | Ok result ->
+                        match result.State with
+                        | Failed ->
+                            let error =
+                                Operation
+                                    { Message = result.Description |> Option.defaultValue "Unknown error."
+                                      Code = Some(__SOURCE_FILE__ + __LINE__) }
+
+                            return! innerLoop requestsTail (errors @ [ error ])
+                        | _ -> return Ok <| Some result
             }
 
         innerLoop requests []
@@ -59,12 +71,15 @@ module private SearchAppointments =
         | Some request ->
             match request.State with
             | Failed ->
-                let error = request.Description |> Option.defaultValue "Unknown error."
-                Error <| Operation { Message = error; Code = None }
+                Error
+                <| Operation
+                    { Message = request.Description |> Option.defaultValue "Unknown error."
+                      Code = Some(__SOURCE_FILE__ + __LINE__) }
             | _ ->
-                match request.Appointments.IsEmpty with
-                | true -> Ok <| Info "No appointments found."
-                | false -> Ok <| Success $"Found {request.Appointments.Count} appointments."
+                Ok
+                <| match request.Appointments.IsEmpty with
+                   | true -> Info "No appointments found."
+                   | false -> Success $"Found {request.Appointments.Count} appointments."
 
     let run country =
         fun _ ct ->

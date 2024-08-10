@@ -18,7 +18,7 @@ let getTask handlersGraph configuration =
             return
                 buildGraph handlersGraph configuration
                 |> Result.bind (fun graph ->
-                    DSL.Graph.findNode taskName graph
+                    Graph.findNode taskName graph
                     |> Option.map Ok
                     |> Option.defaultValue (
                         Error

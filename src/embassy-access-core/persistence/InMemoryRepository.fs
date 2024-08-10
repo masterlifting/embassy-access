@@ -7,6 +7,9 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Mapper
 open Persistence.InMemory
 
+[<Literal>]
+let private RequestsKey = "requests"
+
 let private getEntities<'a> key context =
     context
     |> Storage.Query.get key
@@ -38,9 +41,6 @@ module Query =
 
     module Request =
 
-        [<Literal>]
-        let private key = "requests"
-
         let get ct (filter: Filter.Request) context =
             async {
                 return
@@ -49,21 +49,30 @@ module Query =
                         let filter (requests: Request list) =
                             requests
                             |> List.filter (fun x ->
-                                (filter.Ids = [] || filter.Ids |> List.contains x.Id)
-                                && filter.Embassy
-                                   |> Option.map (fun embassy -> x.Embassy = embassy)
+                                filter.Ids |> Option.map (Set.contains x.Id) |> Option.defaultValue true
+                                && filter.Embassies
+                                   |> Option.map (Set.contains x.Embassy)
                                    |> Option.defaultValue true
-                                && filter.Modified
+                                && filter.HasStates
+                                   |> Option.map (fun predicate -> predicate x.State)
+                                   |> Option.defaultValue true
+                                && (match filter.HasAppointments with
+                                    | true -> not x.Appointments.IsEmpty
+                                    | false -> true)
+                                && (match filter.HasConfirmations with
+                                    | true -> x.Appointments |> Seq.exists (_.Confirmation.IsSome)
+                                    | false -> true)
+                                && filter.WasModified
                                    |> Option.map (fun predicate -> predicate x.Modified)
                                    |> Option.defaultValue true)
                             |> paginate
                             <| filter.Pagination
 
                         context
-                        |> getEntities<External.Request> key
-                        |> Result.bind (Seq.map toRequest >> DSL.Seq.roe)
+                        |> getEntities<External.Request> RequestsKey
+                        |> Result.bind (Seq.map toRequest >> Seq.roe)
                         |> Result.map filter
-                    | _ -> Error <| Cancelled "Query.Request.get"
+                    | _ -> Error <| Cancelled(__SOURCE_FILE__ + __LINE__)
             }
 
         let get' ct requestId context =
@@ -72,10 +81,10 @@ module Query =
                     match ct |> notCanceled with
                     | true ->
                         context
-                        |> getEntities<External.Request> key
-                        |> Result.bind (Seq.map toRequest >> DSL.Seq.roe)
+                        |> getEntities<External.Request> RequestsKey
+                        |> Result.bind (Seq.map toRequest >> Seq.roe)
                         |> Result.map (List.tryFind (fun x -> x.Id = requestId))
-                    | _ -> Error <| Cancelled "Query.Request.get'"
+                    | _ -> Error <| Cancelled(__SOURCE_FILE__ + __LINE__)
             }
 
 module Command =
@@ -128,15 +137,14 @@ module Command =
                 return
                     match ct |> notCanceled with
                     | true ->
-                        let key = "requests"
 
                         context
-                        |> getEntities<External.Request> key
+                        |> getEntities<External.Request> RequestsKey
                         |> Result.bind (fun requests ->
                             match command with
                             | Command.Request.Create request -> requests |> add request
                             | Command.Request.Update request -> requests |> update request
                             | Command.Request.Delete request -> requests |> delete request)
-                        |> Result.bind (context |> save key)
-                    | _ -> Error <| Cancelled "Command.Request.execute"
+                        |> Result.bind (context |> save RequestsKey)
+                    | _ -> Error <| Cancelled(__SOURCE_FILE__ + __LINE__)
             }

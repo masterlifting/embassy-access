@@ -4,6 +4,7 @@ module EmbassyAccess.Persistence.Repository
 open Infrastructure
 open Persistence
 open EmbassyAccess.Persistence
+open Infrastructure.Logging
 
 module Query =
 
@@ -11,12 +12,16 @@ module Query =
 
         let get ct filter storage =
             match storage with
-            | Storage.Type.InMemory context -> context |> InMemoryRepository.Query.Request.get ct filter
+            | Storage.Type.InMemory context ->
+                Log.debug $"InMemory get request with filter {filter}"
+                context |> InMemoryRepository.Query.Request.get ct filter
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
         let get' ct requestId storage =
             match storage with
-            | Storage.Type.InMemory context -> context |> InMemoryRepository.Query.Request.get' ct requestId
+            | Storage.Type.InMemory context ->
+                Log.debug $"InMemory get request with id {requestId}"
+                context |> InMemoryRepository.Query.Request.get' ct requestId
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
 module Command =
@@ -25,7 +30,9 @@ module Command =
 
         let private execute ct command storage =
             match storage with
-            | Storage.Type.InMemory context -> context |> InMemoryRepository.Command.Request.execute ct command
+            | Storage.Type.InMemory context ->
+                Log.debug $"InMemory command request {command}"
+                context |> InMemoryRepository.Command.Request.execute ct command
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
         let create ct request =
