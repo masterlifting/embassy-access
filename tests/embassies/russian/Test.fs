@@ -15,7 +15,7 @@ module private Fixture =
         { Id = Guid.NewGuid() |> RequestId
           Value = "https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F"
           Attempt = 1
-          State = Created 
+          State = Created
           Appointments = Set.empty
           Embassy = Russian <| Germany Berlin
           Description = None
@@ -59,7 +59,7 @@ module private Fixture =
 open Fixture
 
 let private ``validation page should have an error`` =
-    testAsync "validation page should have an error" {
+    testAsync "Validation page should have an error" {
         let deps =
             Api.GetAppointmentsDeps.Russian
                 { getAppointmentsDeps with
@@ -67,14 +67,16 @@ let private ``validation page should have an error`` =
 
         let! responseRes = request |> Api.getAppointments deps
 
-        match Expect.wantError responseRes "Response should have an error" with
-        | Operation reason ->
+        let response = Expect.wantOk responseRes "getAppointments response should be Ok"
+
+        match response.State with
+        | Domain.RequestState.Failed(Operation reason) ->
             Expect.equal reason.Code (Some ErrorCodes.PageHasError) $"Error code should be {ErrorCodes.PageHasError}"
         | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
     }
 
 let private ``validation page should have a confirmation request`` =
-    testAsync "validation page should have a confirmation request" {
+    testAsync "Validation page should have a confirmation request" {
         let deps =
             Api.GetAppointmentsDeps.Russian
                 { getAppointmentsDeps with
@@ -82,14 +84,16 @@ let private ``validation page should have a confirmation request`` =
 
         let! responseRes = request |> Api.getAppointments deps
 
-        match Expect.wantError responseRes "Response should have an error" with
-        | Operation reason ->
+        let response = Expect.wantOk responseRes "getAppointments response should be Ok"
+
+        match response.State with
+        | Domain.RequestState.Failed(Operation reason) ->
             Expect.equal reason.Code (Some ErrorCodes.NotConfirmed) $"Error code should be {ErrorCodes.NotConfirmed}"
         | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
     }
 
 let private ``appointments page should not have data`` =
-    testTheoryAsync "appointments page should not have data" [ 1; 2; 3; 4; 5; 6; 7 ]
+    testTheoryAsync "Appointments page should not have data" [ 1; 2; 3; 4; 5; 6; 7 ]
     <| fun i ->
         async {
             let deps =
@@ -103,7 +107,7 @@ let private ``appointments page should not have data`` =
         }
 
 let private ``appointments page should have data`` =
-    testTheoryAsync "appointments page should have data" [ 1; 2; 3 ]
+    testTheoryAsync "Appointments page should have data" [ 1; 2; 3 ]
     <| fun i ->
         async {
             let deps =
