@@ -547,8 +547,12 @@ module private Request =
 
         request |> updateRequest |> ResultAsync.map (fun _ -> request)
 
-    let private setAttempt' request =
-        match request.Modified.DayOfYear = DateTime.Today.DayOfYear, request.Attempt > 20 with
+    let private setAttempt' timeShift request =
+        let timeShift = timeShift |> int
+        let modifiedDay = request.Modified.AddHours timeShift
+        let today = DateTime.UtcNow.AddHours timeShift
+
+        match modifiedDay.DayOfYear = today.DayOfYear, request.Attempt > 20 with
         | true, true ->
             Error
             <| Cancelled $"The request was cancelled due to the number of attempts reached the {request.Attempt}."
@@ -563,10 +567,10 @@ module private Request =
                    Attempt = request.Attempt + 1
                    Modified = DateTime.UtcNow }
 
-    let setAttempt updateRequest =
+    let setAttempt timeShift updateRequest =
         ResultAsync.bind' (fun (httpClient, queryParams, formData, request) ->
             request
-            |> setAttempt'
+            |> setAttempt' timeShift
             |> ResultAsync.wrap (fun request ->
                 request
                 |> updateRequest
@@ -607,7 +611,8 @@ let getAppointments deps request =
 
     let processInitialPage = InitialPage.handle deps
 
-    let setRequestAttempt = Request.setAttempt deps.updateRequest
+    let setRequestAttempt =
+        Request.setAttempt deps.Configuration.TimeShift deps.updateRequest
 
     let processValidationPage = ValidationPage.handle deps
 
@@ -647,7 +652,8 @@ let bookAppointment deps option request =
 
     let processInitialPage = InitialPage.handle deps.GetAppointmentsDeps
 
-    let setRequestAttempt = Request.setAttempt deps.GetAppointmentsDeps.updateRequest
+    let setRequestAttempt =
+        Request.setAttempt deps.GetAppointmentsDeps.Configuration.TimeShift deps.GetAppointmentsDeps.updateRequest
 
     let processValidationPage = ValidationPage.handle deps.GetAppointmentsDeps
 

@@ -33,7 +33,7 @@ let main _ =
         { Name = "Scheduler"
           Handle =
             Some
-            <| fun _ ct ->
+            <| fun (_, _, ct) ->
                 async {
                     let! testRequests =
                         [ ("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F", Germany Berlin)

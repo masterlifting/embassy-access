@@ -3,8 +3,9 @@ module internal EmbassyAccess.Embassies.Russian.Deps
 
 open EmbassyAccess.Embassies.Russian.Domain
 
-let createGetAppointmentsDeps ct storage =
-    { updateRequest =
+let createGetAppointmentsDeps ct config storage =
+    { Configuration = config
+      updateRequest =
         fun request ->
             storage
             |> EmbassyAccess.Persistence.Repository.Command.Request.update ct request
@@ -30,8 +31,8 @@ let createGetAppointmentsDeps ct storage =
             |> Web.Http.Client.Request.post ct request content
             |> Web.Http.Client.Response.String.readContent ct }
 
-let createBookAppointmentDeps ct storage =
-    { GetAppointmentsDeps = createGetAppointmentsDeps ct storage
+let createBookAppointmentDeps ct config storage =
+    { GetAppointmentsDeps = createGetAppointmentsDeps ct config storage
       postConfirmationPage =
         fun request content client ->
             client

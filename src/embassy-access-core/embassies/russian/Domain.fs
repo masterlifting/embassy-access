@@ -2,6 +2,7 @@
 
 open Infrastructure
 open EmbassyAccess
+open System
 
 module ErrorCodes =
 
@@ -24,8 +25,13 @@ type HttpPostStringRequest =
 
 type SolveCaptchaImage = byte array -> Async<Result<int, Error'>>
 
+type Configuration = {
+    TimeShift: int8
+}
+
 type GetAppointmentsDeps =
-    { updateRequest: StorageUpdateRequest
+    { Configuration: Configuration
+      updateRequest: StorageUpdateRequest
       getInitialPage: HttpGetStringRequest
       getCaptcha: HttpGetBytesRequest
       solveCaptcha: SolveCaptchaImage
