@@ -538,7 +538,7 @@ module private Request =
             |> Result.bind (validateCredentials request)
             |> Result.map (fun credentials -> credentials, request))
 
-    let setAsRunning updateRequest request =
+    let setInProcessState updateRequest request =
         let request =
             { request with
                 State = InProcess
@@ -551,7 +551,7 @@ module private Request =
         match request.Modified.DayOfYear = DateTime.Today.DayOfYear, request.Attempt > 20 with
         | true, true ->
             Error
-            <| Cancelled "The request was cancelled due to the maximum number of attempts for today."
+            <| Cancelled $"The request was cancelled due to the number of attempts reached the {request.Attempt}."
         | false, true ->
             Ok
             <| { request with
@@ -598,8 +598,8 @@ module private Request =
 let getAppointments deps request =
 
     // define
-    let setRequestRunningState request =
-        request |> Request.setAsRunning deps.updateRequest
+    let setRequestInProcessState request =
+        request |> Request.setInProcessState deps.updateRequest
 
     let createRequestCredentials = Request.createCredentials
 
@@ -624,7 +624,7 @@ let getAppointments deps request =
 
     // pipe
     let start =
-        setRequestRunningState
+        setRequestInProcessState
         >> createRequestCredentials
         >> createHttpClient
         >> processInitialPage
@@ -638,8 +638,8 @@ let getAppointments deps request =
 let bookAppointment deps option request =
 
     // define
-    let setRequestRunningState request =
-        request |> Request.setAsRunning deps.GetAppointmentsDeps.updateRequest
+    let setRequestInProcessState request =
+        request |> Request.setInProcessState deps.GetAppointmentsDeps.updateRequest
 
     let createRequestCredentials = Request.createCredentials
 
@@ -669,7 +669,7 @@ let bookAppointment deps option request =
 
     // pipe
     let start =
-        setRequestRunningState
+        setRequestInProcessState
         >> createRequestCredentials
         >> createHttpClient
         >> processInitialPage
