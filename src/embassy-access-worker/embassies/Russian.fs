@@ -24,9 +24,17 @@ module private SearchAppointments =
 
         storage |> Repository.Query.Request.get ct filter
 
-    let private tryGetAppointments ct storage requests =
+    let private tryGetAppointments ct scheduler storage requests =
+
+        let config: EmbassyAccess.Embassies.Russian.Domain.Configuration =
+            { TimeShift = 
+                match scheduler with
+                | None -> 0y
+                | Some scheduler -> scheduler.TimeShift
+             }
+
         let getAppointments =
-            (storage, ct)
+            (storage, config, ct)
             |> EmbassyAccess.Deps.Russian.getAppointments
             |> EmbassyAccess.Api.getAppointments
 
@@ -54,8 +62,7 @@ module private SearchAppointments =
                     | Error error -> return! innerLoop requestsTail (errors @ [ error ])
                     | Ok result ->
                         match result.State with
-                        | Failed error->
-                            return! innerLoop requestsTail (errors @ [ error ])
+                        | Failed error -> return! innerLoop requestsTail (errors @ [ error ])
                         | _ -> return Ok <| Some result
             }
 
@@ -74,12 +81,12 @@ module private SearchAppointments =
                    | false -> Success $"Found {request.Appointments.Count} appointments."
 
     let run country =
-        fun _ ct ->
+        fun (_, scheduler, ct) ->
             Persistence.Storage.create InMemory
             |> ResultAsync.wrap (fun storage ->
                 storage
                 |> getRequests ct country
-                |> ResultAsync.bind' (tryGetAppointments ct storage)
+                |> ResultAsync.bind' (tryGetAppointments ct scheduler storage)
                 |> ResultAsync.bind handleAppointmentsResponse)
 
 let createNode country =
