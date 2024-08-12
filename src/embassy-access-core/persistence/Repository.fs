@@ -13,7 +13,7 @@ module Query =
         let get ct filter storage =
             match storage with
             | Storage.Type.InMemory context ->
-                Log.debug $"InMemory get request with filter {filter}"
+                Log.debug $"InMemory get request with filter \n{filter}"
                 context |> InMemoryRepository.Query.Request.get ct filter
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
