@@ -107,43 +107,43 @@ module External =
 
     type City() =
         [<Literal>]
-        static let Belgrade = "Belgrade"
+        static let Belgrade = nameof City.Belgrade 
 
         [<Literal>]
-        static let Berlin = "Berlin"
+        static let Berlin = nameof City.Berlin
 
         [<Literal>]
-        static let Budapest = "Budapest"
+        static let Budapest = nameof City.Budapest
 
         [<Literal>]
-        static let Sarajevo = "Sarajevo"
+        static let Sarajevo = nameof City.Sarajevo
 
         [<Literal>]
-        static let Podgorica = "Podgorica"
+        static let Podgorica = nameof City.Podgorica
 
         [<Literal>]
-        static let Tirana = "Tirana"
+        static let Tirana = nameof City.Tirana
 
         [<Literal>]
-        static let Paris = "Paris"
+        static let Paris = nameof City.Paris
 
         [<Literal>]
-        static let Rome = "Rome"
+        static let Rome = nameof City.Rome
 
         [<Literal>]
-        static let Dublin = "Dublin"
+        static let Dublin = nameof City.Dublin
 
         [<Literal>]
-        static let Bern = "Bern"
+        static let Bern = nameof City.Bern
 
         [<Literal>]
-        static let Helsinki = "Helsinki"
+        static let Helsinki = nameof City.Helsinki
 
         [<Literal>]
-        static let Hague = "Hague"
+        static let Hague = nameof City.Hague
 
         [<Literal>]
-        static let Ljubljana = "Ljubljana"
+        static let Ljubljana = nameof City.Ljubljana
 
         member val Name: string = String.Empty with get, set
 
@@ -186,40 +186,40 @@ module External =
 
     type Country() =
         [<Literal>]
-        static let Serbia = "Serbia"
+        static let Serbia = nameof Country.Serbia
 
         [<Literal>]
-        static let Germany = "Germany"
+        static let Germany = nameof Country.Germany
 
         [<Literal>]
-        static let Bosnia = "Bosnia"
+        static let Bosnia = nameof Country.Bosnia
 
         [<Literal>]
-        static let Montenegro = "Montenegro"
+        static let Montenegro = nameof Country.Montenegro
 
         [<Literal>]
-        static let Albania = "Albania"
+        static let Albania = nameof Country.Albania
 
         [<Literal>]
-        static let Hungary = "Hungary"
+        static let Hungary = nameof Country.Hungary
 
         [<Literal>]
-        static let Ireland = "Ireland"
+        static let Ireland = nameof Country.Ireland
 
         [<Literal>]
-        static let Switzerland = "Switzerland"
+        static let Switzerland = nameof Country.Switzerland
 
         [<Literal>]
-        static let Finland = "Finland"
+        static let Finland = nameof Country.Finland
 
         [<Literal>]
-        static let France = "France"
+        static let France = nameof Country.France
 
         [<Literal>]
-        static let Netherlands = "Netherlands"
+        static let Netherlands = nameof Country.Netherlands
 
         [<Literal>]
-        static let Slovenia = "Slovenia"
+        static let Slovenia = nameof Country.Slovenia
 
         member val Name: string = String.Empty with get, set
         member val City: City = City() with get, set
@@ -289,22 +289,22 @@ module External =
 
     type Embassy() =
         [<Literal>]
-        static let Russian = "Russian"
+        static let Russian = nameof Embassy.Russian
 
         [<Literal>]
-        static let Spanish = "Spanish"
+        static let Spanish = nameof Embassy.Spanish
 
         [<Literal>]
-        static let Italian = "Italian"
+        static let Italian = nameof Embassy.Italian
 
         [<Literal>]
-        static let French = "French"
+        static let French = nameof Embassy.French
 
         [<Literal>]
-        static let German = "German"
+        static let German = nameof Embassy.German
 
         [<Literal>]
-        static let British = "British"
+        static let British = nameof Embassy.British
 
         member val Name: string = String.Empty with get, set
         member val Country: Country = Country() with get, set
@@ -360,16 +360,16 @@ module External =
     type RequestState() =
 
         [<Literal>]
-        static let Created = "Created"
+        static let Created = nameof RequestState.Created
 
         [<Literal>]
-        static let InProcess = "InProcess"
+        static let InProcess = nameof RequestState.InProcess
 
         [<Literal>]
-        static let Completed = "Completed"
+        static let Completed = nameof RequestState.Completed
 
         [<Literal>]
-        static let Failed = "Failed"
+        static let Failed = nameof RequestState.Failed
 
         member val Value: string = String.Empty with get, set
         member val Error: Domain.External.Error option = None with get, set

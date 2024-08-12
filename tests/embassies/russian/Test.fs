@@ -49,7 +49,8 @@ module private Fixture =
               StatusCode = 200 })
 
     let getAppointmentsDeps =
-        { updateRequest = fun _ -> async { return Ok() }
+        { Configuration = { TimeShift = 0y }
+          updateRequest = fun _ -> async { return Ok() }
           getInitialPage = fun _ _ -> httpHetStringRequest "initial_page_response"
           getCaptcha = fun _ _ -> httpGetBytesRequest "captcha.png"
           solveCaptcha = fun _ -> async { return Ok 42 }

@@ -23,12 +23,12 @@ The project is structured into several components, including core functionality,
 
 - **Source**
 
-  - `embassy-access-core`: Core logic and functionalities.
-  - `embassy-access-webapi`: Web API for external interactions.
-  - `embassy-access-worker`: Background worker services.
+  - `embassy-access-core`: Core logic and functionalities with domain models and APIs.
+  - `embassy-access-telegram`: Telegram bot functionalities to interact with the system.
+  - `embassy-access-worker`: Background worker services for processing tasks.
 
 - **Tests**
-  - `embassy-access-tests`: Tests for the functionalities.
+  - `embassy-access-tests`: Tests for the core functionalities.
 
 ## Getting Started
 

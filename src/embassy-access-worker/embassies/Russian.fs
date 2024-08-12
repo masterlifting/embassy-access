@@ -35,8 +35,8 @@ module private SearchAppointments =
 
         let getAppointments =
             (storage, config, ct)
-            |> EmbassyAccess.Deps.Russian.getAppointments
-            |> EmbassyAccess.Api.getAppointments
+            |> EmbassyAccess.Deps.Russian.bookAppointment
+            |> EmbassyAccess.Api.bookAppointment
 
         let rec innerLoop requests (errors: Error' list) =
             async {
@@ -58,7 +58,7 @@ module private SearchAppointments =
                                   Code = None }
 
                 | request :: requestsTail ->
-                    match! request |> getAppointments with
+                    match! request |> getAppointments FirstAvailable with
                     | Error error -> return! innerLoop requestsTail (errors @ [ error ])
                     | Ok result ->
                         match result.State with
