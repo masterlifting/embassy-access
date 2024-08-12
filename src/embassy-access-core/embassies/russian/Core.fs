@@ -459,7 +459,18 @@ module private ConfirmationPage =
         match option with
         | FirstAvailable -> appointments |> Seq.tryHead
         | Appointment appointment -> appointments |> Seq.tryFind (fun x -> x.Value = appointment.Value)
-        | _ -> None
+        | Range (min, max) ->
+
+            let minDate = DateOnly.FromDateTime(min)
+            let maxDate = DateOnly.FromDateTime(max)
+
+            let minTime = TimeOnly.FromDateTime(min)
+            let maxTime = TimeOnly.FromDateTime(max)
+
+            appointments
+            |> Seq.filter (fun x -> x.Date >= minDate && x.Date <= maxDate)
+            |> Seq.filter (fun x -> x.Time >= minTime && x.Time <= maxTime)
+            |> Seq.tryHead
 
     let private createRequest formData queryParamsId =
 
@@ -476,7 +487,14 @@ module private ConfirmationPage =
         request, content
 
     let private parseResponse page =
-        Html.load page |> Result.bind hasError |> Result.map (fun _ -> "")
+        $"{Environment.CurrentDirectory}/confirmations/confirmation_page_response.html" 
+        |> Persistence.FileSystem.Storage.create
+        |> ResultAsync.wrap (fun storage ->
+            storage 
+            |> Persistence.FileSystem.Storage.Write.string page
+            |> ResultAsync.map (fun _ -> page)
+            |> ResultAsync.bind(fun page ->
+                Html.load page |> Result.bind hasError |> Result.map (fun _ -> "")))
 
     let private prepareFormData data value =
         data |> Map.add "ctl00$MainContent$TextBox1" value
@@ -503,7 +521,7 @@ module private ConfirmationPage =
                 let request, content = createRequest formData queryParamsId
                 deps.postConfirmationPage request content
 
-            let parseResponse = ResultAsync.bind parseResponse
+            let parseResponse = ResultAsync.bind' parseResponse
             let parseConfirmation = ResultAsync.bind parseConfirmation
             let createResult = ResultAsync.map (createResult appointment)
 
