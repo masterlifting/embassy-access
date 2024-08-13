@@ -244,24 +244,22 @@ module Embassy =
             | _ -> Error <| NotSupported $"Embassy {embassy.Name}.")
 
 module Confirmation =
-    let toExternal (confirmation: Confirmation option) =
-        confirmation
-        |> Option.map (fun x ->
-            let result = External.Confirmation()
+    let toExternal (confirmation: Confirmation) =
+        let result = External.Confirmation()
 
-            result.Description <- x.Description
+        result.Description <- confirmation.Description
 
-            result)
+        result
 
-    let toInternal (confirmation: External.Confirmation option) =
-        confirmation |> Option.map (fun x -> { Description = x.Description })
+    let toInternal (confirmation: External.Confirmation) =
+        { Description = confirmation.Description }
 
 module Appointment =
     let toExternal (appointment: Appointment) =
         let result = External.Appointment()
 
         result.Value <- appointment.Value
-        result.Confirmation <- appointment.Confirmation |> Confirmation.toExternal
+        result.Confirmation <- appointment.Confirmation |> Option.map Confirmation.toExternal
         result.Description <- appointment.Description |> Option.defaultValue ""
         result.DateTime <- appointment.Date.ToDateTime(appointment.Time)
 
@@ -271,7 +269,7 @@ module Appointment =
         { Value = appointment.Value
           Date = DateOnly.FromDateTime(appointment.DateTime)
           Time = TimeOnly.FromDateTime(appointment.DateTime)
-          Confirmation = appointment.Confirmation |> Confirmation.toInternal
+          Confirmation = appointment.Confirmation |> Option.map Confirmation.toInternal
           Description =
             match appointment.Description with
             | AP.IsString x -> Some x
@@ -282,41 +280,60 @@ module ConfirmationOption =
     let FirstAvailable = nameof ConfirmationOption.FirstAvailable
 
     [<Literal>]
-    let Range = nameof ConfirmationOption.DateTimeRange
-
-    [<Literal>]
-    let ForAppointment = nameof ConfirmationOption.ForAppointment
+    let DateTimeRange = nameof ConfirmationOption.DateTimeRange
 
     let toExternal option =
-        option
-        |> Option.map (fun option ->
+        let result = External.ConfirmationOption()
 
-            let result = External.ConfirmationOption()
+        match option with
+        | ConfirmationOption.FirstAvailable -> result.Type <- FirstAvailable
+        | ConfirmationOption.DateTimeRange(min, max) ->
+            result.Type <- DateTimeRange
+            result.DateStart <- Nullable min
+            result.DateEnd <- Nullable max
 
-            match option with
-            | ConfirmationOption.FirstAvailable -> result.Type <- FirstAvailable
-            | ConfirmationOption.DateTimeRange(min, max) ->
-                result.Type <- Range
-                result.DateStart <- Nullable min
-                result.DateEnd <- Nullable max
-            | ConfirmationOption.ForAppointment appointment ->
-                result.Type <- ForAppointment
-                result.Appointment <- appointment |> Appointment.toExternal |> Some
-
-            result)
+        result
 
     let toInternal (option: External.ConfirmationOption) =
         match option.Type with
         | FirstAvailable -> ConfirmationOption.FirstAvailable |> Ok
-        | Range ->
+        | DateTimeRange ->
             match option.DateStart |> Option.ofNullable, option.DateEnd |> Option.ofNullable with
             | Some min, Some max -> ConfirmationOption.DateTimeRange(min, max) |> Ok
             | _ -> Error <| NotFound "DateStart or DateEnd."
-        | ForAppointment ->
-            match option.Appointment with
-            | Some appointment -> appointment |> Appointment.toInternal |> ConfirmationOption.ForAppointment |> Ok
-            | _ -> Error <| NotFound "Appointment."
         | _ -> Error <| NotSupported $"ConfirmationOption {option.Type}."
+
+module ConfirmationType =
+    [<Literal>]
+    let Manual = nameof ConfirmationType.Manual
+
+    [<Literal>]
+    let Auto = nameof ConfirmationType.Auto
+
+    let toExternal (confirmation: ConfirmationType) =
+        let result = External.ConfirmationType()
+
+        match confirmation with
+        | ConfirmationType.Manual appointment ->
+            result.Type <- Manual
+            result.Appointment <- Some appointment |> Option.map Appointment.toExternal
+        | ConfirmationType.Auto option ->
+            result.Type <- Auto
+            result.ConfirmationOption <- Some option |> Option.map ConfirmationOption.toExternal
+
+        result
+
+    let toInternal (confirmation: External.ConfirmationType) =
+        match confirmation.Type with
+        | Manual ->
+            match confirmation.Appointment with
+            | Some appointment -> appointment |> Appointment.toInternal |> ConfirmationType.Manual |> Ok
+            | None -> Error <| NotFound "Appointment."
+        | Auto ->
+            match confirmation.ConfirmationOption with
+            | Some option -> option |> ConfirmationOption.toInternal |> Result.map ConfirmationType.Auto
+            | None -> Error <| NotFound "ConfirmationOption."
+        | _ -> Error <| NotSupported $"ConfirmationType {confirmation.Type}."
 
 module RequestState =
     [<Literal>]
@@ -364,7 +381,7 @@ module Request =
         result.Embassy <- request.Embassy |> Embassy.toExternal
         result.State <- request.State |> RequestState.toExternal
         result.Attempt <- request.Attempt
-        result.ConfirmationOption <- request.ConfirmationOption |> ConfirmationOption.toExternal
+        result.Confirmation <- request.Confirmation |> Option.map ConfirmationType.toExternal
         result.Appointments <- request.Appointments |> Seq.map Appointment.toExternal |> Seq.toArray
         result.Description <- request.Description |> Option.defaultValue ""
         result.Modified <- request.Modified
@@ -384,7 +401,7 @@ module Request =
                       Embassy = embassy
                       State = state
                       Attempt = request.Attempt
-                      ConfirmationOption = None
+                      Confirmation = None
                       Appointments = request.Appointments |> Seq.map Appointment.toInternal |> Set.ofSeq
                       Description =
                         match request.Description with
@@ -392,11 +409,9 @@ module Request =
                         | _ -> None
                       Modified = request.Modified }
 
-                match request.ConfirmationOption with
+                match request.Confirmation with
                 | None -> Ok result
-                | Some option ->
-                    option
-                    |> ConfirmationOption.toInternal
-                    |> Result.map (fun x ->
-                        { result with
-                            ConfirmationOption = Some x })))
+                | Some confirmation ->
+                    confirmation
+                    |> ConfirmationType.toInternal
+                    |> Result.map (fun x -> { result with Confirmation = Some x })))

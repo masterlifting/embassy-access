@@ -85,7 +85,10 @@ type Appointment =
 type ConfirmationOption =
     | FirstAvailable
     | DateTimeRange of DateTime * DateTime
-    | ForAppointment of Appointment
+
+type ConfirmationType =
+    | Manual of Appointment
+    | Auto of ConfirmationOption
 
 type RequestState =
     | Created
@@ -99,7 +102,7 @@ type Request =
       Embassy: Embassy
       State: RequestState
       Attempt: int
-      ConfirmationOption: ConfirmationOption option
+      Confirmation: ConfirmationType option
       Appointments: Set<Appointment>
       Description: string option
       Modified: DateTime }
@@ -133,12 +136,17 @@ module External =
         member val Type: string = String.Empty with get, set
         member val DateStart: Nullable<DateTime> = Nullable() with get, set
         member val DateEnd: Nullable<DateTime> = Nullable() with get, set
+
+    type ConfirmationType() =
+
+        member val Type: string = String.Empty with get, set
+        member val ConfirmationOption: ConfirmationOption option = None with get, set
         member val Appointment: Appointment option = None with get, set
 
     type RequestState() =
 
         member val Type: string = String.Empty with get, set
-        member val Error: Domain.External.Error option = None with get, set
+        member val Error: External.Error option = None with get, set
 
 
     type Request() =
@@ -152,7 +160,7 @@ module External =
             state with get, set
 
         member val Attempt: int = 0 with get, set
+        member val Confirmation: ConfirmationType option = None with get, set
         member val Appointments: Appointment array = [||] with get, set
-        member val ConfirmationOption: ConfirmationOption option = None with get, set
         member val Description: string = String.Empty with get, set
         member val Modified: DateTime = DateTime.UtcNow with get, set

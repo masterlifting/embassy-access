@@ -458,7 +458,6 @@ module private ConfirmationPage =
     let private chooseAppointment (appointments: Appointment Set) option =
         match option with
         | FirstAvailable -> appointments |> Seq.tryHead
-        | ForAppointment appointment -> appointments |> Seq.tryFind (fun x -> x.Value = appointment.Value)
         | DateTimeRange(min, max) ->
 
             let minDate = DateOnly.FromDateTime(min)
@@ -515,8 +514,8 @@ module private ConfirmationPage =
         { appointment with
             Confirmation = Some confirmation }
 
-    let private handle' (deps, queryParamsId, option, appointments, formData) =
-        chooseAppointment appointments option
+    let private handle' (deps, queryParamsId, confirmationType, appointments, formData) =
+        chooseAppointment appointments confirmationType
         |> Option.map (fun appointment ->
             // define
             let postRequest =
@@ -538,12 +537,12 @@ module private ConfirmationPage =
 
     let handle deps =
         ResultAsync.bind' (fun (httpClient, appointments, id, formData, request) ->
-            match request.ConfirmationOption with
+            match request.Confirmation with
             | None -> async { return Ok(None, request) }
-            | Some option ->
+            | Some confirmationType ->
                 let deps = createDeps deps httpClient
 
-                match handle' (deps, id, option, appointments, formData) with
+                match handle' (deps, id, confirmationType, appointments, formData) with
                 | None -> async { return Ok(None, request) }
                 | Some handle -> handle |> ResultAsync.map (fun confirmation -> Some confirmation, request))
 
