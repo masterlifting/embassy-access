@@ -497,11 +497,11 @@ module private ConfirmationPage =
 
     let private prepareFormData data value =
         data
-        |> Map.filter (fun key _ ->
-            key <> "ctl00$MainContent$ButtonB.x"
-            && key <> "ctl00$MainContent$ButtonB.y"
-            && key <> "ctl00$MainContent$FeedbackClientID"
-            && key <> "ctl00$MainContent$FeedbackOrderID")
+        |> Map.removeKeys
+            [ "ctl00$MainContent$ButtonB.x"
+              "ctl00$MainContent$ButtonB.y"
+              "ctl00$MainContent$FeedbackClientID"
+              "ctl00$MainContent$FeedbackOrderID" ]
         |> Map.add "ctl00$MainContent$Button1" "Записаться на прием"
         |> Map.add "ctl00$MainContent$RadioButtonList1" value
         |> Map.add "ctl00$MainContent$TextBox1" value
@@ -516,10 +516,8 @@ module private ConfirmationPage =
             Confirmation = Some confirmation }
 
     let private handle' (deps, queryParamsId, option, appointments, formData) =
-        match chooseAppointment appointments option with
-        | None -> async { return Error <| NotFound "Appointment to book." }
-        | Some appointment ->
-
+        chooseAppointment appointments option
+        |> Option.map (fun appointment ->
             // define
             let postRequest =
                 let formData = appointment.Value |> prepareFormData formData |> Http.buildFormData
@@ -536,7 +534,7 @@ module private ConfirmationPage =
             |> postRequest
             |> parseResponse
             |> parseConfirmation
-            |> createResult
+            |> createResult)
 
     let handle deps =
         ResultAsync.bind' (fun (httpClient, appointments, id, formData, request) ->
@@ -545,8 +543,9 @@ module private ConfirmationPage =
             | Some option ->
                 let deps = createDeps deps httpClient
 
-                handle' (deps, id, option, appointments, formData)
-                |> ResultAsync.map (fun appointment -> Some appointment, request))
+                match handle' (deps, id, option, appointments, formData) with
+                | None -> async { return Ok(None, request) }
+                | Some handle -> handle |> ResultAsync.map (fun confirmation -> Some confirmation, request))
 
 module private Request =
 
