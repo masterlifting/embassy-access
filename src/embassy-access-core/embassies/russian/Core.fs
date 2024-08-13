@@ -496,7 +496,15 @@ module private ConfirmationPage =
             |> ResultAsync.bind (fun page -> Html.load page |> Result.bind hasError |> Result.map (fun _ -> "")))
 
     let private prepareFormData data value =
-        data |> Map.add "ctl00$MainContent$TextBox1" value
+        data
+        |> Map.filter (fun key _ ->
+            key <> "ctl00$MainContent$ButtonB.x"
+            && key <> "ctl00$MainContent$ButtonB.y"
+            && key <> "ctl00$MainContent$FeedbackClientID"
+            && key <> "ctl00$MainContent$FeedbackOrderID")
+        |> Map.add "ctl00$MainContent$Button1" "Записаться на прием"
+        |> Map.add "ctl00$MainContent$RadioButtonList1" value
+        |> Map.add "ctl00$MainContent$TextBox1" value
 
     let private parseConfirmation (data: string) =
         match data.Length = 0 with
