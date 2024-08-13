@@ -5,6 +5,7 @@ open Persistence.Domain
 open Worker.Domain
 open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
+open EmbassyAccess.Embassies.Russian.Domain
 
 module private SearchAppointments =
 
@@ -24,19 +25,18 @@ module private SearchAppointments =
 
         storage |> Repository.Query.Request.get ct filter
 
-    let private tryGetAppointments ct scheduler storage requests =
+    let private tryProcessRequests ct (schedule: Schedule option) storage requests =
 
-        let config: EmbassyAccess.Embassies.Russian.Domain.Configuration =
-            { TimeShift = 
-                match scheduler with
+        let config =
+            { TimeShift =
+                match schedule with
                 | None -> 0y
-                | Some scheduler -> scheduler.TimeShift
-             }
+                | Some scheduler -> scheduler.TimeShift }
 
-        let getAppointments =
+        let processRequest =
             (storage, config, ct)
-            |> EmbassyAccess.Deps.Russian.bookAppointment
-            |> EmbassyAccess.Api.bookAppointment
+            |> EmbassyAccess.Deps.Russian.processRequest
+            |> EmbassyAccess.Api.processRequest
 
         let rec innerLoop requests (errors: Error' list) =
             async {
@@ -58,7 +58,7 @@ module private SearchAppointments =
                                   Code = None }
 
                 | request :: requestsTail ->
-                    match! request |> getAppointments FirstAvailable with
+                    match! request |> processRequest with
                     | Error error -> return! innerLoop requestsTail (errors @ [ error ])
                     | Ok result ->
                         match result.State with
@@ -68,7 +68,7 @@ module private SearchAppointments =
 
         innerLoop requests []
 
-    let private handleAppointmentsResponse request =
+    let private handleProcessedRequest request =
         match request with
         | None -> Ok <| Info "No appointments found."
         | Some request ->
@@ -81,13 +81,13 @@ module private SearchAppointments =
                    | false -> Success $"Found {request.Appointments.Count} appointments."
 
     let run country =
-        fun (_, scheduler, ct) ->
+        fun (_, schedule, ct) ->
             Persistence.Storage.create InMemory
             |> ResultAsync.wrap (fun storage ->
                 storage
                 |> getRequests ct country
-                |> ResultAsync.bind' (tryGetAppointments ct scheduler storage)
-                |> ResultAsync.bind handleAppointmentsResponse)
+                |> ResultAsync.bind' (tryProcessRequests ct schedule storage)
+                |> ResultAsync.bind handleProcessedRequest)
 
 let createNode country =
     Graph.Node(

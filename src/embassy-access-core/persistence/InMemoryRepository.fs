@@ -4,7 +4,6 @@ module internal EmbassyAccess.Persistence.InMemoryRepository
 open Infrastructure
 open Persistence.Domain
 open EmbassyAccess.Domain
-open EmbassyAccess.Mapper
 open Persistence.InMemory
 
 [<Literal>]
@@ -70,7 +69,7 @@ module Query =
 
                         context
                         |> getEntities<External.Request> RequestsKey
-                        |> Result.bind (Seq.map toRequest >> Seq.roe)
+                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Seq.roe)
                         |> Result.map filter
                     | _ -> Error <| Cancelled(__SOURCE_FILE__ + __LINE__)
             }
@@ -82,7 +81,7 @@ module Query =
                     | true ->
                         context
                         |> getEntities<External.Request> RequestsKey
-                        |> Result.bind (Seq.map toRequest >> Seq.roe)
+                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Seq.roe)
                         |> Result.map (List.tryFind (fun x -> x.Id = requestId))
                     | _ -> Error <| Cancelled(__SOURCE_FILE__ + __LINE__)
             }
@@ -108,7 +107,7 @@ module Command =
                 <| Operation
                     { Message = $"Request {request.Id} already exists."
                       Code = Some ErrorCodes.AlreadyExists }
-            | _ -> Ok(requests |> Array.append [| External.toRequest request |])
+            | _ -> Ok(requests |> Array.append [| EmbassyAccess.Mapper.Request.toExternal request |])
 
         let private update (request: Request) (requests: External.Request array) =
             match requests |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
@@ -120,7 +119,11 @@ module Command =
             | Some index ->
                 Ok(
                     requests
-                    |> Array.mapi (fun i x -> if i = index then External.toRequest request else x)
+                    |> Array.mapi (fun i x ->
+                        if i = index then
+                            EmbassyAccess.Mapper.Request.toExternal request
+                        else
+                            x)
                 )
 
         let private delete (request: Request) (requests: External.Request array) =

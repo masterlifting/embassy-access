@@ -11,11 +11,12 @@ let private createRussianTestRequest ct (value, country) =
     |> ResultAsync.wrap (fun storage ->
         let request =
             { Id = RequestId.New
-              Value = value
-              Attempt = 0
-              State = Created
-              Appointments = Set.empty
+              Payload = value
               Embassy = Russian <| country
+              State = Created
+              Attempt = 0
+              ConfirmationOption = None
+              Appointments = Set.empty
               Description = None
               Modified = System.DateTime.UtcNow }
 
