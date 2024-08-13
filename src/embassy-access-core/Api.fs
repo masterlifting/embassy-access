@@ -1,15 +1,8 @@
 ﻿[<RequireQualifiedAccess>]
 module EmbassyAccess.Api
 
-type GetAppointmentsDeps = Russian of Embassies.Russian.Domain.GetAppointmentsDeps
+type ProcessRequestDeps = Russian of Embassies.Russian.Domain.ProcessRequestDeps
 
-type BookAppointmentDeps = Russian of Embassies.Russian.Domain.BookAppointmentDeps
-
-
-let getAppointments deps request =
+let processRequest deps request =
     match deps with
-    | GetAppointmentsDeps.Russian deps -> request |> Embassies.Russian.Core.getAppointments deps
-
-let bookAppointment deps option request =
-    match deps with
-    | Russian deps -> request |> Embassies.Russian.Core.bookAppointment deps option
+    | Russian deps -> request |> Embassies.Russian.Core.processRequest deps

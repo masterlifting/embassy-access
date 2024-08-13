@@ -25,21 +25,18 @@ type HttpPostStringRequest =
 
 type SolveCaptchaImage = byte array -> Async<Result<int, Error'>>
 
-type Configuration = {
+type ProcessRequestConfiguration = {
     TimeShift: int8
 }
 
-type GetAppointmentsDeps =
-    { Configuration: Configuration
+type ProcessRequestDeps =
+    { Configuration: ProcessRequestConfiguration
       updateRequest: StorageUpdateRequest
       getInitialPage: HttpGetStringRequest
       getCaptcha: HttpGetBytesRequest
       solveCaptcha: SolveCaptchaImage
       postValidationPage: HttpPostStringRequest
-      postAppointmentsPage: HttpPostStringRequest }
-
-type BookAppointmentDeps =
-    { GetAppointmentsDeps: GetAppointmentsDeps
+      postAppointmentsPage: HttpPostStringRequest
       postConfirmationPage: HttpPostStringRequest }
 
 type Id = private Id of int
