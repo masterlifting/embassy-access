@@ -89,12 +89,12 @@ module private SearchAppointments =
                 |> ResultAsync.bind' (tryProcessRequests ct schedule storage)
                 |> ResultAsync.bind handleProcessedRequest)
 
-let createNode country =
+let addTasks country =
     Graph.Node(
-        { Name = "Russian"; Handle = None },
+        { Name = "Russian"; Task = None },
         [ Graph.Node(
               { Name = "Search Appointments"
-                Handle = Some <| SearchAppointments.run country },
+                Task = Some <| SearchAppointments.run country },
               []
           ) ]
     )

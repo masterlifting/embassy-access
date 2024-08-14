@@ -6,17 +6,17 @@ open Infrastructure.Configuration
 [<Literal>]
 let private sectionName = "Worker"
 
-let private buildGraph handlersGraph configuration =
+let private buildGraph rootNode configuration =
     configuration
-    |> getSection<Worker.Domain.External.Task> sectionName
-    |> Option.map (fun graph -> Worker.Graph.build graph handlersGraph)
+    |> getSection<Worker.Domain.External.TaskGraph> sectionName
+    |> Option.map (Worker.Graph.create rootNode)
     |> Option.defaultValue (Error <| NotFound $"Section '%s{sectionName}' in the configuration.")
 
-let getTask handlersGraph configuration =
+let getTask configuration taskHandlers=
     fun taskName ->
         async {
             return
-                buildGraph handlersGraph configuration
+                buildGraph taskHandlers configuration
                 |> Result.bind (fun graph ->
                     Graph.findNode taskName graph
                     |> Option.map Ok

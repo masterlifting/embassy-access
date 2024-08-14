@@ -102,7 +102,7 @@ type Request =
       Embassy: Embassy
       State: RequestState
       Attempt: int
-      Confirmation: ConfirmationType option
+      ConfirmationType: ConfirmationType option
       Appointments: Set<Appointment>
       Description: string option
       Modified: DateTime }
@@ -156,7 +156,7 @@ module External =
 
         member val State: RequestState =
             let state = RequestState()
-            state.Type <- "Created"
+            state.Type <- nameof Created
             state with get, set
 
         member val Attempt: int = 0 with get, set
