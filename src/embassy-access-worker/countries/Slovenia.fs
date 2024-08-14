@@ -6,6 +6,6 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Worker.Embassies
 
 let private Ljubljana =
-    Graph.Node({ Name = "Ljubljana"; Handle = None }, [ Russian.createNode <| Slovenia Ljubljana ])
+    Graph.Node({ Name = "Ljubljana"; Task = None }, [ Russian.addTasks <| Slovenia Ljubljana ])
 
-let Node = Graph.Node({ Name = "Slovenia"; Handle = None }, [ Ljubljana ])
+let Tasks = Graph.Node({ Name = "Slovenia"; Task = None }, [ Ljubljana ])

@@ -443,7 +443,11 @@ module private AppointmentsPage =
             |> Http.getQueryParamsId
             |> ResultAsync.wrap (fun id ->
                 handle' (deps, queryParams, formData)
-                |> ResultAsync.map (fun (appointments, formData) -> httpClient, appointments, id, formData, request)))
+                |> ResultAsync.map (fun (appointments, formData) ->
+                    let request =
+                        { request with
+                            Appointments = appointments }
+                    httpClient, id, formData, request)))
 
 module private ConfirmationPage =
 
@@ -455,21 +459,27 @@ module private ConfirmationPage =
         { HttpClient = httpClient
           postConfirmationPage = deps.postConfirmationPage }
 
-    let private chooseAppointment (appointments: Appointment Set) option =
-        match option with
-        | FirstAvailable -> appointments |> Seq.tryHead
-        | DateTimeRange(min, max) ->
+    let private handleConfirmationType request =
+        match request.ConfirmationType with
+        | None -> None
+        | Some confirmationType ->
+            match confirmationType with
+            | Manual appointment -> request.Appointments |> Seq.tryFind (fun x -> x.Value = appointment.Value)
+            | Auto confirmationOption ->
+                match confirmationOption with
+                | FirstAvailable -> request.Appointments |> Seq.tryHead
+                | DateTimeRange(min, max) ->
 
-            let minDate = DateOnly.FromDateTime(min)
-            let maxDate = DateOnly.FromDateTime(max)
+                    let minDate = DateOnly.FromDateTime(min)
+                    let maxDate = DateOnly.FromDateTime(max)
 
-            let minTime = TimeOnly.FromDateTime(min)
-            let maxTime = TimeOnly.FromDateTime(max)
+                    let minTime = TimeOnly.FromDateTime(min)
+                    let maxTime = TimeOnly.FromDateTime(max)
 
-            appointments
-            |> Seq.filter (fun x -> x.Date >= minDate && x.Date <= maxDate)
-            |> Seq.filter (fun x -> x.Time >= minTime && x.Time <= maxTime)
-            |> Seq.tryHead
+                    request.Appointments
+                    |> Seq.filter (fun x -> x.Date >= minDate && x.Date <= maxDate)
+                    |> Seq.filter (fun x -> x.Time >= minTime && x.Time <= maxTime)
+                    |> Seq.tryHead
 
     let private createRequest formData queryParamsId =
 
@@ -510,12 +520,26 @@ module private ConfirmationPage =
         | true -> Error <| NotFound "Confirmation data is empty."
         | false -> Ok { Description = data }
 
-    let private createResult appointment confirmation =
-        { appointment with
-            Confirmation = Some confirmation }
+    let private createResult request appointment confirmation =
+        let appointment =
+            { appointment with
+                Confirmation = Some confirmation }
 
-    let private handle' (deps, queryParamsId, confirmationType, appointments, formData) =
-        chooseAppointment appointments confirmationType
+        let appointments =
+            request.Appointments
+            |> Set.filter (fun x -> x.Value <> appointment.Value)
+            |> Set.add appointment
+            
+        let request =
+            { request with
+                Appointments = appointments }
+            
+        match request.ConfirmationType with
+        | None -> Error <| Operation { Message = "Confirmation type should not be None."; Code = ErrorReason.buildLine(__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
+        | Some confirmationType -> Ok { request with ConfirmationType = None }
+
+    let private handle' (deps, queryParamsId, formData, request) =
+        handleConfirmationType request
         |> Option.map (fun appointment ->
             // define
             let postRequest =
@@ -526,7 +550,7 @@ module private ConfirmationPage =
 
             let parseResponse = ResultAsync.bind' parseResponse
             let parseConfirmation = ResultAsync.bind parseConfirmation
-            let createResult = ResultAsync.map (createResult appointment)
+            let createResult = ResultAsync.bind (createResult request appointment)
 
             // pipe
             deps.HttpClient
@@ -536,15 +560,17 @@ module private ConfirmationPage =
             |> createResult)
 
     let handle deps =
-        ResultAsync.bind' (fun (httpClient, appointments, id, formData, request) ->
-            match request.Confirmation with
-            | None -> async { return Ok(None, request) }
-            | Some confirmationType ->
-                let deps = createDeps deps httpClient
-
-                match handle' (deps, id, confirmationType, appointments, formData) with
-                | None -> async { return Ok(None, request) }
-                | Some handle -> handle |> ResultAsync.map (fun confirmation -> Some confirmation, request))
+        ResultAsync.bind' (fun (httpClient, id, formData, request) ->
+            let deps = createDeps deps httpClient
+            match handle' (deps, id, formData, request) with
+            | None -> async {
+                    return
+                        match request.ConfirmationType with
+                        | Some (Manual _) ->
+                            { request with ConfirmationType = None} |> Ok
+                        | _ -> request |> Ok
+                }
+            | Some handle -> handle)
 
 module private Request =
 
@@ -642,7 +668,7 @@ let processRequest deps request =
     let processValidationPage = ValidationPage.handle deps
 
     let processAppointmentsPage = AppointmentsPage.handle deps
-
+    
     let processConfirmationPage = ConfirmationPage.handle deps
 
     let completeRequest confirmationRes =

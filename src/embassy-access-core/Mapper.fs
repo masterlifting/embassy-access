@@ -381,7 +381,7 @@ module Request =
         result.Embassy <- request.Embassy |> Embassy.toExternal
         result.State <- request.State |> RequestState.toExternal
         result.Attempt <- request.Attempt
-        result.Confirmation <- request.Confirmation |> Option.map ConfirmationType.toExternal
+        result.Confirmation <- request.ConfirmationType |> Option.map ConfirmationType.toExternal
         result.Appointments <- request.Appointments |> Seq.map Appointment.toExternal |> Seq.toArray
         result.Description <- request.Description |> Option.defaultValue ""
         result.Modified <- request.Modified
@@ -401,7 +401,7 @@ module Request =
                       Embassy = embassy
                       State = state
                       Attempt = request.Attempt
-                      Confirmation = None
+                      ConfirmationType = None
                       Appointments = request.Appointments |> Seq.map Appointment.toInternal |> Set.ofSeq
                       Description =
                         match request.Description with
@@ -414,4 +414,4 @@ module Request =
                 | Some confirmation ->
                     confirmation
                     |> ConfirmationType.toInternal
-                    |> Result.map (fun x -> { result with Confirmation = Some x })))
+                    |> Result.map (fun x -> { result with ConfirmationType = Some x })))

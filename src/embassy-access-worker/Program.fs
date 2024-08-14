@@ -15,7 +15,7 @@ let private createRussianTestRequest ct (value, country) =
               Embassy = Russian <| country
               State = Created
               Attempt = 0
-              Confirmation = FirstAvailable |> Some
+              ConfirmationType = FirstAvailable |> Auto |> Some
               Appointments = Set.empty
               Description = None
               Modified = System.DateTime.UtcNow }
@@ -30,9 +30,9 @@ let main _ =
     let configuration = Configuration.getYaml "appsettings"
     Logging.useConsole configuration
 
-    let rootNode =
+    let rootTask =
         { Name = "Scheduler"
-          Handle =
+          Task =
             Some
             <| fun (_, _, ct) ->
                 async {
@@ -70,26 +70,26 @@ let main _ =
                         |> Result.map (fun _ -> Success "Test requests were created. Scheduler has started...")
                 } }
 
-    let handlersGraph =
+    let taskHandlers =
         Graph.Node(
-            rootNode,
-            [ Countries.Albania.Node
-              Countries.Bosnia.Node
-              Countries.Finland.Node
-              Countries.France.Node
-              Countries.Germany.Node
-              Countries.Hungary.Node
-              Countries.Ireland.Node
-              Countries.Montenegro.Node
-              Countries.Netherlands.Node
-              Countries.Serbia.Node
-              Countries.Slovenia.Node
-              Countries.Switzerland.Node ]
+            rootTask,
+            [ Countries.Albania.Tasks
+              Countries.Bosnia.Tasks
+              Countries.Finland.Tasks
+              Countries.France.Tasks
+              Countries.Germany.Tasks
+              Countries.Hungary.Tasks
+              Countries.Ireland.Tasks
+              Countries.Montenegro.Tasks
+              Countries.Netherlands.Tasks
+              Countries.Serbia.Tasks
+              Countries.Slovenia.Tasks
+              Countries.Switzerland.Tasks ]
         )
 
     "Scheduler"
     |> Worker.Core.start
-        { getTask = TasksStorage.getTask handlersGraph configuration
+        { getTask = taskHandlers |> TasksStorage.getTask configuration
           Configuration = configuration }
     |> Async.RunSynchronously
 
