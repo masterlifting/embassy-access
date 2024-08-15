@@ -667,7 +667,7 @@ module private Request =
 let processRequest deps request =
 
     // define
-    let startRequestProcess request =
+    let setRequestInProcessState request =
         request |> Request.setInProcessState deps.updateRequest
 
     let createRequestCredentials = Request.createCredentials
@@ -685,7 +685,7 @@ let processRequest deps request =
 
     let processConfirmationPage = ConfirmationPage.handle deps
 
-    let finishRequestProcess confirmationRes =
+    let setRequestFinalState confirmationRes =
         async {
             match! confirmationRes with
             | Error error -> return! request |> Request.setFail error deps.updateRequest
@@ -694,7 +694,7 @@ let processRequest deps request =
 
     // pipe
     let start =
-        startRequestProcess
+        setRequestInProcessState
         >> createRequestCredentials
         >> createHttpClient
         >> processInitialPage
@@ -702,7 +702,7 @@ let processRequest deps request =
         >> processValidationPage
         >> processAppointmentsPage
         >> processConfirmationPage
-        >> finishRequestProcess
+        >> setRequestFinalState
 
     request |> start
 
