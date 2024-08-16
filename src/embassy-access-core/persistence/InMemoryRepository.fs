@@ -61,6 +61,13 @@ module Query =
                                 && (match filter.HasConfirmations with
                                     | true -> x.Appointments |> Seq.exists (_.Confirmation.IsSome)
                                     | false -> true)
+                                && (x.ConfirmationType
+                                    |> Option.map (function
+                                        | Auto _ -> filter.WithAutoConfirmation
+                                        | Manual _ -> filter.WithManualConfirmation)
+                                    |> Option.defaultValue (
+                                        not <| (filter.WithAutoConfirmation && filter.WithManualConfirmation)
+                                    ))
                                 && filter.WasModified
                                    |> Option.map (fun predicate -> predicate x.Modified)
                                    |> Option.defaultValue true)
@@ -88,7 +95,7 @@ module Query =
 
 module Command =
 
-    let private save<'a> key context (data: 'a array) =
+    let private save<'a> key (data: 'a array) context =
         if data.Length = 1 then
             data
             |> Json.serialize
@@ -145,9 +152,13 @@ module Command =
                         |> getEntities<External.Request> RequestsKey
                         |> Result.bind (fun requests ->
                             match command with
-                            | Command.Request.Create request -> requests |> add request
-                            | Command.Request.Update request -> requests |> update request
-                            | Command.Request.Delete request -> requests |> delete request)
-                        |> Result.bind (context |> save RequestsKey)
+                            | Command.Request.Create request ->
+                                requests |> add request |> Result.map (fun result -> result, request)
+                            | Command.Request.Update request ->
+                                requests |> update request |> Result.map (fun result -> result, request)
+                            | Command.Request.Delete request ->
+                                requests |> delete request |> Result.map (fun result -> result, request))
+                        |> Result.bind (fun (result, request) ->
+                            context |> save RequestsKey result |> Result.map (fun _ -> request))
                     | _ -> Error <| Cancelled(__SOURCE_FILE__ + __LINE__)
             }

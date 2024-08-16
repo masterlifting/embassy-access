@@ -11,9 +11,9 @@ module private Http =
     open Web.Http.Client
 
     let private createClient' city =
-        let host = $"%s{city}.kdmid.ru"
 
-        let baseUrl = $"https://{host}"
+        let host = $"%s{city}.kdmid.ru"
+        let baseUrl = $"https://%s{host}"
 
         let headers =
             Map
@@ -35,7 +35,7 @@ module private Http =
                   [ "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0" ] ]
             |> Some
 
-        create $"https://{host}" headers
+        create baseUrl headers
 
     let createClient =
         ResultAsync.bind (fun (credentials: Credentials, request) ->
@@ -54,8 +54,7 @@ module private Http =
         queryParams
         |> Route.fromQueryParams
         |> Result.map (Map.tryFind "id")
-        |> Result.bind (fun id ->
-            match id with
+        |> Result.bind (function
             | Some id -> Ok id
             | None -> Error <| NotFound "Query parameter 'id'.")
 
@@ -85,8 +84,7 @@ module private Http =
 let private hasError page =
     page
     |> Html.getNode "//span[@id='ctl00_MainContent_lblCodeErr']"
-    |> Result.bind (fun error ->
-        match error with
+    |> Result.bind (function
         | None -> Ok page
         | Some node ->
             match node.InnerText with
@@ -120,8 +118,7 @@ module private InitialPage =
         Html.load page
         |> Result.bind hasError
         |> Result.bind (Html.getNodes "//input | //img")
-        |> Result.bind (fun nodes ->
-            match nodes with
+        |> Result.bind (function
             | None -> Error <| NotFound "Nodes on the Initial Page."
             | Some nodes ->
                 nodes
@@ -273,8 +270,7 @@ module private ValidationPage =
     let private hasConfirmationRequest page =
         page
         |> Html.getNode "//span[@id='ctl00_MainContent_Content']"
-        |> Result.bind (fun request ->
-            match request with
+        |> Result.bind (function
             | None -> Ok page
             | Some node ->
                 match node.InnerText with
@@ -293,8 +289,7 @@ module private ValidationPage =
         |> Result.bind hasError
         |> Result.bind hasConfirmationRequest
         |> Result.bind (Html.getNodes "//input")
-        |> Result.bind (fun nodes ->
-            match nodes with
+        |> Result.bind (function
             | None -> Error <| NotFound "Nodes on the Validation Page."
             | Some nodes ->
                 nodes
@@ -373,8 +368,7 @@ module private AppointmentsPage =
         Html.load page
         |> Result.bind hasError
         |> Result.bind (Html.getNodes "//input[@type='radio']")
-        |> Result.bind (fun nodes ->
-            match nodes with
+        |> Result.bind (function
             | None -> Ok Map.empty
             | Some nodes ->
                 nodes
@@ -451,9 +445,9 @@ module private AppointmentsPage =
 
             queryParams
             |> Http.getQueryParamsId
-            |> ResultAsync.wrap (fun id ->
+            |> ResultAsync.wrap (fun queryParamsId ->
                 handle' (deps, queryParams, formData, request)
-                |> ResultAsync.map (fun (request, formData) -> httpClient, id, formData, request)))
+                |> ResultAsync.map (fun (request, formData) -> httpClient, queryParamsId, formData, request)))
 
 module private ConfirmationPage =
 
@@ -467,8 +461,7 @@ module private ConfirmationPage =
 
     let private handleConfirmationType request =
         request.ConfirmationType
-        |> Option.map (fun confirmationType ->
-            match confirmationType with
+        |> Option.map (function
             | Manual appointment ->
                 match request.Appointments |> Seq.tryFind (fun x -> x.Value = appointment.Value) with
                 | Some appointment -> Ok <| Some appointment
@@ -513,13 +506,15 @@ module private ConfirmationPage =
         request, content
 
     let private parseResponse page =
-        $"{Environment.CurrentDirectory}/confirmations/confirmation_page_response.html"
-        |> Persistence.FileSystem.Storage.create
-        |> ResultAsync.wrap (fun storage ->
-            storage
-            |> Persistence.FileSystem.Storage.Write.string page
-            |> ResultAsync.map (fun _ -> page)
-            |> ResultAsync.bind (fun page -> Html.load page |> Result.bind hasError |> Result.map (fun _ -> "")))
+        Html.load page
+        |> Result.bind hasError
+        |> Result.bind (Html.getNode "//span[@id='ctl00_MainContent_Label_Message']")
+        |> Result.map (function
+            | None -> None
+            | Some node ->
+                match node.InnerText with
+                | AP.IsString text -> Some text
+                | _ -> None)
 
     let private prepareFormData data value =
         data
@@ -532,10 +527,10 @@ module private ConfirmationPage =
         |> Map.add "ctl00$MainContent$RadioButtonList1" value
         |> Map.add "ctl00$MainContent$TextBox1" value
 
-    let private parseConfirmation (data: string) =
-        match data.Length = 0 with
-        | true -> Error <| NotFound "Confirmation data is empty."
-        | false -> Ok { Description = data }
+    let private parseConfirmation =
+        function
+        | None -> Error <| NotFound "Confirmation data."
+        | Some data -> Ok { Description = data }
 
     let private createResult request appointment confirmation =
         let appointment =
@@ -563,10 +558,8 @@ module private ConfirmationPage =
     let private handle' (deps, queryParamsId, formData, request) =
         request
         |> handleConfirmationType
-        |> Option.map (fun appointmentRes ->
-            appointmentRes
-            |> ResultAsync.wrap (fun appointmentOpt ->
-                match appointmentOpt with
+        |> Option.map (
+            ResultAsync.wrap (function
                 | Some appointment ->
                     // define
                     let postRequest =
@@ -574,7 +567,7 @@ module private ConfirmationPage =
                         let request, content = createRequest formData queryParamsId
                         deps.postConfirmationPage request content
 
-                    let parseResponse = ResultAsync.bind' parseResponse
+                    let parseResponse = ResultAsync.bind parseResponse
                     let parseConfirmation = ResultAsync.bind parseConfirmation
                     let createResult = ResultAsync.map (createResult request appointment)
 
@@ -584,7 +577,8 @@ module private ConfirmationPage =
                     |> parseResponse
                     |> parseConfirmation
                     |> createResult
-                | None -> request |> createDefaultResult))
+                | None -> request |> createDefaultResult)
+        )
         |> Option.defaultValue (request |> createDefaultResult)
 
     let handle deps =
@@ -609,14 +603,12 @@ module private Request =
             |> Result.bind (validateCredentials request)
             |> Result.map (fun credentials -> credentials, request))
 
-    let setInProcessState updateRequest request =
-        let request =
+    let setInProcessState deps request =
+        deps.updateRequest
             { request with
                 State = InProcess
                 Description = None
                 Modified = DateTime.UtcNow }
-
-        request |> updateRequest |> ResultAsync.map (fun _ -> request)
 
     let private setAttempt' timeShift request =
         let timeShift = timeShift |> int
@@ -638,59 +630,45 @@ module private Request =
                    Attempt = request.Attempt + 1
                    Modified = DateTime.UtcNow }
 
-    let setAttempt timeShift updateRequest =
+    let setAttempt deps =
         ResultAsync.bind' (fun (httpClient, queryParams, formData, request) ->
             request
-            |> setAttempt' timeShift
-            |> ResultAsync.wrap (fun request ->
-                request
-                |> updateRequest
-                |> ResultAsync.map (fun _ -> httpClient, queryParams, formData, request)))
+            |> setAttempt' deps.Configuration.TimeShift
+            |> ResultAsync.wrap deps.updateRequest
+            |> ResultAsync.map (fun request -> httpClient, queryParams, formData, request))
 
-    let setComplete updateRequest request =
-        let request =
+    let private setCompletedState deps request =
+        deps.updateRequest
             { request with
                 State = Completed
                 Modified = DateTime.UtcNow }
 
-        request |> updateRequest |> ResultAsync.map (fun _ -> request)
-
-    let setFail (error: Error') updateRequest request =
-        let request =
+    let private setFailedState (error: Error') deps request =
+        deps.updateRequest
             { request with
                 State = Failed error
                 Attempt = request.Attempt + 1
                 Modified = DateTime.UtcNow }
 
-        request |> updateRequest |> ResultAsync.map (fun _ -> request)
+    let completeConfirmation deps request confirmation =
+        async {
+            match! confirmation with
+            | Error error -> return! request |> setFailedState error deps
+            | Ok request -> return! request |> setCompletedState deps
+        }
 
 let processRequest deps request =
 
     // define
-    let setRequestInProcessState request =
-        request |> Request.setInProcessState deps.updateRequest
-
+    let setRequestInProcessState = Request.setInProcessState deps
     let createRequestCredentials = Request.createCredentials
-
     let createHttpClient = Http.createClient
-
     let processInitialPage = InitialPage.handle deps
-
-    let setRequestAttempt =
-        Request.setAttempt deps.Configuration.TimeShift deps.updateRequest
-
+    let setRequestAttempt = Request.setAttempt deps
     let processValidationPage = ValidationPage.handle deps
-
     let processAppointmentsPage = AppointmentsPage.handle deps
-
     let processConfirmationPage = ConfirmationPage.handle deps
-
-    let setRequestFinalState confirmationRes =
-        async {
-            match! confirmationRes with
-            | Error error -> return! request |> Request.setFail error deps.updateRequest
-            | Ok request -> return! request |> Request.setComplete deps.updateRequest
-        }
+    let setRequestFinalState = Request.completeConfirmation deps request
 
     // pipe
     let start =
@@ -706,18 +684,35 @@ let processRequest deps request =
 
     request |> start
 
-open Web.Http.Client
-open EmbassyAccess.Persistence
-
 let processRequestDeps ct config storage =
     { Configuration = config
-      updateRequest = fun request -> storage |> Repository.Command.Request.update ct request
-      getInitialPage = fun request client -> client |> Request.get ct request |> Response.String.read ct
-      getCaptcha = fun request client -> client |> Request.get ct request |> Response.Bytes.read ct
+      updateRequest =
+        fun request ->
+            storage
+            |> EmbassyAccess.Persistence.Repository.Command.Request.update ct request
+      getInitialPage =
+        fun request client ->
+            client
+            |> Web.Http.Client.Request.get ct request
+            |> Web.Http.Client.Response.String.read ct
+      getCaptcha =
+        fun request client ->
+            client
+            |> Web.Http.Client.Request.get ct request
+            |> Web.Http.Client.Response.Bytes.read ct
       solveCaptcha = Web.Captcha.solveToInt ct
       postValidationPage =
-        fun request content client -> client |> Request.post ct request content |> Response.String.readContent ct
+        fun request content client ->
+            client
+            |> Web.Http.Client.Request.post ct request content
+            |> Web.Http.Client.Response.String.readContent ct
       postAppointmentsPage =
-        fun request content client -> client |> Request.post ct request content |> Response.String.readContent ct
+        fun request content client ->
+            client
+            |> Web.Http.Client.Request.post ct request content
+            |> Web.Http.Client.Response.String.readContent ct
       postConfirmationPage =
-        fun request content client -> client |> Request.post ct request content |> Response.String.readContent ct }
+        fun request content client ->
+            client
+            |> Web.Http.Client.Request.post ct request content
+            |> Web.Http.Client.Response.String.readContent ct }

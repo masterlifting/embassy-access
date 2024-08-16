@@ -28,5 +28,7 @@ type Request =
       Embassies: Domain.Embassy Set option
       HasAppointments: bool
       HasConfirmations: bool
+      WithAutoConfirmation: bool
+      WithManualConfirmation: bool
       HasStates: predicate<Domain.RequestState> option
       WasModified: predicate<DateTime> option }

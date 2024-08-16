@@ -12,7 +12,7 @@ module ErrorCodes =
     [<Literal>]
     let NotConfirmed = "NotConfirmed"
     
-type StorageUpdateRequest = Domain.Request -> Async<Result<unit, Error'>>
+type StorageUpdateRequest = Domain.Request -> Async<Result<Domain.Request, Error'>>
 
 type HttpGetStringRequest =
     Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<string>, Error'>>

@@ -1,6 +1,4 @@
-﻿module EmbassyAccess.Core.Program
-
-open System
+﻿open System
 open Expecto
 open EmbassyAccess.Embassies
 

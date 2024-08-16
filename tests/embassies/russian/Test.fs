@@ -17,7 +17,7 @@ module private Fixture =
           Embassy = Russian <| Germany Berlin
           State = Created
           Attempt = 0
-          ConfirmationType = None
+          ConfirmationType = Auto <| FirstAvailable |> Some
           Appointments = Set.empty
           Description = None
           Modified = DateTime.UtcNow }
@@ -26,7 +26,7 @@ module private Fixture =
         Some
         <| Map [ "Set-Cookie", [ "ASP.NET_SessionId=1"; " AlteonP=1"; " __ddg1_=1" ] ]
 
-    let httpHetStringRequest fileName =
+    let httpGetStringRequest fileName =
         Environment.CurrentDirectory + $"/embassies/russian/test_data/{fileName}.html"
         |> Storage.create
         |> ResultAsync.wrap Storage.Read.string
@@ -51,13 +51,13 @@ module private Fixture =
 
     let processRequestDeps =
         { Configuration = { TimeShift = 0y }
-          updateRequest = fun _ -> async { return Ok() }
-          getInitialPage = fun _ _ -> httpHetStringRequest "initial_page_response"
+          updateRequest = fun r -> async { return Ok r }
+          getInitialPage = fun _ _ -> httpGetStringRequest "initial_page_response"
           getCaptcha = fun _ _ -> httpGetBytesRequest "captcha.png"
           solveCaptcha = fun _ -> async { return Ok 42 }
           postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_valid_response"
           postAppointmentsPage = fun _ _ _ -> httpPostStringRequest "appointments_page_has_result_1"
-          postConfirmationPage = fun _ _ _ -> httpPostStringRequest "confirmation_page_valid_response" }
+          postConfirmationPage = fun _ _ _ -> httpPostStringRequest "confirmation_page_has_result_1" }
 
 open Fixture
 
@@ -85,11 +85,10 @@ let private ``validation page should have a confirmation request`` =
                 { processRequestDeps with
                     postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_requires_confirmation" }
 
-        let! responseRes = request |> Api.processRequest deps
+        let! requestRes = request |> Api.processRequest deps
+        let request = Expect.wantOk requestRes "getAppointments response should be Ok"
 
-        let response = Expect.wantOk responseRes "getAppointments response should be Ok"
-
-        match response.State with
+        match request.State with
         | Domain.RequestState.Failed(Operation reason) ->
             Expect.equal reason.Code (Some ErrorCodes.NotConfirmed) $"Error code should be {ErrorCodes.NotConfirmed}"
         | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
@@ -104,8 +103,8 @@ let private ``appointments page should not have data`` =
                     { processRequestDeps with
                         postAppointmentsPage = fun _ _ _ -> httpPostStringRequest $"appointments_page_empty_result_{i}" }
 
-            let! responseRes = request |> Api.processRequest deps
-            let request = Expect.wantOk responseRes "Appointments should be Ok"
+            let! requestRes = request |> Api.processRequest deps
+            let request = Expect.wantOk requestRes "Appointments should be Ok"
             Expect.isEmpty request.Appointments "Appointments should not be Some"
         }
 
@@ -118,9 +117,35 @@ let private ``appointments page should have data`` =
                     { processRequestDeps with
                         postAppointmentsPage = fun _ _ _ -> httpPostStringRequest $"appointments_page_has_result_{i}" }
 
-            let! responseRes = request |> Api.processRequest deps
-            let request = Expect.wantOk responseRes "Appointments should be Ok"
+            let! requestRes = request |> Api.processRequest deps
+            let request = Expect.wantOk requestRes "Appointments should be Ok"
             Expect.isTrue (not request.Appointments.IsEmpty) "Appointments should be not empty"
+        }
+
+let private ``confirmation page should have a valid result`` =
+    testTheoryAsync "Confirmation page should have a valid result" [ 1 ]
+    <| fun i ->
+        async {
+            let deps =
+                Api.ProcessRequestDeps.Russian
+                    { processRequestDeps with
+                        postConfirmationPage = fun _ _ _ -> httpPostStringRequest $"confirmation_page_has_result_{i}" }
+
+            let! requestRes = request |> Api.processRequest deps
+            let request = Expect.wantOk requestRes "Appointments should be Ok"
+
+            match request.State with
+            | Domain.RequestState.Failed error ->
+                Expect.isTrue false $"Request should have valid state, but was Failed. Error: {error.Message}"
+            | Domain.RequestState.Completed ->
+                let confirmation =
+                    request.Appointments |> Seq.choose (_.Confirmation) |> Seq.tryHead
+
+                Expect.wantSome confirmation "Confirmation should be Some" |> ignore
+            | _ ->
+                Expect.isTrue
+                    false
+                    $"Request should have valid state, but was {request.State} with description {request.Description}"
         }
 
 let list =
@@ -129,4 +154,5 @@ let list =
         [ ``validation page should have a confirmation request``
           ``validation page should have an error``
           ``appointments page should not have data``
-          ``appointments page should have data`` ]
+          ``appointments page should have data``
+          ``confirmation page should have a valid result`` ]
