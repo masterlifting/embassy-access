@@ -21,6 +21,8 @@ module private SearchAppointments =
               Ids = None
               HasAppointments = false
               HasConfirmations = false
+              WithAutoConfirmation = false
+              WithManualConfirmation = true
               WasModified = None }
 
         storage |> Repository.Query.Request.get ct filter
