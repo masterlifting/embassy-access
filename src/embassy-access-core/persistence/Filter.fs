@@ -29,6 +29,5 @@ type Request =
       HasAppointments: bool
       HasConfirmations: bool
       WithAutoConfirmation: bool
-      WithManualConfirmation: bool
       HasStates: predicate<Domain.RequestState> option
       WasModified: predicate<DateTime> option }
