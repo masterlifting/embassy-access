@@ -267,27 +267,40 @@ module private ValidationPage =
 
         request, content
 
-    let private hasConfirmationRequest page =
+    let private hasInconsistentState page =
         page
-        |> Html.getNode "//span[@id='ctl00_MainContent_Content']"
+        |> Html.getNode "//span[@id='ctl00_MainContent_Content'] | //span[@id='ctl00_MainContent_Label_Message']"
         |> Result.bind (function
             | None -> Ok page
             | Some node ->
                 match node.InnerText with
                 | AP.IsString text ->
-                    match text.Contains "Ваша заявка требует подтверждения" with
-                    | true ->
+                    let has (pattern: string) (node: string) =
+                        node.Contains(pattern, StringComparison.OrdinalIgnoreCase)
+
+                    match text with
+                    | text when text |> has "Вы записаны" && not (text |> has "список ожидания") ->
+                        Error
+                        <| Operation
+                            { Message = text
+                              Code = Some ErrorCodes.ConfirmationExists }
+                    | text when text |> has "Ваша заявка требует подтверждения" ->
                         Error
                         <| Operation
                             { Message = text
                               Code = Some ErrorCodes.NotConfirmed }
-                    | false -> Ok page
+                    | text when text |> has "Заявка удалена" ->
+                        Error
+                        <| Operation
+                            { Message = text
+                              Code = Some ErrorCodes.RequestDeleted }
+                    | _ -> Ok page
                 | _ -> Ok page)
 
     let private parseResponse page =
         Html.load page
         |> Result.bind hasError
-        |> Result.bind hasConfirmationRequest
+        |> Result.bind hasInconsistentState
         |> Result.bind (Html.getNodes "//input")
         |> Result.bind (function
             | None -> Error <| NotFound "Nodes on the Validation Page."

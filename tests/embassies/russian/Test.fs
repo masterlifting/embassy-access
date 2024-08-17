@@ -70,7 +70,7 @@ let private ``validation page should have an error`` =
 
         let! responseRes = request |> Api.processRequest deps
 
-        let response = Expect.wantOk responseRes "getAppointments response should be Ok"
+        let response = Expect.wantOk responseRes "processRequest should be Ok"
 
         match response.State with
         | Domain.RequestState.Failed(Operation reason) ->
@@ -86,11 +86,49 @@ let private ``validation page should have a confirmation request`` =
                     postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_requires_confirmation" }
 
         let! requestRes = request |> Api.processRequest deps
-        let request = Expect.wantOk requestRes "getAppointments response should be Ok"
+        let request = Expect.wantOk requestRes "processRequest should be Ok"
 
         match request.State with
         | Domain.RequestState.Failed(Operation reason) ->
             Expect.equal reason.Code (Some ErrorCodes.NotConfirmed) $"Error code should be {ErrorCodes.NotConfirmed}"
+        | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
+    }
+
+let private ``validation page shold have a confirmation`` =
+    testAsync "Validation page should have a confirmation" {
+        let deps =
+            Api.ProcessRequestDeps.Russian
+                { processRequestDeps with
+                    postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_has_confirmation" }
+
+        let! requestRes = request |> Api.processRequest deps
+        let request = Expect.wantOk requestRes "processRequest should be Ok"
+
+        match request.State with
+        | Domain.RequestState.Failed(Operation reason) ->
+            Expect.equal
+                reason.Code
+                (Some ErrorCodes.ConfirmationExists)
+                $"Error code should be {ErrorCodes.ConfirmationExists}"
+        | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
+    }
+
+let private ``validation page should have a deleted request`` =
+    testAsync "Validation page should have a deleted request" {
+        let deps =
+            Api.ProcessRequestDeps.Russian
+                { processRequestDeps with
+                    postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_request_deleted" }
+
+        let! requestRes = request |> Api.processRequest deps
+        let request = Expect.wantOk requestRes "processRequest should be Ok"
+
+        match request.State with
+        | Domain.RequestState.Failed(Operation reason) ->
+            Expect.equal
+                reason.Code
+                (Some ErrorCodes.RequestDeleted)
+                $"Error code should be {ErrorCodes.RequestDeleted}"
         | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
     }
 
@@ -123,7 +161,7 @@ let private ``appointments page should have data`` =
         }
 
 let private ``confirmation page should have a valid result`` =
-    testTheoryAsync "Confirmation page should have a valid result" [ 1 ]
+    testTheoryAsync "Confirmation page should have a valid result" [ 1; 2 ]
     <| fun i ->
         async {
             let deps =
@@ -138,8 +176,7 @@ let private ``confirmation page should have a valid result`` =
             | Domain.RequestState.Failed error ->
                 Expect.isTrue false $"Request should have valid state, but was Failed. Error: {error.Message}"
             | Domain.RequestState.Completed ->
-                let confirmation =
-                    request.Appointments |> Seq.tryPick (_.Confirmation)
+                let confirmation = request.Appointments |> Seq.tryPick (_.Confirmation)
 
                 Expect.wantSome confirmation "Confirmation should be Some" |> ignore
             | _ ->
@@ -151,8 +188,10 @@ let private ``confirmation page should have a valid result`` =
 let list =
     testList
         "Russian"
-        [ ``validation page should have a confirmation request``
-          ``validation page should have an error``
+        [ ``validation page should have an error``
+          ``validation page should have a confirmation request``
+          ``validation page shold have a confirmation``
+          ``validation page should have a deleted request``
           ``appointments page should not have data``
           ``appointments page should have data``
           ``confirmation page should have a valid result`` ]

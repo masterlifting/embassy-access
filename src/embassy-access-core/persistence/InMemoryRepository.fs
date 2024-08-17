@@ -55,12 +55,13 @@ module Query =
                                 && filter.HasStates
                                    |> Option.map (fun predicate -> predicate x.State)
                                    |> Option.defaultValue true
-                                && (match filter.HasAppointments with
-                                    | true -> not x.Appointments.IsEmpty
-                                    | false -> true)
-                                && (match filter.HasConfirmations with
-                                    | true -> x.Appointments |> Seq.exists (_.Confirmation.IsSome)
-                                    | false -> true)
+                                && filter.HasAppointments
+                                   |> Option.map (fun hasAppointments -> hasAppointments && not x.Appointments.IsEmpty)
+                                   |> Option.defaultValue true
+                                && filter.HasConfirmations
+                                   |> Option.map (fun hasConfirmations ->
+                                       hasConfirmations && x.Appointments |> Seq.exists (_.Confirmation.IsSome))
+                                   |> Option.defaultValue true
                                 && filter.HasConfirmationState
                                    |> Option.map (fun predicate -> predicate x.ConfirmationState)
                                    |> Option.defaultValue true

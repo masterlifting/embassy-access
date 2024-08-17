@@ -19,13 +19,9 @@ module private SearchAppointments =
               Embassies = Some <| Set [ Russian country ]
               HasStates = Some <| fun state -> state <> InProcess
               Ids = None
-              HasAppointments = false
-              HasConfirmations = false
-              HasConfirmationState =
-                Some
-                <| function
-                    | Auto _ -> true
-                    | _ -> false
+              HasAppointments = None
+              HasConfirmations = None
+              HasConfirmationState = None
               WasModified = None }
 
         storage |> Repository.Query.Request.get ct filter

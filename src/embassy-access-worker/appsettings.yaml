@@ -11,18 +11,15 @@ CommonStep: &CommonStep
   Steps:
     - Name: Search Appointments
       Duration: 00:03:00
-    - Name: Notify users
-      Schedule:
-        IsEnabled: true
-        Delay: 00:01:00
   Schedule:
-    IsEnabled: true
-    Limit: 5
+    Enabled: true
+    Limit: 1
+    Delay: 00:00:30
     Workdays: mon,tue,wed,thu,fri,sat,sun
 
 CommonSchedule: &CommonSchedule
   Schedule:
-    IsEnabled: true
+    Enabled: true
     Workdays: mon,tue,wed,thu,fri,sat,sun
 
 Worker:

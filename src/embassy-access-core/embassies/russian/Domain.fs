@@ -11,6 +11,12 @@ module ErrorCodes =
 
     [<Literal>]
     let NotConfirmed = "NotConfirmed"
+
+    [<Literal>]
+    let ConfirmationExists = "ConfirmationExists"
+
+    [<Literal>]
+    let RequestDeleted = "RequestDeleted"
     
 type StorageUpdateRequest = Domain.Request -> Async<Result<Domain.Request, Error'>>
 
