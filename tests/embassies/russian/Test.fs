@@ -17,7 +17,7 @@ module private Fixture =
           Embassy = Russian <| Germany Berlin
           State = Created
           Attempt = 0
-          ConfirmationType = Auto <| FirstAvailable |> Some
+          ConfirmationState = Auto <| FirstAvailable
           Appointments = Set.empty
           Description = None
           Modified = DateTime.UtcNow }
@@ -139,7 +139,7 @@ let private ``confirmation page should have a valid result`` =
                 Expect.isTrue false $"Request should have valid state, but was Failed. Error: {error.Message}"
             | Domain.RequestState.Completed ->
                 let confirmation =
-                    request.Appointments |> Seq.choose (_.Confirmation) |> Seq.tryHead
+                    request.Appointments |> Seq.tryPick (_.Confirmation)
 
                 Expect.wantSome confirmation "Confirmation should be Some" |> ignore
             | _ ->

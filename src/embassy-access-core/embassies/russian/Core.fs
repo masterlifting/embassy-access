@@ -459,37 +459,37 @@ module private ConfirmationPage =
         { HttpClient = httpClient
           postConfirmationPage = deps.postConfirmationPage }
 
-    let private handleConfirmationType request =
-        request.ConfirmationType
-        |> Option.map (function
-            | Manual appointment ->
-                match request.Appointments |> Seq.tryFind (fun x -> x.Value = appointment.Value) with
+    let private handleConfirmation request =
+        match request.ConfirmationState with
+        | Disabled -> Ok <| None
+        | Manual appointment ->
+            match request.Appointments |> Seq.tryFind (fun x -> x.Value = appointment.Value) with
+            | Some appointment -> Ok <| Some appointment
+            | None -> Error <| NotFound $"Appointment '{appointment.Value}'."
+        | Auto confirmationOption ->
+            match request.Appointments.Count > 0, confirmationOption with
+            | false, _ -> Ok None
+            | true, FirstAvailable ->
+                match request.Appointments |> Seq.tryHead with
                 | Some appointment -> Ok <| Some appointment
-                | None -> Error <| NotFound $"Appointment '{appointment.Value}'."
-            | Auto confirmationOption ->
-                match request.Appointments.Count > 0, confirmationOption with
-                | false, _ -> Ok None
-                | true, FirstAvailable ->
-                    match request.Appointments |> Seq.tryHead with
-                    | Some appointment -> Ok <| Some appointment
-                    | None -> Error <| NotFound "First available appointment."
-                | true, DateTimeRange(min, max) ->
+                | None -> Error <| NotFound "First available appointment."
+            | true, DateTimeRange(min, max) ->
 
-                    let minDate = DateOnly.FromDateTime(min)
-                    let maxDate = DateOnly.FromDateTime(max)
+                let minDate = DateOnly.FromDateTime(min)
+                let maxDate = DateOnly.FromDateTime(max)
 
-                    let minTime = TimeOnly.FromDateTime(min)
-                    let maxTime = TimeOnly.FromDateTime(max)
+                let minTime = TimeOnly.FromDateTime(min)
+                let maxTime = TimeOnly.FromDateTime(max)
 
-                    let appointment =
-                        request.Appointments
-                        |> Seq.filter (fun x -> x.Date >= minDate && x.Date <= maxDate)
-                        |> Seq.filter (fun x -> x.Time >= minTime && x.Time <= maxTime)
-                        |> Seq.tryHead
+                let appointment =
+                    request.Appointments
+                    |> Seq.filter (fun x -> x.Date >= minDate && x.Date <= maxDate)
+                    |> Seq.filter (fun x -> x.Time >= minTime && x.Time <= maxTime)
+                    |> Seq.tryHead
 
-                    match appointment with
-                    | Some appointment -> Ok <| Some appointment
-                    | None -> Error <| NotFound $"Appointment in range '{min}' - '{max}'.")
+                match appointment with
+                | Some appointment -> Ok <| Some appointment
+                | None -> Error <| NotFound $"Appointment in range '{min}' - '{max}'."
 
     let private createRequest formData queryParamsId =
 
@@ -544,42 +544,41 @@ module private ConfirmationPage =
 
         { request with
             Appointments = appointments
-            ConfirmationType = None }
+            ConfirmationState = Disabled }
 
     let private createDefaultResult request =
         async {
             return
                 Ok
-                <| match request.ConfirmationType with
-                   | Some(Manual _) -> { request with ConfirmationType = None }
+                <| match request.ConfirmationState with
+                   | Manual _ ->
+                       { request with
+                           ConfirmationState = Disabled }
                    | _ -> request
         }
 
     let private handle' (deps, queryParamsId, formData, request) =
         request
-        |> handleConfirmationType
-        |> Option.map (
-            ResultAsync.wrap (function
-                | Some appointment ->
-                    // define
-                    let postRequest =
-                        let formData = appointment.Value |> prepareFormData formData |> Http.buildFormData
-                        let request, content = createRequest formData queryParamsId
-                        deps.postConfirmationPage request content
+        |> handleConfirmation
+        |> ResultAsync.wrap (function
+            | Some appointment ->
+                // define
+                let postRequest =
+                    let formData = appointment.Value |> prepareFormData formData |> Http.buildFormData
+                    let request, content = createRequest formData queryParamsId
+                    deps.postConfirmationPage request content
 
-                    let parseResponse = ResultAsync.bind parseResponse
-                    let parseConfirmation = ResultAsync.bind parseConfirmation
-                    let createResult = ResultAsync.map (createResult request appointment)
+                let parseResponse = ResultAsync.bind parseResponse
+                let parseConfirmation = ResultAsync.bind parseConfirmation
+                let createResult = ResultAsync.map (createResult request appointment)
 
-                    // pipe
-                    deps.HttpClient
-                    |> postRequest
-                    |> parseResponse
-                    |> parseConfirmation
-                    |> createResult
-                | None -> request |> createDefaultResult)
-        )
-        |> Option.defaultValue (request |> createDefaultResult)
+                // pipe
+                deps.HttpClient
+                |> postRequest
+                |> parseResponse
+                |> parseConfirmation
+                |> createResult
+            | None -> request |> createDefaultResult)
 
     let handle deps =
         ResultAsync.bind' (fun (httpClient, id, formData, request) ->

@@ -17,11 +17,15 @@ module private SearchAppointments =
                      PageSize = 5
                      SortBy = Filter.Desc(Filter.Date(_.Modified)) }
               Embassies = Some <| Set [ Russian country ]
-              HasStates = Some(fun state -> state <> InProcess)
+              HasStates = Some <| fun state -> state <> InProcess
               Ids = None
               HasAppointments = false
               HasConfirmations = false
-              WithAutoConfirmation = false
+              HasConfirmationState =
+                Some
+                <| function
+                    | Auto _ -> true
+                    | _ -> false
               WasModified = None }
 
         storage |> Repository.Query.Request.get ct filter
