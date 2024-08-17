@@ -14,7 +14,7 @@ CommonStep: &CommonStep
   Schedule:
     Enabled: true
     Limit: 1
-    Delay: 00:00:30
+    Delay: 00:00:20
     Workdays: mon,tue,wed,thu,fri,sat,sun
 
 CommonSchedule: &CommonSchedule
