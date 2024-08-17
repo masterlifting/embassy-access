@@ -303,37 +303,43 @@ module ConfirmationOption =
             | _ -> Error <| NotFound "DateStart or DateEnd."
         | _ -> Error <| NotSupported $"ConfirmationOption {option.Type}."
 
-module ConfirmationType =
-    [<Literal>]
-    let Manual = nameof ConfirmationType.Manual
+module ConfirmationState =
 
     [<Literal>]
-    let Auto = nameof ConfirmationType.Auto
+    let Disabled = nameof ConfirmationState.Disabled
 
-    let toExternal (confirmation: ConfirmationType) =
-        let result = External.ConfirmationType()
+    [<Literal>]
+    let Manual = nameof ConfirmationState.Manual
 
-        match confirmation with
-        | ConfirmationType.Manual appointment ->
+    [<Literal>]
+    let Auto = nameof ConfirmationState.Auto
+
+    let toExternal (state: ConfirmationState) =
+        let result = External.ConfirmationState()
+
+        match state with
+        | ConfirmationState.Disabled -> result.Type <- Disabled
+        | ConfirmationState.Manual appointment ->
             result.Type <- Manual
             result.Appointment <- Some appointment |> Option.map Appointment.toExternal
-        | ConfirmationType.Auto option ->
+        | ConfirmationState.Auto option ->
             result.Type <- Auto
-            result.ConfirmationOption <- Some option |> Option.map ConfirmationOption.toExternal
+            result.Option <- Some option |> Option.map ConfirmationOption.toExternal
 
         result
 
-    let toInternal (confirmation: External.ConfirmationType) =
-        match confirmation.Type with
+    let toInternal (state: External.ConfirmationState) =
+        match state.Type with
+        | Disabled -> ConfirmationState.Disabled |> Ok
         | Manual ->
-            match confirmation.Appointment with
-            | Some appointment -> appointment |> Appointment.toInternal |> ConfirmationType.Manual |> Ok
+            match state.Appointment with
+            | Some appointment -> appointment |> Appointment.toInternal |> ConfirmationState.Manual |> Ok
             | None -> Error <| NotFound "Appointment."
         | Auto ->
-            match confirmation.ConfirmationOption with
-            | Some option -> option |> ConfirmationOption.toInternal |> Result.map ConfirmationType.Auto
+            match state.Option with
+            | Some option -> option |> ConfirmationOption.toInternal |> Result.map ConfirmationState.Auto
             | None -> Error <| NotFound "ConfirmationOption."
-        | _ -> Error <| NotSupported $"ConfirmationType {confirmation.Type}."
+        | _ -> Error <| NotSupported $"ConfirmationType {state.Type}."
 
 module RequestState =
     [<Literal>]
@@ -381,7 +387,7 @@ module Request =
         result.Embassy <- request.Embassy |> Embassy.toExternal
         result.State <- request.State |> RequestState.toExternal
         result.Attempt <- request.Attempt
-        result.Confirmation <- request.ConfirmationType |> Option.map ConfirmationType.toExternal
+        result.ConfirmationState <- request.ConfirmationState |> ConfirmationState.toExternal
         result.Appointments <- request.Appointments |> Seq.map Appointment.toExternal |> Seq.toArray
         result.Description <- request.Description |> Option.defaultValue ""
         result.Modified <- request.Modified
@@ -389,29 +395,30 @@ module Request =
         result
 
     let toInternal (request: External.Request) =
-        request.Embassy
-        |> Embassy.toInternal
-        |> Result.bind (fun embassy ->
-            request.State
-            |> RequestState.toInternal
-            |> Result.bind (fun state ->
-                let result =
+        let embassyRes = request.Embassy |> Embassy.toInternal
+        let stateRes = request.State |> RequestState.toInternal
+        let confirmationStateRes = request.ConfirmationState |> ConfirmationState.toInternal
+
+        let appointments =
+            request.Appointments |> Seq.map Appointment.toInternal |> Set.ofSeq
+
+        let description =
+            match request.Description with
+            | AP.IsString x -> Some x
+            | _ -> None
+
+        stateRes
+        |> Result.bind (fun state ->
+            confirmationStateRes
+            |> Result.bind (fun confirmationState ->
+                embassyRes
+                |> Result.map (fun embassy ->
                     { Id = RequestId(request.Id)
                       Payload = request.Payload
                       Embassy = embassy
                       State = state
                       Attempt = request.Attempt
-                      ConfirmationType = None
-                      Appointments = request.Appointments |> Seq.map Appointment.toInternal |> Set.ofSeq
-                      Description =
-                        match request.Description with
-                        | AP.IsString x -> Some x
-                        | _ -> None
-                      Modified = request.Modified }
-
-                match request.Confirmation with
-                | None -> Ok result
-                | Some confirmation ->
-                    confirmation
-                    |> ConfirmationType.toInternal
-                    |> Result.map (fun x -> { result with ConfirmationType = Some x })))
+                      ConfirmationState = confirmationState
+                      Appointments = appointments
+                      Description = description
+                      Modified = request.Modified })))

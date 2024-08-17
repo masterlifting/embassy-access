@@ -61,15 +61,9 @@ module Query =
                                 && (match filter.HasConfirmations with
                                     | true -> x.Appointments |> Seq.exists (_.Confirmation.IsSome)
                                     | false -> true)
-                                && (match filter.WithAutoConfirmation with
-                                    | true ->
-                                        x.ConfirmationType
-                                        |> Option.map (fun x ->
-                                            match x with
-                                            | Auto _ -> true
-                                            | _ -> false)
-                                        |> Option.defaultValue false
-                                    | false -> true)
+                                && filter.HasConfirmationState
+                                   |> Option.map (fun predicate -> predicate x.ConfirmationState)
+                                   |> Option.defaultValue true
                                 && filter.WasModified
                                    |> Option.map (fun predicate -> predicate x.Modified)
                                    |> Option.defaultValue true)
