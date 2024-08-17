@@ -20,19 +20,15 @@ module private Http =
                 [ "Host", [ host ]
                   "Origin", [ baseUrl ]
                   "Accept",
-                  [ "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7" ]
+                  [ "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8" ]
                   "Accept-Language", [ "en-US,en;q=0.9,ru;q=0.8" ]
-                  "Cache-Control", [ "max-age=0" ]
-                  "Sec-Ch-Ua", [ "Not A(Brand\";v=\"99\", \"Microsoft Edge\";v=\"121\", \"Chromium\";v=\"121" ]
-                  "Sec-Ch-Ua-Mobile", [ "?0" ]
-                  "Sec-Ch-Ua-Platform", [ "\"Windows\"" ]
+                  "Connection", [ "keep-alive" ]
                   "Sec-Fetch-Dest", [ "document" ]
                   "Sec-Fetch-Mode", [ "navigate" ]
                   "Sec-Fetch-Site", [ "same-origin" ]
                   "Sec-Fetch-User", [ "?1" ]
                   "Upgrade-Insecure-Requests", [ "1" ]
-                  "User-Agent",
-                  [ "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0" ] ]
+                  "User-Agent", [ "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0" ] ]
             |> Some
 
         create baseUrl headers
@@ -110,11 +106,11 @@ module private InitialPage =
           getCaptcha = deps.getCaptcha
           solveCaptcha = deps.solveCaptcha }
 
-    let private createRequest queryParams =
+    let private createHttpRequest queryParams =
         { Web.Http.Domain.Request.Path = "/queue/orderinfo.aspx?" + queryParams
           Web.Http.Domain.Request.Headers = None }
 
-    let private parseResponse page =
+    let private parseHttpResponse page =
         Html.load page
         |> Result.bind hasError
         |> Result.bind (Html.getNodes "//input | //img")
@@ -187,7 +183,7 @@ module private InitialPage =
         with ex ->
             Error <| NotSupported ex.Message
 
-    let private prepareFormData pageData captcha =
+    let private prepareHttpFormData pageData captcha =
         pageData
         |> Map.remove "captchaUrlPath"
         |> Map.add "ctl00$MainContent$txtCode" $"%i{captcha}"
@@ -198,11 +194,11 @@ module private InitialPage =
 
         // define
         let getRequest =
-            let request = createRequest queryParams
+            let request = createHttpRequest queryParams
             deps.getInitialPage request
 
         let setCookie = ResultAsync.bind (deps.HttpClient |> Http.setRequiredCookie)
-        let parseResponse = ResultAsync.bind parseResponse
+        let parseResponse = ResultAsync.bind parseHttpResponse
 
         // pipe
         deps.HttpClient
@@ -222,7 +218,7 @@ module private InitialPage =
                 let setCookie = ResultAsync.bind (deps.HttpClient |> Http.setSessionCookie)
                 let prepareResponse = ResultAsync.bind prepareCaptchaImage
                 let solveCaptcha = ResultAsync.bind' deps.solveCaptcha
-                let prepareFormData = ResultAsync.map' (pageData |> prepareFormData)
+                let prepareFormData = ResultAsync.map' (pageData |> prepareHttpFormData)
                 let buildFormData = ResultAsync.map' Http.buildFormData
 
                 // pipe
@@ -253,7 +249,7 @@ module private ValidationPage =
         { HttpClient = httpClient
           postValidationPage = deps.postValidationPage }
 
-    let private createRequest formData queryParams =
+    let private createHttpRequest formData queryParams =
 
         let request =
             { Web.Http.Domain.Request.Path = "/queue/orderinfo.aspx?" + queryParams
@@ -267,7 +263,7 @@ module private ValidationPage =
 
         request, content
 
-    let private hasInconsistentState page =
+    let private httpResponseHasInconsistentState page =
         page
         |> Html.getNode "//span[@id='ctl00_MainContent_Content'] | //span[@id='ctl00_MainContent_Label_Message']"
         |> Result.bind (function
@@ -297,10 +293,10 @@ module private ValidationPage =
                     | _ -> Ok page
                 | _ -> Ok page)
 
-    let private parseResponse page =
+    let private parseHttpResponse page =
         Html.load page
         |> Result.bind hasError
-        |> Result.bind hasInconsistentState
+        |> Result.bind httpResponseHasInconsistentState
         |> Result.bind (Html.getNodes "//input")
         |> Result.bind (function
             | None -> Error <| NotFound "Nodes on the Validation Page."
@@ -327,7 +323,7 @@ module private ValidationPage =
             | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
             | false -> Error <| NotFound "Validation Page headers.")
 
-    let private prepareFormData data =
+    let private prepareHttpFormData data =
         data
         |> Map.add "ctl00$MainContent$ButtonB.x" "100"
         |> Map.add "ctl00$MainContent$ButtonB.y" "20"
@@ -338,11 +334,11 @@ module private ValidationPage =
 
         // define
         let postRequest =
-            let request, content = createRequest formData queryParams
+            let request, content = createHttpRequest formData queryParams
             deps.postValidationPage request content
 
-        let parseResponse = ResultAsync.bind parseResponse
-        let prepareFormData = ResultAsync.map' prepareFormData
+        let parseResponse = ResultAsync.bind parseHttpResponse
+        let prepareFormData = ResultAsync.map' prepareHttpFormData
 
         // pipe
         deps.HttpClient |> postRequest |> parseResponse |> prepareFormData
@@ -363,7 +359,7 @@ module private AppointmentsPage =
         { HttpClient = httpClient
           postAppointmentsPage = deps.postAppointmentsPage }
 
-    let private createRequest formData queryParams =
+    let private createHttpRequest formData queryParams =
 
         let request =
             { Web.Http.Domain.Request.Path = "/queue/orderinfo.aspx?" + queryParams
@@ -377,10 +373,10 @@ module private AppointmentsPage =
 
         request, content
 
-    let private parseResponse page =
+    let private parseHttpResponse page =
         Html.load page
         |> Result.bind hasError
-        |> Result.bind (Html.getNodes "//input[@type='radio']")
+        |> Result.bind (Html.getNodes "//input")
         |> Result.bind (function
             | None -> Ok Map.empty
             | Some nodes ->
@@ -389,15 +385,53 @@ module private AppointmentsPage =
                     match node |> Html.getAttributeValue "name", node |> Html.getAttributeValue "value" with
                     | Ok(Some name), Ok(Some value) -> Some(value, name)
                     | _ -> None)
-                |> List.ofSeq
-                |> fun list ->
-                    match list.Length = 0 with
-                    | true -> Error <| NotFound "Appointments Page items."
-                    | false -> list |> Map.ofList |> Ok)
-        |> Result.map (Map.filter (fun _ value -> value = "ctl00$MainContent$RadioButtonList1"))
-        |> Result.map (Seq.map (_.Key) >> Set.ofSeq)
+                |> Map.ofSeq
+                |> Ok)
+        |> Result.bind (fun result ->
+            let requiredValues = Set [ "__VIEWSTATE"; "__EVENTVALIDATION" ]
 
-    let private parseAppointments (data: Set<string>) =
+            let notRequiredValues = Set [ "__VIEWSTATEGENERATOR" ]
+
+            let requiredResult =
+                result |> Map.filter (fun _ value -> requiredValues.Contains value)
+
+            let notRequiredResult =
+                result |> Map.filter (fun _ value -> notRequiredValues.Contains value)
+
+            match requiredValues.Count = requiredResult.Count with
+            | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
+            | false -> Error <| NotFound "AppointmentsPage Page headers.")
+        |> Result.map (fun result ->
+            result
+            |> Map.fold
+                (fun (acc: Map<string, string list>) key value ->
+                    let key' = value
+                    let values = Map.tryFind key' acc |> Option.defaultValue []
+                    let value' = key :: values
+                    Map.add key' value' acc)
+                Map.empty)
+
+    let private prepareHttpFormData data =
+        let headers =
+            data
+            |> Map.filter (fun key _ ->
+                [ "__VIEWSTATE"; "__EVENTVALIDATION"; "__VIEWSTATEGENERATOR" ]
+                |> List.contains key)
+            |> Seq.map (fun x -> x.Key, x.Value |> Seq.tryHead |> Option.defaultValue "")
+            |> Map.ofSeq
+            |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
+            |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
+
+        let appointments =
+            data
+            |> Map.filter (fun key _ -> key = "ctl00$MainContent$RadioButtonList1")
+            |> Map.values
+            |> Seq.concat
+            |> Set.ofSeq
+
+        (headers, appointments)
+
+    let private creatrRequestAppointments (headers: Map<string, string>, data: Set<string>) =
 
         let parse (value: string) =
             //ASPCLNDR|2024-07-26T09:30:00|22|Окно 5
@@ -419,36 +453,43 @@ module private AppointmentsPage =
                          Time = time
                          Confirmation = None
                          Description = Some window }
+
                 | _ -> Error <| NotSupported $"Appointment date: {dateTime}."
             | _ -> Error <| NotSupported $"Appointment row: {value}."
 
         match data.IsEmpty with
-        | true -> Ok Set.empty
-        | false -> data |> Set.map parse |> Seq.roe |> Result.map Set.ofSeq
+        | true -> Ok(headers, Set.empty)
+        | false ->
+            data
+            |> Set.map parse
+            |> Seq.roe
+            |> Result.map (fun x -> headers, (x |> Set.ofList))
 
-    let private createResult request formData appointments =
+    let private createResult request (headers: Map<string, string>, appointments) =
         let request =
             { request with
                 Appointments = appointments }
 
-        request, formData
+        request, headers
 
     let private handle' (deps, queryParams, formData, request) =
 
         // define
         let postRequest =
             let formData = Http.buildFormData formData
-            let request, content = createRequest formData queryParams
+            let request, content = createHttpRequest formData queryParams
             deps.postAppointmentsPage request content
 
-        let parseResponse = ResultAsync.bind parseResponse
-        let parseAppointments = ResultAsync.bind parseAppointments
-        let createResult = ResultAsync.map (createResult request formData)
+        let parseResponse = ResultAsync.bind parseHttpResponse
+        let prepareFormData = ResultAsync.map' prepareHttpFormData
+        let parseAppointments = ResultAsync.bind creatrRequestAppointments
+        let createResult = ResultAsync.map (createResult request)
 
         // pipe
         deps.HttpClient
         |> postRequest
         |> parseResponse
+        |> prepareFormData
         |> parseAppointments
         |> createResult
 
@@ -472,7 +513,7 @@ module private ConfirmationPage =
         { HttpClient = httpClient
           postConfirmationPage = deps.postConfirmationPage }
 
-    let private handleConfirmation request =
+    let private handleRequestConfirmation request =
         match request.ConfirmationState with
         | Disabled -> Ok <| None
         | Manual appointment ->
@@ -504,7 +545,7 @@ module private ConfirmationPage =
                 | Some appointment -> Ok <| Some appointment
                 | None -> Error <| NotFound $"Appointment in range '{min}' - '{max}'."
 
-    let private createRequest formData queryParamsId =
+    let private createHttpRequest formData queryParamsId =
 
         let request =
             { Web.Http.Domain.Request.Path = $"/queue/SPCalendar.aspx?bjo=%s{queryParamsId}"
@@ -518,7 +559,7 @@ module private ConfirmationPage =
 
         request, content
 
-    let private parseResponse page =
+    let private parseHttpResponse page =
         Html.load page
         |> Result.bind hasError
         |> Result.bind (Html.getNode "//span[@id='ctl00_MainContent_Label_Message']")
@@ -529,7 +570,7 @@ module private ConfirmationPage =
                 | AP.IsString text -> Some text
                 | _ -> None)
 
-    let private prepareFormData data value =
+    let private prepareHttpFormData data value =
         data
         |> Map.removeKeys
             [ "ctl00$MainContent$ButtonB.x"
@@ -540,7 +581,7 @@ module private ConfirmationPage =
         |> Map.add "ctl00$MainContent$RadioButtonList1" value
         |> Map.add "ctl00$MainContent$TextBox1" value
 
-    let private parseConfirmation =
+    let private createRequestConfirmation =
         function
         | None -> Error <| NotFound "Confirmation data."
         | Some data -> Ok { Description = data }
@@ -572,17 +613,19 @@ module private ConfirmationPage =
 
     let private handle' (deps, queryParamsId, formData, request) =
         request
-        |> handleConfirmation
+        |> handleRequestConfirmation
         |> ResultAsync.wrap (function
             | Some appointment ->
                 // define
                 let postRequest =
-                    let formData = appointment.Value |> prepareFormData formData |> Http.buildFormData
-                    let request, content = createRequest formData queryParamsId
+                    let formData =
+                        appointment.Value |> prepareHttpFormData formData |> Http.buildFormData
+
+                    let request, content = createHttpRequest formData queryParamsId
                     deps.postConfirmationPage request content
 
-                let parseResponse = ResultAsync.bind parseResponse
-                let parseConfirmation = ResultAsync.bind parseConfirmation
+                let parseResponse = ResultAsync.bind parseHttpResponse
+                let parseConfirmation = ResultAsync.bind createRequestConfirmation
                 let createResult = ResultAsync.map (createResult request appointment)
 
                 // pipe

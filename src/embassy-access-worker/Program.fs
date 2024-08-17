@@ -15,7 +15,7 @@ let private createRussianTestRequest ct (value, country) =
               Embassy = Russian country
               State = Created
               Attempt = 0
-              ConfirmationState = Disabled
+              ConfirmationState = Auto <| FirstAvailable
               Appointments = Set.empty
               Description = None
               Modified = System.DateTime.UtcNow }
@@ -37,7 +37,8 @@ let main _ =
             <| fun (_, _, ct) ->
                 async {
                     let! testRequests =
-                        [ ("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F", Germany Berlin)
+                        [ //("https://berlin.kdmid.ru/queue/OrderInfo.aspx?id=298905&cd=9D217A77", Germany Berlin)
+                          ("https://berlin.kdmid.ru/queue/OrderInfo.aspx?id=298907&cd=E66119D3", Germany Berlin)
                           ("https://belgrad.kdmid.ru/queue/orderinfo.aspx?id=72096&cd=7FE4D97C&ems=7EE040C9",
                            Serbia Belgrade)
                           ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20779&cd=99CEBA38", Bosnia Sarajevo)
@@ -59,18 +60,19 @@ let main _ =
     let taskHandlers =
         Graph.Node(
             rootTask,
-            [ Countries.Albania.Tasks
-              Countries.Bosnia.Tasks
-              Countries.Finland.Tasks
-              Countries.France.Tasks
+            [ //Countries.Albania.Tasks
+              //Countries.Bosnia.Tasks
+              //Countries.Finland.Tasks
+              //Countries.France.Tasks
               Countries.Germany.Tasks
-              Countries.Hungary.Tasks
-              Countries.Ireland.Tasks
-              Countries.Montenegro.Tasks
-              Countries.Netherlands.Tasks
-              Countries.Serbia.Tasks
-              Countries.Slovenia.Tasks
-              Countries.Switzerland.Tasks ]
+              //Countries.Hungary.Tasks
+              //Countries.Ireland.Tasks
+              //Countries.Montenegro.Tasks
+              //Countries.Netherlands.Tasks
+              //Countries.Serbia.Tasks
+              //Countries.Slovenia.Tasks
+              //Countries.Switzerland.Tasks
+            ]
         )
 
     "Scheduler"
