@@ -15,7 +15,7 @@ let private createRussianTestRequest ct (value, country) =
               Embassy = Russian country
               State = Created
               Attempt = 0
-              ConfirmationState = Auto <| FirstAvailable
+              ConfirmationState = Disabled
               Appointments = Set.empty
               Description = None
               Modified = System.DateTime.UtcNow }
@@ -43,24 +43,10 @@ let main _ =
                           ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20779&cd=99CEBA38", Bosnia Sarajevo)
                           ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20780&cd=4FC17A57", Bosnia Sarajevo)
                           ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20781&cd=F23CB539", Bosnia Sarajevo)
-                          ("https://podgorica.kdmid.ru/queue/orderinfo.aspx?id=57123&cd=c73761c3&ems=09C3476F",
-                           Montenegro Podgorica)
-                          ("https://dublin.kdmid.ru/queue/orderinfo.aspx?id=22609&cd=2831b69e&ems=C7E84DE3",
-                           Ireland Dublin)
-                          ("https://bern.kdmid.ru/queue/orderinfo.aspx?id=42175&cd=8a623fd6&ems=7EFC4F7B",
-                           Switzerland Bern)
-                          ("https://helsinki.kdmid.ru/queue/orderinfo.aspx?id=202338&cd=b67019fa&ems=4B73480A",
-                           Finland Helsinki)
-                          ("https://paris.kdmid.ru/queue/orderinfo.aspx?id=368151&cd=775a8471&ems=6EFE4EFD",
-                           France Paris)
                           ("https://hague.kdmid.ru/queue/orderinfo.aspx?id=114878&cd=f1e14d11&ems=2CAA46D6",
                            Netherlands Hague)
                           ("https://tirana.kdmid.ru/queue/orderinfo.aspx?id=7316&cd=548bbda9&ems=2F5343DA",
-                           Albania Tirana)
-                          ("https://ljubljana.kdmid.ru/queue/orderinfo.aspx?id=22474&cd=03dab4d2&ems=6CCA463E",
-                           Slovenia Ljubljana)
-                          ("https://budapest.kdmid.ru/queue/orderinfo.aspx?id=34684&cd=25923cac&ems=0F6A4A35",
-                           Hungary Budapest) ]
+                           Albania Tirana) ]
                         |> List.map (createRussianTestRequest ct)
                         |> Async.Sequential
 

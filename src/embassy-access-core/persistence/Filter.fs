@@ -26,8 +26,8 @@ type Request =
     { Pagination: Pagination<Domain.Request> option
       Ids: Domain.RequestId Set option
       Embassies: Domain.Embassy Set option
-      HasAppointments: bool
-      HasConfirmations: bool
+      HasAppointments: bool option
+      HasConfirmations: bool option
       HasConfirmationState: predicate<Domain.ConfirmationState> option
       HasStates: predicate<Domain.RequestState> option
       WasModified: predicate<DateTime> option }
