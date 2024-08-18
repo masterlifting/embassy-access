@@ -387,40 +387,45 @@ module private AppointmentsPage =
                     | _ -> None)
                 |> Map.ofSeq
                 |> Ok)
+        |> Result.map Map.reverse
         |> Result.bind (fun result ->
-            let requiredValues = Set [ "__VIEWSTATE"; "__EVENTVALIDATION" ]
+            let requiredKeys =
+                Set [ "__VIEWSTATE"; "__EVENTVALIDATION"; "ctl00$MainContent$Button1" ]
 
-            let notRequiredValues = Set [ "__VIEWSTATEGENERATOR" ]
+            let notRequiredKeys =
+                Set [ "__VIEWSTATEGENERATOR"; "ctl00$MainContent$RadioButtonList1" ]
 
-            let requiredResult =
-                result |> Map.filter (fun _ value -> requiredValues.Contains value)
+            let requiredResult = result |> Map.filter (fun key _ -> requiredKeys.Contains key)
 
             let notRequiredResult =
-                result |> Map.filter (fun _ value -> notRequiredValues.Contains value)
+                result |> Map.filter (fun key _ -> notRequiredKeys.Contains key)
 
-            match requiredValues.Count = requiredResult.Count with
-            | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
+            match requiredKeys.Count = requiredResult.Count with
+            | true ->
+                match
+                    requiredResult
+                    |> Map.forall (fun _ value -> value |> Seq.tryHead |> Option.isSome)
+                with
+                | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
+                | false -> Error <| NotFound "AppointmentsPage Page headers."
             | false -> Error <| NotFound "AppointmentsPage Page headers.")
-        |> Result.map (fun result ->
-            result
-            |> Map.fold
-                (fun (acc: Map<string, string list>) key value ->
-                    let key' = value
-                    let values = Map.tryFind key' acc |> Option.defaultValue []
-                    let value' = key :: values
-                    Map.add key' value' acc)
-                Map.empty)
 
     let private prepareHttpFormData data =
-        let headers =
+        let requiredKeys =
+            Set
+                [ "__VIEWSTATE"
+                  "__EVENTVALIDATION"
+                  "__VIEWSTATEGENERATOR"
+                  "ctl00$MainContent$Button1" ]
+
+        let formData =
             data
-            |> Map.filter (fun key _ ->
-                [ "__VIEWSTATE"; "__EVENTVALIDATION"; "__VIEWSTATEGENERATOR" ]
-                |> List.contains key)
-            |> Seq.map (fun x -> x.Key, x.Value |> Seq.tryHead |> Option.defaultValue "")
-            |> Map.ofSeq
-            |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
-            |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
+            |> Map.filter (fun key _ -> requiredKeys.Contains key)
+            |> Map.map (fun _ value -> value |> Seq.head)
+
+        (formData, data)
+
+    let private creatrRequestAppointments (formData: Map<string, string>, data) =
 
         let appointments =
             data
@@ -428,10 +433,6 @@ module private AppointmentsPage =
             |> Map.values
             |> Seq.concat
             |> Set.ofSeq
-
-        (headers, appointments)
-
-    let private creatrRequestAppointments (headers: Map<string, string>, data: Set<string>) =
 
         let parse (value: string) =
             //ASPCLNDR|2024-07-26T09:30:00|22|Окно 5
@@ -457,20 +458,21 @@ module private AppointmentsPage =
                 | _ -> Error <| NotSupported $"Appointment date: {dateTime}."
             | _ -> Error <| NotSupported $"Appointment row: {value}."
 
-        match data.IsEmpty with
-        | true -> Ok(headers, Set.empty)
+        match appointments.IsEmpty with
+        | true -> Ok(formData, Set.empty)
         | false ->
-            data
+            appointments
             |> Set.map parse
             |> Seq.roe
-            |> Result.map (fun x -> headers, (x |> Set.ofList))
+            |> Result.map Set.ofList
+            |> Result.map (fun appointments -> formData, appointments)
 
-    let private createResult request (headers: Map<string, string>, appointments) =
+    let private createResult request (formData, appointments) =
         let request =
             { request with
                 Appointments = appointments }
 
-        request, headers
+        formData, request
 
     let private handle' (deps, queryParams, formData, request) =
 
@@ -501,7 +503,7 @@ module private AppointmentsPage =
             |> Http.getQueryParamsId
             |> ResultAsync.wrap (fun queryParamsId ->
                 handle' (deps, queryParams, formData, request)
-                |> ResultAsync.map (fun (request, formData) -> httpClient, queryParamsId, formData, request)))
+                |> ResultAsync.map (fun (formData, request) -> httpClient, queryParamsId, formData, request)))
 
 module private ConfirmationPage =
 
@@ -572,12 +574,6 @@ module private ConfirmationPage =
 
     let private prepareHttpFormData data value =
         data
-        |> Map.removeKeys
-            [ "ctl00$MainContent$ButtonB.x"
-              "ctl00$MainContent$ButtonB.y"
-              "ctl00$MainContent$FeedbackClientID"
-              "ctl00$MainContent$FeedbackOrderID" ]
-        |> Map.add "ctl00$MainContent$Button1" "Записаться на прием"
         |> Map.add "ctl00$MainContent$RadioButtonList1" value
         |> Map.add "ctl00$MainContent$TextBox1" value
 
