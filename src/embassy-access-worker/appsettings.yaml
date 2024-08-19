@@ -13,7 +13,7 @@ CommonStep: &CommonStep
       Duration: 00:03:00
   Schedule:
     Enabled: true
-    Limit: 1
+    Limit: 3
     Delay: 00:00:20
     Workdays: mon,tue,wed,thu,fri,sat,sun
 
