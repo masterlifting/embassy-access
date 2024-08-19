@@ -260,7 +260,7 @@ module Appointment =
 
         result.Value <- appointment.Value
         result.Confirmation <- appointment.Confirmation |> Option.map Confirmation.toExternal
-        result.Description <- appointment.Description |> Option.defaultValue ""
+        result.Description <- appointment.Description
         result.DateTime <- appointment.Date.ToDateTime(appointment.Time)
 
         result
@@ -270,10 +270,7 @@ module Appointment =
           Date = DateOnly.FromDateTime(appointment.DateTime)
           Time = TimeOnly.FromDateTime(appointment.DateTime)
           Confirmation = appointment.Confirmation |> Option.map Confirmation.toInternal
-          Description =
-            match appointment.Description with
-            | AP.IsString x -> Some x
-            | _ -> None }
+          Description = appointment.Description }
 
 module ConfirmationOption =
     [<Literal>]
@@ -360,7 +357,9 @@ module RequestState =
         match state with
         | RequestState.Created -> result.Type <- Created
         | RequestState.InProcess -> result.Type <- InProcess
-        | RequestState.Completed -> result.Type <- Completed
+        | RequestState.Completed msg ->
+            result.Type <- Completed
+            result.Message <- Some msg
         | RequestState.Failed error ->
             result.Type <- Failed
             result.Error <- error |> Mapper.Error.toExternal |> Some
@@ -371,7 +370,13 @@ module RequestState =
         match state.Type with
         | Created -> RequestState.Created |> Ok
         | InProcess -> RequestState.InProcess |> Ok
-        | Completed -> RequestState.Completed |> Ok
+        | Completed ->
+            let msg =
+                match state.Message with
+                | Some(AP.IsString value) -> value
+                | _ -> "Message not found."
+
+            RequestState.Completed msg |> Ok
         | Failed ->
             match state.Error with
             | Some error -> error |> Mapper.Error.toInternal |> Result.map RequestState.Failed
@@ -389,7 +394,8 @@ module Request =
         result.Attempt <- request.Attempt
         result.ConfirmationState <- request.ConfirmationState |> ConfirmationState.toExternal
         result.Appointments <- request.Appointments |> Seq.map Appointment.toExternal |> Seq.toArray
-        result.Description <- request.Description |> Option.defaultValue ""
+        result.Description <- request.Description
+        result.GroupBy <- request.GroupBy
         result.Modified <- request.Modified
 
         result
@@ -401,11 +407,6 @@ module Request =
 
         let appointments =
             request.Appointments |> Seq.map Appointment.toInternal |> Set.ofSeq
-
-        let description =
-            match request.Description with
-            | AP.IsString x -> Some x
-            | _ -> None
 
         stateRes
         |> Result.bind (fun state ->
@@ -420,5 +421,6 @@ module Request =
                       Attempt = request.Attempt
                       ConfirmationState = confirmationState
                       Appointments = appointments
-                      Description = description
+                      Description = request.Description
+                      GroupBy = request.GroupBy
                       Modified = request.Modified })))

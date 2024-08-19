@@ -633,9 +633,9 @@ module private ConfirmationPage =
             | None -> request |> createDefaultResult)
 
     let handle deps =
-        ResultAsync.bind' (fun (httpClient, id, formData, request) ->
+        ResultAsync.bind' (fun (httpClient, queryParamsId, formData, request) ->
             let deps = createDeps deps httpClient
-            handle' (deps, id, formData, request))
+            handle' (deps, queryParamsId, formData, request))
 
 module private Request =
 
@@ -691,10 +691,27 @@ module private Request =
     let private setCompletedState deps request =
         deps.updateRequest
             { request with
-                State = Completed
+                State = Completed $"\{request}"
                 Modified = DateTime.UtcNow }
 
     let private setFailedState (error: Error') deps request =
+        let errorSuffix = $" {request.Payload}"
+
+        let error =
+            match error with
+            | Operation reason ->
+                Operation
+                <| { reason with
+                       Message = reason.Message + errorSuffix }
+            | Permission reason ->
+                Permission
+                <| { reason with
+                       Message = reason.Message + errorSuffix }
+            | NotFound src -> NotFound(src + errorSuffix)
+            | NotSupported src -> NotSupported(src + errorSuffix)
+            | NotImplemented src -> NotImplemented(src + errorSuffix)
+            | Cancelled src -> Cancelled(src + errorSuffix)
+
         deps.updateRequest
             { request with
                 State = Failed error

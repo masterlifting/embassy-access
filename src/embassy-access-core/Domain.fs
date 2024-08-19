@@ -94,7 +94,7 @@ type ConfirmationState =
 type RequestState =
     | Created
     | InProcess
-    | Completed
+    | Completed of string
     | Failed of Error'
 
 type Request =
@@ -106,6 +106,7 @@ type Request =
       ConfirmationState: ConfirmationState
       Appointments: Set<Appointment>
       Description: string option
+      GroupBy: string option
       Modified: DateTime }
 
 module External =
@@ -124,13 +125,13 @@ module External =
         member val Country: Country = Country() with get, set
 
     type Confirmation() =
-        member val Description: string = String.Empty with get, set
+        member val Description: string= String.Empty with get, set
 
     type Appointment() =
         member val Value: string = String.Empty with get, set
         member val Confirmation: Confirmation option = None with get, set
         member val DateTime: DateTime = DateTime.UtcNow with get, set
-        member val Description: string = String.Empty with get, set
+        member val Description: string option = None with get, set
 
     type ConfirmationOption() =
 
@@ -148,6 +149,7 @@ module External =
 
         member val Type: string = String.Empty with get, set
         member val Error: External.Error option = None with get, set
+        member val Message: string option = None with get, set
 
 
     type Request() =
@@ -168,5 +170,6 @@ module External =
             state with get, set
 
         member val Appointments: Appointment array = [||] with get, set
-        member val Description: string = String.Empty with get, set
+        member val Description: string option = None with get, set
+        member val GroupBy: string option = None with get, set
         member val Modified: DateTime = DateTime.UtcNow with get, set

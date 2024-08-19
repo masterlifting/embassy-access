@@ -20,6 +20,7 @@ module private Fixture =
           ConfirmationState = Auto <| FirstAvailable
           Appointments = Set.empty
           Description = None
+          GroupBy = None
           Modified = DateTime.UtcNow }
 
     let requiredHeaders =
@@ -175,7 +176,7 @@ let private ``confirmation page should have a valid result`` =
             match request.State with
             | Domain.RequestState.Failed error ->
                 Expect.isTrue false $"Request should have valid state, but was Failed. Error: {error.Message}"
-            | Domain.RequestState.Completed ->
+            | Domain.RequestState.Completed _ ->
                 let confirmation = request.Appointments |> Seq.tryPick (_.Confirmation)
 
                 Expect.wantSome confirmation "Confirmation should be Some" |> ignore

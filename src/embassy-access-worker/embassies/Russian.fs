@@ -27,7 +27,6 @@ module private SearchAppointments =
         storage |> Repository.Query.Request.get ct filter
 
     let private tryProcessRequests ct (schedule: Schedule option) storage requests =
-
         let config =
             { TimeShift =
                 match schedule with
@@ -64,22 +63,25 @@ module private SearchAppointments =
                     | Ok result ->
                         match result.State with
                         | Failed error -> return! innerLoop requestsTail (errors @ [ error ])
-                        | _ -> return Ok <| Some result
+                        | _ -> return! innerLoop requestsTail errors
             }
 
         innerLoop requests []
 
     let private handleProcessedRequest request =
         match request with
-        | None -> Ok <| Info "No appointments found."
+        | None -> Ok <| Info "No appointments found for the given requests."
         | Some request ->
             match request.State with
             | Failed error -> Error error
-            | _ ->
-                Ok
-                <| match request.Appointments.IsEmpty with
-                   | true -> Info "No appointments found."
-                   | false -> Success $"Found {request.Appointments.Count} appointments."
+            | Completed msg ->
+                match request.Appointments.IsEmpty with
+                | true -> Ok <| Info $"No appointments found. {msg}"
+                | false ->
+                    match request.Appointments |> Seq.choose (fun x -> x.Confirmation) |> List.ofSeq with
+                    | [] -> Ok <| Success $"Found appointments. {msg}"
+                    | _ -> Ok <| Success $"Found confirmations. {msg}"
+            | state -> Ok <| Info $"Request {request.Id.Value} state is in complete. Current state: {state}"
 
     let run country =
         fun (_, schedule, ct) ->
