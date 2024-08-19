@@ -12,14 +12,14 @@ CommonStep: &CommonStep
     - Name: Search Appointments
       Duration: 00:03:00
   Schedule:
-    Enabled: true
+    Enabled: false
     Limit: 3
-    Delay: 00:00:20
+    Delay: 00:05:00
     Workdays: mon,tue,wed,thu,fri,sat,sun
 
 CommonSchedule: &CommonSchedule
   Schedule:
-    Enabled: true
+    Enabled: false
     Workdays: mon,tue,wed,thu,fri,sat,sun
 
 Worker:
@@ -30,8 +30,19 @@ Worker:
       Steps:
         - Name: Belgrade
           Steps:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - Name: Russian
+              Recursively: true
+              Steps:
+                - Name: Search Appointments
+                  Duration: 00:03:00
+              Schedule:
+                Enabled: true
+                Limit: 20
+                Delay: 00:05:00
+                Workdays: mon,tue,wed,thu,fri,sat,sun
+          Schedule:
+            Enabled: true
+            Workdays: mon,tue,wed,thu,fri,sat,sun
     - Name: Germany
       Parallel: true
       Steps:
