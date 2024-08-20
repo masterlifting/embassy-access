@@ -7,7 +7,7 @@ Logging:
 CommonStep: &CommonStep
   Name: Russian
   Parallel: true
-  Recursively: true
+  Recursively: false
   Steps:
     - Name: Search Appointments
       Duration: 00:03:00
