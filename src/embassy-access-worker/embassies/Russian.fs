@@ -14,11 +14,11 @@ module private SearchAppointments =
             { Pagination =
                 Some
                 <| { Page = 1
-                     PageSize = 5
+                     PageSize = 20
                      SortBy = Filter.Desc(Filter.Date(_.Modified)) }
+              Ids = None
               Embassies = Some <| Set [ Russian country ]
               HasStates = Some <| fun state -> state <> InProcess
-              Ids = None
               HasAppointments = None
               HasConfirmations = None
               HasConfirmationState = None
@@ -38,18 +38,6 @@ module private SearchAppointments =
                 | _ -> Ok $"Found confirmations. {msg}"
         | state -> Ok $"Request {request.Id.Value} state is in complete. Current state: {state}"
 
-    let private handleProcessedErrors errors =
-        let errorMessage = errors |> Seq.fold (fun acc x -> $"{acc}\n\t{x}") ""
-        Operation { Message = errorMessage; Code = None }
-
-    let private handleProcessedRequests requests =
-        requests
-        |> Seq.map handleProcessedRequest
-        |> Seq.roes
-        |> Result.mapError handleProcessedErrors
-        |> Result.map (Seq.fold (fun acc x -> $"{acc}\n\t{x}") "")
-        |> Result.map Info
-
     let private processRequests ct (schedule: Schedule option) storage requests =
         let config =
             { TimeShift =
@@ -63,22 +51,20 @@ module private SearchAppointments =
             |> EmbassyAccess.Api.processRequest
 
         async {
-            let! results = requests |> Seq.map processRequest |> Async.Parallel
+            let! results = requests |> Seq.map processRequest |> Async.Sequential
 
             return
                 results
-                |> Seq.map (fun result ->
-                    match result with
+                |> Seq.map (function
                     | Ok request ->
                         match request |> handleProcessedRequest with
                         | Ok msg -> msg
                         | Error error -> error.Message
                     | Error error -> error.Message)
-                |> Seq.fold (fun acc x -> $"{acc}\n\t{x}") ""
+                |> Seq.fold (fun acc msg -> $"{acc}\n{msg}") ""
                 |> Info
                 |> Ok
         }
-
 
     let run country =
         fun (_, schedule, ct) ->
