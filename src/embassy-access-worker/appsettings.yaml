@@ -10,6 +10,7 @@ CommonStep: &CommonStep
   Recursively: true
   Tasks:
     - Name: Search Appointments
+      Enabled: false
       Duration: 00:03:00
   Schedule:
     Workdays: mon,tue,wed,thu,fri,sat,sun
@@ -22,6 +23,7 @@ CommonSchedule: &CommonSchedule
 
 Worker:
   Name: Scheduler
+  Enabled: true
   Tasks:
     - Name: Serbia
       Parallel: true
@@ -32,11 +34,12 @@ Worker:
               Recursively: true
               Tasks:
                 - Name: Search Appointments
+                  Enabled: true
                   Duration: 00:03:00
               Schedule:
                 Workdays: mon,tue,wed,thu,fri,sat,sun
                 Limit: 20
-                Delay: 00:05:00
+                Delay: 00:01:00
           Schedule:
             Workdays: mon,tue,wed,thu,fri,sat,sun
     - Name: Germany
