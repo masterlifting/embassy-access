@@ -42,9 +42,9 @@ let main _ =
                           ("https://berlin.kdmid.ru/queue/OrderInfo.aspx?id=298907&cd=E66119D3", Germany Berlin)
                           ("https://belgrad.kdmid.ru/queue/orderinfo.aspx?id=72096&cd=7FE4D97C&ems=7EE040C9",
                            Serbia Belgrade)
-                          //   ("https://belgrad.kdmid.ru/queue/orderinfo.aspx?id=72095&cd=68672FA8&ems=742D4A80",
-                          //    Serbia Belgrade)
-                          //   ("https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=91373&cd=7EE89A15", Serbia Belgrade)
+                          ("https://belgrad.kdmid.ru/queue/orderinfo.aspx?id=72095&cd=68672FA8&ems=742D4A80",
+                           Serbia Belgrade)
+                          ("https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=91373&cd=7EE89A15", Serbia Belgrade)
                           ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20779&cd=99CEBA38", Bosnia Sarajevo)
                           ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20780&cd=4FC17A57", Bosnia Sarajevo)
                           ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20781&cd=F23CB539", Bosnia Sarajevo)
@@ -62,20 +62,18 @@ let main _ =
     let taskHandlers =
         Graph.Node(
             rootTask,
-            [
-              // Countries.Albania.Tasks
-              //   Countries.Bosnia.Tasks
-              //   Countries.Finland.Tasks
-              //   Countries.France.Tasks
-              //   Countries.Germany.Tasks
-              //   Countries.Hungary.Tasks
-              //   Countries.Ireland.Tasks
-              //   Countries.Montenegro.Tasks
-              //   Countries.Netherlands.Tasks
+            [ Countries.Albania.Tasks
+              Countries.Bosnia.Tasks
+              Countries.Finland.Tasks
+              Countries.France.Tasks
+              Countries.Germany.Tasks
+              Countries.Hungary.Tasks
+              Countries.Ireland.Tasks
+              Countries.Montenegro.Tasks
+              Countries.Netherlands.Tasks
               Countries.Serbia.Tasks
-              //   Countries.Slovenia.Tasks
-              //   Countries.Switzerland.Tasks
-              ]
+              Countries.Slovenia.Tasks
+              Countries.Switzerland.Tasks ]
         )
 
     "Scheduler"

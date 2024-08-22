@@ -7,15 +7,13 @@ Logging:
 CommonStep: &CommonStep
   Name: Russian
   Parallel: true
-  Recursively: true
+  Limit: 3
   Tasks:
     - Name: Search Appointments
       Enabled: false
       Duration: 00:03:00
   Schedule:
     Workdays: mon,tue,wed,thu,fri,sat,sun
-    Limit: 3
-    Delay: 00:01:00
 
 CommonSchedule: &CommonSchedule
   Schedule:
@@ -31,15 +29,14 @@ Worker:
         - Name: Belgrade
           Tasks:
             - Name: Russian
-              Recursively: true
+              Recursively: 00:00:10
+              Limit: 2
               Tasks:
                 - Name: Search Appointments
                   Enabled: true
                   Duration: 00:03:00
               Schedule:
                 Workdays: mon,tue,wed,thu,fri,sat,sun
-                Limit: 20
-                Delay: 00:01:00
           Schedule:
             Workdays: mon,tue,wed,thu,fri,sat,sun
     - Name: Germany
