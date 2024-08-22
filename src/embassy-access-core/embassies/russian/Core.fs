@@ -269,8 +269,9 @@ module private ValidationPage =
         |> Result.bind (function
             | None -> Ok page
             | Some node ->
-                match node.InnerText with
+                match node.InnerHtml with
                 | AP.IsString text ->
+                    let text = Environment.NewLine + text.Replace("<br>", Environment.NewLine)
                     let has (pattern: string) (node: string) =
                         node.Contains(pattern, StringComparison.OrdinalIgnoreCase)
 
