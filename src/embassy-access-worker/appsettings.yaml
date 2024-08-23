@@ -4,7 +4,7 @@ Logging:
   LogLevel:
     Default: Trace
 
-CommonStep: &CommonStep
+RussianTasks: &RussianTasks
   Name: Russian
   Parallel: true
   Limit: 3
@@ -12,10 +12,6 @@ CommonStep: &CommonStep
     - Name: Search Appointments
       Enabled: false
       Duration: 00:03:00
-  Schedule:
-    Workdays: mon,tue,wed,thu,fri,sat,sun
-
-CommonSchedule: &CommonSchedule
   Schedule:
     Workdays: mon,tue,wed,thu,fri,sat,sun
 
@@ -29,90 +25,79 @@ Worker:
         - Name: Belgrade
           Tasks:
             - Name: Russian
+              Parallel: true
               Recursively: 00:00:10
-              Limit: 2
+              Limit: 3
               Tasks:
                 - Name: Search Appointments
                   Enabled: true
+                  Parallel: true
                   Duration: 00:03:00
               Schedule:
                 Workdays: mon,tue,wed,thu,fri,sat,sun
-          Schedule:
-            Workdays: mon,tue,wed,thu,fri,sat,sun
     - Name: Germany
       Parallel: true
       Tasks:
         - Name: Berlin
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: France
       Parallel: true
       Tasks:
         - Name: Paris
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: Montenegro
       Parallel: true
       Tasks:
         - Name: Podgorica
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: Ireland
       Parallel: true
       Tasks:
         - Name: Dublin
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: Switzerland
       Parallel: true
       Tasks:
         - Name: Bern
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: Finland
       Parallel: true
       Tasks:
         - Name: Helsinki
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: Netherlands
       Parallel: true
       Tasks:
         - Name: Hague
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: Albania
       Parallel: true
       Tasks:
         - Name: Tirana
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: Slovenia
       Parallel: true
       Tasks:
         - Name: Ljubljana
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: Bosnia
       Parallel: true
       Tasks:
         - Name: Sarajevo
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
     - Name: Hungary
       Parallel: true
       Tasks:
         - Name: Budapest
           Tasks:
-            <<: *CommonStep
-          <<: *CommonSchedule
+            - *RussianTasks
