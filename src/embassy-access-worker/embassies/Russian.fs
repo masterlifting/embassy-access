@@ -15,7 +15,7 @@ module private SearchAppointments =
                 Some
                 <| { Page = 1
                      PageSize = 20
-                     SortBy = Filter.Desc(Filter.Date(_.Modified)) }
+                     SortBy = Filter.Asc(Filter.Date(_.Modified)) }
               Ids = None
               Embassies = Some <| Set [ Russian country ]
               HasStates = Some <| fun state -> state <> InProcess
