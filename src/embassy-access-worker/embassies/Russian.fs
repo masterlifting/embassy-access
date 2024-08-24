@@ -74,12 +74,21 @@ module private SearchAppointments =
                 |> getRequests ct country
                 |> ResultAsync.bind' (processRequests ct schedule storage))
 
+let testRun country =
+    fun (_, schedule, ct) ->
+        async {
+
+            do! Async.Sleep 2000
+            return Ok <| Info $"Test run for {country}"
+
+        }
+
 let addTasks country =
     Graph.Node(
         { Name = "Russian"; Task = None },
         [ Graph.Node(
               { Name = "Search Appointments"
-                Task = Some <| SearchAppointments.run country },
+                Task = Some <| testRun country },
               []
           ) ]
     )

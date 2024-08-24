@@ -2,7 +2,7 @@
 
 Logging:
   LogLevel:
-    Default: Trace
+    Default: Information
 
 RussianTasks: &RussianTasks
   Name: Russian
@@ -10,14 +10,16 @@ RussianTasks: &RussianTasks
   Limit: 3
   Tasks:
     - Name: Search Appointments
-      Enabled: false
+      # Enabled:
+      #   Await: false
       Duration: 00:03:00
   Schedule:
     Workdays: mon,tue,wed,thu,fri,sat,sun
 
 Worker:
   Name: Scheduler
-  Enabled: true
+  Enabled:
+    Await: true
   Tasks:
     - Name: Serbia
       Parallel: true
@@ -26,12 +28,12 @@ Worker:
           Tasks:
             - Name: Russian
               Parallel: true
-              Recursively: 00:00:10
               Limit: 3
+              Recursively: 00:00:10
               Tasks:
                 - Name: Search Appointments
-                  Enabled: true
-                  Parallel: true
+                  Enabled:
+                    Await: true
                   Duration: 00:03:00
               Schedule:
                 Workdays: mon,tue,wed,thu,fri,sat,sun
