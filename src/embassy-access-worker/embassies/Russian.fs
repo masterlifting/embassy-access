@@ -75,12 +75,11 @@ module private SearchAppointments =
                 |> ResultAsync.bind' (processRequests ct schedule storage))
 
 let testRun country =
-    fun (_, schedule, ct) ->
+    fun (_, (schedule: Schedule option), ct) ->
         async {
-
+            let ts = schedule
             do! Async.Sleep 2000
             return Ok <| Info $"Test run for {country}"
-
         }
 
 let addTasks country =

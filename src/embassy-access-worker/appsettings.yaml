@@ -2,104 +2,184 @@
 
 Logging:
   LogLevel:
-    Default: Information
+    Default: Trace
 
-RussianTasks: &RussianTasks
+Workdays: &Workdays
+  Workdays: mon,tue,wed,thu,fri,sat,sun
+
+SearchAppointments: &SearchAppointments
+  Name: Search Appointments
+  Enabled: true
+  Wait: false
+  Duration: "00:03:00"
+
+RussianTask: &RussianTask
   Name: Russian
+  Recursively: "00:00:10"
   Parallel: true
   Limit: 3
-  Tasks:
-    - Name: Search Appointments
-      # Enabled:
-      #   Await: false
-      Duration: 00:03:00
-  Schedule:
-    Workdays: mon,tue,wed,thu,fri,sat,sun
+
+RussianTaskDisabled: &RussianTaskDisabled
+  Name: Russian
+  Limit: 0
 
 Worker:
   Name: Scheduler
-  Enabled:
-    Await: true
+  Enabled: true
+  Wait: true
   Tasks:
     - Name: Serbia
       Parallel: true
       Tasks:
         - Name: Belgrade
+          Parallel: true
           Tasks:
-            - Name: Russian
-              Parallel: true
-              Limit: 3
-              Recursively: 00:00:10
+            - <<: *RussianTask
               Tasks:
-                - Name: Search Appointments
-                  Enabled:
-                    Await: true
-                  Duration: 00:03:00
-              Schedule:
-                Workdays: mon,tue,wed,thu,fri,sat,sun
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 1
+                    <<: *Workdays
+    
     - Name: Germany
       Parallel: true
       Tasks:
         - Name: Berlin
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 2
+                    <<: *Workdays
+        
     - Name: France
       Parallel: true
       Tasks:
         - Name: Paris
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 3
+                    <<: *Workdays
+
     - Name: Montenegro
       Parallel: true
       Tasks:
         - Name: Podgorica
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 4
+                    <<: *Workdays
+
     - Name: Ireland
       Parallel: true
       Tasks:
         - Name: Dublin
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 5
+                    <<: *Workdays
+
     - Name: Switzerland
       Parallel: true
       Tasks:
         - Name: Bern
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 6
+                    <<: *Workdays
+
     - Name: Finland
       Parallel: true
       Tasks:
         - Name: Helsinki
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 7
+                    <<: *Workdays
+
     - Name: Netherlands
       Parallel: true
       Tasks:
         - Name: Hague
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 8
+                    <<: *Workdays
+
     - Name: Albania
       Parallel: true
       Tasks:
         - Name: Tirana
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 9
+                    <<: *Workdays
+
     - Name: Slovenia
       Parallel: true
       Tasks:
         - Name: Ljubljana
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 10
+                    <<: *Workdays
+
     - Name: Bosnia
       Parallel: true
       Tasks:
         - Name: Sarajevo
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 11
+                    <<: *Workdays
+
     - Name: Hungary
       Parallel: true
       Tasks:
         - Name: Budapest
+          Parallel: true
           Tasks:
-            - *RussianTasks
+            - <<: *RussianTaskDisabled
+              Tasks:
+                - <<: *SearchAppointments
+                  Schedule:
+                    TimeShift: 12
+                    <<: *Workdays
