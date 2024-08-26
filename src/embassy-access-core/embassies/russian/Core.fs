@@ -272,6 +272,7 @@ module private ValidationPage =
                 match node.InnerHtml with
                 | AP.IsString text ->
                     let text = Environment.NewLine + text.Replace("<br>", Environment.NewLine)
+
                     let has (pattern: string) (node: string) =
                         node.Contains(pattern, StringComparison.OrdinalIgnoreCase)
 
@@ -690,13 +691,22 @@ module private Request =
             |> ResultAsync.map (fun request -> httpClient, queryParams, formData, request))
 
     let private setCompletedState deps request =
+        let message =
+            match request.Appointments.IsEmpty with
+            | true -> "No appointments found"
+            | false ->
+                match request.Appointments |> Seq.choose (fun x -> x.Confirmation) |> List.ofSeq with
+                | [] -> $"Found appointments: {request.Appointments.Count}"
+                | confirmations -> $"Found confirmations: {confirmations.Length}"
+            |> fun msg -> $"{msg}. Request: {request.Payload}"
+
         deps.updateRequest
             { request with
-                State = Completed $"\{request}"
+                State = Completed message
                 Modified = DateTime.UtcNow }
 
     let private setFailedState (error: Error') deps request =
-        let errorSuffix = $" {request.Payload}"
+        let errorSuffix = $" Request: {request.Payload}"
 
         let error =
             match error with
