@@ -15,7 +15,7 @@ module private SearchAppointments =
                 Some
                 <| { Page = 1
                      PageSize = 20
-                     SortBy = Filter.Asc(Filter.Date(_.Modified)) }
+                     SortBy = (Filter.Date _.Modified) |> Filter.Asc }
               Ids = None
               Embassies = Some <| Set [ Russian country ]
               HasStates = Some <| fun state -> state <> InProcess
@@ -30,7 +30,7 @@ module private SearchAppointments =
         match request.State with
         | Failed error -> Error error
         | Completed msg -> Ok msg
-        | state -> Ok $"Request {request.Id.Value} state is in complete. Current state: {state}"
+        | state -> Ok $"Request {request.Id.Value} is not completed. Current state: {state}"
 
     let private processRequests ct (schedule: Schedule option) storage requests =
         let config =
@@ -55,7 +55,7 @@ module private SearchAppointments =
                         | Ok msg -> msg
                         | Error error -> error.Message
                     | Error error -> error.Message)
-                |> Seq.fold (fun acc msg -> $"{acc}\n{msg}") ""
+                |> Seq.foldi (fun state index msg -> $"%s{state}{System.Environment.NewLine}%i{index + 1}. %s{msg}") ""
                 |> Info
                 |> Ok
         }
@@ -67,14 +67,6 @@ module private SearchAppointments =
                 storage
                 |> getRequests ct country
                 |> ResultAsync.bind' (processRequests ct schedule storage))
-
-let testRun country =
-    fun (_, (schedule: Schedule option), ct) ->
-        async {
-            let ts = schedule
-            do! Async.Sleep 12000
-            return Ok <| Info $"Test run for {country}"
-        }
 
 let addTasks country =
     Graph.Node(

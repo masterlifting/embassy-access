@@ -11,7 +11,7 @@ SearchAppointments: &SearchAppointments
   Name: Search Appointments
   Enabled: true
   Wait: false
-  Duration: "00:01:00"
+  Duration: "00:00:30"
 
 SearchAppointmentsDisabled: &SearchAppointmentsDisabled
   Name: Search Appointments
@@ -19,13 +19,9 @@ SearchAppointmentsDisabled: &SearchAppointmentsDisabled
 
 RussianTask: &RussianTask
   Name: Russian
-  Recursively: "00:03:00"
+  Recursively: "00:01:00"
   Parallel: true
   Limit: 3
-
-RussianTaskDisabled: &RussianTaskDisabled
-  Name: Russian
-  Parallel: true
 
 Worker:
   Name: Scheduler
@@ -51,7 +47,7 @@ Worker:
         - Name: Berlin
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -64,7 +60,7 @@ Worker:
         - Name: Paris
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -77,7 +73,7 @@ Worker:
         - Name: Podgorica
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -90,7 +86,7 @@ Worker:
         - Name: Dublin
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -103,7 +99,7 @@ Worker:
         - Name: Bern
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -116,7 +112,7 @@ Worker:
         - Name: Helsinki
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -129,7 +125,7 @@ Worker:
         - Name: Hague
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -142,7 +138,7 @@ Worker:
         - Name: Tirana
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -155,7 +151,7 @@ Worker:
         - Name: Ljubljana
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -168,7 +164,7 @@ Worker:
         - Name: Sarajevo
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
@@ -181,7 +177,7 @@ Worker:
         - Name: Budapest
           Parallel: true
           Tasks:
-            - <<: *RussianTaskDisabled
+            - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
                   Schedule:
