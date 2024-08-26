@@ -240,6 +240,7 @@ module private InitialPage =
             |> ResultAsync.map (fun formData -> httpClient, queryParams, formData, request))
 
 module private ValidationPage =
+    open System.Text.RegularExpressions
 
     type private Deps =
         { HttpClient: Web.Http.Domain.Client
@@ -271,7 +272,8 @@ module private ValidationPage =
             | Some node ->
                 match node.InnerHtml with
                 | AP.IsString text ->
-                    let text = Environment.NewLine + text.Replace("<br>", Environment.NewLine)
+                    let text = Regex.Replace(text, @"<[^>]*>", Environment.NewLine)
+                    let text = Regex.Replace(text, @"\s+", " ")
 
                     let has (pattern: string) (node: string) =
                         node.Contains(pattern, StringComparison.OrdinalIgnoreCase)
