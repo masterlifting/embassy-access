@@ -13,14 +13,14 @@ module Query =
         let get ct filter storage =
             match storage with
             | Storage.Type.InMemory context ->
-                Log.debug $"InMemory get request with filter \n{filter}"
+                Log.trace $"InMemory get request with filter \n{filter}"
                 context |> InMemoryRepository.Query.Request.get ct filter
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
         let get' ct requestId storage =
             match storage with
             | Storage.Type.InMemory context ->
-                Log.debug $"InMemory get request with id {requestId}"
+                Log.trace $"InMemory get request with id {requestId}"
                 context |> InMemoryRepository.Query.Request.get' ct requestId
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
@@ -31,7 +31,7 @@ module Command =
         let private execute ct command storage =
             match storage with
             | Storage.Type.InMemory context ->
-                Log.debug $"InMemory command request {command}"
+                Log.trace $"InMemory command request {command}"
                 context |> InMemoryRepository.Command.Request.execute ct command
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 

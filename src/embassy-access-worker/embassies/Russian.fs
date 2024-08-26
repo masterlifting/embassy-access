@@ -29,13 +29,7 @@ module private SearchAppointments =
     let private handleProcessedRequest request =
         match request.State with
         | Failed error -> Error error
-        | Completed msg ->
-            match request.Appointments.IsEmpty with
-            | true -> Ok $"No appointments found. {request.Payload}"
-            | false ->
-                match request.Appointments |> Seq.choose (fun x -> x.Confirmation) |> List.ofSeq with
-                | [] -> Ok $"Found appointments. {msg}"
-                | _ -> Ok $"Found confirmations. {msg}"
+        | Completed msg -> Ok msg
         | state -> Ok $"Request {request.Id.Value} state is in complete. Current state: {state}"
 
     let private processRequests ct (schedule: Schedule option) storage requests =
@@ -78,7 +72,7 @@ let testRun country =
     fun (_, (schedule: Schedule option), ct) ->
         async {
             let ts = schedule
-            do! Async.Sleep 2000
+            do! Async.Sleep 12000
             return Ok <| Info $"Test run for {country}"
         }
 
@@ -87,7 +81,7 @@ let addTasks country =
         { Name = "Russian"; Task = None },
         [ Graph.Node(
               { Name = "Search Appointments"
-                Task = Some <| testRun country },
+                Task = Some <| SearchAppointments.run country },
               []
           ) ]
     )
