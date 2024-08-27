@@ -84,6 +84,7 @@ type Appointment =
 
 type ConfirmationOption =
     | FirstAvailable
+    | LastAvailable
     | DateTimeRange of DateTime * DateTime
 
 type ConfirmationState =
@@ -125,7 +126,7 @@ module External =
         member val Country: Country = Country() with get, set
 
     type Confirmation() =
-        member val Description: string= String.Empty with get, set
+        member val Description: string = String.Empty with get, set
 
     type Appointment() =
         member val Value: string = String.Empty with get, set

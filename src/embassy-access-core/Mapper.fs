@@ -80,7 +80,7 @@ module City =
         | Helsinki -> City.Helsinki |> Ok
         | Hague -> City.Hague |> Ok
         | Ljubljana -> City.Ljubljana |> Ok
-        | _ -> Error <| NotSupported $"City {city.Name}."
+        | _ -> Error <| NotSupported $"City %s{city.Name}."
 
 module Country =
     [<Literal>]
@@ -182,7 +182,7 @@ module Country =
             | France -> Country.France city |> Ok
             | Netherlands -> Country.Netherlands city |> Ok
             | Slovenia -> Country.Slovenia city |> Ok
-            | _ -> Error <| NotSupported $"Country {country.Name}.")
+            | _ -> Error <| NotSupported $"Country %s{country.Name}.")
 
 module Embassy =
     [<Literal>]
@@ -241,7 +241,7 @@ module Embassy =
             | French -> Embassy.French country |> Ok
             | German -> Embassy.German country |> Ok
             | British -> Embassy.British country |> Ok
-            | _ -> Error <| NotSupported $"Embassy {embassy.Name}.")
+            | _ -> Error <| NotSupported $"Embassy %s{embassy.Name}.")
 
 module Confirmation =
     let toExternal (confirmation: Confirmation) =
@@ -277,6 +277,9 @@ module ConfirmationOption =
     let FirstAvailable = nameof ConfirmationOption.FirstAvailable
 
     [<Literal>]
+    let LastAvailable = nameof ConfirmationOption.LastAvailable
+
+    [<Literal>]
     let DateTimeRange = nameof ConfirmationOption.DateTimeRange
 
     let toExternal option =
@@ -284,6 +287,7 @@ module ConfirmationOption =
 
         match option with
         | ConfirmationOption.FirstAvailable -> result.Type <- FirstAvailable
+        | ConfirmationOption.LastAvailable -> result.Type <- LastAvailable
         | ConfirmationOption.DateTimeRange(min, max) ->
             result.Type <- DateTimeRange
             result.DateStart <- Nullable min
@@ -294,11 +298,12 @@ module ConfirmationOption =
     let toInternal (option: External.ConfirmationOption) =
         match option.Type with
         | FirstAvailable -> ConfirmationOption.FirstAvailable |> Ok
+        | LastAvailable -> ConfirmationOption.LastAvailable |> Ok
         | DateTimeRange ->
             match option.DateStart |> Option.ofNullable, option.DateEnd |> Option.ofNullable with
             | Some min, Some max -> ConfirmationOption.DateTimeRange(min, max) |> Ok
             | _ -> Error <| NotFound "DateStart or DateEnd."
-        | _ -> Error <| NotSupported $"ConfirmationOption {option.Type}."
+        | _ -> Error <| NotSupported $"ConfirmationOption %s{option.Type}."
 
 module ConfirmationState =
 
@@ -336,7 +341,7 @@ module ConfirmationState =
             match state.Option with
             | Some option -> option |> ConfirmationOption.toInternal |> Result.map ConfirmationState.Auto
             | None -> Error <| NotFound "ConfirmationOption."
-        | _ -> Error <| NotSupported $"ConfirmationType {state.Type}."
+        | _ -> Error <| NotSupported $"ConfirmationType %s{state.Type}."
 
 module RequestState =
     [<Literal>]
@@ -381,7 +386,7 @@ module RequestState =
             match state.Error with
             | Some error -> error |> Mapper.Error.toInternal |> Result.map RequestState.Failed
             | None -> Error <| NotSupported "Failed state without error"
-        | _ -> Error <| NotSupported $"Request state {state.Type}."
+        | _ -> Error <| NotSupported $"Request state %s{state.Type}."
 
 module Request =
     let toExternal request =
