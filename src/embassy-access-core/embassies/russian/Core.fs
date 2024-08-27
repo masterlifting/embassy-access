@@ -439,7 +439,6 @@ module private AppointmentsPage =
             |> Set.ofSeq
 
         let parse (value: string) =
-            //ASPCLNDR|2024-07-26T09:30:00|22|Окно 5
             let parts = value.Split '|'
 
             match parts.Length with
@@ -533,6 +532,10 @@ module private ConfirmationPage =
                 match request.Appointments |> Seq.tryHead with
                 | Some appointment -> Ok <| Some appointment
                 | None -> Error <| NotFound "First available appointment."
+            | true, LastAvailable ->
+                match request.Appointments |> Seq.tryLast with
+                | Some appointment -> Ok <| Some appointment
+                | None -> Error <| NotFound "Last available appointment."
             | true, DateTimeRange(min, max) ->
 
                 let minDate = DateOnly.FromDateTime(min)
@@ -549,7 +552,9 @@ module private ConfirmationPage =
 
                 match appointment with
                 | Some appointment -> Ok <| Some appointment
-                | None -> Error <| NotFound $"Appointment in range '{min}' - '{max}'."
+                | None ->
+                    Error
+                    <| NotFound $"Appointment in range '{min.ToShortDateString()}' - '{max.ToShortDateString()}'."
 
     let private createHttpRequest formData queryParamsId =
 
