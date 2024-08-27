@@ -154,7 +154,7 @@ module private InitialPage =
             | false -> Error <| NotFound "Initial Page headers.")
 
     let private createCaptchaRequest urlPath =
-        { Web.Http.Domain.Request.Path = $"/queue/{urlPath}"
+        { Web.Http.Domain.Request.Path = $"/queue/%s{urlPath}"
           Web.Http.Domain.Request.Headers = None }
 
     let private prepareCaptchaImage (image: byte array) =
@@ -253,7 +253,7 @@ module private ValidationPage =
     let private createHttpRequest formData queryParams =
 
         let request =
-            { Web.Http.Domain.Request.Path = "/queue/orderinfo.aspx?" + queryParams
+            { Web.Http.Domain.Request.Path = $"/queue/orderinfo.aspx?%s{queryParams}"
               Web.Http.Domain.Request.Headers = None }
 
         let content: Web.Http.Domain.RequestContent =
@@ -366,7 +366,7 @@ module private AppointmentsPage =
     let private createHttpRequest formData queryParams =
 
         let request =
-            { Web.Http.Domain.Request.Path = "/queue/orderinfo.aspx?" + queryParams
+            { Web.Http.Domain.Request.Path = $"/queue/orderinfo.aspx?%s{queryParams}"
               Web.Http.Domain.Request.Headers = None }
 
         let content: Web.Http.Domain.RequestContent =
@@ -459,8 +459,8 @@ module private AppointmentsPage =
                          Confirmation = None
                          Description = Some window }
 
-                | _ -> Error <| NotSupported $"Appointment date: {dateTime}."
-            | _ -> Error <| NotSupported $"Appointment row: {value}."
+                | _ -> Error <| NotSupported $"Appointment date: %s{dateTime}."
+            | _ -> Error <| NotSupported $"Appointment row: %s{value}."
 
         match appointments.IsEmpty with
         | true -> Ok(formData, Set.empty)
@@ -525,7 +525,7 @@ module private ConfirmationPage =
         | Manual appointment ->
             match request.Appointments |> Seq.tryFind (fun x -> x.Value = appointment.Value) with
             | Some appointment -> Ok <| Some appointment
-            | None -> Error <| NotFound $"Appointment '{appointment.Value}'."
+            | None -> Error <| NotFound $"Appointment '%s{appointment.Value}'."
         | Auto confirmationOption ->
             match request.Appointments.Count > 0, confirmationOption with
             | false, _ -> Ok None
@@ -649,7 +649,7 @@ module private Request =
         | false ->
             Error
             <| NotSupported
-                $"Embassy city '{request.Embassy.Country.City}' is not matched with the requested City '{credentials.City}'."
+                $"Embassy city '%A{request.Embassy.Country.City}' is not matched with the requested City '%A{credentials.City}'."
 
     let createCredentials =
         ResultAsync.bind (fun request ->
@@ -673,7 +673,7 @@ module private Request =
         match modifiedDay.DayOfYear = today.DayOfYear, request.Attempt > 20 with
         | true, true ->
             Error
-            <| Cancelled $"The request was cancelled due to the number of attempts reached the {request.Attempt}."
+            <| Cancelled $"The request was cancelled due to the number of attempts reached the %i{request.Attempt}."
         | false, true ->
             Ok
             <| { request with
@@ -698,9 +698,9 @@ module private Request =
             | true -> "No appointments found"
             | false ->
                 match request.Appointments |> Seq.choose (fun x -> x.Confirmation) |> List.ofSeq with
-                | [] -> $"Found appointments: {request.Appointments.Count}"
-                | confirmations -> $"Found confirmations: {confirmations.Length}"
-            |> fun msg -> $"{msg}. Request: {request.Payload}"
+                | [] -> $"Found appointments: %i{request.Appointments.Count}"
+                | confirmations -> $"Found confirmations: %i{confirmations.Length}"
+            |> fun msg -> $"%s{msg}. Request: %s{request.Payload}"
 
         deps.updateRequest
             { request with
@@ -708,26 +708,9 @@ module private Request =
                 Modified = DateTime.UtcNow }
 
     let private setFailedState (error: Error') deps request =
-        let errorSuffix = $" Request: {request.Payload}"
-
-        let error =
-            match error with
-            | Operation reason ->
-                Operation
-                <| { reason with
-                       Message = reason.Message + errorSuffix }
-            | Permission reason ->
-                Permission
-                <| { reason with
-                       Message = reason.Message + errorSuffix }
-            | NotFound src -> NotFound(src + errorSuffix)
-            | NotSupported src -> NotSupported(src + errorSuffix)
-            | NotImplemented src -> NotImplemented(src + errorSuffix)
-            | Cancelled src -> Cancelled(src + errorSuffix)
-
         deps.updateRequest
             { request with
-                State = Failed error
+                State = Failed <| error.extendMessage $"Request: {request.Payload}"
                 Attempt = request.Attempt + 1
                 Modified = DateTime.UtcNow }
 
