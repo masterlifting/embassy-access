@@ -21,7 +21,6 @@ RussianTask: &RussianTask
   Name: Russian
   Recursively: "00:00:10"
   Parallel: true
-  Limit: 2
 
 Worker:
   Name: Scheduler
@@ -37,9 +36,10 @@ Worker:
             - <<: *RussianTask
               Tasks:
                 - <<: *SearchAppointments
-                  Schedule:
-                    TimeShift: 2
-                    <<: *Workdays
+              Schedule:
+                TimeShift: 2
+                StopWork: "2024-08-27T21:02:00"
+                <<: *Workdays
     
     # - Name: Germany
     #   Parallel: true
