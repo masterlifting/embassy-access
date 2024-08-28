@@ -2,7 +2,7 @@
 
 Logging:
   LogLevel:
-    Default: Trace
+    Default: Debug
 
 Workdays: &Workdays
   Workdays: mon,tue,wed,thu,fri,sat,sun
@@ -39,7 +39,7 @@ Worker:
           Schedule:
             TimeShift: 2
             StartTime: "11:37:00"
-            StopTime: "15:50:00"
+            StopTime: "22:19:00"
             <<: *Workdays
     
     - Name: Germany
@@ -54,7 +54,7 @@ Worker:
           Schedule:
             TimeShift: 1
             StartTime: "11:37:00"
-            StopTime: "14:18:00"
+            StopTime: "21:07:00"
             <<: *Workdays
         
     - Name: France
