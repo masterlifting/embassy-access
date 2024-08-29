@@ -38,8 +38,8 @@ Worker:
                 - <<: *SearchAppointments
           Schedule:
             TimeShift: 2
-            StartTime: "11:37:00"
-            StopTime: "22:19:00"
+            StartTime: "18:15:00"
+            StopTime: "18:16:30"
             <<: *Workdays
     
     - Name: Germany
@@ -50,139 +50,139 @@ Worker:
           Tasks:
             - <<: *RussianTask
               Tasks:
-                - <<: *SearchAppointmentsDisabled
+                - <<: *SearchAppointments
           Schedule:
             TimeShift: 1
             StartTime: "11:37:00"
-            StopTime: "21:07:00"
+            StopTime: "17:12:00"
             <<: *Workdays
         
-    - Name: France
-      Parallel: true
-      Tasks:
-        - Name: Paris
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-              Schedule:
-                TimeShift: 2
-                <<: *Workdays
+    # - Name: France
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Paris
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #           Schedule:
+    #             TimeShift: 2
+    #             <<: *Workdays
 
-    - Name: Montenegro
-      Parallel: true
-      Tasks:
-        - Name: Podgorica
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-              Schedule:
-                TimeShift: 2
-                <<: *Workdays
+    # - Name: Montenegro
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Podgorica
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #           Schedule:
+    #             TimeShift: 2
+    #             <<: *Workdays
 
-    - Name: Ireland
-      Parallel: true
-      Tasks:
-        - Name: Dublin
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-              Schedule:
-                TimeShift: 1
-                <<: *Workdays
+    # - Name: Ireland
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Dublin
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #           Schedule:
+    #             TimeShift: 1
+    #             <<: *Workdays
 
-    - Name: Switzerland
-      Parallel: true
-      Tasks:
-        - Name: Bern
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-              Schedule:
-                TimeShift: 2
-                <<: *Workdays
+    # - Name: Switzerland
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Bern
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #           Schedule:
+    #             TimeShift: 2
+    #             <<: *Workdays
 
-    - Name: Finland
-      Parallel: true
-      Tasks:
-        - Name: Helsinki
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-                  Schedule:
-                    TimeShift: 2
-                    <<: *Workdays
+    # - Name: Finland
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Helsinki
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #               Schedule:
+    #                 TimeShift: 2
+    #                 <<: *Workdays
 
-    - Name: Netherlands
-      Parallel: true
-      Tasks:
-        - Name: Hague
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-                  Schedule:
-                    TimeShift: 2
-                    <<: *Workdays
+    # - Name: Netherlands
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Hague
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #               Schedule:
+    #                 TimeShift: 2
+    #                 <<: *Workdays
 
-    - Name: Albania
-      Parallel: true
-      Tasks:
-        - Name: Tirana
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-                  Schedule:
-                    TimeShift: 2
-                    <<: *Workdays
+    # - Name: Albania
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Tirana
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #               Schedule:
+    #                 TimeShift: 2
+    #                 <<: *Workdays
 
-    - Name: Slovenia
-      Parallel: true
-      Tasks:
-        - Name: Ljubljana
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-                  Schedule:
-                    TimeShift: 2
-                    <<: *Workdays
+    # - Name: Slovenia
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Ljubljana
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #               Schedule:
+    #                 TimeShift: 2
+    #                 <<: *Workdays
 
-    - Name: Bosnia
-      Parallel: true
-      Tasks:
-        - Name: Sarajevo
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-                  Schedule:
-                    TimeShift: 2
-                    <<: *Workdays
+    # - Name: Bosnia
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Sarajevo
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #               Schedule:
+    #                 TimeShift: 2
+    #                 <<: *Workdays
 
-    - Name: Hungary
-      Parallel: true
-      Tasks:
-        - Name: Budapest
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointmentsDisabled
-                  Schedule:
-                    TimeShift: 2
-                    <<: *Workdays
+    # - Name: Hungary
+    #   Parallel: true
+    #   Tasks:
+    #     - Name: Budapest
+    #       Parallel: true
+    #       Tasks:
+    #         - <<: *RussianTask
+    #           Tasks:
+    #             - <<: *SearchAppointmentsDisabled
+    #               Schedule:
+    #                 TimeShift: 2
+    #                 <<: *Workdays
