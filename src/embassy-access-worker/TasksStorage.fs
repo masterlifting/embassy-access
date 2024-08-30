@@ -12,7 +12,7 @@ let private buildGraph rootNode configuration =
     |> Option.map (Worker.Graph.create rootNode)
     |> Option.defaultValue (Error <| NotFound $"Section '%s{sectionName}' in the configuration.")
 
-let getTask configuration taskHandlers=
+let getTask configuration taskHandlers =
     fun taskName ->
         async {
             return
