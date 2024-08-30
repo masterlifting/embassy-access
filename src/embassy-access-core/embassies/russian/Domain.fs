@@ -17,7 +17,7 @@ module ErrorCodes =
 
     [<Literal>]
     let RequestDeleted = "RequestDeleted"
-    
+
 type StorageUpdateRequest = Domain.Request -> Async<Result<Domain.Request, Error'>>
 
 type HttpGetStringRequest =
@@ -31,9 +31,7 @@ type HttpPostStringRequest =
 
 type SolveCaptchaImage = byte array -> Async<Result<int, Error'>>
 
-type ProcessRequestConfiguration = {
-    TimeShift: int8
-}
+type ProcessRequestConfiguration = { TimeShift: int8 }
 
 type ProcessRequestDeps =
     { Configuration: ProcessRequestConfiguration

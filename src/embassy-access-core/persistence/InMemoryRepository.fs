@@ -75,7 +75,10 @@ module Query =
                         |> getEntities<External.Request> RequestsKey
                         |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Seq.roe)
                         |> Result.map filter
-                    | false -> Error <| (Cancelled <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
+                    | false ->
+                        Error
+                        <| (Cancelled
+                            <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
             }
 
         let get' ct requestId context =
@@ -87,7 +90,10 @@ module Query =
                         |> getEntities<External.Request> RequestsKey
                         |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Seq.roe)
                         |> Result.map (List.tryFind (fun x -> x.Id = requestId))
-                    | false -> Error <| (Cancelled <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
+                    | false ->
+                        Error
+                        <| (Cancelled
+                            <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
             }
 
 module Command =
@@ -157,5 +163,8 @@ module Command =
                                 requests |> delete request |> Result.map (fun result -> result, request))
                         |> Result.bind (fun (result, request) ->
                             context |> save RequestsKey result |> Result.map (fun _ -> request))
-                    | false -> Error <| (Cancelled <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
+                    | false ->
+                        Error
+                        <| (Cancelled
+                            <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
             }
