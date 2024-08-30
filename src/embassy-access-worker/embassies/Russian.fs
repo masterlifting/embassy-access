@@ -76,7 +76,7 @@ let addTasks country =
         { Name = "Russian"; Task = None },
         [ Graph.Node(
               { Name = "Search Appointments"
-                Task = Some <| SearchAppointments.run' country },
+                Task = Some <| SearchAppointments.run country },
               []
           ) ]
     )
