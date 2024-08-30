@@ -38,8 +38,8 @@ Worker:
                 - <<: *SearchAppointments
           Schedule:
             TimeShift: 2
-            StartTime: "18:15:00"
-            StopTime: "18:16:30"
+            StartTime: "16:20:00"
+            StopTime: "16:33:00"
             <<: *Workdays
     
     - Name: Germany
@@ -53,8 +53,8 @@ Worker:
                 - <<: *SearchAppointments
           Schedule:
             TimeShift: 1
-            StartTime: "11:37:00"
-            StopTime: "17:12:00"
+            StartTime: "10:37:00"
+            StopTime: "15:33:00"
             <<: *Workdays
         
     # - Name: France
