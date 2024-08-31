@@ -35,9 +35,9 @@ module private SearchAppointments =
     let private processRequests ct (schedule: Schedule option) storage requests =
         let config =
             { TimeShift =
-                match schedule with
-                | None -> 0y
-                | Some scheduler -> scheduler.TimeShift }
+                schedule
+                |> Option.map (fun schedule -> schedule.TimeShift)
+                |> Option.defaultValue 0y }
 
         let processRequest =
             (storage, config, ct)
@@ -60,7 +60,7 @@ module private SearchAppointments =
                 |> Ok
         }
 
-    let run country =
+    let search country =
         fun (_, schedule, ct) ->
             Persistence.Storage.create InMemory
             |> ResultAsync.wrap (fun storage ->
@@ -68,7 +68,7 @@ module private SearchAppointments =
                 |> getRequests ct country
                 |> ResultAsync.bind' (processRequests ct schedule storage))
 
-    let run' country =
+    let make country =
         fun (_, schedule, ct) -> async { return Ok <| Success $"{country}" }
 
 let addTasks country =
@@ -76,7 +76,12 @@ let addTasks country =
         { Name = "Russian"; Task = None },
         [ Graph.Node(
               { Name = "Search Appointments"
-                Task = Some <| SearchAppointments.run country },
+                Task = Some <| SearchAppointments.search country },
+              []
+          )
+          Graph.Node(
+              { Name = "Make Appointments"
+                Task = Some <| SearchAppointments.make country },
               []
           ) ]
     )
