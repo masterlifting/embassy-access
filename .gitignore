@@ -452,3 +452,6 @@ bower_components
 
 ### WebSharper ###
 Scripts/
+
+### Test Data ###
+tests/embassies/russian/test_data/
