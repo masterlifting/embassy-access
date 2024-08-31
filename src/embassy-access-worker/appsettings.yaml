@@ -6,7 +6,7 @@ Logging:
 
 Workdays: &Workdays
   StartTime: "09:00:00"
-  StopTime: "17:45:00"
+  StopTime: "17:00:00"
   Workdays: mon,tue,wed,thu,fri,sat,sun
 
 SearchAppointments: &SearchAppointments

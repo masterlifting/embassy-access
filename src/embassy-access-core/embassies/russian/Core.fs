@@ -712,11 +712,16 @@ module private Request =
                 State = Completed message
                 Modified = DateTime.UtcNow }
 
-    let private setFailedState (error: Error') deps request =
+    let private setFailedState error deps request =
+        let attempt =
+            match error with
+            | Operation { Code = Some Web.Captcha.CaptchaErrorCode } -> request.Attempt
+            | _ -> request.Attempt + 1
+
         deps.updateRequest
             { request with
-                State = Failed <| error.extendMessage $"Request: {request.Payload}"
-                Attempt = request.Attempt + 1
+                State = Failed <| error.extendMessage $"Request: %s{request.Payload}"
+                Attempt = attempt
                 Modified = DateTime.UtcNow }
 
     let completeConfirmation deps request confirmation =
