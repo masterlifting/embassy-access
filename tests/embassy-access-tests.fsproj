@@ -6,66 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="embassies\russian\test_data\initial_page_response.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\captcha.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\validation_page_has_error.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\validation_page_requires_confirmation.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\validation_page_valid_response.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\validation_page_has_confirmation.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\validation_page_request_deleted.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_empty_result_1.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_empty_result_2.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_empty_result_3.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_empty_result_4.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_empty_result_5.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_empty_result_6.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_empty_result_7.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_has_result_1.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_has_result_2.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\appointments_page_has_result_3.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\confirmation_page_has_result_1.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="embassies\russian\test_data\confirmation_page_has_result_2.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="embassies\russian\Test.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

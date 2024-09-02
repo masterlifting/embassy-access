@@ -31,3 +31,32 @@ type Request =
       HasConfirmationState: predicate<Domain.ConfirmationState> option
       HasStates: predicate<Domain.RequestState> option
       WasModified: predicate<DateTime> option }
+
+type SearchAppointmentsRequest =
+    { Pagination: Pagination<Domain.Request>
+      Embassy: Domain.Embassy
+      HasStates: predicate<Domain.RequestState>
+      HasConfirmationState: predicate<Domain.ConfirmationState>
+      GroupBy: string }
+
+    static member Create(embassy: Domain.Embassy) =
+        { Pagination =
+            { Page = 1
+              PageSize = 20
+              SortBy = OrderBy<Domain.Request>.Date _.Modified |> Asc }
+          Embassy = embassy
+          HasStates =
+            function
+            | Domain.InProcess -> false
+            | _ -> true
+          HasConfirmationState =
+            function
+            | Domain.Auto _ -> false
+            | _ -> true
+          GroupBy = "" }
+
+type MakeAppointmentRequest =
+    { Pagination: Pagination<Domain.Request>
+      Embassy: Domain.Embassy
+      HasStates: predicate<Domain.RequestState>
+      HasConfirmationState: predicate<Domain.ConfirmationState> }
