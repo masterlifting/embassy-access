@@ -18,10 +18,18 @@ module private SearchAppointments =
                      SortBy = Filter.Date _.Modified |> Filter.Asc }
               Ids = None
               Embassies = Some <| Set [ Russian country ]
-              HasStates = Some <| fun state -> state <> InProcess
+              HasStates =
+                Some
+                <| function
+                    | InProcess -> false
+                    | _ -> true
               HasAppointments = None
               HasConfirmations = None
-              HasConfirmationState = None
+              HasConfirmationState =
+                Some
+                <| function
+                    | Auto _ -> false
+                    | _ -> true
               WasModified = None }
 
         storage |> Repository.Query.Request.get ct filter
@@ -60,7 +68,7 @@ module private SearchAppointments =
                 |> Ok
         }
 
-    let search country =
+    let run country =
         fun (_, schedule, ct) ->
             Persistence.Storage.create InMemory
             |> ResultAsync.wrap (fun storage ->
@@ -68,7 +76,34 @@ module private SearchAppointments =
                 |> getRequests ct country
                 |> ResultAsync.bind' (processRequests ct schedule storage))
 
-    let make country =
+module private MakeAppointments =
+
+    let private getRequests ct country storage =
+        let filter: Filter.Request =
+            { Pagination =
+                Some
+                <| { Page = 1
+                     PageSize = 20
+                     SortBy = Filter.Date _.Modified |> Filter.Asc }
+              Ids = None
+              Embassies = Some <| Set [ Russian country ]
+              HasStates =
+                Some
+                <| function
+                    | InProcess -> false
+                    | _ -> true
+              HasAppointments = None
+              HasConfirmations = None
+              HasConfirmationState =
+                Some
+                <| function
+                    | Auto _ -> true
+                    | _ -> false
+              WasModified = None }
+
+        storage |> Repository.Query.Request.get ct filter
+
+    let run country =
         fun (_, schedule, ct) -> async { return Ok <| Success $"{country}" }
 
 let addTasks country =
@@ -76,12 +111,12 @@ let addTasks country =
         { Name = "Russian"; Task = None },
         [ Graph.Node(
               { Name = "Search Appointments"
-                Task = Some <| SearchAppointments.search country },
+                Task = Some <| SearchAppointments.run country },
               []
           )
           Graph.Node(
               { Name = "Make Appointments"
-                Task = Some <| SearchAppointments.make country },
+                Task = Some <| MakeAppointments.run country },
               []
           ) ]
     )
