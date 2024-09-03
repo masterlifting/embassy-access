@@ -28,7 +28,7 @@ module private Fixture =
         <| Map [ "Set-Cookie", [ "ASP.NET_SessionId=1"; " AlteonP=1"; " __ddg1_=1" ] ]
 
     let httpGetStringRequest fileName =
-        Environment.CurrentDirectory + $"/embassies/russian/test_data/{fileName}.html"
+        $"./embassies/russian/test_data/{fileName}.html"
         |> Storage.create
         |> ResultAsync.wrap Storage.Read.string
         |> ResultAsync.map (fun data ->
@@ -37,12 +37,12 @@ module private Fixture =
               StatusCode = 200 })
 
     let httpPostStringRequest fileName =
-        Environment.CurrentDirectory + $"/embassies/russian/test_data/{fileName}.html"
+        $"./embassies/russian/test_data/{fileName}.html"
         |> Storage.create
         |> ResultAsync.wrap Storage.Read.string
 
     let httpGetBytesRequest fileName =
-        Environment.CurrentDirectory + "/embassies/russian/test_data/" + fileName
+        $"./embassies/russian/test_data/{fileName}"
         |> Storage.create
         |> ResultAsync.wrap Storage.Read.bytes
         |> ResultAsync.map (fun data ->
