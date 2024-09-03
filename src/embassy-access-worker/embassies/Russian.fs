@@ -8,10 +8,7 @@ open EmbassyAccess.Persistence
 open EmbassyAccess.Embassies.Russian.Domain
 
 let private createConfig (schedule: Schedule option) =
-    { TimeShift =
-        schedule
-        |> Option.map (fun schedule -> schedule.TimeShift)
-        |> Option.defaultValue 0y }
+    { TimeShift = schedule |> Option.map _.TimeShift |> Option.defaultValue 0y }
 
 let private processRequest ct config storage =
     (storage, config, ct)
@@ -86,22 +83,23 @@ module private SearchAppointments =
                 }
 
             async {
-                let! results =
+                let results =
                     requests
-                    |> Map.toList
-                    |> List.map (fun (_, requests) -> requests |> Seq.toList |> innerLoop [])
-                    |> Async.Sequential
+                    |> Map.map (fun _ requests -> requests |> Seq.toList |> innerLoop [])
+                    |> Map.values
+                //|> Async.Parallel
 
-            return
-                results
-                |> Seq.roes
-                |> Result.map (Seq.choose id)
-                |> Result.mapError (fun errors -> "")
+                return
+                    results
+                    |> Seq.roes
+                    |> Result.map (Seq.choose id)
+                    |> Result.mapError (fun errors -> Operation { Message = ""; Code = None })
             }
 
         async {
-            let! results = groupedRequests |> processRequests |> Async.Sequential
-            return results |> createTaskResult
+            match! groupedRequests |> processRequests with
+            | Ok requests -> return Ok <| Info ""
+            | Error error -> return Error error
         }
 
     let run country =
