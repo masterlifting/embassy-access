@@ -48,13 +48,16 @@ module private SearchAppointments =
             |> Seq.groupBy _.GroupBy.Value
             |> Map
             |> Map.add "unique" (requests |> Seq.filter _.GroupBy.IsNone)
+            |> Map.map (fun _ requests -> requests |> Seq.take 5)
 
         let processRequest request =
             processRequest ct config storage request
 
-        let processRequests (requests: Map<string, Request seq>) =
+        let notify request = async { return Ok request }
 
-            let rec innerLoop (errors: Error' list) requests =
+        let processGroupedRequests (groups: Map<string, Request seq>) =
+
+            let rec choose (errors: Error' list) requests =
                 async {
                     match requests with
                     | [] ->
@@ -75,19 +78,32 @@ module private SearchAppointments =
 
                     | request :: requestsTail ->
                         match! request |> processRequest with
-                        | Error error -> return! innerLoop (errors @ [ error ]) requestsTail
+                        | Error error -> return! choose (errors @ [ error ]) requestsTail
                         | Ok result ->
                             match result.State with
-                            | Failed error -> return! innerLoop (errors @ [ error ]) requestsTail
+                            | Failed error -> return! choose (errors @ [ error ]) requestsTail
                             | _ -> return Ok <| Some result
                 }
 
+            let processGroup name group =
+                async {
+                    let requests = group |> Seq.toList
+
+                    match! requests |> choose [] with
+                    | Ok request ->
+                        match request with
+                        | Some _ ->
+                            match! requests |> Seq.map notify |> Async.Parallel |> Async.Catch with
+                            | Choice1Of2 _ -> return Ok requests
+                            | Choice2Of2 ex ->
+                                let message = ex |> Exception.toMessage
+                                return Error <| Operation { Message = message; Code = None }
+                        | None -> return Error <| NotFound $"Correctly processed requests in group '%s{name}'"
+                    | Error error -> return Error error
+                }
+
             async {
-                let results =
-                    requests
-                    |> Map.map (fun _ requests -> requests |> Seq.toList |> innerLoop [])
-                    |> Map.values
-                //|> Async.Parallel
+                let! results = groups |> Map.map processGroup |> Map.values |> Async.Parallel
 
                 return
                     results
@@ -97,7 +113,7 @@ module private SearchAppointments =
             }
 
         async {
-            match! groupedRequests |> processRequests with
+            match! groupedRequests |> processGroupedRequests with
             | Ok requests -> return Ok <| Info ""
             | Error error -> return Error error
         }
