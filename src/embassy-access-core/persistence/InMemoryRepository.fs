@@ -15,30 +15,38 @@ let private getEntities<'a> key context =
     |> Result.bind (Json.deserialize<'a array> |> Option.map >> Option.defaultValue (Ok [||]))
 
 module Query =
-    let paginate<'a> (data: 'a list) (pagination: Filter.Pagination<'a> option) =
-        match pagination with
-        | None -> data
-        | Some pagination ->
-            data
-            |> match pagination.SortBy with
-               | Filter.Asc sortBy ->
-                   match sortBy with
-                   | Filter.Date getValue -> List.sortBy <| getValue
-                   | Filter.String getValue -> List.sortBy <| getValue
-                   | Filter.Int getValue -> List.sortBy <| getValue
-                   | Filter.Bool getValue -> List.sortBy <| getValue
-                   | Filter.Guid getValue -> List.sortBy <| getValue
-               | Filter.Desc sortBy ->
-                   match sortBy with
-                   | Filter.Date getValue -> List.sortByDescending <| getValue
-                   | Filter.String getValue -> List.sortByDescending <| getValue
-                   | Filter.Int getValue -> List.sortByDescending <| getValue
-                   | Filter.Bool getValue -> List.sortByDescending <| getValue
-                   | Filter.Guid getValue -> List.sortByDescending <| getValue
-            |> List.skip (pagination.PageSize * (pagination.Page - 1))
-            |> List.truncate pagination.PageSize
+    let paginate<'a> (pagination: Filter.Pagination<'a>) (data: 'a list) =
+        data
+        |> match pagination.SortBy with
+           | Filter.Asc sortBy ->
+               match sortBy with
+               | Filter.Date getValue -> List.sortBy <| getValue
+               | Filter.String getValue -> List.sortBy <| getValue
+               | Filter.Int getValue -> List.sortBy <| getValue
+               | Filter.Bool getValue -> List.sortBy <| getValue
+               | Filter.Guid getValue -> List.sortBy <| getValue
+           | Filter.Desc sortBy ->
+               match sortBy with
+               | Filter.Date getValue -> List.sortByDescending <| getValue
+               | Filter.String getValue -> List.sortByDescending <| getValue
+               | Filter.Int getValue -> List.sortByDescending <| getValue
+               | Filter.Bool getValue -> List.sortByDescending <| getValue
+               | Filter.Guid getValue -> List.sortByDescending <| getValue
+        |> List.skip (pagination.PageSize * (pagination.Page - 1))
+        |> List.truncate pagination.PageSize
 
     module Request =
+
+        module private Filters =
+            let searchAppointments (filter: Filter.SearchAppointmentsRequest) (request: Request) =
+                filter.Embassy = request.Embassy
+                && filter.HasStates request.State
+                && filter.HasConfirmationState request.ConfirmationState
+
+            let makeAppointments (filter: Filter.MakeAppointmentRequest) (request: Request) =
+                filter.Embassy = request.Embassy
+                && filter.HasStates request.State
+                && filter.HasConfirmationStates request.ConfirmationState
 
         let get ct (filter: Filter.Request) context =
             async {
@@ -46,30 +54,19 @@ module Query =
                     match ct |> notCanceled with
                     | true ->
                         let filter (requests: Request list) =
-                            requests
-                            |> List.filter (fun x ->
-                                filter.Ids |> Option.map (Set.contains x.Id) |> Option.defaultValue true
-                                && filter.Embassies
-                                   |> Option.map (Set.contains x.Embassy)
-                                   |> Option.defaultValue true
-                                && filter.HasStates
-                                   |> Option.map (fun predicate -> predicate x.State)
-                                   |> Option.defaultValue true
-                                && filter.HasAppointments
-                                   |> Option.map (fun hasAppointments -> hasAppointments && not x.Appointments.IsEmpty)
-                                   |> Option.defaultValue true
-                                && filter.HasConfirmations
-                                   |> Option.map (fun hasConfirmations ->
-                                       hasConfirmations && x.Appointments |> Seq.exists (_.Confirmation.IsSome))
-                                   |> Option.defaultValue true
-                                && filter.HasConfirmationState
-                                   |> Option.map (fun predicate -> predicate x.ConfirmationState)
-                                   |> Option.defaultValue true
-                                && filter.WasModified
-                                   |> Option.map (fun predicate -> predicate x.Modified)
-                                   |> Option.defaultValue true)
-                            |> paginate
-                            <| filter.Pagination
+                            match filter with
+                            | Filter.SearchAppointments embassy ->
+                                let filter = Filter.SearchAppointmentsRequest.create embassy
+
+                                requests
+                                |> List.filter (Filters.searchAppointments filter)
+                                |> paginate filter.Pagination
+                            | Filter.MakeAppointments embassy ->
+                                let filter = Filter.MakeAppointmentRequest.create embassy
+
+                                requests
+                                |> List.filter (Filters.makeAppointments filter)
+                                |> paginate filter.Pagination
 
                         context
                         |> getEntities<External.Request> RequestsKey
