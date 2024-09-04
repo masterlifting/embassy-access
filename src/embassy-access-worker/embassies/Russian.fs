@@ -1,5 +1,6 @@
 ﻿module internal EmbassyAccess.Worker.Embassies.Russian
 
+open System
 open Infrastructure
 open Persistence.Domain
 open Worker.Domain
@@ -29,7 +30,7 @@ let private createTaskResult (results: Result<Request, Error'> array) =
             | Ok msg -> msg
             | Error error -> error.Message
         | Error error -> error.Message)
-    |> Seq.foldi (fun state index msg -> $"%s{state}{System.Environment.NewLine}%i{index + 1}. %s{msg}") ""
+    |> Seq.foldi (fun state index msg -> $"%s{state}{Environment.NewLine}%i{index + 1}. %s{msg}") ""
     |> Info
     |> Ok
 
@@ -42,16 +43,17 @@ module private SearchAppointments =
     let private processRequests ct schedule storage requests =
         let config = createConfig schedule
 
+        let uniqueRequests = requests |> Seq.filter _.GroupBy.IsNone
+
         let groupedRequests =
             requests
             |> Seq.filter _.GroupBy.IsSome
             |> Seq.groupBy _.GroupBy.Value
             |> Map
-            |> Map.add "unique" (requests |> Seq.filter _.GroupBy.IsNone)
             |> Map.map (fun _ requests -> requests |> Seq.take 5)
+            |> Map.add "unique" uniqueRequests
 
-        let processRequest request =
-            processRequest ct config storage request
+        let processRequest = processRequest ct config storage
 
         let notify request = async { return Ok request }
 
@@ -69,20 +71,17 @@ module private SearchAppointments =
                                 let msg =
                                     errors
                                     |> List.mapi (fun i error -> $"%i{i + 1}.%s{error.Message}")
-                                    |> String.concat System.Environment.NewLine
+                                    |> String.concat Environment.NewLine
 
                                 Error
                                 <| Operation
-                                    { Message = $"Multiple errors: %s{System.Environment.NewLine}%s{msg}"
+                                    { Message = $"Multiple errors: %s{Environment.NewLine}%s{msg}"
                                       Code = None }
 
                     | request :: requestsTail ->
                         match! request |> processRequest with
                         | Error error -> return! choose (errors @ [ error ]) requestsTail
-                        | Ok result ->
-                            match result.State with
-                            | Failed error -> return! choose (errors @ [ error ]) requestsTail
-                            | _ -> return Ok <| Some result
+                        | Ok result -> return Ok <| Some result
                 }
 
             let processGroup name group =
@@ -92,9 +91,9 @@ module private SearchAppointments =
                     match! requests |> choose [] with
                     | Ok request ->
                         match request with
-                        | Some _ ->
+                        | Some request ->
                             match! requests |> Seq.map notify |> Async.Parallel |> Async.Catch with
-                            | Choice1Of2 _ -> return Ok requests
+                            | Choice1Of2 _ -> return Ok $"Processed requests in group '%s{name}'; 
                             | Choice2Of2 ex ->
                                 let message = ex |> Exception.toMessage
                                 return Error <| Operation { Message = message; Code = None }
@@ -135,8 +134,7 @@ module private MakeAppointments =
     let private processRequests ct schedule storage requests =
         let config = createConfig schedule
 
-        let processRequest request =
-            processRequest ct config storage request
+        let processRequest = processRequest ct config storage
 
         async {
             let! results = requests |> Seq.map processRequest |> Async.Sequential

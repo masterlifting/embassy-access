@@ -720,9 +720,10 @@ module private Request =
 
         deps.updateRequest
             { request with
-                State = Failed <| error.extendMessage $"Request: %s{request.Payload}"
+                State = Failed error
                 Attempt = attempt
                 Modified = DateTime.UtcNow }
+        |> ResultAsync.bind (fun _ -> Error <| error.extendMessage $"Request: %s{request.Payload}")
 
     let completeConfirmation deps request confirmation =
         async {
