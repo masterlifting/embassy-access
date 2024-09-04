@@ -702,10 +702,9 @@ module private Request =
             match request.Appointments.IsEmpty with
             | true -> "No appointments found"
             | false ->
-                match request.Appointments |> Seq.choose (fun x -> x.Confirmation) |> List.ofSeq with
+                match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
                 | [] -> $"Found appointments: %i{request.Appointments.Count}"
                 | confirmations -> $"Found confirmations: %i{confirmations.Length}"
-            |> fun msg -> $"%s{msg}. Request: %s{request.Payload}"
 
         deps.updateRequest
             { request with
@@ -723,7 +722,7 @@ module private Request =
                 State = Failed error
                 Attempt = attempt
                 Modified = DateTime.UtcNow }
-        |> ResultAsync.bind (fun _ -> Error <| error.extendMessage $"Request: %s{request.Payload}")
+        |> ResultAsync.bind (fun _ -> Error <| error.extend $"Payload: %s{request.Payload}")
 
     let completeConfirmation deps request confirmation =
         async {
