@@ -2,21 +2,21 @@
 
 Logging:
   LogLevel:
-    Default: Debug
+    Default: Information
 
 Workdays: &Workdays
   StartTime: "00:00:00"
-  StopTime: "23:59:00"
+  StopTime: "18:13:00"
   Workdays: mon,tue,wed,thu,fri,sat,sun
 
 SearchAppointments: &SearchAppointments
-  Name: Search Appointments
+  Name: Search appointments
   Enabled: true
   Wait: false
   Duration: "00:02:00"
 
 MakeAppointments: &MakeAppointments
-  Name: Make Appointments
+  Name: Make appointments
   Enabled: true
   Wait: false
   Duration: "00:00:10"
@@ -38,6 +38,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 2
             <<: *Workdays
@@ -63,6 +66,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 2
             <<: *Workdays
@@ -74,6 +80,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 2
             <<: *Workdays
@@ -85,6 +94,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 1
             <<: *Workdays
@@ -96,6 +108,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 2
             <<: *Workdays
@@ -107,6 +122,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 3
             <<: *Workdays
@@ -118,6 +136,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 2
             <<: *Workdays
@@ -129,6 +150,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 2
             <<: *Workdays
@@ -140,6 +164,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 2
             <<: *Workdays
@@ -151,6 +178,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 2
             <<: *Workdays
@@ -162,6 +192,9 @@ Worker:
           Parallel: true
           Tasks:
             - <<: *RussianTask
+              Tasks:
+                - <<: *SearchAppointments
+                - <<: *MakeAppointments
           Schedule:
             TimeShift: 2
             <<: *Workdays

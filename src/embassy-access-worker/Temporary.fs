@@ -20,7 +20,7 @@ let private createRussianSearchRequest ct (value, country) =
               ConfirmationState = Disabled
               Appointments = Set.empty
               Description = None
-              GroupBy = None
+              GroupBy = Some "Passports"
               Modified = System.DateTime.UtcNow }
 
         storage

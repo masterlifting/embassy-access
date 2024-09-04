@@ -11,28 +11,38 @@ open EmbassyAccess.Embassies.Russian.Domain
 let private createConfig (schedule: Schedule option) =
     { TimeShift = schedule |> Option.map _.TimeShift |> Option.defaultValue 0y }
 
-let private processRequest ct config storage =
-    (storage, config, ct)
-    |> EmbassyAccess.Deps.Russian.processRequest
-    |> EmbassyAccess.Api.processRequest
+let private notifySubscribers request = async { return Ok request }
 
-let private mapRequestState request =
-    match request.State with
-    | Failed error -> Error error
-    | Completed msg -> Ok msg
-    | state -> Ok $"Request {request.Id.Value} is not completed. Current state: {state}"
+let private processRequest ct config storage request =
 
-let private createTaskResult (results: Result<Request, Error'> array) =
+    let processRequest ct config storage =
+        (storage, config, ct)
+        |> EmbassyAccess.Deps.Russian.processRequest
+        |> EmbassyAccess.Api.processRequest
+
+    processRequest ct config storage request
+    |> ResultAsync.bind' notifySubscribers
+    |> ResultAsync.map (fun request -> $"Result: {request.State}.")
+
+let private toTaskResult (results: Result<string, Error'> array) =
     results
+    |> Seq.raes
     |> Seq.map (function
-        | Ok request ->
-            match request |> mapRequestState with
-            | Ok msg -> msg
-            | Error error -> error.Message
-        | Error error -> error.Message)
-    |> Seq.foldi (fun state index msg -> $"%s{state}{Environment.NewLine}%i{index + 1}. %s{msg}") ""
+        | Some msg, None -> msg
+        | None, Some error -> error.Message
+        | Some msg, Some error -> $"%s{msg}; %s{error.Message}"
+        | None, None -> "No results")
+    |> String.concat Environment.NewLine
     |> Info
     |> Ok
+
+let private run country getRequests processRequests =
+    fun (_, schedule, ct) ->
+        Persistence.Storage.create InMemory
+        |> ResultAsync.wrap (fun storage ->
+            storage
+            |> getRequests ct country
+            |> ResultAsync.bind' (processRequests ct schedule storage))
 
 module private SearchAppointments =
 
@@ -42,6 +52,7 @@ module private SearchAppointments =
 
     let private processRequests ct schedule storage requests =
         let config = createConfig schedule
+        let processRequest = processRequest ct config storage
 
         let uniqueRequests = requests |> Seq.filter _.GroupBy.IsNone
 
@@ -50,14 +61,14 @@ module private SearchAppointments =
             |> Seq.filter _.GroupBy.IsSome
             |> Seq.groupBy _.GroupBy.Value
             |> Map
-            |> Map.map (fun _ requests -> requests |> Seq.take 5)
-            |> Map.add "unique" uniqueRequests
+            |> Map.map (fun _ requests -> requests |> Seq.truncate 5)
 
-        let processRequest = processRequest ct config storage
+        let groupedRequests =
+            match uniqueRequests |> Seq.isEmpty with
+            | true -> groupedRequests
+            | false -> groupedRequests |> Map.add "Unique" uniqueRequests
 
-        let notify request = async { return Ok request }
-
-        let processGroupedRequests (groups: Map<string, Request seq>) =
+        let processGroupedRequests groups =
 
             let rec choose (errors: Error' list) requests =
                 async {
@@ -86,44 +97,22 @@ module private SearchAppointments =
 
             let processGroup name group =
                 async {
-                    let requests = group |> Seq.toList
-
-                    match! requests |> choose [] with
-                    | Ok request ->
-                        match request with
-                        | Some request ->
-                            match! requests |> Seq.map notify |> Async.Parallel |> Async.Catch with
-                            | Choice1Of2 _ -> return Ok $"Processed requests in group '%s{name}'; 
-                            | Choice2Of2 ex ->
-                                let message = ex |> Exception.toMessage
-                                return Error <| Operation { Message = message; Code = None }
-                        | None -> return Error <| NotFound $"Correctly processed requests in group '%s{name}'"
+                    match! group |> Seq.toList |> choose [] with
+                    | Ok result ->
+                        match result with
+                        | Some result -> return Ok $"Group '%s{name}': %s{result}"
+                        | None -> return Ok $"Group '%s{name}'. No results."
                     | Error error -> return Error error
                 }
 
-            async {
-                let! results = groups |> Map.map processGroup |> Map.values |> Async.Parallel
-
-                return
-                    results
-                    |> Seq.roes
-                    |> Result.map (Seq.choose id)
-                    |> Result.mapError (fun errors -> Operation { Message = ""; Code = None })
-            }
+            groups |> Map.map processGroup |> Map.values |> Async.Parallel
 
         async {
-            match! groupedRequests |> processGroupedRequests with
-            | Ok requests -> return Ok <| Info ""
-            | Error error -> return Error error
+            let! results = groupedRequests |> processGroupedRequests
+            return results |> toTaskResult
         }
 
-    let run country =
-        fun (_, schedule, ct) ->
-            Persistence.Storage.create InMemory
-            |> ResultAsync.wrap (fun storage ->
-                storage
-                |> getRequests ct country
-                |> ResultAsync.bind' (processRequests ct schedule storage))
+    let run country = run country getRequests processRequests
 
 module private MakeAppointments =
 
@@ -133,32 +122,25 @@ module private MakeAppointments =
 
     let private processRequests ct schedule storage requests =
         let config = createConfig schedule
-
         let processRequest = processRequest ct config storage
 
         async {
             let! results = requests |> Seq.map processRequest |> Async.Sequential
-            return results |> createTaskResult
+            return results |> toTaskResult
         }
 
-    let run country =
-        fun (_, schedule, ct) ->
-            Persistence.Storage.create InMemory
-            |> ResultAsync.wrap (fun storage ->
-                storage
-                |> getRequests ct country
-                |> ResultAsync.bind' (processRequests ct schedule storage))
+    let run country = run country getRequests processRequests
 
 let addTasks country =
     Graph.Node(
         { Name = "Russian"; Task = None },
         [ Graph.Node(
-              { Name = "Search Appointments"
+              { Name = "Search appointments"
                 Task = Some <| SearchAppointments.run country },
               []
           )
           Graph.Node(
-              { Name = "Make Appointments"
+              { Name = "Make appointments"
                 Task = Some <| MakeAppointments.run country },
               []
           ) ]
