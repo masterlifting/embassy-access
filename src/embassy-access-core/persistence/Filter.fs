@@ -32,7 +32,7 @@ type internal SearchAppointmentsRequest =
         { Pagination =
             { Page = 1
               PageSize = 20
-              SortBy = OrderBy<Domain.Request>.Date _.Modified |> Asc }
+              SortBy = OrderBy<Domain.Request>.Date _.Modified |> Desc }
           Embassy = embassy
           HasStates =
             function
@@ -49,7 +49,7 @@ type internal MakeAppointmentRequest =
       HasStates: predicate<Domain.RequestState>
       HasConfirmationStates: predicate<Domain.ConfirmationState> }
 
-      static member create embassy =
+    static member create embassy =
         { Pagination =
             { Page = 1
               PageSize = 20
