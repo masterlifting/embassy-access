@@ -24,45 +24,6 @@ let private processRequest ct config storage request =
     |> ResultAsync.bind' notifySubscribers
     |> ResultAsync.map (fun request -> request.State |> string)
 
-let private toTaskResult (results: Result<string, Error'> array) =
-    let msgs, errors = results |> Result.unzip
-
-    match msgs, errors with
-    | [], [] -> Ok <| Debug "No results."
-    | [], errors ->
-
-        match errors.Length with
-        | 1 ->
-            Error
-            <| Operation
-                { Message = Environment.NewLine + errors[0].Message
-                  Code = None }
-        | _ ->
-            let msg = errors |> List.map _.Message |> String.concat Environment.NewLine
-
-            Error
-            <| Operation
-                { Message = Environment.NewLine + msg
-                  Code = None }
-    | msgs, [] ->
-
-        let msg =
-            match msgs.Length with
-            | 1 -> msgs.[0]
-            | _ -> msgs |> String.concat Environment.NewLine
-
-        Ok <| Info msg
-
-    | msgs, errors ->
-
-        let msgs = msgs @ (errors |> List.map _.Message)
-
-        let msg =
-            match msgs.Length with
-            | 1 -> msgs.[0]
-            | _ -> Environment.NewLine + (msgs |> String.concat Environment.NewLine)
-
-        Ok <| Warn msg
 
 let private run country getRequests processRequests =
     fun (_, schedule, ct) ->
@@ -79,7 +40,9 @@ module private SearchAppointments =
         storage |> Repository.Query.Request.get ct filter
 
     let private processRequests ct schedule storage requests =
+
         let config = createConfig schedule
+
         let processRequest = processRequest ct config storage
 
         let uniqueRequests = requests |> Seq.filter _.GroupBy.IsNone
@@ -105,17 +68,14 @@ module private SearchAppointments =
                         return
                             match errors.Length with
                             | 0 -> Ok None
-                            | 1 -> Error errors[0]
+                            | 1 -> Error errors[0].Message
                             | _ ->
                                 let msg =
                                     errors
                                     |> List.mapi (fun i error -> $"%i{i + 1}.%s{error.Message}")
                                     |> String.concat Environment.NewLine
 
-                                Error
-                                <| Operation
-                                    { Message = $"Multiple errors: %s{Environment.NewLine}%s{msg}"
-                                      Code = None }
+                                Error $"Multiple errors: %s{Environment.NewLine}%s{msg}"
 
                     | request :: requestsTail ->
                         match! request |> processRequest with
@@ -135,9 +95,45 @@ module private SearchAppointments =
 
             groups |> Map.map processGroup |> Map.values |> Async.Parallel
 
+        let toWorkerResult (results: Result<string, string> array) =
+            let msgs, errors = results |> Result.unzip
+
+            match msgs, errors with
+            | [], [] -> Ok <| Debug "No results."
+            | [], errors ->
+
+                let errorMsg =
+                    match errors.Length with
+                    | 1 -> errors[0]
+                    | _ -> errors |> String.concat Environment.NewLine
+
+                Error
+                <| Operation
+                    { Message = Environment.NewLine + errorMsg
+                      Code = None }
+            | msgs, [] ->
+
+                let msg =
+                    match msgs.Length with
+                    | 1 -> msgs.[0]
+                    | _ -> msgs |> String.concat Environment.NewLine
+
+                Ok <| Info msg
+
+            | msgs, errors ->
+
+                let msgs = msgs @ errors
+
+                let msg =
+                    match msgs.Length with
+                    | 1 -> msgs.[0]
+                    | _ -> Environment.NewLine + (msgs |> String.concat Environment.NewLine)
+
+                Ok <| Warn msg
+
         async {
             let! results = groupedRequests |> processGroupedRequests
-            return results |> toTaskResult
+            return results |> toWorkerResult
         }
 
     let run country = run country getRequests processRequests
@@ -150,11 +146,52 @@ module private MakeAppointments =
 
     let private processRequests ct schedule storage requests =
         let config = createConfig schedule
+
         let processRequest = processRequest ct config storage
+
+        let toWorkerResult (results: Result<string, Error'> array) =
+            let msgs, errors = results |> Result.unzip
+
+            match msgs, errors with
+            | [], [] -> Ok <| Debug "No results."
+            | [], errors ->
+
+                match errors.Length with
+                | 1 ->
+                    Error
+                    <| Operation
+                        { Message = Environment.NewLine + errors[0].Message
+                          Code = None }
+                | _ ->
+                    let msg = errors |> List.map _.Message |> String.concat Environment.NewLine
+
+                    Error
+                    <| Operation
+                        { Message = Environment.NewLine + msg
+                          Code = None }
+            | msgs, [] ->
+
+                let msg =
+                    match msgs.Length with
+                    | 1 -> msgs.[0]
+                    | _ -> msgs |> String.concat Environment.NewLine
+
+                Ok <| Info msg
+
+            | msgs, errors ->
+
+                let msgs = msgs @ (errors |> List.map _.Message)
+
+                let msg =
+                    match msgs.Length with
+                    | 1 -> msgs.[0]
+                    | _ -> Environment.NewLine + (msgs |> String.concat Environment.NewLine)
+
+                Ok <| Warn msg
 
         async {
             let! results = requests |> Seq.map processRequest |> Async.Sequential
-            return results |> toTaskResult
+            return results |> toWorkerResult
         }
 
     let run country = run country getRequests processRequests
