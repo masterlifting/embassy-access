@@ -11,9 +11,7 @@ open EmbassyAccess.Embassies.Russian.Domain
 let private createConfig (schedule: Schedule option) =
     { TimeShift = schedule |> Option.map _.TimeShift |> Option.defaultValue 0y }
 
-let private notifySubscribers request = async { return Ok request }
-
-let private processRequest ct config storage request =
+let private processRequest notify ct config storage request =
 
     let processRequest ct config storage =
         (storage, config, ct)
@@ -21,9 +19,8 @@ let private processRequest ct config storage request =
         |> EmbassyAccess.Api.processRequest
 
     processRequest ct config storage request
-    |> ResultAsync.bind' notifySubscribers
+    |> ResultAsync.bind' notify
     |> ResultAsync.map (fun request -> request.State |> string)
-
 
 let private run country getRequests processRequests =
     fun (_, schedule, ct) ->
@@ -43,7 +40,9 @@ module private SearchAppointments =
 
         let config = createConfig schedule
 
-        let processRequest = processRequest ct config storage
+        let notifySubscribers request = async { return Ok request }
+
+        let processRequest = processRequest notifySubscribers ct config storage
 
         let uniqueRequests = requests |> Seq.filter _.GroupBy.IsNone
 
@@ -83,15 +82,15 @@ module private SearchAppointments =
                         | Ok result -> return Ok <| Some result
                 }
 
-            let processGroup name group =
-                async {
-                    match! group |> Seq.toList |> choose [] with
-                    | Ok result ->
-                        match result with
-                        | Some result -> return Ok $"'%s{name}': %s{result}"
-                        | None -> return Ok $"'%s{name}'. No results."
-                    | Error error -> return Error error
-                }
+            let processGroup key group =
+                group
+                |> Seq.toList
+                |> choose []
+                |> ResultAsync.map (fun result ->
+                    match result with
+                    | Some result -> $"'%s{key}': %s{result}"
+                    | None -> $"'%s{key}'. No results.")
+                |> ResultAsync.mapError (fun error -> $"'{key}': %s{error}")
 
             groups |> Map.map processGroup |> Map.values |> Async.Parallel
 
@@ -102,34 +101,19 @@ module private SearchAppointments =
             | [], [] -> Ok <| Debug "No results."
             | [], errors ->
 
-                let errorMsg =
-                    match errors.Length with
-                    | 1 -> errors[0]
-                    | _ -> errors |> String.concat Environment.NewLine
-
                 Error
                 <| Operation
-                    { Message = Environment.NewLine + errorMsg
+                    { Message = Environment.NewLine + (errors |> String.concat Environment.NewLine)
                       Code = None }
+
             | msgs, [] ->
 
-                let msg =
-                    match msgs.Length with
-                    | 1 -> msgs.[0]
-                    | _ -> msgs |> String.concat Environment.NewLine
-
-                Ok <| Info msg
+                Ok <| Info(msgs |> String.concat Environment.NewLine)
 
             | msgs, errors ->
 
-                let msgs = msgs @ errors
-
-                let msg =
-                    match msgs.Length with
-                    | 1 -> msgs.[0]
-                    | _ -> Environment.NewLine + (msgs |> String.concat Environment.NewLine)
-
-                Ok <| Warn msg
+                Ok
+                <| Warn(Environment.NewLine + (msgs @ errors |> String.concat Environment.NewLine))
 
         async {
             let! results = groupedRequests |> processGroupedRequests
@@ -145,9 +129,12 @@ module private MakeAppointments =
         storage |> Repository.Query.Request.get ct filter
 
     let private processRequests ct schedule storage requests =
+
         let config = createConfig schedule
 
-        let processRequest = processRequest ct config storage
+        let notifySubscribers request = async { return Ok request }
+
+        let processRequest = processRequest notifySubscribers ct config storage
 
         let toWorkerResult (results: Result<string, Error'> array) =
             let msgs, errors = results |> Result.unzip
@@ -156,38 +143,23 @@ module private MakeAppointments =
             | [], [] -> Ok <| Debug "No results."
             | [], errors ->
 
-                match errors.Length with
-                | 1 ->
-                    Error
-                    <| Operation
-                        { Message = Environment.NewLine + errors[0].Message
-                          Code = None }
-                | _ ->
-                    let msg = errors |> List.map _.Message |> String.concat Environment.NewLine
-
-                    Error
-                    <| Operation
-                        { Message = Environment.NewLine + msg
-                          Code = None }
+                Error
+                <| Operation
+                    { Message =
+                        Environment.NewLine
+                        + (errors |> List.map _.Message |> String.concat Environment.NewLine)
+                      Code = None }
             | msgs, [] ->
 
-                let msg =
-                    match msgs.Length with
-                    | 1 -> msgs.[0]
-                    | _ -> msgs |> String.concat Environment.NewLine
-
-                Ok <| Info msg
+                Ok <| Info(msgs |> String.concat Environment.NewLine)
 
             | msgs, errors ->
 
-                let msgs = msgs @ (errors |> List.map _.Message)
-
-                let msg =
-                    match msgs.Length with
-                    | 1 -> msgs.[0]
-                    | _ -> Environment.NewLine + (msgs |> String.concat Environment.NewLine)
-
-                Ok <| Warn msg
+                Ok
+                <| Warn(
+                    Environment.NewLine
+                    + (msgs @ (errors |> List.map _.Message) |> String.concat Environment.NewLine)
+                )
 
         async {
             let! results = requests |> Seq.map processRequest |> Async.Sequential
