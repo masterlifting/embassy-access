@@ -466,7 +466,7 @@ module private AppointmentsPage =
         | false ->
             appointments
             |> Set.map parse
-            |> Seq.roe
+            |> Result.choose
             |> Result.map Set.ofList
             |> Result.map (fun appointments -> formData, appointments)
 
