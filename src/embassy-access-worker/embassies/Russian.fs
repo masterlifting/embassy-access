@@ -24,11 +24,16 @@ let private processRequest notify ct config storage request =
 
 let private run country getRequests processRequests =
     fun (_, schedule, ct) ->
-        Persistence.Storage.create InMemory
-        |> ResultAsync.wrap (fun storage ->
-            storage
-            |> getRequests ct country
-            |> ResultAsync.bind' (processRequests ct schedule storage))
+
+        let getRequests =
+            ResultAsync.wrap (fun storage ->
+                getRequests ct country storage
+                |> ResultAsync.map (fun requests -> (storage, requests)))
+
+        let processRequests =
+            ResultAsync.bind' (fun (storage, requests) -> requests |> processRequests ct schedule storage)
+
+        Persistence.Storage.create InMemory |> getRequests |> processRequests
 
 module private SearchAppointments =
 

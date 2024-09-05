@@ -19,7 +19,7 @@ MakeAppointments: &MakeAppointments
   Name: Make appointments
   Enabled: true
   Wait: false
-  Duration: "00:00:10"
+  Duration: "00:03:00"
 
 RussianTask: &RussianTask
   Name: Russian
