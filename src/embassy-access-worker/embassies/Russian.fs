@@ -3,6 +3,7 @@
 open System
 open Infrastructure
 open Persistence.Domain
+open Web.Domain
 open Worker.Domain
 open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
@@ -31,7 +32,15 @@ let private run country getRequests processRequests =
                 |> ResultAsync.map (fun requests -> (storage, requests)))
 
         let processRequests =
-            ResultAsync.bind' (fun (storage, requests) -> requests |> processRequests ct schedule storage)
+            let telegramBot =
+                Configuration.getEnvVar "TelegramBotToken"
+                |> Result.bind (Option.map Ok >> Option.defaultValue (Error <| NotFound "Telegram bot token"))
+                |> Result.map Telegram
+                |> Result.bind Web.Client.create
+
+            ResultAsync.bind (fun (storage, requests) ->
+                telegramBot
+                |> Result.bind (fun bot -> processRequests ct schedule storage bot requests))
 
         Persistence.Storage.create InMemory |> getRequests |> processRequests
 
@@ -41,11 +50,23 @@ module private SearchAppointments =
         let filter = Russian country |> Filter.Request.SearchAppointments
         storage |> Repository.Query.Request.get ct filter
 
-    let private processRequests ct schedule storage requests =
+    let private processRequests ct schedule storage bot requests =
 
         let config = createConfig schedule
 
-        let notifySubscribers request = async { return Ok request }
+        let notifySubscribers request =
+            async {
+                match request.State with
+                | Completed _ ->
+                    match request.Appointments.IsEmpty with
+                    | false ->
+                        return!
+                            bot
+                            |> EmbassyAccess.Api.notifySubscribers request.Embassy request.Appointments
+                            |> ResultAsync.map (fun _ -> request)
+                    | true -> return Ok request
+                | _ -> return Ok request
+            }
 
         let processRequest = processRequest notifySubscribers ct config storage
 
@@ -65,25 +86,25 @@ module private SearchAppointments =
 
         let processGroupedRequests groups =
 
-            let rec choose (errors: Error' list) requests =
+            let rec choose (errors: string list) requests =
                 async {
                     match requests with
                     | [] ->
                         return
                             match errors.Length with
                             | 0 -> Ok None
-                            | 1 -> Error errors[0].Message
+                            | 1 -> Error errors[0]
                             | _ ->
                                 let msg =
                                     errors
-                                    |> List.mapi (fun i error -> $"%i{i + 1}.%s{error.Message}")
+                                    |> List.mapi (fun i error -> $"%i{i + 1}.%s{error}")
                                     |> String.concat Environment.NewLine
 
-                                Error $"Multiple errors: %s{Environment.NewLine}%s{msg}"
+                                Error $"Multiple errors:%s{Environment.NewLine}%s{msg}"
 
                     | request :: requestsTail ->
                         match! request |> processRequest with
-                        | Error error -> return! choose (errors @ [ error ]) requestsTail
+                        | Error error -> return! choose (errors @ [ error.Message ]) requestsTail
                         | Ok result -> return Ok <| Some result
                 }
 
@@ -133,13 +154,28 @@ module private MakeAppointments =
         let filter = Russian country |> Filter.Request.MakeAppointments
         storage |> Repository.Query.Request.get ct filter
 
-    let private processRequests ct schedule storage requests =
+    let private processRequests ct schedule storage bot requests =
 
         let config = createConfig schedule
 
-        let notifySubscribers request = async { return Ok request }
+        let notifySubscriber request =
+            async {
+                match request.State with
+                | Completed _ ->
+                    match request.Appointments.IsEmpty with
+                    | false ->
+                        match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
+                        | [] -> return Ok request
+                        | confirmations ->
+                            return!
+                                bot
+                                |> EmbassyAccess.Api.notifySubscriber request.Id confirmations
+                                |> ResultAsync.map (fun _ -> request)
+                    | true -> return Ok request
+                | _ -> return Ok request
+            }
 
-        let processRequest = processRequest notifySubscribers ct config storage
+        let processRequest = processRequest notifySubscriber ct config storage
 
         let toWorkerResult (results: Result<string, Error'> array) =
             let msgs, errors = results |> Result.unzip
