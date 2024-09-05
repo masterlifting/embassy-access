@@ -69,6 +69,6 @@ let createRootTask () =
 
             return
                 requests
-                |> Seq.roe
+                |> Result.choose
                 |> Result.map (fun _ -> Success "Test requests were created. Scheduler has started...")
         }

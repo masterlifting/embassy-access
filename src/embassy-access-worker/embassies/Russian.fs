@@ -22,19 +22,47 @@ let private processRequest ct config storage request =
 
     processRequest ct config storage request
     |> ResultAsync.bind' notifySubscribers
-    |> ResultAsync.map (fun request -> $"Result: {request.State}.")
+    |> ResultAsync.map (fun request -> request.State |> string)
 
 let private toTaskResult (results: Result<string, Error'> array) =
-    results
-    |> Seq.raes
-    |> Seq.map (function
-        | Some msg, None -> msg
-        | None, Some error -> error.Message
-        | Some msg, Some error -> $"%s{msg}; %s{error.Message}"
-        | None, None -> "No results")
-    |> String.concat Environment.NewLine
-    |> Info
-    |> Ok
+    let msgs, errors = results |> Result.unzip
+
+    match msgs, errors with
+    | [], [] -> Ok <| Debug "No results."
+    | [], errors ->
+
+        match errors.Length with
+        | 1 ->
+            Error
+            <| Operation
+                { Message = Environment.NewLine + errors[0].Message
+                  Code = None }
+        | _ ->
+            let msg = errors |> List.map _.Message |> String.concat Environment.NewLine
+
+            Error
+            <| Operation
+                { Message = Environment.NewLine + msg
+                  Code = None }
+    | msgs, [] ->
+
+        let msg =
+            match msgs.Length with
+            | 1 -> msgs.[0]
+            | _ -> msgs |> String.concat Environment.NewLine
+
+        Ok <| Info msg
+
+    | msgs, errors ->
+
+        let msgs = msgs @ (errors |> List.map _.Message)
+
+        let msg =
+            match msgs.Length with
+            | 1 -> msgs.[0]
+            | _ -> Environment.NewLine + (msgs |> String.concat Environment.NewLine)
+
+        Ok <| Warn msg
 
 let private run country getRequests processRequests =
     fun (_, schedule, ct) ->
@@ -100,8 +128,8 @@ module private SearchAppointments =
                     match! group |> Seq.toList |> choose [] with
                     | Ok result ->
                         match result with
-                        | Some result -> return Ok $"Group '%s{name}': %s{result}"
-                        | None -> return Ok $"Group '%s{name}'. No results."
+                        | Some result -> return Ok $"'%s{name}': %s{result}"
+                        | None -> return Ok $"'%s{name}'. No results."
                     | Error error -> return Error error
                 }
 

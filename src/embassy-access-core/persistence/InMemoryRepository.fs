@@ -70,7 +70,7 @@ module Query =
 
                         context
                         |> getEntities<External.Request> RequestsKey
-                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Seq.roe)
+                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
                         Error
@@ -85,7 +85,7 @@ module Query =
                     | true ->
                         context
                         |> getEntities<External.Request> RequestsKey
-                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Seq.roe)
+                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Result.choose)
                         |> Result.map (List.tryFind (fun x -> x.Id = requestId))
                     | false ->
                         Error
