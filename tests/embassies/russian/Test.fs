@@ -71,12 +71,11 @@ let private ``validation page should have an error`` =
 
         let! responseRes = request |> Api.processRequest deps
 
-        let response = Expect.wantOk responseRes "processRequest should be Ok"
+        let error = Expect.wantError responseRes "processed request should be an error"
 
-        match response.State with
-        | Domain.RequestState.Failed(Operation reason) ->
-            Expect.equal reason.Code (Some ErrorCodes.PageHasError) $"Error code should be {ErrorCodes.PageHasError}"
-        | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
+        match error with
+        | Operation { Code = Some ErrorCodes.PageHasError } -> ()
+        | _ -> Expect.isTrue false $"Error code should be {ErrorCodes.PageHasError}"
     }
 
 let private ``validation page should have a confirmation request`` =
@@ -87,12 +86,11 @@ let private ``validation page should have a confirmation request`` =
                     postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_requires_confirmation" }
 
         let! requestRes = request |> Api.processRequest deps
-        let request = Expect.wantOk requestRes "processRequest should be Ok"
+        let error = Expect.wantError requestRes "processed request should be an error"
 
-        match request.State with
-        | Domain.RequestState.Failed(Operation reason) ->
-            Expect.equal reason.Code (Some ErrorCodes.NotConfirmed) $"Error code should be {ErrorCodes.NotConfirmed}"
-        | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
+        match error with
+        | Operation { Code = Some ErrorCodes.NotConfirmed } -> ()
+        | _ -> Expect.isTrue false $"Error code should be {ErrorCodes.NotConfirmed}"
     }
 
 let private ``validation page shold have a confirmation`` =
@@ -103,15 +101,11 @@ let private ``validation page shold have a confirmation`` =
                     postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_has_confirmation" }
 
         let! requestRes = request |> Api.processRequest deps
-        let request = Expect.wantOk requestRes "processRequest should be Ok"
+        let error = Expect.wantError requestRes "processed request should be an error"
 
-        match request.State with
-        | Domain.RequestState.Failed(Operation reason) ->
-            Expect.equal
-                reason.Code
-                (Some ErrorCodes.ConfirmationExists)
-                $"Error code should be {ErrorCodes.ConfirmationExists}"
-        | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
+        match error with
+        | Operation { Code = Some ErrorCodes.ConfirmationExists } -> ()
+        | _ -> Expect.isTrue false $"Error code should be {ErrorCodes.ConfirmationExists}"
     }
 
 let private ``validation page should have a deleted request`` =
@@ -122,15 +116,11 @@ let private ``validation page should have a deleted request`` =
                     postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_request_deleted" }
 
         let! requestRes = request |> Api.processRequest deps
-        let request = Expect.wantOk requestRes "processRequest should be Ok"
+        let error = Expect.wantError requestRes "processed request should be an error"
 
-        match request.State with
-        | Domain.RequestState.Failed(Operation reason) ->
-            Expect.equal
-                reason.Code
-                (Some ErrorCodes.RequestDeleted)
-                $"Error code should be {ErrorCodes.RequestDeleted}"
-        | error -> Expect.isTrue false $"Error should be {nameof Operation} type, but was {error}"
+        match error with
+        | Operation { Code = Some ErrorCodes.RequestDeleted } -> ()
+        | _ -> Expect.isTrue false $"Error code should be {ErrorCodes.RequestDeleted}"
     }
 
 let private ``appointments page should not have data`` =
