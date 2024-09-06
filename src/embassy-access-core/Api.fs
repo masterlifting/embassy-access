@@ -7,6 +7,8 @@ let processRequest deps request =
     match deps with
     | Russian deps -> request |> Embassies.Russian.Core.processRequest deps
 
-let notifySubscribers embassy appointments client = async { return Ok() }
+let sendAppointments request =
+    request |> Notifications.Core.sendAppointments "client"
 
-let notifySubscriber requestId confirmations client = async { return Ok() }
+let sendConfirmations request =
+    request |> Notifications.Core.sendConfirmations "client"

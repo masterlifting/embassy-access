@@ -3,7 +3,6 @@
 open System
 open Infrastructure
 open Persistence.Domain
-open Web.Domain
 open Worker.Domain
 open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
@@ -12,28 +11,20 @@ open EmbassyAccess.Embassies.Russian.Domain
 type private Deps =
     { Config: EmbassyAccess.Embassies.Russian.Domain.ProcessRequestConfiguration
       Storage: Persistence.Storage.Type
-      Bot: Web.Client.Type
       ct: Threading.CancellationToken }
 
 let private createDeps ct (schedule: Schedule option) =
     let deps = ModelBuilder()
-    
+
     deps {
         let config =
             { TimeShift = schedule |> Option.map _.TimeShift |> Option.defaultValue 0y }
 
         let! storage = Persistence.Storage.create InMemory
 
-        let! bot =
-            Configuration.getEnvVar "TelegramBotToken"
-            |> Result.bind (Option.map Ok >> Option.defaultValue (Error <| NotFound "Telegram bot token"))
-            |> Result.map Telegram
-            |> Result.bind Web.Client.create
-
         return
             { Config = config
               Storage = storage
-              Bot = bot
               ct = ct }
     }
 
@@ -74,13 +65,7 @@ module private SearchAppointments =
             async {
                 match request.State with
                 | Completed _ ->
-                    match request.Appointments.IsEmpty with
-                    | false ->
-                        return!
-                            deps.Bot
-                            |> EmbassyAccess.Api.notifySubscribers request.Embassy request.Appointments
-                            |> ResultAsync.map (fun _ -> request)
-                    | true -> return Ok request
+                    return! EmbassyAccess.Api.sendAppointments request |> ResultAsync.map (fun _ -> request)
                 | _ -> return Ok request
             }
 
@@ -176,16 +161,9 @@ module private MakeAppointments =
             async {
                 match request.State with
                 | Completed _ ->
-                    match request.Appointments.IsEmpty with
-                    | false ->
-                        match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
-                        | [] -> return Ok request
-                        | confirmations ->
-                            return!
-                                deps.Bot
-                                |> EmbassyAccess.Api.notifySubscriber request.Id confirmations
-                                |> ResultAsync.map (fun _ -> request)
-                    | true -> return Ok request
+                    return!
+                        EmbassyAccess.Api.sendConfirmations request
+                        |> ResultAsync.map (fun _ -> request)
                 | _ -> return Ok request
             }
 
