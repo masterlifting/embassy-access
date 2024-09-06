@@ -9,50 +9,66 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 open EmbassyAccess.Embassies.Russian.Domain
 
-let private createConfig (schedule: Schedule option) =
-    { TimeShift = schedule |> Option.map _.TimeShift |> Option.defaultValue 0y }
+let private deps = ModelBuilder()
 
-let private processRequest notify ct config storage request =
+type private Deps =
+    { Config: EmbassyAccess.Embassies.Russian.Domain.ProcessRequestConfiguration
+      Storage: Persistence.Storage.Type
+      Bot: Web.Client.Type
+      ct: Threading.CancellationToken }
 
-    let processRequest ct config storage =
-        (storage, config, ct)
+let private createDeps ct (schedule: Schedule option) =
+    deps {
+        let config =
+            { TimeShift = schedule |> Option.map _.TimeShift |> Option.defaultValue 0y }
+
+        let! storage = Persistence.Storage.create InMemory
+
+        let! bot =
+            Configuration.getEnvVar "TelegramBotToken"
+            |> Result.bind (Option.map Ok >> Option.defaultValue (Error <| NotFound "Telegram bot token"))
+            |> Result.map Telegram
+            |> Result.bind Web.Client.create
+
+        return
+            { Config = config
+              Storage = storage
+              Bot = bot
+              ct = ct }
+    }
+
+let private processRequest deps notify request =
+
+    let processRequest deps =
+        (deps.Storage, deps.Config, deps.ct)
         |> EmbassyAccess.Deps.Russian.processRequest
         |> EmbassyAccess.Api.processRequest
 
-    processRequest ct config storage request
+    processRequest deps request
     |> ResultAsync.bind' notify
     |> ResultAsync.map (fun request -> request.State |> string)
 
 let private run country getRequests processRequests =
     fun (_, schedule, ct) ->
 
-        let getRequests =
-            ResultAsync.wrap (fun storage ->
-                getRequests ct country storage
-                |> ResultAsync.map (fun requests -> (storage, requests)))
+        // define
+        let getRequests deps = getRequests deps country
 
-        let processRequests =
-            let telegramBot =
-                Configuration.getEnvVar "TelegramBotToken"
-                |> Result.bind (Option.map Ok >> Option.defaultValue (Error <| NotFound "Telegram bot token"))
-                |> Result.map Telegram
-                |> Result.bind Web.Client.create
+        let processRequests deps =
+            ResultAsync.bind' (processRequests deps)
 
-            ResultAsync.bind (fun (storage, requests) ->
-                telegramBot
-                |> Result.bind (fun bot -> processRequests ct schedule storage bot requests))
+        let run = ResultAsync.wrap (fun deps -> getRequests deps |> processRequests deps)
 
-        Persistence.Storage.create InMemory |> getRequests |> processRequests
+        // run
+        createDeps ct schedule |> run
 
 module private SearchAppointments =
 
-    let private getRequests ct country storage =
+    let private getRequests deps country =
         let filter = Russian country |> Filter.Request.SearchAppointments
-        storage |> Repository.Query.Request.get ct filter
+        deps.Storage |> Repository.Query.Request.get deps.ct filter
 
-    let private processRequests ct schedule storage bot requests =
-
-        let config = createConfig schedule
+    let private processRequests deps requests =
 
         let notifySubscribers request =
             async {
@@ -61,14 +77,14 @@ module private SearchAppointments =
                     match request.Appointments.IsEmpty with
                     | false ->
                         return!
-                            bot
+                            deps.Bot
                             |> EmbassyAccess.Api.notifySubscribers request.Embassy request.Appointments
                             |> ResultAsync.map (fun _ -> request)
                     | true -> return Ok request
                 | _ -> return Ok request
             }
 
-        let processRequest = processRequest notifySubscribers ct config storage
+        let processRequest = processRequest deps notifySubscribers
 
         let uniqueRequests = requests |> Seq.filter _.GroupBy.IsNone
 
@@ -150,13 +166,11 @@ module private SearchAppointments =
 
 module private MakeAppointments =
 
-    let private getRequests ct country storage =
+    let private getRequests deps country =
         let filter = Russian country |> Filter.Request.MakeAppointments
-        storage |> Repository.Query.Request.get ct filter
+        deps.Storage |> Repository.Query.Request.get deps.ct filter
 
-    let private processRequests ct schedule storage bot requests =
-
-        let config = createConfig schedule
+    let private processRequests deps requests =
 
         let notifySubscriber request =
             async {
@@ -168,14 +182,14 @@ module private MakeAppointments =
                         | [] -> return Ok request
                         | confirmations ->
                             return!
-                                bot
+                                deps.Bot
                                 |> EmbassyAccess.Api.notifySubscriber request.Id confirmations
                                 |> ResultAsync.map (fun _ -> request)
                     | true -> return Ok request
                 | _ -> return Ok request
             }
 
-        let processRequest = processRequest notifySubscriber ct config storage
+        let processRequest = processRequest deps notifySubscriber
 
         let toWorkerResult (results: Result<string, Error'> array) =
             let msgs, errors = results |> Result.unzip
