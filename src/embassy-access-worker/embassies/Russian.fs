@@ -9,8 +9,6 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 open EmbassyAccess.Embassies.Russian.Domain
 
-let private deps = ModelBuilder()
-
 type private Deps =
     { Config: EmbassyAccess.Embassies.Russian.Domain.ProcessRequestConfiguration
       Storage: Persistence.Storage.Type
@@ -18,6 +16,8 @@ type private Deps =
       ct: Threading.CancellationToken }
 
 let private createDeps ct (schedule: Schedule option) =
+    let deps = ModelBuilder()
+    
     deps {
         let config =
             { TimeShift = schedule |> Option.map _.TimeShift |> Option.defaultValue 0y }
