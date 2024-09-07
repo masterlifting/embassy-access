@@ -30,10 +30,11 @@ let main _ =
               Countries.Switzerland.Tasks ]
         )
 
-    "Scheduler"
-    |> Worker.Core.start
-        { getTask = taskHandlers |> TasksStorage.getTask configuration
-          Configuration = configuration }
-    |> Async.RunSynchronously
+    let workerConfig =
+        { Name = rootTask.Name
+          Configuration = configuration
+          getTask = taskHandlers |> TasksStorage.getTask configuration }
+
+    workerConfig |> Worker.Core.start |> Async.RunSynchronously
 
     0
