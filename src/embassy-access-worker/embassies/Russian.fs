@@ -147,7 +147,8 @@ module private SearchAppointments =
             return results |> toWorkerResult
         }
 
-    let run country = run country getRequests processRequests
+    let run country =
+        run country getRequests processRequests |> Some
 
 module private MakeAppointments =
 
@@ -199,19 +200,31 @@ module private MakeAppointments =
             return results |> toWorkerResult
         }
 
-    let run country = run country getRequests processRequests
+    let run country =
+        run country getRequests processRequests |> Some
+
+module private Notifications =
+    let run country =
+        fun (_, schedule, ct) ->
+            Configuration.getEnvVar "RussianTelegramBotToken"
+            |> Result.bind (Option.map Ok >> Option.defaultValue (Error <| NotFound "Telegram bot token"))
+            |> Result.map Web.Domain.Telegram
+            |> Result.bind Web.Client.create
+            |> ResultAsync.wrap (Web.Client.listen ct)
+        |> Some
 
 let addTasks country =
     Graph.Node(
-        { Name = "Russian"; Task = None },
+        { Name = "Russian"
+          Task = Notifications.run country },
         [ Graph.Node(
               { Name = "Search appointments"
-                Task = Some <| SearchAppointments.run country },
+                Task = SearchAppointments.run country },
               []
           )
           Graph.Node(
               { Name = "Make appointments"
-                Task = Some <| MakeAppointments.run country },
+                Task = MakeAppointments.run country },
               []
           ) ]
     )
