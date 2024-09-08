@@ -206,10 +206,10 @@ module private MakeAppointments =
 module private Notifications =
     let run country =
         fun (_, schedule, ct) ->
-            Configuration.getEnvVar "RussianTelegramBotToken"
-            |> Result.bind (Option.map Ok >> Option.defaultValue (Error <| NotFound "Telegram bot token"))
-            |> Result.map Web.Domain.Telegram
-            |> Result.bind Web.Client.create
+            "TELEGRAM_BOT_TOKEN"
+            |> Web.Telegram.Domain.CreateBy.TokenEnvVar
+            |> Web.Domain.Telegram
+            |> Web.Client.create
             |> ResultAsync.wrap (Web.Client.listen ct)
         |> Some
 
