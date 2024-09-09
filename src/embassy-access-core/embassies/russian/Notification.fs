@@ -36,4 +36,4 @@ let send (deps: Domain.SendMessageDeps) notification =
     |> Option.defaultValue (async { return Ok() })
 
 let receive (deps: Domain.ReceiveMessageDeps) listener =
-    async { return Ok() }
+    async { deps.receiveRequest listener |> ignore }
