@@ -5,7 +5,6 @@ open Infrastructure
 open Persistence.Domain
 open Worker.Domain
 open EmbassyAccess.Domain
-open EmbassyAccess.Persistence
 open EmbassyAccess.Embassies.Russian.Domain
 
 type private Deps =
@@ -28,7 +27,7 @@ let private createDeps ct (schedule: Schedule option) =
               ct = ct }
     }
 
-let private processRequest deps notify request =
+let private processRequest deps sendNotification request =
 
     let processRequest deps =
         (deps.Storage, deps.Config, deps.ct)
@@ -36,7 +35,7 @@ let private processRequest deps notify request =
         |> EmbassyAccess.Api.processRequest
 
     processRequest deps request
-    |> ResultAsync.bind' notify
+    |> ResultAsync.bind' sendNotification
     |> ResultAsync.map (fun request -> request.State |> string)
 
 let private run country getRequests processRequests =
@@ -56,20 +55,21 @@ let private run country getRequests processRequests =
 module private SearchAppointments =
 
     let private getRequests deps country =
-        let filter = Russian country |> Filter.Request.SearchAppointments
-        deps.Storage |> Repository.Query.Request.get deps.ct filter
+        let filter =
+            Russian country |> EmbassyAccess.Persistence.Filter.Request.SearchAppointments
+
+        deps.Storage
+        |> EmbassyAccess.Persistence.Repository.Query.Request.get deps.ct filter
 
     let private processRequests deps requests =
 
-        let notifySubscribers request =
-            async {
-                match request.State with
-                | Completed _ ->
-                    return! EmbassyAccess.Api.sendAppointments request |> ResultAsync.map (fun _ -> request)
-                | _ -> return Ok request
-            }
+        let sendNotification request =
+            EmbassyAccess.Deps.Russian.sendNotification deps.ct
+            |> EmbassyAccess.Api.sendNotification
+            <| Appointments request
+            |> ResultAsync.map (fun _ -> request)
 
-        let processRequest = processRequest deps notifySubscribers
+        let processRequest = processRequest deps sendNotification
 
         let uniqueRequests = requests |> Seq.filter _.GroupBy.IsNone
 
@@ -153,22 +153,21 @@ module private SearchAppointments =
 module private MakeAppointments =
 
     let private getRequests deps country =
-        let filter = Russian country |> Filter.Request.MakeAppointments
-        deps.Storage |> Repository.Query.Request.get deps.ct filter
+        let filter =
+            Russian country |> EmbassyAccess.Persistence.Filter.Request.MakeAppointments
+
+        deps.Storage
+        |> EmbassyAccess.Persistence.Repository.Query.Request.get deps.ct filter
 
     let private processRequests deps requests =
 
-        let notifySubscriber request =
-            async {
-                match request.State with
-                | Completed _ ->
-                    return!
-                        EmbassyAccess.Api.sendConfirmations request
-                        |> ResultAsync.map (fun _ -> request)
-                | _ -> return Ok request
-            }
+        let sendNotification request =
+            EmbassyAccess.Deps.Russian.sendNotification deps.ct
+            |> EmbassyAccess.Api.sendNotification
+            <| Confirmations request
+            |> ResultAsync.map (fun _ -> request)
 
-        let processRequest = processRequest deps notifySubscriber
+        let processRequest = processRequest deps sendNotification
 
         let toWorkerResult (results: Result<string, Error'> array) =
             let msgs, errors = results |> Result.unzip
@@ -206,7 +205,7 @@ module private MakeAppointments =
 module private Notifications =
     let run country =
         fun (_, schedule, ct) ->
-            "TELEGRAM_BOT_TOKEN"
+            "RUSSIAN_TELEGRAM_BOT_TOKEN"
             |> Web.Telegram.Domain.CreateBy.TokenEnvVar
             |> Web.Domain.Telegram
             |> Web.Client.create

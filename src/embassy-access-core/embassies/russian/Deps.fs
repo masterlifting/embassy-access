@@ -2,6 +2,7 @@
 module internal EmbassyAccess.Embassies.Russian.Deps
 
 open EmbassyAccess.Embassies.Russian.Domain
+open EmbassyAccess
 
 let processRequest ct config storage =
     { Configuration = config
@@ -35,3 +36,6 @@ let processRequest ct config storage =
             client
             |> Web.Http.Client.Request.post ct request content
             |> Web.Http.Client.Response.String.readContent ct }
+
+let sendNotification ct =
+    { send = fun filter client -> client |> Web.Repository.send ct filter }

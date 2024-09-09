@@ -13,11 +13,10 @@
     <Compile Include="persistence\Command.fs" />
     <Compile Include="persistence\InMemoryRepository.fs" />
     <Compile Include="persistence\Repository.fs" />
-    <Compile Include="notifications\Deps.fs" />
-    <Compile Include="notifications\Core.fs" />
     <Compile Include="embassies\russian\Domain.fs" />
     <Compile Include="embassies\russian\Deps.fs" />
     <Compile Include="embassies\russian\Core.fs" />
+    <Compile Include="embassies\russian\Notification.fs" />
     <Compile Include="Api.fs" />
     <Compile Include="Deps.fs" />
   </ItemGroup>
