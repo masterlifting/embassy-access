@@ -1,13 +1,20 @@
 ﻿[<RequireQualifiedAccess>]
 module EmbassyAccess.Api
 
-type ProcessRequestDeps = Russian of Embassies.Russian.Domain.ProcessRequestDeps
-type SendNotificationDeps = Russian of Embassies.Russian.Domain.SendNotificationDeps
+open EmbassyAccess.Embassies
+
+type ProcessRequestDeps = Russian of Russian.Domain.ProcessRequestDeps
+type SendMessageDeps = Russian of Russian.Domain.SendMessageDeps
+type ReceiveMessageDeps = Russian of Russian.Domain.ReceiveMessageDeps
 
 let processRequest deps request =
     match deps with
-    | ProcessRequestDeps.Russian deps -> request |> Embassies.Russian.Core.processRequest deps
+    | ProcessRequestDeps.Russian deps -> request |> Russian.Core.processRequest deps
 
-let sendNotification deps notification =
+let sendMessage deps notification =
     match deps with
-    | SendNotificationDeps.Russian deps -> notification |> Embassies.Russian.Notification.send deps
+    | SendMessageDeps.Russian deps -> notification |> Russian.Message.send deps
+
+let receiveMessage deps listener =
+    match deps with
+    | ReceiveMessageDeps.Russian deps -> listener |> Russian.Message.receive deps

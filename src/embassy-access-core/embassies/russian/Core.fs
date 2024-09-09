@@ -678,7 +678,7 @@ module private Request =
         match modifiedDay.DayOfYear = today.DayOfYear, request.Attempt > 20 with
         | true, true ->
             Error
-            <| Cancelled $"The request was cancelled due to the number of attempts reached the %i{request.Attempt}."
+            <| Canceled $"The request was cancelled due to the number of attempts reached the %i{request.Attempt}."
         | false, true ->
             Ok
             <| { request with

@@ -37,5 +37,8 @@ let processRequest ct config storage =
             |> Web.Http.Client.Request.post ct request content
             |> Web.Http.Client.Response.String.readContent ct }
 
-let sendNotification ct =
-    { send = fun filter client -> client |> Web.Repository.send ct filter }
+let sendMessage ct =
+    { sendRequest = fun request client -> client |> Notification.Repository.Request.send ct request }
+
+let receiveMessage ct =
+    { receiveRequest = fun listener client -> client |> Notification.Repository.Request.receive ct listener }

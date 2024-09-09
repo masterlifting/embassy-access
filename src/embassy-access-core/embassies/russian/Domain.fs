@@ -18,6 +18,8 @@ module ErrorCodes =
     [<Literal>]
     let RequestDeleted = "RequestDeleted"
 
+type ProcessRequestConfiguration = { TimeShift: int8 }
+
 type StorageUpdateRequest = Domain.Request -> Async<Result<Domain.Request, Error'>>
 
 type HttpGetStringRequest =
@@ -31,8 +33,6 @@ type HttpPostStringRequest =
 
 type SolveCaptchaImage = byte array -> Async<Result<int, Error'>>
 
-type ProcessRequestConfiguration = { TimeShift: int8 }
-
 type ProcessRequestDeps =
     { Configuration: ProcessRequestConfiguration
       updateRequest: StorageUpdateRequest
@@ -43,8 +43,15 @@ type ProcessRequestDeps =
       postAppointmentsPage: HttpPostStringRequest
       postConfirmationPage: HttpPostStringRequest }
 
-type SendNotificationDeps =
-    { send: Web.Filter.Request -> Web.Client.Type -> Async<Result<unit, Error'>> }
+type SendRequestNotification = Notification.Send.Request -> Web.Domain.Client -> Async<Result<unit, Error'>>
+
+type SendMessageDeps =
+    { sendRequest: SendRequestNotification }
+
+type ReceiveRequestNotification = Web.Domain.Listener -> Web.Domain.Client -> Async<Result<unit, Error'>>
+
+type ReceiveMessageDeps =
+    { receiveRequest: ReceiveRequestNotification }
 
 type Id = private Id of int
 type Cd = private Cd of string
