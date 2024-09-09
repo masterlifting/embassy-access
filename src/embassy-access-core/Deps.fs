@@ -7,5 +7,8 @@ module Russian =
         Embassies.Russian.Deps.processRequest ct config storage
         |> Api.ProcessRequestDeps.Russian
 
-    let sendNotification (ct) =
-        Embassies.Russian.Deps.sendNotification ct |> Api.SendNotificationDeps.Russian
+    let sendMessage (ct) =
+        Embassies.Russian.Deps.sendMessage ct |> Api.SendMessageDeps.Russian
+
+    let receiveMessage (ct) =
+        Embassies.Russian.Deps.receiveMessage ct |> Api.ReceiveMessageDeps.Russian

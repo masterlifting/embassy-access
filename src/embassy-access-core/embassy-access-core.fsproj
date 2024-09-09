@@ -5,14 +5,14 @@
   <ItemGroup>
     <Compile Include="Domain.fs" />
     <Compile Include="Mapper.fs" />
-    <Compile Include="web\Filter.fs" />
-    <Compile Include="web\Response.fs" />
-    <Compile Include="web\TelegramRepository.fs" />
-    <Compile Include="web\Repository.fs" />
     <Compile Include="persistence\Filter.fs" />
     <Compile Include="persistence\Command.fs" />
     <Compile Include="persistence\InMemoryRepository.fs" />
     <Compile Include="persistence\Repository.fs" />
+    <Compile Include="notifications\Send.fs" />
+    <Compile Include="notifications\Receive.fs" />
+    <Compile Include="notifications\TelegramRepository.fs" />
+    <Compile Include="notifications\Repository.fs" />
     <Compile Include="embassies\russian\Domain.fs" />
     <Compile Include="embassies\russian\Deps.fs" />
     <Compile Include="embassies\russian\Core.fs" />

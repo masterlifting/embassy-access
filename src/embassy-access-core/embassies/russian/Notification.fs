@@ -1,18 +1,18 @@
-﻿module internal EmbassyAccess.Embassies.Russian.Notification
+﻿module internal EmbassyAccess.Embassies.Russian.Message
 
 open Infrastructure
 open EmbassyAccess.Domain
-open EmbassyAccess.Web
+open EmbassyAccess.Notification
 
-let private createAppointmentsNotification request =
+let private createShareAppointments request =
     match request.State with
     | Completed _ ->
         match request.Appointments.IsEmpty with
         | true -> None
-        | false -> Some <| Filter.ShareAppointments(request.Embassy, request.Appointments)
+        | false -> Some <| Send.Request.ShareAppointments(request.Embassy, request.Appointments)
     | _ -> None
 
-let private createConfirmationsNotification request =
+let private createSendConfirmations request =
     match request.State with
     | Completed _ ->
         match request.Appointments.IsEmpty with
@@ -20,17 +20,20 @@ let private createConfirmationsNotification request =
         | false ->
             match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
             | [] -> None
-            | confirmations -> Some <| Filter.SendConfirmations(request.Id, confirmations)
+            | confirmations -> Some <| Send.Request.SendConfirmations(request.Id, confirmations)
     | _ -> None
 
-let send (deps: Domain.SendNotificationDeps) notification =
+let send (deps: Domain.SendMessageDeps) notification =
     match notification with
-    | Appointments request -> createAppointmentsNotification request
-    | Confirmations request -> createConfirmationsNotification request
-    |> Option.map (fun filter ->
+    | Appointments request -> createShareAppointments request
+    | Confirmations request -> createSendConfirmations request
+    |> Option.map (fun request ->
         "RUSSIAN_TELEGRAM_BOT_TOKEN"
         |> Web.Telegram.Domain.CreateBy.TokenEnvVar
         |> Web.Domain.Telegram
         |> Web.Client.create
-        |> ResultAsync.wrap (deps.send filter))
+        |> ResultAsync.wrap (deps.sendRequest request))
     |> Option.defaultValue (async { return Ok() })
+
+let receive (deps: Domain.ReceiveMessageDeps) listener =
+    async { return Ok() }

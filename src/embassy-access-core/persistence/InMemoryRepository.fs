@@ -74,7 +74,7 @@ module Query =
                         |> Result.map filter
                     | false ->
                         Error
-                        <| (Cancelled
+                        <| (Canceled
                             <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
             }
 
@@ -89,7 +89,7 @@ module Query =
                         |> Result.map (List.tryFind (fun x -> x.Id = requestId))
                     | false ->
                         Error
-                        <| (Cancelled
+                        <| (Canceled
                             <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
             }
 
@@ -162,6 +162,6 @@ module Command =
                             context |> save RequestsKey result |> Result.map (fun _ -> request))
                     | false ->
                         Error
-                        <| (Cancelled
+                        <| (Canceled
                             <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
             }

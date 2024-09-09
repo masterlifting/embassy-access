@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Web.Filter
+module EmbassyAccess.Notification.Send
 
 open EmbassyAccess
 

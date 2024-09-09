@@ -1,6 +1,7 @@
 ﻿module internal EmbassyAccess.Worker.Embassies.Russian
 
 open System
+open System.Threading
 open Infrastructure
 open Persistence.Domain
 open Worker.Domain
@@ -8,9 +9,9 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Embassies.Russian.Domain
 
 type private Deps =
-    { Config: EmbassyAccess.Embassies.Russian.Domain.ProcessRequestConfiguration
+    { Config: ProcessRequestConfiguration
       Storage: Persistence.Storage.Type
-      ct: Threading.CancellationToken }
+      ct: CancellationToken }
 
 let private createDeps ct (schedule: Schedule option) =
     let deps = ModelBuilder()
@@ -64,8 +65,8 @@ module private SearchAppointments =
     let private processRequests deps requests =
 
         let sendNotification request =
-            EmbassyAccess.Deps.Russian.sendNotification deps.ct
-            |> EmbassyAccess.Api.sendNotification
+            EmbassyAccess.Deps.Russian.sendMessage deps.ct
+            |> EmbassyAccess.Api.sendMessage
             <| Appointments request
             |> ResultAsync.map (fun _ -> request)
 
@@ -162,8 +163,8 @@ module private MakeAppointments =
     let private processRequests deps requests =
 
         let sendNotification request =
-            EmbassyAccess.Deps.Russian.sendNotification deps.ct
-            |> EmbassyAccess.Api.sendNotification
+            EmbassyAccess.Deps.Russian.sendMessage deps.ct
+            |> EmbassyAccess.Api.sendMessage
             <| Confirmations request
             |> ResultAsync.map (fun _ -> request)
 
@@ -209,7 +210,11 @@ module private Notifications =
             |> Web.Telegram.Domain.CreateBy.TokenEnvVar
             |> Web.Domain.Telegram
             |> Web.Client.create
-            |> ResultAsync.wrap (Web.Client.listen ct)
+            |> ResultAsync.wrap (fun client ->
+                let listener = 
+                    EmbassyAccess.Deps.Russian.receiveMessage ct
+                    |> EmbassyAccess.Api.receiveMessage
+            Web.Client.listen ct)
         |> Some
 
 let addTasks country =
