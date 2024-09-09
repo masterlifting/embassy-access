@@ -110,6 +110,10 @@ type Request =
       GroupBy: string option
       Modified: DateTime }
 
+type Notification =
+    | Appointments of Request
+    | Confirmations of Request
+
 module External =
 
     type City() =

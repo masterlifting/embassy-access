@@ -2,13 +2,12 @@
 module EmbassyAccess.Api
 
 type ProcessRequestDeps = Russian of Embassies.Russian.Domain.ProcessRequestDeps
+type SendNotificationDeps = Russian of Embassies.Russian.Domain.SendNotificationDeps
 
 let processRequest deps request =
     match deps with
-    | Russian deps -> request |> Embassies.Russian.Core.processRequest deps
+    | ProcessRequestDeps.Russian deps -> request |> Embassies.Russian.Core.processRequest deps
 
-let sendAppointments request =
-    request |> Notifications.Core.sendAppointments "client"
-
-let sendConfirmations request =
-    request |> Notifications.Core.sendConfirmations "client"
+let sendNotification deps notification =
+    match deps with
+    | SendNotificationDeps.Russian deps -> notification |> Embassies.Russian.Notification.send deps

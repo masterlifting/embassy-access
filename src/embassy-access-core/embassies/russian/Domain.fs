@@ -43,6 +43,9 @@ type ProcessRequestDeps =
       postAppointmentsPage: HttpPostStringRequest
       postConfirmationPage: HttpPostStringRequest }
 
+type SendNotificationDeps =
+    { send: Web.Filter.Request -> Web.Client.Type -> Async<Result<unit, Error'>> }
+
 type Id = private Id of int
 type Cd = private Cd of string
 type Ems = private Ems of string option
