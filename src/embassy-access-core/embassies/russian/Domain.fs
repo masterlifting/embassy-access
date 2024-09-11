@@ -48,10 +48,7 @@ type SendRequestNotification = Notification.Send.Request -> Web.Domain.Client ->
 type SendMessageDeps =
     { sendRequest: SendRequestNotification }
 
-type ReceiveRequestNotification = Web.Domain.Listener -> Web.Domain.Client -> Async<Result<unit, Error'>>
-
-type ReceiveMessageDeps =
-    { receiveRequest: ReceiveRequestNotification }
+type ReceiveMessageDeps = { Listener: Web.Domain.Listener }
 
 type Id = private Id of int
 type Cd = private Cd of string
