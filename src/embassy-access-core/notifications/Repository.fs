@@ -15,9 +15,9 @@ module Request =
             context |> TelegramRepository.Request.send ct notification
         | _ -> async { return Error <| NotSupported $"Client {client}" }
 
-    let receive ct listener client =
+    let receive ct listener =
         match listener with
-        | Listener.Telegram listener ->
+        | Listener.Telegram (client, processor) ->
             Log.trace $"Telegram receive request with response \n{client}"
-            listener |> TelegramRepository.Request.receive ct client
+            client |> TelegramRepository.Request.receive ct processor
         | _ -> async { return Error <| NotSupported $"Client {listener}" }

@@ -65,8 +65,7 @@ module private SearchAppointments =
     let private processRequests deps requests =
 
         let sendNotification request =
-            EmbassyAccess.Deps.Russian.sendMessage deps.ct
-            |> EmbassyAccess.Api.sendMessage
+            EmbassyAccess.Deps.Russian.sendMessage deps.ct |> EmbassyAccess.Api.sendMessage
             <| Appointments request
             |> ResultAsync.map (fun _ -> request)
 
@@ -163,8 +162,7 @@ module private MakeAppointments =
     let private processRequests deps requests =
 
         let sendNotification request =
-            EmbassyAccess.Deps.Russian.sendMessage deps.ct
-            |> EmbassyAccess.Api.sendMessage
+            EmbassyAccess.Deps.Russian.sendMessage deps.ct |> EmbassyAccess.Api.sendMessage
             <| Confirmations request
             |> ResultAsync.map (fun _ -> request)
 
@@ -204,17 +202,19 @@ module private MakeAppointments =
         run country getRequests processRequests |> Some
 
 module private Notifications =
+    let private listen ct client =
+        client
+        |> EmbassyAccess.Deps.Russian.listener ct
+        |> EmbassyAccess.Api.listener
+        |> ResultAsync.wrap (Web.Client.listen ct)
+
     let run country =
         fun (_, schedule, ct) ->
             "RUSSIAN_TELEGRAM_BOT_TOKEN"
             |> Web.Telegram.Domain.CreateBy.TokenEnvVar
             |> Web.Domain.Telegram
             |> Web.Client.create
-            |> ResultAsync.wrap (fun client ->
-                let listener = 
-                    EmbassyAccess.Deps.Russian.receiveMessage ct
-                    |> EmbassyAccess.Api.receiveMessage
-            Web.Client.listen ct)
+            |> ResultAsync.wrap (listen ct)
         |> Some
 
 let addTasks country =

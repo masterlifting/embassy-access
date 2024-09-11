@@ -15,5 +15,5 @@ module Request =
                 <| NotImplemented $"Telegram send request with notification {notification}"
         }
 
-    let receive ct listener client =
-        async { return Error <| NotImplemented $"Telegram receive request with response {data}" }
+    let receive ct processor client =
+        async { return Error <| NotImplemented $"Telegram receive request with response {processor}" }

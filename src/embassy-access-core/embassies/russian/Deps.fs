@@ -1,8 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
 module internal EmbassyAccess.Embassies.Russian.Deps
 
-open EmbassyAccess.Embassies.Russian.Domain
+open Infrastructure
 open EmbassyAccess
+open EmbassyAccess.Embassies.Russian.Domain
 
 let processRequest ct config storage =
     { Configuration = config
@@ -40,5 +41,8 @@ let processRequest ct config storage =
 let sendMessage ct =
     { sendRequest = fun request client -> client |> Notification.Repository.Request.send ct request }
 
-let receiveMessage ct =
-    { receiveRequest = fun listener client -> client |> Notification.Repository.Request.receive ct listener }
+let listener ct client =
+    match client with
+    | Web.Domain.Client.Telegram client ->
+        { Listener = Web.Domain.Listener.Telegram(client, Message.tgListener ct) } |> Ok
+    | _ -> Error <| NotSupported "EmbassyAccess.Embassies.Russian.Deps.listen"
