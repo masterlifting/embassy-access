@@ -2,7 +2,6 @@
 module internal EmbassyAccess.Embassies.Russian.Deps
 
 open Infrastructure
-open EmbassyAccess
 open EmbassyAccess.Embassies.Russian.Domain
 
 let processRequest ct config storage =
@@ -39,10 +38,9 @@ let processRequest ct config storage =
             |> Web.Http.Client.Response.String.readContent ct }
 
 let sendMessage ct =
-    { sendRequest = fun request client -> client |> Notification.Repository.Request.send ct request }
+    fun request client -> client |> EmbassyAccess.Notification.Repository.Request.send ct request
 
-let listener ct client =
+let createListener ct client =
     match client with
-    | Web.Domain.Client.Telegram client ->
-        { Listener = Web.Domain.Listener.Telegram(client, Message.tgListener ct) } |> Ok
+    | Web.Domain.Client.Telegram client -> Web.Domain.Listener.Telegram(client, Telegram.receive ct) |> Ok
     | _ -> Error <| NotSupported "EmbassyAccess.Embassies.Russian.Deps.listen"

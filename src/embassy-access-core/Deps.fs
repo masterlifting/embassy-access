@@ -10,5 +10,5 @@ module Russian =
     let sendMessage ct =
         Embassies.Russian.Deps.sendMessage ct |> Api.SendMessageDeps.Russian
 
-    let listener ct client =
-        Embassies.Russian.Deps.listener ct client |> Api.ReceiveMessageDeps.Russian
+    let createListener ct client =
+        Embassies.Russian.Deps.createListener ct client |> Api.ReceiveMessageDeps.Russian

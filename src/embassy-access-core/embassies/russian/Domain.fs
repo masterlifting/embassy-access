@@ -43,12 +43,7 @@ type ProcessRequestDeps =
       postAppointmentsPage: HttpPostStringRequest
       postConfirmationPage: HttpPostStringRequest }
 
-type SendRequestNotification = Notification.Send.Request -> Web.Domain.Client -> Async<Result<unit, Error'>>
-
-type SendMessageDeps =
-    { sendRequest: SendRequestNotification }
-
-type ReceiveMessageDeps = { Listener: Web.Domain.Listener }
+type RequestSender = Notification.Send.Request -> Web.Domain.Client -> Async<Result<unit, Error'>>
 
 type Id = private Id of int
 type Cd = private Cd of string

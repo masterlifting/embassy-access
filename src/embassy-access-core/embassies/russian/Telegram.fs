@@ -1,9 +1,10 @@
-﻿module internal EmbassyAccess.Embassies.Russian.Message
+﻿module internal EmbassyAccess.Embassies.Russian.Telegram
 
 open Infrastructure
+open Infrastructure.Logging
 open EmbassyAccess.Domain
 open EmbassyAccess.Notification
-open Infrastructure.Logging
+open Web.Telegram.Domain
 
 let private createShareAppointments request =
     match request.State with
@@ -24,23 +25,23 @@ let private createSendConfirmations request =
             | confirmations -> Some <| Send.Request.SendConfirmations(request.Id, confirmations)
     | _ -> None
 
-let send (deps: Domain.SendMessageDeps) notification =
-    match notification with
+let send message sender =
+    match message with
     | Appointments request -> createShareAppointments request
     | Confirmations request -> createSendConfirmations request
     |> Option.map (fun request ->
         "RUSSIAN_TELEGRAM_BOT_TOKEN"
-        |> Web.Telegram.Domain.CreateBy.TokenEnvVar
+        |> TokenEnvVar
         |> Web.Domain.Telegram
         |> Web.Client.create
-        |> ResultAsync.wrap (deps.sendRequest request))
+        |> ResultAsync.wrap (request |> sender))
     |> Option.defaultValue (async { return Ok() })
 
-let tgListener ct (listener: Web.Telegram.Domain.Listener) : Async<Result<unit, Error'>> =
+let receive ct listener =
     match listener with
-    | Web.Telegram.Domain.Listener.Message messageType ->
+    | Listener.Message messageType ->
         match messageType with
-        | Web.Telegram.Domain.MessageType.Text message ->
+        | Text message ->
             async {
                 $"{message}" |> Log.debug
                 return Ok()
