@@ -201,26 +201,28 @@ module private MakeAppointments =
     let run country =
         run country getRequests processRequests |> Some
 
-module private Notifications =
-    let private listen ct client =
-        client
-        |> EmbassyAccess.Deps.Russian.listener ct
-        |> EmbassyAccess.Api.listener
-        |> ResultAsync.wrap (Web.Client.listen ct)
+module private BotListener =
+    let run () =
+        fun (_, _, ct) ->
+            // define
+            let telegramClient =
+                "RUSSIAN_TELEGRAM_BOT_TOKEN"
+                |> Web.Telegram.Domain.CreateBy.TokenEnvVar
+                |> Web.Domain.Telegram
+                |> Web.Client.create
 
-    let run country =
-        fun (_, schedule, ct) ->
-            "RUSSIAN_TELEGRAM_BOT_TOKEN"
-            |> Web.Telegram.Domain.CreateBy.TokenEnvVar
-            |> Web.Domain.Telegram
-            |> Web.Client.create
-            |> ResultAsync.wrap (listen ct)
+            let createListener = EmbassyAccess.Deps.Russian.createListener ct
+            let listenMessages = EmbassyAccess.Api.listenMessages ct
+            let listen = ResultAsync.wrap (createListener >> listenMessages)
+
+            // run
+            listen telegramClient
         |> Some
 
 let addTasks country =
     Graph.Node(
         { Name = "Russian"
-          Task = Notifications.run country },
+          Task = BotListener.run () },
         [ Graph.Node(
               { Name = "Search appointments"
                 Task = SearchAppointments.run country },
