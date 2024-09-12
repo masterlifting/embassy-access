@@ -29,7 +29,7 @@ RussianTask: &RussianTask
 Worker:
   Name: Scheduler
   Enabled: true
-  Wait: true
+  Wait: false
   Tasks:
     - Name: Serbia
       Parallel: true

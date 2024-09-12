@@ -65,8 +65,10 @@ module private SearchAppointments =
     let private processRequests deps requests =
 
         let sendNotification request =
-            EmbassyAccess.Deps.Russian.sendMessage deps.ct |> EmbassyAccess.Api.sendMessage
-            <| Appointments request
+            request
+            |> SendAppointments
+            |> EmbassyAccess.Deps.Russian.sendMessage deps.ct
+            |> EmbassyAccess.Api.sendMessage
             |> ResultAsync.map (fun _ -> request)
 
         let processRequest = processRequest deps sendNotification
@@ -162,8 +164,10 @@ module private MakeAppointments =
     let private processRequests deps requests =
 
         let sendNotification request =
-            EmbassyAccess.Deps.Russian.sendMessage deps.ct |> EmbassyAccess.Api.sendMessage
-            <| Confirmations request
+            request
+            |> SendConfirmations
+            |> EmbassyAccess.Deps.Russian.sendMessage deps.ct
+            |> EmbassyAccess.Api.sendMessage
             |> ResultAsync.map (fun _ -> request)
 
         let processRequest = processRequest deps sendNotification
@@ -201,28 +205,9 @@ module private MakeAppointments =
     let run country =
         run country getRequests processRequests |> Some
 
-module private BotListener =
-    let run () =
-        fun (_, _, ct) ->
-            // define
-            let telegramClient =
-                "RUSSIAN_TELEGRAM_BOT_TOKEN"
-                |> Web.Telegram.Domain.CreateBy.TokenEnvVar
-                |> Web.Domain.Telegram
-                |> Web.Client.create
-
-            let createListener = EmbassyAccess.Deps.Russian.createListener ct
-            let listenMessages = EmbassyAccess.Api.listenMessages ct
-            let listen = ResultAsync.wrap (createListener >> listenMessages)
-
-            // run
-            listen telegramClient
-        |> Some
-
 let addTasks country =
     Graph.Node(
-        { Name = "Russian"
-          Task = BotListener.run () },
+        { Name = "Russian"; Task = None },
         [ Graph.Node(
               { Name = "Search appointments"
                 Task = SearchAppointments.run country },

@@ -7,8 +7,9 @@ module Russian =
         Embassies.Russian.Deps.processRequest ct config storage
         |> Api.ProcessRequestDeps.Russian
 
-    let sendMessage ct =
-        Embassies.Russian.Deps.sendMessage ct |> Api.SendMessageDeps.Russian
+    let sendMessage ct message =
+        Embassies.Russian.Deps.sendMessage ct message |> Api.SendMessageDeps.Russian
 
-    let createListener ct client =
-        Embassies.Russian.Deps.createListener ct client |> Api.ReceiveMessageDeps.Russian
+    let createListener ct context =
+        Embassies.Russian.Deps.createListener ct context
+        |> Api.ReceiveMessagesDeps.Russian

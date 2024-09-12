@@ -111,8 +111,8 @@ type Request =
       Modified: DateTime }
 
 type Message =
-    | Appointments of Request
-    | Confirmations of Request
+    | SendAppointments of Request
+    | SendConfirmations of Request
 
 module External =
 

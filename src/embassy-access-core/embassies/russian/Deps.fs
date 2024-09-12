@@ -37,10 +37,13 @@ let processRequest ct config storage =
             |> Web.Http.Client.Request.post ct request content
             |> Web.Http.Client.Response.String.readContent ct }
 
-let sendMessage ct =
-    fun request client -> client |> EmbassyAccess.Notification.Repository.Request.send ct request
+let sendMessage ct message = message |> Telegram.send ct
 
-let createListener ct client =
-    match client with
-    | Web.Domain.Client.Telegram client -> Web.Domain.Listener.Telegram(client, Telegram.receive ct) |> Ok
-    | _ -> Error <| NotSupported "EmbassyAccess.Embassies.Russian.Deps.listen"
+let createListener ct context =
+    match context with
+    | Web.Domain.Telegram token ->
+        Web.Telegram.Client.create token
+        |> Result.map (fun client -> Web.Domain.Listener.Telegram(client, Telegram.receive ct))
+    | _ ->
+        Error
+        <| NotSupported $"Context '{context}'. EmbassyAccess.Embassies.Russian.Deps.createListener"

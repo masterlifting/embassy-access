@@ -9,10 +9,6 @@
     <Compile Include="persistence\Command.fs" />
     <Compile Include="persistence\InMemoryRepository.fs" />
     <Compile Include="persistence\Repository.fs" />
-    <Compile Include="notifications\Send.fs" />
-    <Compile Include="notifications\Receive.fs" />
-    <Compile Include="notifications\TelegramRepository.fs" />
-    <Compile Include="notifications\Repository.fs" />
     <Compile Include="embassies\russian\Domain.fs" />
     <Compile Include="embassies\russian\Core.fs" />
     <Compile Include="embassies\russian\Telegram.fs" />

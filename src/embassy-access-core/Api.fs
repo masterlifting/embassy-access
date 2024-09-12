@@ -5,18 +5,18 @@ open Infrastructure
 open EmbassyAccess.Embassies
 
 type ProcessRequestDeps = Russian of Russian.Domain.ProcessRequestDeps
-type SendMessageDeps = Russian of Russian.Domain.RequestSender
-type ReceiveMessageDeps = Russian of Result<Web.Domain.Listener, Error'>
+type SendMessageDeps = Russian of Async<Result<unit, Error'>>
+type ReceiveMessagesDeps = Russian of Result<Web.Domain.Listener, Error'>
 
 let processRequest deps request =
     match deps with
     | ProcessRequestDeps.Russian deps -> request |> Russian.Core.processRequest deps
 
-let sendMessage deps message =
+let sendMessage deps =
     match deps with
-    | SendMessageDeps.Russian sender -> sender |> Russian.Telegram.send message
+    | SendMessageDeps.Russian send -> send
 
-let listenMessages ct deps =
+let receiveMessages ct deps =
     match deps with
-    | ReceiveMessageDeps.Russian listener -> listener
-    |> ResultAsync.wrap (Web.Client.listen ct)
+    | ReceiveMessagesDeps.Russian listener -> listener
+    |> Web.Client.listen ct
