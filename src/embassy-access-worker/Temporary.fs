@@ -1,12 +1,24 @@
 ﻿module internal EmbassyAccess.Worker.Temporary
 
 open Infrastructure
+open Infrastructure.Logging
 open Persistence
 open Persistence.Domain
 open Worker.Domain
 open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 
+
+module private BotListener =
+    let run ct =
+        "RUSSIAN_TELEGRAM_BOT_TOKEN"
+        |> Web.Telegram.Domain.EnvKey
+        |> Web.Domain.Telegram
+        |> EmbassyAccess.Deps.Russian.createListener ct
+        |> EmbassyAccess.Api.receiveMessages ct
+        |> ResultAsync.mapError (fun error -> error.Message |> Log.critical)
+        |> Async.Ignore
+        |> Async.Start
 
 let private createRussianSearchRequest ct (value, country) =
     Storage.create InMemory
@@ -66,6 +78,8 @@ let createRootTask () =
             let! requestsToAutoConfirm = [] |> List.map (createRussianConfirmRequest ct) |> Async.Sequential
 
             let requests = requestsToNotify |> Seq.append requestsToAutoConfirm
+
+            BotListener.run ct
 
             return
                 requests
