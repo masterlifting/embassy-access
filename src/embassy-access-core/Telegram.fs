@@ -5,7 +5,7 @@ open Infrastructure
 open Infrastructure.Logging
 open Web.Telegram.Domain
 
-let BotId = ChatId 123456
+let AdminChatId = ChatId 379444553
 
 module private Sender =
 
@@ -13,7 +13,6 @@ module private Sender =
         EnvKey "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
         |> Web.Telegram.Client.create
         |> ResultAsync.wrap (msg |> Web.Telegram.Client.send ct)
-
 
 module private Receiver =
     open Web.Telegram.Domain.Receive
