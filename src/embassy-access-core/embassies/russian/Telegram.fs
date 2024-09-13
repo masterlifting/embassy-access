@@ -24,7 +24,7 @@ module private Sender =
 
                 Buttons
                     { Id = MessageId.Default
-                      ChatId = EmbassyAccess.Telegram.BotId
+                      ChatId = EmbassyAccess.Telegram.AdminChatId
                       Value = value }
                 |> Some
         | _ -> None
@@ -42,7 +42,7 @@ module private Sender =
 
                     Text
                         { Id = MessageId.Default
-                          ChatId = EmbassyAccess.Telegram.BotId
+                          ChatId = EmbassyAccess.Telegram.AdminChatId
                           Value = value }
                     |> Some
         | _ -> None
