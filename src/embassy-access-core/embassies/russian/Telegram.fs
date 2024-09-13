@@ -5,15 +5,8 @@ open Infrastructure.Logging
 open EmbassyAccess.Domain
 open Web.Telegram.Domain
 
-let private ChatId = ChatId 123456
-
 module private Sender =
     open Web.Telegram.Domain.Send
-
-    let send ct msg =
-        EnvKey "RUSSIAN_TELEGRAM_BOT_TOKEN"
-        |> Web.Telegram.Client.create
-        |> ResultAsync.wrap (msg |> Web.Telegram.Client.send ct)
 
     let createAppointmentsMsg request =
         match request.State with
@@ -31,7 +24,7 @@ module private Sender =
 
                 Buttons
                     { Id = MessageId.Default
-                      ChatId = ChatId
+                      ChatId = EmbassyAccess.Telegram.BotId
                       Value = value }
                 |> Some
         | _ -> None
@@ -49,7 +42,7 @@ module private Sender =
 
                     Text
                         { Id = MessageId.Default
-                          ChatId = ChatId
+                          ChatId = EmbassyAccess.Telegram.BotId
                           Value = value }
                     |> Some
         | _ -> None
@@ -70,7 +63,7 @@ let send ct message =
     match message with
     | SendAppointments request -> request |> Sender.createAppointmentsMsg
     | SendConfirmations request -> request |> Sender.createConfirmationsMsg
-    |> Option.map (Sender.send ct)
+    |> Option.map (EmbassyAccess.Telegram.send ct)
     |> Option.defaultValue (async { return Ok() })
 
 let receive ct data =

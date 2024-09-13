@@ -110,7 +110,7 @@ type Request =
       GroupBy: string option
       Modified: DateTime }
 
-type Message =
+type Notification =
     | SendAppointments of Request
     | SendConfirmations of Request
 

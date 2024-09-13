@@ -1,7 +1,6 @@
 ﻿[<RequireQualifiedAccess>]
 module internal EmbassyAccess.Embassies.Russian.Deps
 
-open Infrastructure
 open EmbassyAccess.Embassies.Russian.Domain
 
 let processRequest ct config storage =
@@ -38,12 +37,3 @@ let processRequest ct config storage =
             |> Web.Http.Client.Response.String.readContent ct }
 
 let sendMessage ct message = message |> Telegram.send ct
-
-let createListener ct context =
-    match context with
-    | Web.Domain.Telegram token ->
-        Web.Telegram.Client.create token
-        |> Result.map (fun client -> Web.Domain.Listener.Telegram(client, Telegram.receive ct))
-    | _ ->
-        Error
-        <| NotSupported $"Context '{context}'. EmbassyAccess.Embassies.Russian.Deps.createListener"
