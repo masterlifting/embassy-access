@@ -39,7 +39,12 @@ let private processRequest deps sendNotification request =
     |> ResultAsync.bind' sendNotification
     |> ResultAsync.map (fun request -> request.State |> string)
 
-let private run country getRequests processRequests =
+let private sendNotification ct notification =
+    notification
+    |> EmbassyAccess.Deps.Russian.sendMessage ct
+    |> EmbassyAccess.Api.sendMessage
+
+let private run getRequests processRequests country =
     fun (_, schedule, ct) ->
 
         // define
@@ -52,6 +57,31 @@ let private run country getRequests processRequests =
 
         // run
         createDeps ct schedule |> run
+
+let private toTaskResult (results: Result<string, Error'> array) =
+    let messages, errors = results |> Result.unzip
+
+    match messages, errors with
+    | [], [] -> Ok <| Debug "No results."
+    | [], errors ->
+
+        Error
+        <| Operation
+            { Message =
+                Environment.NewLine
+                + (errors |> List.map _.Message |> String.concat Environment.NewLine)
+              Code = None }
+    | messages, [] ->
+
+        Ok <| Info(messages |> String.concat Environment.NewLine)
+
+    | messages, errors ->
+
+        Ok
+        <| Warn(
+            Environment.NewLine
+            + (messages @ (errors |> List.map _.Message) |> String.concat Environment.NewLine)
+        )
 
 module private SearchAppointments =
 
@@ -67,8 +97,7 @@ module private SearchAppointments =
         let sendNotification request =
             request
             |> SendAppointments
-            |> EmbassyAccess.Deps.Russian.sendMessage deps.ct
-            |> EmbassyAccess.Api.sendMessage
+            |> sendNotification deps.ct
             |> ResultAsync.map (fun _ -> request)
 
         let processRequest = processRequest deps sendNotification
@@ -123,34 +152,16 @@ module private SearchAppointments =
 
             groups |> Map.map processGroup |> Map.values |> Async.Parallel
 
-        let toWorkerResult (results: Result<string, string> array) =
-            let msgs, errors = results |> Result.unzip
-
-            match msgs, errors with
-            | [], [] -> Ok <| Debug "No results."
-            | [], errors ->
-
-                Error
-                <| Operation
-                    { Message = Environment.NewLine + (errors |> String.concat Environment.NewLine)
-                      Code = None }
-
-            | msgs, [] ->
-
-                Ok <| Info(msgs |> String.concat Environment.NewLine)
-
-            | msgs, errors ->
-
-                Ok
-                <| Warn(Environment.NewLine + (msgs @ errors |> String.concat Environment.NewLine))
-
         async {
             let! results = groupedRequests |> processGroupedRequests
-            return results |> toWorkerResult
+
+            return
+                results
+                |> Array.map (Result.mapError (fun error -> Operation { Message = error; Code = None }))
+                |> toTaskResult
         }
 
-    let run country =
-        run country getRequests processRequests |> Some
+    let run = run getRequests processRequests
 
 module private MakeAppointments =
 
@@ -166,56 +177,29 @@ module private MakeAppointments =
         let sendNotification request =
             request
             |> SendConfirmations
-            |> EmbassyAccess.Deps.Russian.sendMessage deps.ct
-            |> EmbassyAccess.Api.sendMessage
+            |> sendNotification deps.ct
             |> ResultAsync.map (fun _ -> request)
 
         let processRequest = processRequest deps sendNotification
 
-        let toWorkerResult (results: Result<string, Error'> array) =
-            let msgs, errors = results |> Result.unzip
-
-            match msgs, errors with
-            | [], [] -> Ok <| Debug "No results."
-            | [], errors ->
-
-                Error
-                <| Operation
-                    { Message =
-                        Environment.NewLine
-                        + (errors |> List.map _.Message |> String.concat Environment.NewLine)
-                      Code = None }
-            | msgs, [] ->
-
-                Ok <| Info(msgs |> String.concat Environment.NewLine)
-
-            | msgs, errors ->
-
-                Ok
-                <| Warn(
-                    Environment.NewLine
-                    + (msgs @ (errors |> List.map _.Message) |> String.concat Environment.NewLine)
-                )
-
         async {
             let! results = requests |> Seq.map processRequest |> Async.Sequential
-            return results |> toWorkerResult
+            return results |> toTaskResult
         }
 
-    let run country =
-        run country getRequests processRequests |> Some
+    let run = run getRequests processRequests
 
 let addTasks country =
     Graph.Node(
         { Name = "Russian"; Task = None },
         [ Graph.Node(
               { Name = "Search appointments"
-                Task = SearchAppointments.run country },
+                Task = Some <| SearchAppointments.run country },
               []
           )
           Graph.Node(
               { Name = "Make appointments"
-                Task = MakeAppointments.run country },
+                Task = Some <| MakeAppointments.run country },
               []
           ) ]
     )

@@ -6,7 +6,6 @@ open EmbassyAccess.Embassies
 
 type ProcessRequestDeps = Russian of Russian.Domain.ProcessRequestDeps
 type SendMessageDeps = Russian of Async<Result<unit, Error'>>
-type ReceiveMessagesDeps = Russian of Result<Web.Domain.Listener, Error'>
 
 let processRequest deps request =
     match deps with
@@ -16,7 +15,10 @@ let sendMessage deps =
     match deps with
     | SendMessageDeps.Russian send -> send
 
-let receiveMessages ct deps =
-    match deps with
-    | ReceiveMessagesDeps.Russian listener -> listener
+let receiveMessages ct context =
+    match context with
+    | Web.Domain.Telegram token ->
+        Web.Telegram.Client.create token
+        |> Result.map (fun client -> Web.Domain.Listener.Telegram(client, Telegram.receive ct))
+    | _ -> Error <| NotSupported $"Context '{context}'.. EmbassyAccess.Api.receiveMessages"
     |> Web.Client.listen ct

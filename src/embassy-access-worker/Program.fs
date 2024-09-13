@@ -6,12 +6,11 @@ open EmbassyAccess.Worker
 let main _ =
 
     let configuration = Configuration.getYaml "appsettings"
-
     Logging.useConsole configuration
 
     let rootTask =
         { Name = "Scheduler"
-          Task = Temporary.createRootTask () }
+          Task = Temporary.createTask () }
 
     let taskHandlers =
         Graph.Node(

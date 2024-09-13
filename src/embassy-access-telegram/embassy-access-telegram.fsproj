@@ -11,6 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
     <ProjectReference Include="..\embassy-access-core\embassy-access-core.fsproj" />
   </ItemGroup>
