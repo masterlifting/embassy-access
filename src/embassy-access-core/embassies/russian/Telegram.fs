@@ -23,7 +23,7 @@ module private Sender =
                         |> Map.ofSeq }
 
                 Buttons
-                    { Id = MessageId.Default
+                    { Id = None
                       ChatId = EmbassyAccess.Telegram.AdminChatId
                       Value = value }
                 |> Some
@@ -41,7 +41,7 @@ module private Sender =
                     let value = confirmations |> Seq.map _.Description |> String.concat "\n"
 
                     Text
-                        { Id = MessageId.Default
+                        { Id = None
                           ChatId = EmbassyAccess.Telegram.AdminChatId
                           Value = value }
                     |> Some
@@ -64,7 +64,7 @@ let send ct message =
     | SendAppointments request -> request |> Sender.createAppointmentsMsg
     | SendConfirmations request -> request |> Sender.createConfirmationsMsg
     |> Option.map (EmbassyAccess.Telegram.send ct)
-    |> Option.defaultValue (async { return Ok() })
+    |> Option.defaultValue (async { return Ok 0 })
 
 let receive ct data =
     match data with

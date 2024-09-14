@@ -5,7 +5,7 @@ open Infrastructure
 open EmbassyAccess.Embassies
 
 type ProcessRequestDeps = Russian of Russian.Domain.ProcessRequestDeps
-type SendMessageDeps = Russian of Async<Result<unit, Error'>>
+type SendMessageDeps = Russian of Async<Result<int, Error'>>
 
 let processRequest deps request =
     match deps with
