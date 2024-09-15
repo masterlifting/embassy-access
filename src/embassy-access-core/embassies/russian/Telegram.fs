@@ -17,6 +17,7 @@ module private Sender =
 
                 let value: Buttons =
                     { Name = $"Found Appointments for {request.Embassy}"
+                      Columns = 3
                       Data =
                         request.Appointments
                         |> Seq.map (fun x -> x.Value, x.Description |> Option.defaultValue "No data")
