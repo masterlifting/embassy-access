@@ -26,6 +26,7 @@ module private Sender =
 
         let buttons: Buttons =
             { Name = "Embassies"
+              Columns = 4
               Data = embassies |> Set.map (fun e -> e, e) |> Map }
 
         { Id = None
@@ -36,11 +37,12 @@ module private Sender =
     let sendCountries (embassy: string) =
         let countries =
             match embassy with
-            | nameof Domain.Russian -> Set [ nameof Domain.Serbia; nameof Domain.Budapest; nameof Domain.Sarajevo ]
+            | nameof Domain.Russian -> Set [ nameof Domain.Belgrade; nameof Domain.Budapest; nameof Domain.Sarajevo ]
             | _ -> Set.empty
 
         let buttons: Buttons =
             { Name = "Countries"
+              Columns = 4
               Data = countries |> Set.map (fun c -> c, c) |> Map }
 
         { Id = None
