@@ -28,8 +28,6 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-worker", "sr
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-tests", "tests\embassy-access-tests.fsproj", "{6AD5FD34-008C-47E8-99F1-15A3FE7BA0C6}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-telegram", "src\embassy-access-telegram\embassy-access-telegram.fsproj", "{D1371A10-17B0-4A49-85C1-9AC7115EEC2D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,10 +62,6 @@ Global
 		{6AD5FD34-008C-47E8-99F1-15A3FE7BA0C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AD5FD34-008C-47E8-99F1-15A3FE7BA0C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6AD5FD34-008C-47E8-99F1-15A3FE7BA0C6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D1371A10-17B0-4A49-85C1-9AC7115EEC2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D1371A10-17B0-4A49-85C1-9AC7115EEC2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D1371A10-17B0-4A49-85C1-9AC7115EEC2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D1371A10-17B0-4A49-85C1-9AC7115EEC2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

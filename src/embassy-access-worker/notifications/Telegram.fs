@@ -96,7 +96,7 @@ module private Sender =
     let send ct data =
         EnvKey EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
         |> Web.Telegram.Client.create
-        |> ResultAsync.wrap (data |> Web.Telegram.Client.send ct)
+        |> ResultAsync.wrap (data |>  Web.Telegram.Client.send ct)
 
 module private Receiver =
     open Web.Telegram.Domain.Receive
@@ -134,7 +134,6 @@ module private Listener =
         |> Web.Telegram.Client.create
         |> createListener ct
         |> Web.Client.listen ct
-        |> ResultAsync.mapError (fun error -> error.Message |> Logging.Log.critical)
 
 let send ct notification =
     notification |> Sender.createMessage |> Option.map (Sender.send ct)

@@ -10,7 +10,7 @@ let main _ =
 
     let rootTask =
         { Name = "Scheduler"
-          Task = Temporary.createTask () }
+          Task = Initializer.initialize () }
 
     let taskHandlers =
         Graph.Node(

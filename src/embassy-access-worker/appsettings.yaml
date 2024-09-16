@@ -2,7 +2,7 @@
 
 Logging:
   LogLevel:
-    Default: Information
+    Default: Debug
 
 Workdays: &Workdays
   StartTime: "00:00:00"

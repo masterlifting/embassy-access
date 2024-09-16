@@ -23,6 +23,7 @@
     <Compile Include="countries\Switzerland.fs" />
     <Compile Include="TasksStorage.fs" />
     <Compile Include="Temporary.fs" />
+    <Compile Include="Initializer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   

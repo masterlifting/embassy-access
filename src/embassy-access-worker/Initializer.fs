@@ -1,16 +1,16 @@
-﻿module internal EmbassyAccess.Worker.Initialize
+﻿module internal EmbassyAccess.Worker.Initializer
 
-open System
 open Infrastructure
 open Worker.Domain
 
-let createTask () =
-    Some
-    <| fun (_, _, ct) ->
+let initialize () =
+    fun (_, _, ct) ->
         EmbassyAccess.Worker.Notifications.Telegram.listen ct
+        |> ResultAsync.mapError (fun error -> error.Message |> Logging.Log.critical)
         |> Async.Ignore
         |> Async.Start
 
         Temporary.createTestData ct
-        |> ResultAsync.map (fun data -> $"Test data has been created. Count: {data.Length}")
-        |> ResultAsync.map (fun msg -> Success(msg + Environment.NewLine + "Scheduler is running."))
+        |> ResultAsync.map (fun data -> $"Test data has been created. Count: {data.Length}. ")
+        |> ResultAsync.map (fun msg -> Success(msg + " Scheduler is running."))
+    |> Some
