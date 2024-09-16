@@ -14,7 +14,7 @@ module private Sender =
             |> Seq.concat
             |> Seq.map Mapper.Embassy.toExternal
             |> Seq.map (fun embassy -> embassy.Name, embassy.Name)
-            |> Seq.sortBy (fun (name, _) -> name)
+            |> Seq.sortBy fst
             |> Map
 
         let buttons: Buttons =
@@ -23,7 +23,7 @@ module private Sender =
               Data = data }
 
         let message =
-            { Id = Some messageId
+            { Id = New
               ChatId = chatId
               Value = buttons }
             |> Buttons
@@ -38,7 +38,7 @@ module private Sender =
             |> Seq.filter (fun embassy -> embassy.Name = embassyName)
             |> Seq.map _.Country
             |> Seq.map (fun country -> country.Name, country.Name)
-            |> Seq.sortBy (fun (name, _) -> name)
+            |> Seq.sortBy fst
             |> Map
 
         let buttons: Buttons =
@@ -47,7 +47,7 @@ module private Sender =
               Data = data }
 
         let message =
-            { Id = Some messageId
+            { Id = messageId |> Replace
               ChatId = chatId
               Value = buttons }
             |> Buttons

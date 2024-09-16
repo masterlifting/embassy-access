@@ -5,14 +5,12 @@
   <ItemGroup>
     <Compile Include="Domain.fs" />
     <Compile Include="Mapper.fs" />
-    <Compile Include="notification\Telegram.fs" />
     <Compile Include="persistence\Filter.fs" />
     <Compile Include="persistence\Command.fs" />
     <Compile Include="persistence\InMemoryRepository.fs" />
     <Compile Include="persistence\Repository.fs" />
     <Compile Include="embassies\russian\Domain.fs" />
     <Compile Include="embassies\russian\Core.fs" />
-    <Compile Include="embassies\russian\Telegram.fs" />
     <Compile Include="embassies\russian\Deps.fs" />
     <Compile Include="Api.fs" />
     <Compile Include="Deps.fs" />
