@@ -38,14 +38,14 @@ let private processRequest deps createNotification request =
         |> EmbassyAccess.Deps.Russian.processRequest
         |> EmbassyAccess.Api.processRequest
 
-    let sendNotification notification =
-        deps.sendNotification deps.ct notification
-        |> Option.map (fun _ -> request)
-        |> Option.defaultValue request
+    let sendNotification request =
+        createNotification request
+        |> deps.sendNotification deps.ct
+        |> Option.map (ResultAsync.map (fun _ -> request))
+        |> Option.defaultValue (async { return Ok request })
 
     processRequest deps request
-    |> ResultAsync.map createNotification
-    |> ResultAsync.map sendNotification
+    |> ResultAsync.bind' sendNotification
     |> ResultAsync.map (fun request -> request.State |> string)
 
 let private run getRequests processRequests country =
