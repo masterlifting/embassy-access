@@ -36,4 +36,4 @@ let processRequest ct config storage =
             |> Web.Http.Client.Request.post ct request content
             |> Web.Http.Client.Response.String.readContent ct }
 
-let sendMessage ct message = message |> Telegram.send ct
+let createNotification = Telegram.createMessage

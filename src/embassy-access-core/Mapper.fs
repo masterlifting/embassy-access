@@ -1,5 +1,5 @@
 [<RequireQualifiedAccess>]
-module internal EmbassyAccess.Mapper
+module EmbassyAccess.Mapper
 
 open System
 open Infrastructure
