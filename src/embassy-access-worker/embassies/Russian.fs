@@ -7,10 +7,12 @@ open Persistence.Domain
 open Worker.Domain
 open EmbassyAccess.Domain
 open EmbassyAccess.Embassies.Russian.Domain
+open EmbassyAccess.Worker.Notifications
 
 type private Deps =
     { Config: ProcessRequestConfiguration
       Storage: Persistence.Storage.Type
+      sendNotification: CancellationToken -> Notification -> Async<Result<int, Error'>> option
       ct: CancellationToken }
 
 let private createDeps ct (schedule: Schedule option) =
@@ -25,24 +27,26 @@ let private createDeps ct (schedule: Schedule option) =
         return
             { Config = config
               Storage = storage
+              sendNotification = Telegram.send
               ct = ct }
     }
 
-let private processRequest deps sendNotification request =
+let private processRequest deps createNotification request =
 
     let processRequest deps =
         (deps.Storage, deps.Config, deps.ct)
         |> EmbassyAccess.Deps.Russian.processRequest
         |> EmbassyAccess.Api.processRequest
 
-    processRequest deps request
-    |> ResultAsync.bind' sendNotification
-    |> ResultAsync.map (fun request -> request.State |> string)
+    let sendNotification notification =
+        deps.sendNotification deps.ct notification
+        |> Option.map (fun _ -> request)
+        |> Option.defaultValue request
 
-let private sendNotification ct notification =
-    notification
-    |> EmbassyAccess.Deps.Russian.createMessage
-    |> Option.map (EmbassyAccess.Notification.Telegram.send ct)
+    processRequest deps request
+    |> ResultAsync.map createNotification
+    |> ResultAsync.map sendNotification
+    |> ResultAsync.map (fun request -> request.State |> string)
 
 let private run getRequests processRequests country =
     fun (_, schedule, ct) ->
@@ -94,14 +98,7 @@ module private SearchAppointments =
 
     let private processRequests deps requests =
 
-        let sendNotification request =
-            request
-            |> SendAppointments
-            |> sendNotification deps.ct
-            |> Option.map (ResultAsync.map (fun _ -> request))
-            |> Option.defaultValue (async { return Ok request })
-
-        let processRequest = processRequest deps sendNotification
+        let processRequest = processRequest deps SendAppointments
 
         let uniqueRequests = requests |> Seq.filter _.GroupBy.IsNone
 
@@ -175,14 +172,7 @@ module private MakeAppointments =
 
     let private processRequests deps requests =
 
-        let sendNotification request =
-            request
-            |> SendConfirmations
-            |> sendNotification deps.ct
-            |> Option.map (ResultAsync.map (fun _ -> request))
-            |> Option.defaultValue (async { return Ok request })
-
-        let processRequest = processRequest deps sendNotification
+        let processRequest = processRequest deps SendConfirmations
 
         async {
             let! results = requests |> Seq.map processRequest |> Async.Sequential

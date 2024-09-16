@@ -9,17 +9,10 @@ let main _ =
     let configuration = Configuration.getJson "appsettings"
     Logging.useConsole configuration
 
-    let createReceiver ct context =
-        match context with
-        | Web.Domain.Telegram token ->
-            Web.Telegram.Client.create token
-            |> Result.map (fun client -> Web.Domain.Listener.Telegram(client, Receiver.receive ct client))
-        | _ -> Error <| NotSupported $"Context '{context}'."
-
     "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
     |> Web.Telegram.Domain.EnvKey
-    |> Web.Domain.Telegram
-    |> createReceiver ct
+    |> Web.Telegram.Client.create
+    |> Result.map (fun client -> Web.Domain.Listener.Telegram(client, Receiver.receive ct client))
     |> Web.Client.listen ct
     |> ResultAsync.mapError (fun error -> error.Message |> Logging.Log.critical)
     |> Async.Ignore
