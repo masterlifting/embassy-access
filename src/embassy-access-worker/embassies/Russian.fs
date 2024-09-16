@@ -41,8 +41,8 @@ let private processRequest deps sendNotification request =
 
 let private sendNotification ct notification =
     notification
-    |> EmbassyAccess.Deps.Russian.sendMessage ct
-    |> EmbassyAccess.Api.sendMessage
+    |> EmbassyAccess.Deps.Russian.createMessage
+    |> Option.map (EmbassyAccess.Notification.Telegram.send ct)
 
 let private run getRequests processRequests country =
     fun (_, schedule, ct) ->
@@ -98,7 +98,8 @@ module private SearchAppointments =
             request
             |> SendAppointments
             |> sendNotification deps.ct
-            |> ResultAsync.map (fun _ -> request)
+            |> Option.map (ResultAsync.map (fun _ -> request))
+            |> Option.defaultValue (async { return Ok request })
 
         let processRequest = processRequest deps sendNotification
 
@@ -178,7 +179,8 @@ module private MakeAppointments =
             request
             |> SendConfirmations
             |> sendNotification deps.ct
-            |> ResultAsync.map (fun _ -> request)
+            |> Option.map (ResultAsync.map (fun _ -> request))
+            |> Option.defaultValue (async { return Ok request })
 
         let processRequest = processRequest deps sendNotification
 

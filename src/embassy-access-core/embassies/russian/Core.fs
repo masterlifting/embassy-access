@@ -757,3 +757,37 @@ let processRequest deps request =
         >> setRequestFinalState
 
     request |> start
+
+let createAppointmentsNotification request =
+    match request.State with
+    | Completed _ ->
+        match request.Appointments.IsEmpty with
+        | true -> None
+        | false -> Some(request.Embassy, request.Appointments)
+    | _ -> None
+
+let createConfirmationsNotification request =
+    match request.State with
+    | Completed _ ->
+        match request.Appointments.IsEmpty with
+        | true -> None
+        | false ->
+            match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
+            | [] -> None
+            | confirmations -> Some(request.Id, request.Embassy, confirmations)
+    | _ -> None
+
+let getCountries () =
+    Set
+        [ Albania <| Tirana
+          Bosnia <| Sarajevo
+          Finland <| Helsinki
+          France <| Paris
+          Germany <| Berlin
+          Hungary <| Budapest
+          Ireland <| Dublin
+          Montenegro <| Podgorica
+          Netherlands <| Hague
+          Serbia <| Belgrade
+          Slovenia <| Ljubljana
+          Switzerland <| Bern ]
