@@ -105,10 +105,34 @@ module private Receiver =
         match msg.Value with
         | "/start" -> client |> Sender.sendEmbassies ct msg.Id msg.ChatId
         | _ -> async { return Error <| NotSupported $"Message text: {msg.Value}" }
+        
+    let private (|IsEmbassy|_|) = function
+        | Mapper.Embassy.Russian -> Some Mapper.Embassy.Russian
+        | Mapper.Embassy.British -> Some Mapper.Embassy.British
+        | Mapper.Embassy.French -> Some Mapper.Embassy.French
+        | Mapper.Embassy.German -> Some Mapper.Embassy.German
+        | Mapper.Embassy.Italian -> Some Mapper.Embassy.Italian
+        | Mapper.Embassy.Spanish -> Some Mapper.Embassy.Spanish
+        | _ -> None
+        
+    let private (|IsCountry|_|) = function
+        | Mapper.Country.Albania -> Some Mapper.Country.Albania
+        | Mapper.Country.France -> Some Mapper.Country.France
+        | Mapper.Country.Germany -> Some Mapper.Country.Germany
+        | Mapper.Country.Bosnia -> Some Mapper.Country.Bosnia
+        | Mapper.Country.Finland -> Some Mapper.Country.Finland
+        | Mapper.Country.Hungary -> Some Mapper.Country.Hungary
+        | Mapper.Country.Ireland -> Some Mapper.Country.Ireland
+        | Mapper.Country.Montenegro -> Some Mapper.Country.Montenegro
+        | Mapper.Country.Netherlands -> Some Mapper.Country.Netherlands
+        | Mapper.Country.Serbia -> Some Mapper.Country.Serbia
+        | Mapper.Country.Slovenia -> Some Mapper.Country.Slovenia
+        | Mapper.Country.Switzerland -> Some Mapper.Country.Switzerland
+        | _ -> None
 
     let private receiveCallback ct client (msg: Message<string>) =
         match msg.Value with
-        | Mapper.Embassy.Russian -> client |> Sender.sendCountries ct msg.Id msg.ChatId Mapper.Embassy.Russian
+        | IsEmbassy embassy -> client |> Sender.sendCountries ct msg.Id msg.ChatId embassy
         | _ -> async { return Error <| NotSupported $"Callback data: {msg.Value}" }
 
     let private receiveDataMessage ct client msg =
