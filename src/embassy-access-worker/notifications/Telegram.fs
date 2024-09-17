@@ -13,6 +13,18 @@ let private AdminChatId = 379444553L
 [<Literal>]
 let private EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
 
+let private (|IsEmbassy|IsCountry|IsCity|None|) value =
+    match value with
+    | AP.IsString value ->
+        let data = value.Split(':')
+
+        match data.Length with
+        | 1 -> IsEmbassy(data.[0])
+        | 2 -> IsCountry(data.[0], data.[1])
+        | 3 -> IsCity(data.[0], data.[1], data.[2])
+        | _ -> None
+    | _ -> None
+
 module private Sender =
     open Web.Telegram.Domain.Send
 
@@ -42,7 +54,7 @@ module private Sender =
               Value = value }
             |> Text)
 
-    let sendEmbassies ct messageId chatId =
+    let sendEmbassies ct chatId =
         let data =
             Api.getEmbassies ()
             |> Seq.concat
@@ -64,27 +76,70 @@ module private Sender =
 
         message |> Web.Telegram.Client.send ct
 
-    let sendCountries ct messageId chatId embassyName =
+    let sendCountries ct msgId chatId embassy =
         let data =
             Api.getEmbassies ()
             |> Seq.concat
             |> Seq.map Mapper.Embassy.toExternal
-            |> Seq.filter (fun embassy -> embassy.Name = embassyName)
+            |> Seq.filter (fun e -> e.Name = embassy)
             |> Seq.map _.Country
-            |> Seq.map (fun country -> country.Name, country.Name)
+            |> Seq.map (fun c -> (embassy + ":" + c.Name), c.Name)
             |> Seq.sortBy fst
             |> Map
 
         let buttons: Buttons =
-            { Name = $"Available Countries for '{embassyName}'."
+            { Name = $"Countries for '{embassy}' embassy."
               Columns = 3
               Data = data }
 
         let message =
-            { Id = messageId |> Replace
+            { Id = msgId |> Replace
               ChatId = chatId
               Value = buttons }
             |> Buttons
+
+        message |> Web.Telegram.Client.send ct
+
+    let sendCities ct msgId chatId embassy country =
+        let data =
+            Api.getEmbassies ()
+            |> Seq.concat
+            |> Seq.map Mapper.Embassy.toExternal
+            |> Seq.filter (fun e -> e.Name = embassy)
+            |> Seq.map _.Country
+            |> Seq.filter (fun c -> c.Name = country)
+            |> Seq.map _.City
+            |> Seq.map (fun c -> (embassy + ":" + country + ":" + c.Name), c.Name)
+            |> Seq.sortBy fst
+            |> Map
+
+        let buttons: Buttons =
+            { Name = $"Cities for '{embassy}' embassy in '{country}'."
+              Columns = 3
+              Data = data }
+
+        let message =
+            { Id = msgId |> Replace
+              ChatId = chatId
+              Value = buttons }
+            |> Buttons
+
+        message |> Web.Telegram.Client.send ct
+
+    let sendPaload ct msgId chatId embassy country city =
+        let msgValue =
+            match embassy |> Mapper.Embassy.create country city with
+            | Error error -> error.Message
+            | Ok embassy ->
+                match embassy with
+                | Domain.Russian _ -> "Send your payload to the embassy."
+                | _ -> $"Not supported embassy: '{embassy}'."
+
+        let message =
+            { Id = msgId |> Replace
+              ChatId = chatId
+              Value = msgValue }
+            |> Text
 
         message |> Web.Telegram.Client.send ct
 
@@ -96,55 +151,33 @@ module private Sender =
     let send ct data =
         EnvKey EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
         |> Web.Telegram.Client.create
-        |> ResultAsync.wrap (data |>  Web.Telegram.Client.send ct)
+        |> ResultAsync.wrap (data |> Web.Telegram.Client.send ct)
 
 module private Receiver =
     open Web.Telegram.Domain.Receive
 
-    let private receiveText ct client (msg: Message<string>) =
+    let private receiveText ct (msg: Message<string>) client =
         match msg.Value with
-        | "/start" -> client |> Sender.sendEmbassies ct msg.Id msg.ChatId
+        | "/start" -> client |> Sender.sendEmbassies ct msg.ChatId
         | _ -> async { return Error <| NotSupported $"Message text: {msg.Value}" }
-        
-    let private (|IsEmbassy|_|) = function
-        | Mapper.Embassy.Russian -> Some Mapper.Embassy.Russian
-        | Mapper.Embassy.British -> Some Mapper.Embassy.British
-        | Mapper.Embassy.French -> Some Mapper.Embassy.French
-        | Mapper.Embassy.German -> Some Mapper.Embassy.German
-        | Mapper.Embassy.Italian -> Some Mapper.Embassy.Italian
-        | Mapper.Embassy.Spanish -> Some Mapper.Embassy.Spanish
-        | _ -> None
-        
-    let private (|IsCountry|_|) = function
-        | Mapper.Country.Albania -> Some Mapper.Country.Albania
-        | Mapper.Country.France -> Some Mapper.Country.France
-        | Mapper.Country.Germany -> Some Mapper.Country.Germany
-        | Mapper.Country.Bosnia -> Some Mapper.Country.Bosnia
-        | Mapper.Country.Finland -> Some Mapper.Country.Finland
-        | Mapper.Country.Hungary -> Some Mapper.Country.Hungary
-        | Mapper.Country.Ireland -> Some Mapper.Country.Ireland
-        | Mapper.Country.Montenegro -> Some Mapper.Country.Montenegro
-        | Mapper.Country.Netherlands -> Some Mapper.Country.Netherlands
-        | Mapper.Country.Serbia -> Some Mapper.Country.Serbia
-        | Mapper.Country.Slovenia -> Some Mapper.Country.Slovenia
-        | Mapper.Country.Switzerland -> Some Mapper.Country.Switzerland
-        | _ -> None
 
-    let private receiveCallback ct client (msg: Message<string>) =
+    let private receiveCallback ct msg client =
         match msg.Value with
         | IsEmbassy embassy -> client |> Sender.sendCountries ct msg.Id msg.ChatId embassy
+        | IsCountry(embassy, country) -> client |> Sender.sendCities ct msg.Id msg.ChatId embassy country
+        | IsCity(embassy, country, city) -> client |> Sender.sendPaload ct msg.Id msg.ChatId embassy country city
         | _ -> async { return Error <| NotSupported $"Callback data: {msg.Value}" }
 
-    let private receiveDataMessage ct client msg =
+    let private receiveMessage ct msg client =
         match msg with
-        | Text text -> text |> receiveText ct client
+        | Text text -> client |> receiveText ct text
         | _ -> async { return Error <| NotSupported $"Message type: {msg}" }
 
     let receive ct client =
         fun data ->
             match data with
-            | Message msg -> msg |> receiveDataMessage ct client
-            | CallbackQuery msg -> msg |> receiveCallback ct client
+            | Message msg -> client |> receiveMessage ct msg
+            | CallbackQuery msg -> client |> receiveCallback ct msg
             | _ -> async { return Error <| NotSupported $"Data type: {data}" }
             |> ResultAsync.map (fun _ -> ())
 

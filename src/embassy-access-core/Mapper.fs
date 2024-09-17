@@ -243,6 +243,17 @@ module Embassy =
             | British -> Embassy.British country |> Ok
             | _ -> Error <| NotSupported $"Embassy %s{embassy.Name}.")
 
+    let create country city name =
+        let city' = External.City()
+        city'.Name <- city
+        let coutry' = External.Country()
+        coutry'.Name <- country
+        coutry'.City <- city'
+        let embassy' = External.Embassy()
+        embassy'.Name <- name
+        embassy'.Country <- coutry'
+        toInternal embassy'
+
 module Confirmation =
     let toExternal (confirmation: Confirmation) =
         let result = External.Confirmation()
