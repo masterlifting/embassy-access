@@ -11,13 +11,13 @@ Workdays: &Workdays
 
 SearchAppointments: &SearchAppointments
   Name: Search appointments
-  Enabled: true
+  Enabled: false
   Wait: false
   Duration: "00:02:00"
 
 MakeAppointments: &MakeAppointments
   Name: Make appointments
-  Enabled: true
+  Enabled: false
   Wait: false
   Duration: "00:03:00"
 
