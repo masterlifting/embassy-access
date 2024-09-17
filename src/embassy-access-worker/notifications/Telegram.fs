@@ -13,20 +13,24 @@ let private AdminChatId = 379444553L
 [<Literal>]
 let private EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
 
-let private (|IsEmbassy|IsCountry|IsCity|None|) value =
+let private (|HasEmbassy|HasCountry|HasCity|HasPayload|None|) value =
     match value with
     | AP.IsString value ->
-        let data = value.Split(':')
+        let data = value.Split '|'
 
         match data.Length with
-        | 1 -> IsEmbassy(data.[0])
-        | 2 -> IsCountry(data.[0], data.[1])
-        | 3 -> IsCity(data.[0], data.[1], data.[2])
+        | 1 -> HasEmbassy(data.[0])
+        | 2 -> HasCountry(data.[0], data.[1])
+        | 3 -> HasCity(data.[0], data.[1], data.[2])
+        | 4 -> HasPayload(data.[0], data.[1], data.[2], data.[3])
         | _ -> None
     | _ -> None
 
 module private Sender =
     open Web.Telegram.Domain.Send
+    open Persistence.Domain
+    open Worker.Domain
+    open EmbassyAccess.Embassies.Russian.Domain
 
     let private createAppointmentsMsg request =
         Create.appointmentsNotification request
@@ -83,7 +87,7 @@ module private Sender =
             |> Seq.map Mapper.Embassy.toExternal
             |> Seq.filter (fun e -> e.Name = embassy)
             |> Seq.map _.Country
-            |> Seq.map (fun c -> (embassy + ":" + c.Name), c.Name)
+            |> Seq.map (fun c -> (embassy + "|" + c.Name), c.Name)
             |> Seq.sortBy fst
             |> Map
 
@@ -109,7 +113,7 @@ module private Sender =
             |> Seq.map _.Country
             |> Seq.filter (fun c -> c.Name = country)
             |> Seq.map _.City
-            |> Seq.map (fun c -> (embassy + ":" + country + ":" + c.Name), c.Name)
+            |> Seq.map (fun c -> (embassy + "|" + country + "|" + c.Name), c.Name)
             |> Seq.sortBy fst
             |> Map
 
@@ -126,13 +130,14 @@ module private Sender =
 
         message |> Web.Telegram.Client.send ct
 
-    let sendPaload ct msgId chatId embassy country city =
+    let sendPayload ct msgId chatId embassy country city =
         let msgValue =
             match embassy |> Mapper.Embassy.create country city with
             | Error error -> error.Message
             | Ok embassy ->
                 match embassy with
-                | Domain.Russian _ -> "Send your payload to the embassy."
+                | Domain.Russian _ ->
+                    $"Send your payload using the following format: '{embassy}|{country}|{city}|your_link_here'."
                 | _ -> $"Not supported embassy: '{embassy}'."
 
         let message =
@@ -142,6 +147,46 @@ module private Sender =
             |> Text
 
         message |> Web.Telegram.Client.send ct
+
+    let createDeps ct =
+        let deps = ModelBuilder()
+
+        deps {
+            let config = { TimeShift = 0y }
+
+            let! storage = Persistence.Storage.create InMemory
+
+            return (storage, config, ct)
+        }
+
+    let processPayload ct msgId chatId embassy country city payload =
+        match embassy |> Mapper.Embassy.create country city with
+        | Error error -> async { return Error error }
+        | Ok embassy ->
+            match embassy with
+            | Domain.Russian country ->
+                let request =
+                    { Id = RequestId.New
+                      Payload = payload
+                      Embassy = Russian country
+                      State = Created
+                      Attempt = 0
+                      ConfirmationState = Disabled
+                      Appointments = Set.empty
+                      Description = None
+                      GroupBy = Some "Passports"
+                      Modified = System.DateTime.UtcNow }
+
+                createDeps ct
+                |> Result.map Deps.Russian.processRequest
+                |> ResultAsync.wrap (fun deps -> request |> Api.processRequest deps)
+                |> ResultAsync.map (fun request ->
+                    { Id = msgId |> Replace
+                      ChatId = chatId
+                      Value = request.State |> string }
+                    |> Text)
+                |> ResultAsync.bind (Web.Telegram.Client.send ct)
+            | _ -> async { return Error <| NotSupported $"'{embassy}'." }
 
     let createMessage message =
         match message with
@@ -163,9 +208,9 @@ module private Receiver =
 
     let private receiveCallback ct msg client =
         match msg.Value with
-        | IsEmbassy embassy -> client |> Sender.sendCountries ct msg.Id msg.ChatId embassy
-        | IsCountry(embassy, country) -> client |> Sender.sendCities ct msg.Id msg.ChatId embassy country
-        | IsCity(embassy, country, city) -> client |> Sender.sendPaload ct msg.Id msg.ChatId embassy country city
+        | HasEmbassy embassy -> client |> Sender.sendCountries ct msg.Id msg.ChatId embassy
+        | HasCountry(embassy, country) -> client |> Sender.sendCities ct msg.Id msg.ChatId embassy country
+        | HasCity(embassy, country, city) -> client |> Sender.sendPayload ct msg.Id msg.ChatId embassy country city
         | _ -> async { return Error <| NotSupported $"Callback data: {msg.Value}" }
 
     let private receiveMessage ct msg client =
