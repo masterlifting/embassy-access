@@ -27,7 +27,7 @@ let private createDeps ct (schedule: Schedule option) =
         return
             { Config = config
               Storage = storage
-              sendNotification = Telegram.send
+              sendNotification = Telegram.sendNotification
               ct = ct }
     }
 
@@ -42,7 +42,7 @@ let private processRequest deps createNotification request =
         createNotification request
         |> deps.sendNotification deps.ct
         |> Option.map (ResultAsync.map (fun _ -> request))
-        |> Option.defaultValue (async { return Ok request })
+        |> Option.defaultValue (request |> Ok |> async.Return)
 
     processRequest deps request
     |> ResultAsync.bind' sendNotification
