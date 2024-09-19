@@ -108,11 +108,14 @@ module Command =
     module Request =
 
         let private add (request: Request) (requests: External.Request array) =
-            match requests |> Array.tryFind (fun x -> x.Id = request.Id.Value) with
+            match
+                requests
+                |> Array.tryFind (fun x -> x.Id = request.Id.Value || x.Payload = request.Payload)
+            with
             | Some _ ->
                 Error
                 <| Operation
-                    { Message = $"Request {request.Id} already exists."
+                    { Message = $"{request.Id} already exists."
                       Code = Some ErrorCodes.AlreadyExists }
             | _ -> Ok(requests |> Array.append [| EmbassyAccess.Mapper.Request.toExternal request |])
 
@@ -121,7 +124,7 @@ module Command =
             | None ->
                 Error
                 <| Operation
-                    { Message = $"Request {request.Id} not found to update."
+                    { Message = $"{request.Id} not found to update."
                       Code = Some ErrorCodes.NotFound }
             | Some index ->
                 Ok(
@@ -138,7 +141,7 @@ module Command =
             | None ->
                 Error
                 <| Operation
-                    { Message = $"Request {request.Id} not found to delete."
+                    { Message = $"{request.Id} not found to delete."
                       Code = Some ErrorCodes.NotFound }
             | Some index -> Ok(requests |> Array.removeAt index)
 
