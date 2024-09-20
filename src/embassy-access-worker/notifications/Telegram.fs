@@ -14,37 +14,27 @@ let private AdminChatId = 379444553L
 [<Literal>]
 let private EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
 
-let private (|HasEmbassy|HasCountry|HasCity|HasPayload|None|) value =
-    match value with
-    | AP.IsString value ->
-        let data = value.Split '|'
-
-        match data.Length with
-        | 1 -> HasEmbassy(data.[0])
-        | 2 -> HasCountry(data.[0], data.[1])
-        | 3 -> HasCity(data.[0], data.[1], data.[2])
-        | 4 -> HasPayload(data.[0], data.[1], data.[2], data.[3])
-        | _ -> None
-    | _ -> None
-
-module private Sender =
+module private Data =
     open Web.Telegram.Domain.Send
     open Persistence.Domain
 
-    let send ct data =
-        EnvKey EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
-        |> Web.Telegram.Client.create
-        |> ResultAsync.wrap (data |> Web.Telegram.Client.send ct)
+    let create<'a> (chatId, msgId) (value: 'a) =
+        { Id = msgId
+          ChatId = chatId
+          Value = value }
 
-    module Data =
+    module Create =
+
         module Message =
 
-            let confirmation request =
+            let confirmation chatId request =
                 Create.confirmationsNotification request
                 |> Option.map (fun (requestId, embassy, confirmations) ->
                     confirmations |> Seq.map _.Description |> String.concat "\n")
+                |> Option.map (create (chatId, MessageId.New))
+                |> Option.map Text
 
-            let payloadRequest (embassy', country', city') =
+            let payloadRequest (chatId, msgId) (embassy', country', city') =
                 match (embassy', country', city') |> Mapper.Embassy.create with
                 | Error error -> error.Message
                 | Ok embassy ->
@@ -52,8 +42,10 @@ module private Sender =
                     | Russian _ ->
                         $"Send your payload using the following format: '{embassy'}|{country'}|{city'}|your_link_here'."
                     | _ -> $"Not supported embassy: '{embassy'}'."
+                |> create (chatId, msgId |> MessageId.Replace)
+                |> Text
 
-            let payloadResponse ct (embassy', country', city') payload =
+            let payloadResponse ct chatId (embassy', country', city') payload =
                 (embassy', country', city')
                 |> Mapper.Embassy.create
                 |> ResultAsync.wrap (fun embassy ->
@@ -74,10 +66,12 @@ module private Sender =
                         Persistence.Storage.create InMemory
                         |> ResultAsync.wrap (Repository.Command.Request.create ct request)
                         |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
+                        |> ResultAsync.map (create (chatId, MessageId.New))
+                        |> ResultAsync.map Text
                     | _ -> embassy' |> NotSupported |> Error |> async.Return)
 
         module Buttons =
-            let appointments request =
+            let appointments chatId request =
                 Create.appointmentsNotification request
                 |> Option.map (fun (embassy, appointments) ->
                     { Buttons.Name = $"Found Appointments for {embassy}"
@@ -86,8 +80,10 @@ module private Sender =
                         appointments
                         |> Seq.map (fun x -> x.Value, x.Description |> Option.defaultValue "No data")
                         |> Map.ofSeq })
+                |> Option.map (create (chatId, MessageId.New))
+                |> Option.map Buttons
 
-            let embassies () =
+            let embassies chatId =
                 let data =
                     Api.getEmbassies ()
                     |> Seq.concat
@@ -99,8 +95,10 @@ module private Sender =
                 { Buttons.Name = "Available Embassies."
                   Columns = 3
                   Data = data }
+                |> create (chatId, MessageId.New)
+                |> Buttons
 
-            let countries embassy' =
+            let countries (chatId, msgId) embassy' =
                 let data =
                     Api.getEmbassies ()
                     |> Seq.concat
@@ -114,8 +112,10 @@ module private Sender =
                 { Buttons.Name = $"Countries for '{embassy'}' embassy."
                   Columns = 3
                   Data = data }
+                |> create (chatId, msgId |> MessageId.Replace)
+                |> Buttons
 
-            let cities (embassy', country') =
+            let cities (chatId, msgId) (embassy', country') =
                 let data =
                     Api.getEmbassies ()
                     |> Seq.concat
@@ -131,99 +131,96 @@ module private Sender =
                 { Buttons.Name = $"Cities for '{embassy'}' embassy in '{country'}'."
                   Columns = 3
                   Data = data }
+                |> create (chatId, msgId |> MessageId.Replace)
+                |> Buttons
 
-    module Response =
+module private Producer =
 
-        let create<'a> (msgId, chatId) (value: 'a) =
-            { Id = msgId
-              ChatId = chatId
-              Value = value }
-
-        let notification chatId message =
-            match message with
-            | SendAppointments request ->
-                request
-                |> Data.Buttons.appointments
-                |> Option.map (create (New, chatId))
-                |> Option.map Buttons
-            | SendConfirmations request ->
-                request
-                |> Data.Message.confirmation
-                |> Option.map (create (New, chatId))
-                |> Option.map Text
-
-module private Receiver =
-    let private receiveText ct (msg: Receive.Message<string>) client =
-        async {
-            match msg.Value with
-            | "/start" ->
-                return
-                    Sender.Data.Buttons.embassies ()
-                    |> Sender.Response.create (Send.New, msg.ChatId)
-                    |> Send.Buttons
-                    |> Ok
-            | HasPayload(embassy, country, city, payload) ->
-                return!
-                    payload
-                    |> Sender.Data.Message.payloadResponse ct (embassy, country, city)
-                    |> ResultAsync.map (Sender.Response.create (Send.New, msg.ChatId))
-                    |> ResultAsync.map Send.Text
-            | _ -> return Error <| NotSupported $"Message text: {msg.Value}"
-        }
-
-    let private receiveCallback ct (msg: Receive.Message<string>) client =
-        async {
-            match msg.Value with
-            | HasEmbassy value ->
-                return
-                    Sender.Data.Buttons.countries value
-                    |> Sender.Response.create (msg.Id |> Send.Replace, msg.ChatId)
-                    |> Send.Buttons
-                    |> Ok
-            | HasCountry value ->
-                return
-                    Sender.Data.Buttons.cities value
-                    |> Sender.Response.create (msg.Id |> Send.Replace, msg.ChatId)
-                    |> Send.Buttons
-                    |> Ok
-            | HasCity value ->
-                return
-                    Sender.Data.Message.payloadRequest value
-                    |> Sender.Response.create (msg.Id |> Send.Replace, msg.ChatId)
-                    |> Send.Text
-                    |> Ok
-            | _ -> return Error <| NotSupported $"Callback data: {msg.Value}"
-        }
-        |> ResultAsync.bind' (fun data -> client |> Web.Telegram.Client.send ct data)
-
-    let private receiveMessage ct msg client =
-        match msg with
-        | Receive.Text text -> client |> receiveText ct text
-        | _ -> $"Message type: {msg}" |> NotSupported |> Error |> async.Return
-        |> ResultAsync.bind' (fun data -> client |> Web.Telegram.Client.send ct data)
-
-    let receive ct client =
-        fun data ->
-            match data with
-            | Receive.Message msg -> client |> receiveMessage ct msg
-            | Receive.CallbackQuery msg -> client |> receiveCallback ct msg
-            | _ -> $"Data type: {data}" |> NotSupported |> Error |> async.Return
-            |> ResultAsync.map (fun _ -> ())
-
-module private Listener =
-
-    let private createListener ct =
-        Result.map (fun client -> Web.Domain.Listener.Telegram(client, Receiver.receive ct client))
-
-    let listen ct =
+    let private send ct data =
         EnvKey EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
         |> Web.Telegram.Client.create
-        |> createListener ct
+        |> ResultAsync.wrap (data |> Web.Telegram.Client.send ct)
+
+    module Produce =
+        let notification chatId ct =
+            function
+            | SendAppointments request -> request |> Data.Create.Buttons.appointments chatId |> Option.map (send ct)
+            | SendConfirmations request -> request |> Data.Create.Message.confirmation chatId |> Option.map (send ct)
+
+module private Consumer =
+
+    let private respond ct client data =
+        client |> Web.Telegram.Client.send ct data |> ResultAsync.map (fun _ -> ())
+
+    let private respondError ct chatId client (error: Error') =
+        error.Message
+        |> Data.create (chatId, Send.MessageId.New)
+        |> Send.Text
+        |> respond ct client
+        |> Async.map (function
+            | Ok _ -> Error error
+            | Error error -> Error error)
+
+    let private respondWithError ct chatId client result =
+        match result with
+        | Ok data -> data |> respond ct client
+        | Error error -> error |> respondError ct chatId client
+
+    module private Consume =
+        let private (|HasEmbassy|HasCountry|HasCity|HasPayload|None|) value =
+            match value with
+            | AP.IsString value ->
+                let data = value.Split '|'
+
+                match data.Length with
+                | 1 -> HasEmbassy(data[0])
+                | 2 -> HasCountry(data[0], data[1])
+                | 3 -> HasCity(data[0], data[1], data[2])
+                | 4 -> HasPayload(data[0], data[1], data[2], data[3])
+                | _ -> None
+            | _ -> None
+
+        let text ct (msg: Receive.Message<string>) client =
+            async {
+                match msg.Value with
+                | "/start" -> return! Data.Create.Buttons.embassies msg.ChatId |> respond ct client
+                | HasPayload(embassy, country, city, payload) ->
+                    return!
+                        payload
+                        |> Data.Create.Message.payloadResponse ct msg.ChatId (embassy, country, city)
+                        |> Async.bind (respondWithError ct msg.ChatId client)
+                | _ -> return Error <| NotSupported $"Text: {msg.Value}."
+            }
+
+        let callback ct (msg: Receive.Message<string>) client =
+            async {
+                match msg.Value with
+                | HasEmbassy value ->
+                    return! Data.Create.Buttons.countries (msg.ChatId, msg.Id) value |> respond ct client
+                | HasCountry value -> return! Data.Create.Buttons.cities (msg.ChatId, msg.Id) value |> respond ct client
+                | HasCity value ->
+                    return!
+                        Data.Create.Message.payloadRequest (msg.ChatId, msg.Id) value
+                        |> respond ct client
+                | _ -> return Error <| NotSupported $"Callback: {msg.Value}."
+            }
+
+    let private consume ct client =
+        fun data ->
+            match data with
+            | Receive.Message msg ->
+                match msg with
+                | Receive.Text text -> client |> Consume.text ct text
+                | _ -> $"{msg}" |> NotSupported |> Error |> async.Return
+            | Receive.CallbackQuery msg -> client |> Consume.callback ct msg
+            | _ -> $"Data: {data}." |> NotSupported |> Error |> async.Return
+
+    let start ct =
+        EnvKey EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
+        |> Web.Telegram.Client.create
+        |> Result.map (fun client -> Web.Domain.Listener.Telegram(client, consume ct client))
         |> Web.Client.listen ct
 
-let sendNotification ct notification =
-    notification
-    |> Sender.Response.notification AdminChatId
-    |> Option.map (Sender.send ct)
 
-let listen = Listener.listen
+let sendNotification = Producer.Produce.notification AdminChatId
+let listen ct = Consumer.start ct
