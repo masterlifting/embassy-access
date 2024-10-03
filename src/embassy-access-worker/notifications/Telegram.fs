@@ -1,10 +1,9 @@
-﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Worker.Notifications.Telegram
+﻿module EmbassyAccess.Worker.Notifications.Telegram
 
 open System
 open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
-open EmbassyAccess.Worker.Notifications
+open EmbassyAccess.Worker
 open Infrastructure
 open Web.Telegram.Domain
 open EmbassyAccess
@@ -27,12 +26,15 @@ module private Data =
 
         module Message =
 
-            let confirmation chatId request =
-                Create.confirmationsNotification request
-                |> Option.map (fun (requestId, embassy, confirmations) ->
-                    confirmations |> Seq.map _.Description |> String.concat "\n")
-                |> Option.map (create (chatId, MessageId.New))
-                |> Option.map Text
+            let error chatId (error: Error') =
+                error.Message |> create (chatId, New) |> Text |> Some
+
+            let confirmation chatId (requestId, embassy, (confirmations: Confirmation list)) =
+                confirmations
+                |> Seq.map _.Description
+                |> String.concat "\n"
+                |> create (chatId, New)
+                |> Text
 
             let payloadRequest (chatId, msgId) (embassy', country', city') =
                 match (embassy', country', city') |> Mapper.Embassy.create with
@@ -42,7 +44,7 @@ module private Data =
                     | Russian _ ->
                         $"Send your payload using the following format: '{embassy'}|{country'}|{city'}|your_link_here'."
                     | _ -> $"Not supported embassy: '{embassy'}'."
-                |> create (chatId, msgId |> MessageId.Replace)
+                |> create (chatId, msgId |> Replace)
                 |> Text
 
             let payloadResponse ct chatId (embassy', country', city') payload =
@@ -63,25 +65,25 @@ module private Data =
                               GroupBy = Some "Passports"
                               Modified = DateTime.UtcNow }
 
-                        Persistence.Storage.create InMemory
+                        request
+                        |> Api.validateRequest
+                        |> Result.bind (fun _ -> Persistence.Storage.create InMemory)
                         |> ResultAsync.wrap (Repository.Command.Request.create ct request)
                         |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
-                        |> ResultAsync.map (create (chatId, MessageId.New))
+                        |> ResultAsync.map (create (chatId, New))
                         |> ResultAsync.map Text
                     | _ -> embassy' |> NotSupported |> Error |> async.Return)
 
         module Buttons =
-            let appointments chatId request =
-                Create.appointmentsNotification request
-                |> Option.map (fun (embassy, appointments) ->
-                    { Buttons.Name = $"Found Appointments for {embassy}"
-                      Columns = 3
-                      Data =
-                        appointments
-                        |> Seq.map (fun x -> x.Value, x.Description |> Option.defaultValue "No data")
-                        |> Map.ofSeq })
-                |> Option.map (create (chatId, MessageId.New))
-                |> Option.map Buttons
+            let appointments chatId (embassy, (appointments: Set<Appointment>)) =
+                { Buttons.Name = $"Found Appointments for {embassy}"
+                  Columns = 3
+                  Data =
+                    appointments
+                    |> Seq.map (fun x -> x.Value, x.Description |> Option.defaultValue "No data")
+                    |> Map.ofSeq }
+                |> create (chatId, New)
+                |> Buttons
 
             let embassies chatId =
                 let data =
@@ -95,7 +97,7 @@ module private Data =
                 { Buttons.Name = "Available Embassies."
                   Columns = 3
                   Data = data }
-                |> create (chatId, MessageId.New)
+                |> create (chatId, New)
                 |> Buttons
 
             let countries (chatId, msgId) embassy' =
@@ -112,7 +114,7 @@ module private Data =
                 { Buttons.Name = $"Countries for '{embassy'}' embassy."
                   Columns = 3
                   Data = data }
-                |> create (chatId, msgId |> MessageId.Replace)
+                |> create (chatId, msgId |> Replace)
                 |> Buttons
 
             let cities (chatId, msgId) (embassy', country') =
@@ -131,10 +133,15 @@ module private Data =
                 { Buttons.Name = $"Cities for '{embassy'}' embassy in '{country'}'."
                   Columns = 3
                   Data = data }
-                |> create (chatId, msgId |> MessageId.Replace)
+                |> create (chatId, msgId |> Replace)
                 |> Buttons
 
 module private Producer =
+    open Persistence.Domain
+
+    let getChatId request =
+        Persistence.Storage.create InMemory
+        |> ResultAsync.wrap (fun storage -> AdminChatId |> Ok |> async.Return)
 
     let private send ct data =
         EnvKey EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
@@ -142,10 +149,23 @@ module private Producer =
         |> ResultAsync.wrap (data |> Web.Telegram.Client.send ct)
 
     module Produce =
-        let notification chatId ct =
+        let notification ct =
             function
-            | SendAppointments request -> request |> Data.Create.Buttons.appointments chatId |> Option.map (send ct)
-            | SendConfirmations request -> request |> Data.Create.Message.confirmation chatId |> Option.map (send ct)
+            | SendAppointments request ->
+                request
+                |> Core.Create.appointments
+                |> Option.map (fun (embassy, appointments) ->
+                    (embassy, appointments)
+                    |> Data.Create.Buttons.appointments AdminChatId
+                    |> send ct)
+            | SendConfirmations request ->
+                request
+                |> Core.Create.confirmations
+                |> Option.map (fun (requestId, embassy, confirmations) ->
+                    (requestId, embassy, confirmations)
+                    |> Data.Create.Message.confirmation AdminChatId
+                    |> send ct)
+            | SendError(requestId, error) -> error |> Data.Create.Message.error AdminChatId |> Option.map (send ct)
 
 module private Consumer =
 
@@ -222,5 +242,5 @@ module private Consumer =
         |> Web.Client.listen ct
 
 
-let sendNotification = Producer.Produce.notification AdminChatId
+let send = Producer.Produce.notification
 let listen ct = Consumer.start ct

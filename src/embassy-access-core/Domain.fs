@@ -113,6 +113,7 @@ type Request =
 type Notification =
     | SendAppointments of Request
     | SendConfirmations of Request
+    | SendError of (RequestId * Error')
 
 module External =
 

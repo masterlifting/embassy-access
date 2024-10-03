@@ -6,7 +6,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <Compile Include="notifications\Create.fs" />
+    <Compile Include="notifications\Core.fs" />
     <Compile Include="notifications\Telegram.fs" />
     <Compile Include="embassies\Russian.fs" />
     <Compile Include="countries\Albania.fs" />
