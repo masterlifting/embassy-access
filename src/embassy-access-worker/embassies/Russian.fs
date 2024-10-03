@@ -6,8 +6,8 @@ open Infrastructure
 open Persistence.Domain
 open Worker.Domain
 open EmbassyAccess.Domain
+open EmbassyAccess.Worker
 open EmbassyAccess.Embassies.Russian.Domain
-open EmbassyAccess.Worker.Notifications
 
 type private Deps =
     { Config: ProcessRequestConfiguration
@@ -27,11 +27,11 @@ let private createDeps ct (schedule: Schedule option) =
         return
             { Config = config
               Storage = storage
-              sendNotification = Telegram.sendNotification
+              sendNotification = Notifications.Telegram.send
               ct = ct }
     }
 
-let private processRequest deps createNotification request =
+let private processRequest deps createNotification (request: Request) =
 
     let processRequest deps =
         (deps.Storage, deps.Config, deps.ct)
@@ -44,9 +44,25 @@ let private processRequest deps createNotification request =
         |> Option.map (ResultAsync.map (fun _ -> request))
         |> Option.defaultValue (request |> Ok |> async.Return)
 
+    let sendError error =
+        match error with
+        | Operation reason ->
+            match reason.Code with
+            | Some ErrorCodes.ConfirmationExists
+            | Some ErrorCodes.NotConfirmed
+            | Some ErrorCodes.RequestDeleted ->
+                let notification = SendError(request.Id, error)
+
+                deps.sendNotification deps.ct notification
+                |> Option.map (Async.map (fun _ -> error))
+                |> Option.defaultValue (error |> async.Return)
+            | _ -> error |> async.Return
+        | _ -> error |> async.Return
+
     processRequest deps request
-    |> ResultAsync.bind' sendNotification
+    |> ResultAsync.bindAsync sendNotification
     |> ResultAsync.map (fun request -> request.State |> string)
+    |> ResultAsync.mapErrorAsync sendError
 
 let private run getRequests processRequests country =
     fun (_, schedule, ct) ->
@@ -55,7 +71,7 @@ let private run getRequests processRequests country =
         let getRequests deps = getRequests deps country
 
         let processRequests deps =
-            ResultAsync.bind' (processRequests deps)
+            ResultAsync.bindAsync (processRequests deps)
 
         let run = ResultAsync.wrap (fun deps -> getRequests deps |> processRequests deps)
 

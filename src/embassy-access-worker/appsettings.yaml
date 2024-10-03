@@ -11,7 +11,7 @@ Workdays: &Workdays
 
 SearchAppointments: &SearchAppointments
   Name: Search appointments
-  Enabled: false
+  Enabled: true
   Wait: false
   Duration: "00:02:00"
 
