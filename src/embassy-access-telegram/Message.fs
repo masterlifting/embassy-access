@@ -5,10 +5,8 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 open Infrastructure
 open EmbassyAccess
-open Web.Telegram.Domain.Send
+open Web.Telegram.Domain.Producer
 open Persistence.Domain
-
-let private AdminChatId = 379444553L
 
 let create<'a> (chatId, msgId) (value: 'a) =
     { Id = msgId
@@ -20,9 +18,9 @@ module Create =
     module Text =
 
         let error chatId (error: Error') =
-            error.Message |> create (chatId, New) |> Text |> Some
+            error.Message |> create (chatId, New) |> Text
 
-        let confirmation chatId (requestId, embassy, (confirmations: Confirmation list)) =
+        let confirmation chatId (embassy, (confirmations: Set<Confirmation>)) =
             confirmations
             |> Seq.map _.Description
             |> String.concat "\n"
@@ -31,7 +29,7 @@ module Create =
 
         let payloadRequest (chatId, msgId) (embassy', country', city') =
             match (embassy', country', city') |> Mapper.Embassy.create with
-            | Error error -> error.Message
+            | Result.Error error -> error.Message
             | Ok embassy ->
                 match embassy with
                 | Russian _ ->
@@ -65,9 +63,10 @@ module Create =
                     |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
                     |> ResultAsync.map (create (chatId, New))
                     |> ResultAsync.map Text
-                | _ -> embassy' |> NotSupported |> Error |> async.Return)
+                | _ -> embassy' |> NotSupported |> Result.Error |> async.Return)
 
     module Buttons =
+
         let appointments chatId (embassy, (appointments: Set<Appointment>)) =
             { Buttons.Name = $"Found Appointments for {embassy}"
               Columns = 3

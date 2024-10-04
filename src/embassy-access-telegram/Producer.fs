@@ -8,32 +8,29 @@ open Web.Telegram.Domain
 open EmbassyAccess
 open Persistence.Domain
 
-let getChat ct request =
+let private AdminChatId = 379444553L
+
+let private getChat ct requestId =
     Persistence.Storage.create InMemory
     |> ResultAsync.wrap (fun storage ->
-        let filter = Filter.Telegram.Chat.Search request.Id
+        let filter = Filter.Telegram.Chat.Search requestId
         storage |> Repository.Query.Telegram.Chat.get ct filter)
 
-let private send ct data =
-    EnvKey EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
+let private send ct message =
+    Domain.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
+    |> EnvKey
     |> Web.Telegram.Client.create
-    |> ResultAsync.wrap (data |> Web.Telegram.Client.send ct)
+    |> ResultAsync.wrap (message |> Web.Telegram.Client.send ct)
 
 module Produce =
     let notification ct =
         function
-        | SearchAppointments request ->
-            request
-            |> Core.Create.appointments
-            |> Option.map (fun (embassy, appointments) ->
-                (embassy, appointments)
-                |> Data.Create.Buttons.appointments AdminChatId
-                |> send ct)
-        | MakeConfirmations request ->
-            request
-            |> Core.Create.confirmations
-            |> Option.map (fun (requestId, embassy, confirmations) ->
-                (requestId, embassy, confirmations)
-                |> Data.Create.Message.confirmation AdminChatId
-                |> send ct)
-        | Error(requestId, error) -> error |> Data.Create.Message.error AdminChatId |> Option.map (send ct)
+        | Appointments(requestId, embassy, appointments) ->
+            (embassy, appointments)
+            |> Message.Create.Buttons.appointments AdminChatId
+            |> send ct
+        | Confirmations(requestId, embassy, confirmations) ->
+            (embassy, confirmations)
+            |> Message.Create.Text.confirmation AdminChatId
+            |> send ct
+        | Error(requestId, error) -> error |> Message.Create.Text.error AdminChatId |> send ct
