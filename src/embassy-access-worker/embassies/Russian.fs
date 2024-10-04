@@ -12,7 +12,7 @@ open EmbassyAccess.Embassies.Russian.Domain
 type private Deps =
     { Config: ProcessRequestConfiguration
       Storage: Persistence.Storage.Type
-      sendNotification: CancellationToken -> Notification -> Async<Result<int, Error'>> option
+      sendNotification: CancellationToken -> Notification -> Async<Result<unit, Error'>>
       ct: CancellationToken }
 
 let private createDeps ct configuration taskName =
@@ -27,7 +27,7 @@ let private createDeps ct configuration taskName =
         return
             { Config = { TimeShift = timeShift }
               Storage = storage
-              sendNotification = Notifications.Telegram.send
+              sendNotification = fun ct notification -> Ok () |> async.Return
               ct = ct }
     }
 
@@ -40,9 +40,9 @@ let private processRequest deps createNotification (request: Request) =
 
     let sendNotification request =
         createNotification request
-        |> deps.sendNotification deps.ct
-        |> Option.map (ResultAsync.map (fun _ -> request))
-        |> Option.defaultValue (request |> Ok |> async.Return)
+        |> Option.map (deps.sendNotification deps.ct)
+        |> Option.defaultValue (Ok () |> async.Return)
+        |> ResultAsync.map (fun _ -> request)
 
     let sendError error =
         match error with
@@ -51,9 +51,8 @@ let private processRequest deps createNotification (request: Request) =
             | Some ErrorCodes.ConfirmationExists
             | Some ErrorCodes.NotConfirmed
             | Some ErrorCodes.RequestDeleted ->
-                let notification = SendError(request.Id, error)
-
-                deps.sendNotification deps.ct notification
+                Notification.Error(request.Id, error)
+                |> deps.sendNotification deps.ct
                 |> Option.map (Async.map (fun _ -> error))
                 |> Option.defaultValue (error |> async.Return)
             | _ -> error |> async.Return
@@ -117,7 +116,9 @@ module private SearchAppointments =
 
     let private processRequests deps requests =
 
-        let processRequest = processRequest deps SendAppointments
+        let createNotification = Notification.Create.searchAppointments
+
+        let processRequest = processRequest deps createNotification
 
         let uniqueRequests = requests |> Seq.filter _.GroupBy.IsNone
 
@@ -193,8 +194,10 @@ module private MakeAppointments =
         |> EmbassyAccess.Persistence.Repository.Query.Request.get deps.ct filter
 
     let private processRequests deps requests =
+        
+        let createNotification = Notification.Create.makeConfirmations
 
-        let processRequest = processRequest deps SendConfirmations
+        let processRequest = processRequest deps createNotification
 
         async {
             let! results = requests |> Seq.map processRequest |> Async.Sequential

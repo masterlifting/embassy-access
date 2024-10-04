@@ -111,9 +111,9 @@ type Request =
       Modified: DateTime }
 
 type Notification =
-    | SendAppointments of Request
-    | SendConfirmations of Request
-    | SendError of (RequestId * Error')
+    | SearchAppointments of (RequestId * Embassy * Set<Appointment>)
+    | MakeConfirmations of (RequestId * Embassy * Set<Confirmation>)
+    | Error of (RequestId * Error')
 
 module External =
 
