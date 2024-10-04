@@ -4,8 +4,8 @@ open Infrastructure
 open Worker.Domain
 
 let initialize () =
-    fun (_, _, ct) ->
-        EmbassyAccess.Worker.Notifications.Telegram.listen ct
+    fun (_, ct) ->
+        Notifications.Telegram.listen ct
         |> ResultAsync.mapError (fun error -> error.Message |> Logging.Log.critical)
         |> Async.Ignore
         |> Async.Start

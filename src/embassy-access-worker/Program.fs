@@ -32,7 +32,7 @@ let main _ =
     let workerConfig =
         { Name = rootTask.Name
           Configuration = configuration
-          getTask = taskHandlers |> TasksStorage.getTask configuration }
+          getTask = configuration |> Settings.getTask taskHandlers }
 
     workerConfig |> Worker.Core.start |> Async.RunSynchronously
 

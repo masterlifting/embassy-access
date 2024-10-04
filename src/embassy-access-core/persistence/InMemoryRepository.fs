@@ -93,6 +93,27 @@ module Query =
                             <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
             }
 
+    module Telegram =
+
+        module Chat =
+
+            let get ct filter context =
+                async {
+                    return
+                        match ct |> notCanceled with
+                        | true ->
+                            context
+                            |> getEntities<External.Chat> ChatsKey
+                            |> Result.bind (Seq.map EmbassyAccess.Mapper.Chat.toInternal >> Result.choose)
+                            |> Result.map (fun chats ->
+                                match filter with
+                                | Filter.Telegram.Chat.Search requestId -> chats |> List.filter (fun x -> x.RequestId = requestId))
+                        | false ->
+                            Error
+                            <| (Canceled
+                                <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
+                }
+    
 module Command =
 
     let private save<'a> key (data: 'a array) context =

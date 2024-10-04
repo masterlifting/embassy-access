@@ -6,6 +6,7 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <Compile Include="Settings.fs" />
     <Compile Include="notifications\Core.fs" />
     <Compile Include="notifications\Telegram.fs" />
     <Compile Include="embassies\Russian.fs" />
@@ -21,7 +22,6 @@
     <Compile Include="countries\Serbia.fs" />
     <Compile Include="countries\Slovenia.fs" />
     <Compile Include="countries\Switzerland.fs" />
-    <Compile Include="TasksStorage.fs" />
     <Compile Include="Temporary.fs" />
     <Compile Include="Initializer.fs" />
     <Compile Include="Program.fs" />

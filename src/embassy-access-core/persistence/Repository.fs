@@ -24,6 +24,17 @@ module Query =
                 context |> InMemoryRepository.Query.Request.get' ct requestId
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
+    module Telegram =
+
+        module Chat =
+
+            let get ct filter storage =
+                match storage with
+                | Storage.Type.InMemory context ->
+                    Log.trace $"InMemory Telegram.Chat get request with filter \n{filter}"
+                    context |> InMemoryRepository.Query.Telegram.Chat.get ct filter
+                | _ -> async { return Error <| NotSupported $"Storage {storage}" }
+
 module Command =
 
     module Request =

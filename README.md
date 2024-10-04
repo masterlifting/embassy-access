@@ -24,6 +24,7 @@ The project is structured into several components, including core functionality,
 - **Source**
 
   - `embassy-access-core`: Core logic and functionalities with domain models and APIs.
+  - `embassy-access-telegram`: Telegram bot for interacting with users.
   - `embassy-access-worker`: Background worker services for processing business logic.
 
 - **Tests**
@@ -49,8 +50,8 @@ Open embassy-access.sln in Visual Studio and build the solution. Ensure all subm
 
 ### Running the Application
 
-- Web API: Start the embassy-access-webapi project.
-- Worker: Start the embassy-access-worker project.
+- `embassy-access-worker`: Run the worker service to process background tasks.
+- `embassy-access-telegram`: Run the Telegram bot for user interaction.
 
 ### Contributing
 
