@@ -3,7 +3,6 @@
 open System
 open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
-open EmbassyAccess.Worker
 open Infrastructure
 open Web.Telegram.Domain
 open EmbassyAccess
@@ -139,9 +138,12 @@ module private Data =
 module private Producer =
     open Persistence.Domain
 
-    let getChatId request =
+    let getChat ct request =
         Persistence.Storage.create InMemory
-        |> ResultAsync.wrap (fun storage -> AdminChatId |> Ok |> async.Return)
+        |> ResultAsync.wrap (fun storage -> 
+            let filter = Filter.Telegram.Chat.Search request.Id
+            storage
+            |> Repository.Query.Telegram.Chat.get ct filter) 
 
     let private send ct data =
         EnvKey EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN

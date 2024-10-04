@@ -15,17 +15,17 @@ type private Deps =
       sendNotification: CancellationToken -> Notification -> Async<Result<int, Error'>> option
       ct: CancellationToken }
 
-let private createDeps ct (schedule: Schedule option) =
+let private createDeps ct configuration taskName =
     let deps = ModelBuilder()
 
     deps {
-        let config =
-            { TimeShift = schedule |> Option.map _.TimeShift |> Option.defaultValue 0y }
+
+        let! timeShift = taskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
 
         let! storage = Persistence.Storage.create InMemory
 
         return
-            { Config = config
+            { Config = { TimeShift = timeShift }
               Storage = storage
               sendNotification = Notifications.Telegram.send
               ct = ct }
@@ -64,8 +64,8 @@ let private processRequest deps createNotification (request: Request) =
     |> ResultAsync.map (fun request -> request.State |> string)
     |> ResultAsync.mapErrorAsync sendError
 
-let private run getRequests processRequests country =
-    fun (_, schedule, ct) ->
+let private run taskName getRequests processRequests country =
+    fun (cfg, ct) ->
 
         // define
         let getRequests deps = getRequests deps country
@@ -76,7 +76,7 @@ let private run getRequests processRequests country =
         let run = ResultAsync.wrap (fun deps -> getRequests deps |> processRequests deps)
 
         // run
-        createDeps ct schedule |> run
+        taskName |> createDeps ct cfg |> run
 
 let private toTaskResult (results: Result<string, Error'> array) =
     let messages, errors = results |> Result.unzip
@@ -104,6 +104,9 @@ let private toTaskResult (results: Result<string, Error'> array) =
         )
 
 module private SearchAppointments =
+
+    [<Literal>]
+    let Name = "Search appointments"
 
     let private getRequests deps country =
         let filter =
@@ -175,9 +178,12 @@ module private SearchAppointments =
                 |> toTaskResult
         }
 
-    let run = run getRequests processRequests
+    let run = run Name getRequests processRequests
 
 module private MakeAppointments =
+
+    [<Literal>]
+    let Name = "Make appointments"
 
     let private getRequests deps country =
         let filter =
@@ -195,18 +201,18 @@ module private MakeAppointments =
             return results |> toTaskResult
         }
 
-    let run = run getRequests processRequests
+    let run = run Name getRequests processRequests
 
 let addTasks country =
     Graph.Node(
         { Name = "Russian"; Task = None },
         [ Graph.Node(
-              { Name = "Search appointments"
+              { Name = SearchAppointments.Name
                 Task = Some <| SearchAppointments.run country },
               []
           )
           Graph.Node(
-              { Name = "Make appointments"
+              { Name = MakeAppointments.Name
                 Task = Some <| MakeAppointments.run country },
               []
           ) ]

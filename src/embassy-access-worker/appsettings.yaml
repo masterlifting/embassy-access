@@ -5,25 +5,25 @@ Logging:
     Default: Debug
 
 Workdays: &Workdays
-  StartTime: "00:00:00"
-  StopTime: "23:00:00"
+  StartTime: '00:00:00'
+  StopTime: '23:00:00'
   Workdays: mon,tue,wed,thu,fri,sat,sun
 
 SearchAppointments: &SearchAppointments
   Name: Search appointments
   Enabled: true
   Wait: false
-  Duration: "00:02:00"
+  Duration: '00:02:00'
 
 MakeAppointments: &MakeAppointments
   Name: Make appointments
   Enabled: false
   Wait: false
-  Duration: "00:03:00"
+  Duration: '00:03:00'
 
 RussianTask: &RussianTask
   Name: Russian
-  Recursively: "00:01:00"
+  Recursively: '00:01:00'
   Parallel: true
 
 Worker:
@@ -44,7 +44,7 @@ Worker:
           Schedule:
             TimeShift: 2
             <<: *Workdays
-    
+
     - Name: Germany
       Parallel: true
       Tasks:
@@ -58,7 +58,7 @@ Worker:
           Schedule:
             TimeShift: 2
             <<: *Workdays
-        
+
     - Name: France
       Parallel: true
       Tasks:
