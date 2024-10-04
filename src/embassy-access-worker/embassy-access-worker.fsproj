@@ -7,8 +7,6 @@
   
   <ItemGroup>
     <Compile Include="Settings.fs" />
-    <Compile Include="notifications\Core.fs" />
-    <Compile Include="notifications\Telegram.fs" />
     <Compile Include="embassies\Russian.fs" />
     <Compile Include="countries\Albania.fs" />
     <Compile Include="countries\Bosnia.fs" />
@@ -35,6 +33,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
+    <ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj" />
     <ProjectReference Include="..\embassy-access-core\embassy-access-core.fsproj" />
   </ItemGroup>
   

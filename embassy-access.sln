@@ -24,11 +24,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B66C4DC6
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-core", "src\embassy-access-core\embassy-access-core.fsproj", "{EAA58D38-B031-4CAD-BAA8-8560E8013E7C}"
 EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-telegram", "src\embassy-access-telegram\embassy-access-telegram.fsproj", "{CCA691D2-B3A9-422C-BA17-6FB0424976C1}"
+EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-worker", "src\embassy-access-worker\embassy-access-worker.fsproj", "{45F26EBC-BE22-4C6E-B27A-8D4212826E33}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-tests", "tests\embassy-access-tests.fsproj", "{6AD5FD34-008C-47E8-99F1-15A3FE7BA0C6}"
-EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-telegram", "src\embassy-access-telegram\embassy-access-telegram.fsproj", "{CCA691D2-B3A9-422C-BA17-6FB0424976C1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
