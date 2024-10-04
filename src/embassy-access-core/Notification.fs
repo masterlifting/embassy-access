@@ -9,7 +9,7 @@ module Create =
         | Completed _ ->
             match request.Appointments.IsEmpty with
             | true -> None
-            | false -> Some <| SearchAppointments(request.Id, request.Embassy, request.Appointments)
+            | false -> Some <| Appointments(request.Id, request.Embassy, request.Appointments)
         | _ -> None
 
     let makeConfirmations request =
@@ -20,5 +20,5 @@ module Create =
             | false ->
                 match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
                 | [] -> None
-                | confirmations -> Some <| MakeConfirmations(request.Id, request.Embassy, confirmations |> set)
+                | confirmations -> Some <| Confirmations(request.Id, request.Embassy, confirmations |> set)
         | _ -> None

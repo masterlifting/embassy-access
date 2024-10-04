@@ -3,11 +3,14 @@
 open Infrastructure
 open Worker.Domain
 
+[<Literal>]
+let private SectionName = "Worker"
+
 let get configuration =
     configuration
-    |> Configuration.getSection<External.TaskGraph> "Worker"
+    |> Configuration.getSection<External.TaskGraph> SectionName
     |> Option.map Ok
-    |> Option.defaultValue (Error <| NotFound "Section 'Worker' in the configuration.")
+    |> Option.defaultValue (Error <| NotFound $"Section '%s{SectionName}' in the configuration.")
 
 let getSchedule configuration =
     fun taskName ->

@@ -12,7 +12,7 @@ open EmbassyAccess.Embassies.Russian.Domain
 type private Deps =
     { Config: ProcessRequestConfiguration
       Storage: Persistence.Storage.Type
-      sendNotification: CancellationToken -> Notification -> Async<Result<unit, Error'>>
+      sendNotification: Notification -> Async<Result<unit, Error'>>
       ct: CancellationToken }
 
 let private createDeps ct configuration taskName =
@@ -24,10 +24,14 @@ let private createDeps ct configuration taskName =
 
         let! storage = Persistence.Storage.create InMemory
 
+        let sendNotification =
+            EmbassyAccess.Telegram.Producer.Produce.notification ct
+            >> ResultAsync.map (fun _ -> ())
+
         return
             { Config = { TimeShift = timeShift }
               Storage = storage
-              sendNotification = fun ct notification -> Ok () |> async.Return
+              sendNotification = sendNotification
               ct = ct }
     }
 
@@ -40,8 +44,8 @@ let private processRequest deps createNotification (request: Request) =
 
     let sendNotification request =
         createNotification request
-        |> Option.map (deps.sendNotification deps.ct)
-        |> Option.defaultValue (Ok () |> async.Return)
+        |> Option.map deps.sendNotification
+        |> Option.defaultValue (Ok() |> async.Return)
         |> ResultAsync.map (fun _ -> request)
 
     let sendError error =
@@ -52,9 +56,8 @@ let private processRequest deps createNotification (request: Request) =
             | Some ErrorCodes.NotConfirmed
             | Some ErrorCodes.RequestDeleted ->
                 Notification.Error(request.Id, error)
-                |> deps.sendNotification deps.ct
-                |> Option.map (Async.map (fun _ -> error))
-                |> Option.defaultValue (error |> async.Return)
+                |> deps.sendNotification
+                |> Async.map (fun _ -> error)
             | _ -> error |> async.Return
         | _ -> error |> async.Return
 
@@ -84,7 +87,7 @@ let private toTaskResult (results: Result<string, Error'> array) =
     | [], [] -> Ok <| Debug "No results."
     | [], errors ->
 
-        Error
+        Result.Error
         <| Operation
             { Message =
                 Environment.NewLine
@@ -143,18 +146,18 @@ module private SearchAppointments =
                         return
                             match errors.Length with
                             | 0 -> Ok None
-                            | 1 -> Error errors[0]
+                            | 1 -> Result.Error errors[0]
                             | _ ->
                                 let msg =
                                     errors
                                     |> List.mapi (fun i error -> $"%i{i + 1}.%s{error}")
                                     |> String.concat Environment.NewLine
 
-                                Error $"Multiple errors:%s{Environment.NewLine}%s{msg}"
+                                Result.Error $"Multiple errors:%s{Environment.NewLine}%s{msg}"
 
                     | request :: requestsTail ->
                         match! request |> processRequest with
-                        | Error error -> return! choose (errors @ [ error.Message ]) requestsTail
+                        | Result.Error error -> return! choose (errors @ [ error.Message ]) requestsTail
                         | Ok result -> return Ok <| Some result
                 }
 
@@ -194,7 +197,7 @@ module private MakeAppointments =
         |> EmbassyAccess.Persistence.Repository.Query.Request.get deps.ct filter
 
     let private processRequests deps requests =
-        
+
         let createNotification = Notification.Create.makeConfirmations
 
         let processRequest = processRequest deps createNotification
