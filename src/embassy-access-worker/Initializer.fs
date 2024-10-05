@@ -7,5 +7,5 @@ let initialize () =
     fun (_, ct) ->
         Temporary.createTestData ct
         |> ResultAsync.map (fun data -> $"Test data has been created. Count: {data.Length}. ")
-        |> ResultAsync.map (fun msg -> Success(msg + " Scheduler is running."))
+        |> ResultAsync.map (fun msg -> Success(msg + $" {Settings.AppName} has been initialized."))
     |> Some

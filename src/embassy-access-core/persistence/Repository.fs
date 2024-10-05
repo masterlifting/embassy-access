@@ -13,27 +13,16 @@ module Query =
         let get ct filter storage =
             match storage with
             | Storage.Type.InMemory context ->
-                Log.trace $"InMemory get request with filter \n{filter}"
+                Log.trace $"InMemory query request {filter}"
                 context |> InMemoryRepository.Query.Request.get ct filter
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
         let get' ct requestId storage =
             match storage with
             | Storage.Type.InMemory context ->
-                Log.trace $"InMemory get request with id {requestId}"
+                Log.trace $"InMemory query request {requestId}"
                 context |> InMemoryRepository.Query.Request.get' ct requestId
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
-
-    module Telegram =
-
-        module Chat =
-
-            let get ct filter storage =
-                match storage with
-                | Storage.Type.InMemory context ->
-                    Log.trace $"InMemory Telegram.Chat get request with filter \n{filter}"
-                    context |> InMemoryRepository.Query.Telegram.Chat.get ct filter
-                | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
 module Command =
 

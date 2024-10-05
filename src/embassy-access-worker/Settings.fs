@@ -4,6 +4,9 @@ open Infrastructure
 open Worker.Domain
 
 [<Literal>]
+let AppName = "Worker"
+
+[<Literal>]
 let private SectionName = "Worker"
 
 let get configuration =

@@ -1,10 +1,10 @@
-﻿module EmbassyAccess.Worker.Notification
+﻿module EmbassyAccess.Notification
 
 open EmbassyAccess.Domain
 
 module Create =
 
-    let searchAppointments request =
+    let appointments request =
         match request.State with
         | Completed _ ->
             match request.Appointments.IsEmpty with
@@ -12,7 +12,7 @@ module Create =
             | false -> Some <| Appointments(request.Id, request.Embassy, request.Appointments)
         | _ -> None
 
-    let makeConfirmations request =
+    let confirmations request =
         match request.State with
         | Completed _ ->
             match request.Appointments.IsEmpty with

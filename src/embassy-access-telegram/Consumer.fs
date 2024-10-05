@@ -5,11 +5,13 @@ open Infrastructure
 open Web.Telegram.Domain
 
 let private respond ct client data =
-    client |> Web.Telegram.Client.send ct data |> ResultAsync.map (fun _ -> ())
+    client
+    |> Web.Telegram.Client.Producer.produce ct data
+    |> ResultAsync.map (fun _ -> ())
 
 let private respondError ct chatId client (error: Error') =
     error.Message
-    |> Message.create (chatId, Producer.MessageId.New)
+    |> Message.create (chatId, Producer.DtoId.New)
     |> Producer.Text
     |> respond ct client
     |> Async.map (function
@@ -35,7 +37,7 @@ module private Consume =
             | _ -> None
         | _ -> None
 
-    let text ct (msg: Consumer.Message<string>) client =
+    let text ct (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
             | "/start" -> return! Message.Create.Buttons.embassies msg.ChatId |> respond ct client
@@ -47,7 +49,7 @@ module private Consume =
             | _ -> return Error <| NotSupported $"Text: {msg.Value}."
         }
 
-    let callback ct (msg: Consumer.Message<string>) client =
+    let callback ct (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
             | HasEmbassy value ->
@@ -60,19 +62,19 @@ module private Consume =
             | _ -> return Error <| NotSupported $"Callback: {msg.Value}."
         }
 
-let private consume ct client =
+let private handle ct client =
     fun data ->
         match data with
-        | Consumer.Text msg ->
-            match msg with
-            | Consumer.Text text -> client |> Consume.text ct text
-            | _ -> $"{msg}" |> NotSupported |> Error |> async.Return
-        | Consumer.CallbackQuery msg -> client |> Consume.callback ct msg
+        | Consumer.Message message ->
+            match message with
+            | Consumer.Text dto -> client |> Consume.text ct dto
+            | _ -> $"{message}" |> NotSupported |> Error |> async.Return
+        | Consumer.CallbackQuery dto -> client |> Consume.callback ct dto
         | _ -> $"Data: {data}." |> NotSupported |> Error |> async.Return
 
 let start ct =
     Domain.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
     |> Web.Telegram.Client.create
-    |> Result.map (fun client -> Web.Domain.Listener.Telegram(client, consume ct client))
-    |> Web.Client.listen ct
+    |> Result.map (fun client -> Web.Domain.Consumer.Telegram(client, handle ct client))
+    |> Web.Client.consume ct
