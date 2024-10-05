@@ -1,12 +1,12 @@
 ﻿module EmbassyAccess.Telegram.Message
 
 open System
+open EmbassyAccess
 open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 open Infrastructure
-open EmbassyAccess
-open Web.Telegram.Domain.Producer
 open Persistence.Domain
+open Web.Telegram.Domain.Producer
 
 let create<'a> (chatId, msgId) (value: 'a) =
     { Id = msgId
@@ -29,7 +29,7 @@ module Create =
 
         let payloadRequest (chatId, msgId) (embassy', country', city') =
             match (embassy', country', city') |> Mapper.Embassy.create with
-            | Result.Error error -> error.Message
+            | Error error -> error.Message
             | Ok embassy ->
                 match embassy with
                 | Russian _ ->
@@ -63,7 +63,7 @@ module Create =
                     |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
                     |> ResultAsync.map (create (chatId, New))
                     |> ResultAsync.map Text
-                | _ -> embassy' |> NotSupported |> Result.Error |> async.Return)
+                | _ -> embassy' |> NotSupported |> Error |> async.Return)
 
     module Buttons =
 

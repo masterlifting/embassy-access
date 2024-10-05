@@ -2,35 +2,44 @@
 
 open System
 open EmbassyAccess.Domain
-open EmbassyAccess.Persistence
 open Infrastructure
-open Web.Telegram.Domain
-open EmbassyAccess
 open Persistence.Domain
+open Web.Telegram
+open Web.Telegram.Domain
 
 let private AdminChatId = 379444553L
 
 let private getChat ct requestId =
     Persistence.Storage.create InMemory
     |> ResultAsync.wrap (fun storage ->
-        let filter = Filter.Telegram.Chat.Search requestId
-        storage |> Repository.Query.Telegram.Chat.get ct filter)
+        let filter = Persistence.Filter.Chat.Search requestId
+        storage |> Persistence.Repository.Query.Chat.get ct filter)
 
 let private send ct message =
     Domain.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
-    |> Web.Telegram.Client.create
-    |> ResultAsync.wrap (message |> Web.Telegram.Client.send ct)
+    |> Client.create
+    |> ResultAsync.wrap (message |> Client.Producer.produce ct)
 
 module Produce =
     let notification ct =
         function
         | Appointments(requestId, embassy, appointments) ->
-            (embassy, appointments)
-            |> Message.Create.Buttons.appointments AdminChatId
-            |> send ct
+            requestId
+            |> getChat ct
+            |> ResultAsync.bind (fun chat ->
+                chat
+                |> Option.map (fun chat ->
+                    (embassy, appointments)
+                    |> Message.Create.Buttons.appointments chat.Id
+                    |> send ct)
+                |> Option.defaultValue ($"Chat for {requestId}." |> NotFound |> Error |> async.Return))
         | Confirmations(requestId, embassy, confirmations) ->
-            (embassy, confirmations)
-            |> Message.Create.Text.confirmation AdminChatId
-            |> send ct
-        | Error(requestId, error) -> error |> Message.Create.Text.error AdminChatId |> send ct
+            requestId
+            |> getChat ct
+            |> ResultAsync.bind (fun chat ->
+                chat
+                |> Option.map (fun chat ->
+                    (embassy, confirmations) |> Message.Create.Text.confirmation chat.Id |> send ct)
+                |> Option.defaultValue ($"Chat for {requestId}." |> NotFound |> Error |> async.Return))
+        | Fail(requestId, error) -> error |> Message.Create.Text.error AdminChatId |> send ct

@@ -1,24 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
-   
-  <ItemGroup>
-    <Compile Include="Domain.fs" />
-    <Compile Include="persistence\Command.fs" />
-    <Compile Include="persistence\Filter.fs" />
-    <Compile Include="persistence\InMemoryRepository.fs" />
-    <Compile Include="persistence\Repository.fs" />
-    <Compile Include="Message.fs" />
-    <Compile Include="Producer.fs" />
-    <Compile Include="Consumer.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\embassy-access-core\embassy-access-core.fsproj" />
-  </ItemGroup>
-  
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="Domain.fs" />
+		<Compile Include="persistence\Filter.fs" />
+		<Compile Include="persistence\Command.fs" />
+		<Compile Include="persistence\InMemoryRepository.fs" />
+		<Compile Include="persistence\Repository.fs" />
+		<Compile Include="Message.fs" />
+		<Compile Include="Producer.fs" />
+		<Compile Include="Consumer.fs" />
+		<Compile Include="Program.fs" />
+		<Content Include="appsettings.yaml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="appsettings.yaml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\embassy-access-core\embassy-access-core.fsproj" />
+	</ItemGroup>
+
 </Project>

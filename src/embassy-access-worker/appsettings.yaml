@@ -27,7 +27,7 @@ RussianTask: &RussianTask
   Parallel: true
 
 Worker:
-  Name: Scheduler
+  Name: Worker
   Enabled: true
   Wait: false
   Tasks:

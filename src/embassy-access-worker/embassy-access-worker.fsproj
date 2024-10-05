@@ -1,40 +1,40 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <Compile Include="Settings.fs" />
-    <Compile Include="embassies\Russian.fs" />
-    <Compile Include="countries\Albania.fs" />
-    <Compile Include="countries\Bosnia.fs" />
-    <Compile Include="countries\Finland.fs" />
-    <Compile Include="countries\France.fs" />
-    <Compile Include="countries\Germany.fs" />
-    <Compile Include="countries\Hungary.fs" />
-    <Compile Include="countries\Ireland.fs" />
-    <Compile Include="countries\Montenegro.fs" />
-    <Compile Include="countries\Netherlands.fs" />
-    <Compile Include="countries\Serbia.fs" />
-    <Compile Include="countries\Slovenia.fs" />
-    <Compile Include="countries\Switzerland.fs" />
-    <Compile Include="Temporary.fs" />
-    <Compile Include="Initializer.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Content Include="appsettings.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
-    <ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj" />
-    <ProjectReference Include="..\embassy-access-core\embassy-access-core.fsproj" />
-  </ItemGroup>
-  
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="Settings.fs" />
+		<Compile Include="embassies\Russian.fs" />
+		<Compile Include="countries\Albania.fs" />
+		<Compile Include="countries\Bosnia.fs" />
+		<Compile Include="countries\Finland.fs" />
+		<Compile Include="countries\France.fs" />
+		<Compile Include="countries\Germany.fs" />
+		<Compile Include="countries\Hungary.fs" />
+		<Compile Include="countries\Ireland.fs" />
+		<Compile Include="countries\Montenegro.fs" />
+		<Compile Include="countries\Netherlands.fs" />
+		<Compile Include="countries\Serbia.fs" />
+		<Compile Include="countries\Slovenia.fs" />
+		<Compile Include="countries\Switzerland.fs" />
+		<Compile Include="Temporary.fs" />
+		<Compile Include="Initializer.fs" />
+		<Compile Include="Program.fs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="appsettings.yaml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
+		<ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj" />
+		<ProjectReference Include="..\embassy-access-core\embassy-access-core.fsproj" />
+	</ItemGroup>
+
 </Project>

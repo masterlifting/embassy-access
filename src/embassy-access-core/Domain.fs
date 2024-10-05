@@ -113,7 +113,7 @@ type Request =
 type Notification =
     | Appointments of (RequestId * Embassy * Set<Appointment>)
     | Confirmations of (RequestId * Embassy * Set<Confirmation>)
-    | Error of (RequestId * Error')
+    | Fail of (RequestId * Error')
 
 module External =
 

@@ -16,4 +16,4 @@ let validateRequest (request: Domain.Request) =
 
 let processRequest deps request =
     match deps with
-    | ProcessRequestDeps.Russian deps -> request |> Russian.Core.processRequest deps
+    | Russian deps -> request |> Russian.Core.processRequest deps

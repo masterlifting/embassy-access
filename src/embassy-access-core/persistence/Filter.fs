@@ -67,8 +67,3 @@ type internal MakeAppointmentRequest =
 type Request =
     | SearchAppointments of Domain.Embassy
     | MakeAppointments of Domain.Embassy
-
-module Telegram =
-
-  type Chat =
-    | Search of Domain.RequestId

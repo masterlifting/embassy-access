@@ -12,26 +12,29 @@ open EmbassyAccess.Embassies.Russian.Domain
 type private Deps =
     { Config: ProcessRequestConfiguration
       Storage: Persistence.Storage.Type
-      sendNotification: Notification -> Async<Result<unit, Error'>>
+      notify: Notification -> Async<Result<unit, Error'>>
       ct: CancellationToken }
 
-let private createDeps ct configuration taskName =
+let private createDeps ct configuration country =
     let deps = ModelBuilder()
+
+    let country = country |> EmbassyAccess.Mapper.Country.toExternal
+    let scheduleTaskName = $"{Settings.AppName}.{country.Name}.{country.City.Name}"
 
     deps {
 
-        let! timeShift = taskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
+        let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
 
         let! storage = Persistence.Storage.create InMemory
 
-        let sendNotification =
+        let notify =
             EmbassyAccess.Telegram.Producer.Produce.notification ct
             >> ResultAsync.map (fun _ -> ())
 
         return
             { Config = { TimeShift = timeShift }
               Storage = storage
-              sendNotification = sendNotification
+              notify = notify
               ct = ct }
     }
 
@@ -44,7 +47,7 @@ let private processRequest deps createNotification (request: Request) =
 
     let sendNotification request =
         createNotification request
-        |> Option.map deps.sendNotification
+        |> Option.map deps.notify
         |> Option.defaultValue (Ok() |> async.Return)
         |> ResultAsync.map (fun _ -> request)
 
@@ -54,10 +57,7 @@ let private processRequest deps createNotification (request: Request) =
             match reason.Code with
             | Some ErrorCodes.ConfirmationExists
             | Some ErrorCodes.NotConfirmed
-            | Some ErrorCodes.RequestDeleted ->
-                Notification.Error(request.Id, error)
-                |> deps.sendNotification
-                |> Async.map (fun _ -> error)
+            | Some ErrorCodes.RequestDeleted -> Fail(request.Id, error) |> deps.notify |> Async.map (fun _ -> error)
             | _ -> error |> async.Return
         | _ -> error |> async.Return
 
@@ -66,7 +66,7 @@ let private processRequest deps createNotification (request: Request) =
     |> ResultAsync.map (fun request -> request.State |> string)
     |> ResultAsync.mapErrorAsync sendError
 
-let private run taskName getRequests processRequests country =
+let private run getRequests processRequests country =
     fun (cfg, ct) ->
 
         // define
@@ -78,7 +78,8 @@ let private run taskName getRequests processRequests country =
         let run = ResultAsync.wrap (fun deps -> getRequests deps |> processRequests deps)
 
         // run
-        taskName |> createDeps ct cfg |> run
+
+        country |> createDeps ct cfg |> run
 
 let private toTaskResult (results: Result<string, Error'> array) =
     let messages, errors = results |> Result.unzip
@@ -87,7 +88,7 @@ let private toTaskResult (results: Result<string, Error'> array) =
     | [], [] -> Ok <| Debug "No results."
     | [], errors ->
 
-        Result.Error
+        Error
         <| Operation
             { Message =
                 Environment.NewLine
@@ -107,9 +108,6 @@ let private toTaskResult (results: Result<string, Error'> array) =
 
 module private SearchAppointments =
 
-    [<Literal>]
-    let Name = "Search appointments"
-
     let private getRequests deps country =
         let filter =
             Russian country |> EmbassyAccess.Persistence.Filter.Request.SearchAppointments
@@ -119,7 +117,7 @@ module private SearchAppointments =
 
     let private processRequests deps requests =
 
-        let createNotification = Notification.Create.searchAppointments
+        let createNotification = EmbassyAccess.Notification.Create.appointments
 
         let processRequest = processRequest deps createNotification
 
@@ -146,18 +144,18 @@ module private SearchAppointments =
                         return
                             match errors.Length with
                             | 0 -> Ok None
-                            | 1 -> Result.Error errors[0]
+                            | 1 -> Error errors[0]
                             | _ ->
                                 let msg =
                                     errors
                                     |> List.mapi (fun i error -> $"%i{i + 1}.%s{error}")
                                     |> String.concat Environment.NewLine
 
-                                Result.Error $"Multiple errors:%s{Environment.NewLine}%s{msg}"
+                                Error $"Multiple errors:%s{Environment.NewLine}%s{msg}"
 
                     | request :: requestsTail ->
                         match! request |> processRequest with
-                        | Result.Error error -> return! choose (errors @ [ error.Message ]) requestsTail
+                        | Error error -> return! choose (errors @ [ error.Message ]) requestsTail
                         | Ok result -> return Ok <| Some result
                 }
 
@@ -182,12 +180,9 @@ module private SearchAppointments =
                 |> toTaskResult
         }
 
-    let run = run Name getRequests processRequests
+    let run = run getRequests processRequests
 
 module private MakeAppointments =
-
-    [<Literal>]
-    let Name = "Make appointments"
 
     let private getRequests deps country =
         let filter =
@@ -198,7 +193,7 @@ module private MakeAppointments =
 
     let private processRequests deps requests =
 
-        let createNotification = Notification.Create.makeConfirmations
+        let createNotification = EmbassyAccess.Notification.Create.confirmations
 
         let processRequest = processRequest deps createNotification
 
@@ -207,18 +202,18 @@ module private MakeAppointments =
             return results |> toTaskResult
         }
 
-    let run = run Name getRequests processRequests
+    let run = run getRequests processRequests
 
 let addTasks country =
     Graph.Node(
         { Name = "Russian"; Task = None },
         [ Graph.Node(
-              { Name = SearchAppointments.Name
+              { Name = "Search appointments"
                 Task = Some <| SearchAppointments.run country },
               []
           )
           Graph.Node(
-              { Name = MakeAppointments.Name
+              { Name = "Make appointments"
                 Task = Some <| MakeAppointments.run country },
               []
           ) ]

@@ -9,7 +9,7 @@ let main _ =
     Logging.useConsole configuration
 
     let rootTask =
-        { Name = "Scheduler"
+        { Name = Settings.AppName
           Task = Initializer.initialize () }
 
     let taskHandlers =

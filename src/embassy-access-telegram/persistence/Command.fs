@@ -1,9 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Persistence.Telegram.Command
+module EmbassyAccess.Telegram.Persistence.Command
 
 open EmbassyAccess
 
-type Request =
-    | Create of Domain.Request
-    | Update of Domain.Request
-    | Delete of Domain.Request
+type Chat =
+    | Create of Telegram.Domain.Chat
+    | Update of Telegram.Domain.Chat
+    | Delete of Telegram.Domain.Chat
