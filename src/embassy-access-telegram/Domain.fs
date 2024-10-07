@@ -13,4 +13,4 @@ module External =
 
     type Chat() =
         member val Id = 0L with get, set
-        member val Subscriptions = Seq.empty with get, set
+        member val Subscriptions = List.empty<string> with get, set

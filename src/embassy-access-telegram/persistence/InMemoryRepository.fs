@@ -2,9 +2,11 @@
 module internal EmbassyAccess.Telegram.Persistence.InMemoryRepository
 
 open Infrastructure
-open Persistence.Domain
+open EmbassyAccess.Telegram
+open EmbassyAccess.Telegram.Domain
 open EmbassyAccess.Domain
 open Persistence.InMemory
+open Persistence.Domain
 
 [<Literal>]
 let private RequestsKey = "requests"
@@ -15,104 +17,31 @@ let private getEntities<'a> key context =
     |> Result.bind (Json.deserialize<'a array> |> Option.map >> Option.defaultValue (Ok [||]))
 
 module Query =
-    let paginate<'a> (pagination: Filter.Pagination<'a>) (data: 'a list) =
-        data
-        |> match pagination.SortBy with
-           | Filter.Asc sortBy ->
-               match sortBy with
-               | Filter.Date getValue -> List.sortBy <| getValue
-               | Filter.String getValue -> List.sortBy <| getValue
-               | Filter.Int getValue -> List.sortBy <| getValue
-               | Filter.Bool getValue -> List.sortBy <| getValue
-               | Filter.Guid getValue -> List.sortBy <| getValue
-           | Filter.Desc sortBy ->
-               match sortBy with
-               | Filter.Date getValue -> List.sortByDescending <| getValue
-               | Filter.String getValue -> List.sortByDescending <| getValue
-               | Filter.Int getValue -> List.sortByDescending <| getValue
-               | Filter.Bool getValue -> List.sortByDescending <| getValue
-               | Filter.Guid getValue -> List.sortByDescending <| getValue
-        |> List.skip (pagination.PageSize * (pagination.Page - 1))
-        |> List.truncate pagination.PageSize
 
-    module Request =
+    module Chat =
 
         module private Filters =
-            let searchAppointments (filter: Filter.SearchAppointmentsRequest) (request: Request) =
-                filter.Embassy = request.Embassy
-                && filter.HasStates request.State
-                && filter.HasConfirmationState request.ConfirmationState
+            let search (requestId: RequestId) (chat: Chat) =
+                chat.Subscriptions |> Set.contains requestId
 
-            let makeAppointments (filter: Filter.MakeAppointmentRequest) (request: Request) =
-                filter.Embassy = request.Embassy
-                && filter.HasStates request.State
-                && filter.HasConfirmationStates request.ConfirmationState
-
-        let get ct (filter: Filter.Request) context =
+        let get ct (filter: Filter.Chats) context =
             async {
                 return
                     match ct |> notCanceled with
                     | true ->
-                        let filter (requests: Request list) =
+                        let filter (chats: Chat list) =
                             match filter with
-                            | Filter.SearchAppointments embassy ->
-                                let filter = Filter.SearchAppointmentsRequest.create embassy
-
-                                requests
-                                |> List.filter (Filters.searchAppointments filter)
-                                |> paginate filter.Pagination
-                            | Filter.MakeAppointments embassy ->
-                                let filter = Filter.MakeAppointmentRequest.create embassy
-
-                                requests
-                                |> List.filter (Filters.makeAppointments filter)
-                                |> paginate filter.Pagination
+                            | Filter.Search requestId -> chats |> List.filter (Filters.search requestId)
 
                         context
-                        |> getEntities<External.Request> RequestsKey
-                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Result.choose)
+                        |> getEntities<External.Chat> RequestsKey
+                        |> Result.bind (Seq.map Mapper.Chat.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
                         Error
                         <| (Canceled
                             <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
             }
-
-        let get' ct requestId context =
-            async {
-                return
-                    match ct |> notCanceled with
-                    | true ->
-                        context
-                        |> getEntities<External.Request> RequestsKey
-                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Result.choose)
-                        |> Result.map (List.tryFind (fun x -> x.Id = requestId))
-                    | false ->
-                        Error
-                        <| (Canceled
-                            <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
-            }
-
-//module Telegram =
-
-//    module Chat =
-
-//        let get ct filter context =
-//            async {
-//                return
-//                    match ct |> notCanceled with
-//                    | true ->
-//                        context
-//                        |> getEntities<External.Chat> ChatsKey
-//                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Chat.toInternal >> Result.choose)
-//                        |> Result.map (fun chats ->
-//                            match filter with
-//                            | Filter.Telegram.Chat.Search requestId -> chats |> List.filter (fun x -> x.RequestId = requestId))
-//                    | false ->
-//                        Error
-//                        <| (Canceled
-//                            <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
-//            }
 
 module Command =
 
@@ -126,45 +55,38 @@ module Command =
             |> Json.serialize
             |> Result.bind (fun value -> context |> Storage.Command.update key value)
 
-    module Request =
+    module Chat =
 
-        let private add (request: Request) (requests: External.Request array) =
-            match
-                requests
-                |> Array.tryFind (fun x -> x.Id = request.Id.Value || x.Payload = request.Payload)
-            with
+        let private add (chat: Chat) (chats: External.Chat array) =
+            match chats |> Array.tryFind (fun x -> x.Id = chat.Id) with
             | Some _ ->
                 Error
                 <| Operation
-                    { Message = $"{request.Id} already exists."
+                    { Message = $"{chat.Id} already exists."
                       Code = Some ErrorCodes.AlreadyExists }
-            | _ -> Ok(requests |> Array.append [| EmbassyAccess.Mapper.Request.toExternal request |])
+            | _ -> Ok(chats |> Array.append [| Mapper.Chat.toExternal chat |])
 
-        let private update (request: Request) (requests: External.Request array) =
-            match requests |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
+        let private update (chat: Chat) (chats: External.Chat array) =
+            match chats |> Array.tryFindIndex (fun x -> x.Id = chat.Id) with
             | None ->
                 Error
                 <| Operation
-                    { Message = $"{request.Id} not found to update."
+                    { Message = $"{chat.Id} not found to update."
                       Code = Some ErrorCodes.NotFound }
             | Some index ->
                 Ok(
-                    requests
-                    |> Array.mapi (fun i x ->
-                        if i = index then
-                            EmbassyAccess.Mapper.Request.toExternal request
-                        else
-                            x)
+                    chats
+                    |> Array.mapi (fun i x -> if i = index then Mapper.Chat.toExternal chat else x)
                 )
 
-        let private delete (request: Request) (requests: External.Request array) =
-            match requests |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
+        let private delete (chat: Chat) (chats: External.Chat array) =
+            match chats |> Array.tryFindIndex (fun x -> x.Id = chat.Id) with
             | None ->
                 Error
                 <| Operation
-                    { Message = $"{request.Id} not found to delete."
+                    { Message = $"{chat.Id} not found to delete."
                       Code = Some ErrorCodes.NotFound }
-            | Some index -> Ok(requests |> Array.removeAt index)
+            | Some index -> Ok(chats |> Array.removeAt index)
 
         let execute ct command context =
             async {
@@ -173,17 +95,16 @@ module Command =
                     | true ->
 
                         context
-                        |> getEntities<External.Request> RequestsKey
-                        |> Result.bind (fun requests ->
+                        |> getEntities<External.Chat> RequestsKey
+                        |> Result.bind (fun chats ->
                             match command with
-                            | Command.Request.Create request ->
-                                requests |> add request |> Result.map (fun result -> result, request)
-                            | Command.Request.Update request ->
-                                requests |> update request |> Result.map (fun result -> result, request)
-                            | Command.Request.Delete request ->
-                                requests |> delete request |> Result.map (fun result -> result, request))
-                        |> Result.bind (fun (result, request) ->
-                            context |> save RequestsKey result |> Result.map (fun _ -> request))
+                            | Command.Chat.Create chat -> chats |> add chat |> Result.map (fun result -> result, chat)
+                            | Command.Chat.Update chat ->
+                                chats |> update chat |> Result.map (fun result -> result, chat)
+                            | Command.Chat.Delete chat ->
+                                chats |> delete chat |> Result.map (fun result -> result, chat))
+                        |> Result.bind (fun (result, chat) ->
+                            context |> save RequestsKey result |> Result.map (fun _ -> chat))
                     | false ->
                         Error
                         <| (Canceled

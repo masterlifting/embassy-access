@@ -3,4 +3,4 @@ module EmbassyAccess.Telegram.Persistence.Filter
 
 open EmbassyAccess
 
-type Chat = Search of Domain.RequestId
+type Chats = Search of Domain.RequestId
