@@ -27,9 +27,7 @@ let private createDeps ct configuration country =
 
         let! storage = Persistence.Storage.create InMemory
 
-        let notify =
-            EmbassyAccess.Telegram.Producer.Produce.notification ct
-            >> ResultAsync.map (fun _ -> ())
+        let notify = EmbassyAccess.Telegram.Producer.Produce.notification ct
 
         return
             { Config = { TimeShift = timeShift }

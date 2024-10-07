@@ -17,15 +17,16 @@ module Create =
 
     module Text =
 
-        let error chatId (error: Error') =
-            error.Message |> create (chatId, New) |> Text
+        let error (error: Error') =
+            fun chatId -> error.Message |> create (chatId, New) |> Text
 
-        let confirmation chatId (embassy, (confirmations: Set<Confirmation>)) =
-            confirmations
-            |> Seq.map _.Description
-            |> String.concat "\n"
-            |> create (chatId, New)
-            |> Text
+        let confirmation (embassy, (confirmations: Set<Confirmation>)) =
+            fun chatId ->
+                confirmations
+                |> Seq.map _.Description
+                |> String.concat "\n"
+                |> create (chatId, New)
+                |> Text
 
         let payloadRequest (chatId, msgId) (embassy', country', city') =
             match (embassy', country', city') |> Mapper.Embassy.create with
@@ -67,15 +68,16 @@ module Create =
 
     module Buttons =
 
-        let appointments chatId (embassy, (appointments: Set<Appointment>)) =
-            { Buttons.Name = $"Found Appointments for {embassy}"
-              Columns = 3
-              Data =
-                appointments
-                |> Seq.map (fun x -> x.Value, x.Description |> Option.defaultValue "No data")
-                |> Map.ofSeq }
-            |> create (chatId, New)
-            |> Buttons
+        let appointments (embassy, appointments: Set<Appointment>) =
+            fun chatId ->
+                { Buttons.Name = $"Found Appointments for {embassy}"
+                  Columns = 3
+                  Data =
+                    appointments
+                    |> Seq.map (fun x -> x.Value, x.Description |> Option.defaultValue "No data")
+                    |> Map.ofSeq }
+                |> create (chatId, New)
+                |> Buttons
 
         let embassies chatId =
             let data =
