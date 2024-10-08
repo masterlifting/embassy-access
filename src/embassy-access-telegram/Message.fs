@@ -45,31 +45,30 @@ module Create =
             |> ResultAsync.wrap (fun embassy ->
                 match embassy with
                 | Russian country ->
-                    let request =
-                        { Id = RequestId.New
-                          Payload = payload
-                          Embassy = Russian country
-                          State = Created
-                          Attempt = 0
-                          ConfirmationState = Disabled
-                          Appointments = Set.empty
-                          Description = None
-                          GroupBy = Some "Passports"
-                          Modified = DateTime.UtcNow }
-
-                    request
-                    |> Api.validateRequest
-                    |> Result.bind (fun _ -> InMemory |> Persistence.Storage.create)
+                    InMemory
+                    |> Persistence.Storage.create
                     |> ResultAsync.wrap (fun storage ->
+
+                        let createOptions: Command.PassportsRequest =
+                            { Embassy = embassy
+                              Payload = payload
+                              ConfirmationState = Disabled
+                              Validation = Some Api.validateRequest }
+
+                        let createRequest =
+                            createOptions |> Command.CreateOptions.PassportsRequest |> Command.Request.Create
+
                         storage
-                        |> Repository.Command.Request.create ct request
+                        |> Repository.Command.Request.execute ct createRequest
                         |> ResultAsync.bindAsync (fun request ->
-                            let chat: Domain.Chat =
-                                { Id = chatId
-                                  Subscriptions = [ request.Id ] |> set }
+
+                            let command =
+                                (chatId, request.Id)
+                                |> Telegram.Persistence.Command.CreateOptions.ByRequestId
+                                |> Telegram.Persistence.Command.Chat.Create
 
                             storage
-                            |> Persistence.Repository.Command.Chat.create ct chat
+                            |> Telegram.Persistence.Repository.Command.Chat.execute ct command
                             |> ResultAsync.map (fun _ -> request)))
                     |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
                     |> ResultAsync.map (create (chatId, New) >> Text)

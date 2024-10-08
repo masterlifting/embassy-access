@@ -7,8 +7,9 @@ let processRequest ct config storage =
     { Configuration = config
       updateRequest =
         fun request ->
+            let command = request |> EmbassyAccess.Persistence.Command.Update
             storage
-            |> EmbassyAccess.Persistence.Repository.Command.Request.update ct request
+            |> EmbassyAccess.Persistence.Repository.Command.Request.execute ct command
       getInitialPage =
         fun request client ->
             client

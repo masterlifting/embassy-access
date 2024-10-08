@@ -12,7 +12,7 @@ let private AdminChatId = 379444553L
 let private getChats ct requestId =
     Persistence.Storage.create InMemory
     |> ResultAsync.wrap (fun storage ->
-        let filter = Persistence.Filter.Chats.Search requestId
+        let filter = Persistence.Query.Chats.Search requestId
         storage |> Persistence.Repository.Query.Chat.get ct filter)
 
 let private send ct message =

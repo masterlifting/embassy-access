@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Telegram.Persistence.Filter
+module EmbassyAccess.Telegram.Persistence.Query
 
 open EmbassyAccess
 

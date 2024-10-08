@@ -110,7 +110,7 @@ module private SearchAppointments =
 
     let private getRequests deps country =
         let filter =
-            Russian country |> EmbassyAccess.Persistence.Filter.Request.SearchAppointments
+            Russian country |> EmbassyAccess.Persistence.Query.Request.SearchAppointments
 
         deps.Storage
         |> EmbassyAccess.Persistence.Repository.Query.Request.get deps.ct filter
@@ -186,7 +186,7 @@ module private MakeAppointments =
 
     let private getRequests deps country =
         let filter =
-            Russian country |> EmbassyAccess.Persistence.Filter.Request.MakeAppointments
+            Russian country |> EmbassyAccess.Persistence.Query.Request.MakeAppointments
 
         deps.Storage
         |> EmbassyAccess.Persistence.Repository.Query.Request.get deps.ct filter

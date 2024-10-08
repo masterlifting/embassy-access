@@ -15,54 +15,54 @@ let private getEntities<'a> key context =
     |> Result.bind (Json.deserialize<'a array> |> Option.map >> Option.defaultValue (Ok [||]))
 
 module Query =
-    let paginate<'a> (pagination: Filter.Pagination<'a>) (data: 'a list) =
+    let paginate<'a> (pagination: Query.Pagination<'a>) (data: 'a list) =
         data
         |> match pagination.SortBy with
-           | Filter.Asc sortBy ->
+           | Query.Asc sortBy ->
                match sortBy with
-               | Filter.Date getValue -> List.sortBy <| getValue
-               | Filter.String getValue -> List.sortBy <| getValue
-               | Filter.Int getValue -> List.sortBy <| getValue
-               | Filter.Bool getValue -> List.sortBy <| getValue
-               | Filter.Guid getValue -> List.sortBy <| getValue
-           | Filter.Desc sortBy ->
+               | Query.Date getValue -> List.sortBy <| getValue
+               | Query.String getValue -> List.sortBy <| getValue
+               | Query.Int getValue -> List.sortBy <| getValue
+               | Query.Bool getValue -> List.sortBy <| getValue
+               | Query.Guid getValue -> List.sortBy <| getValue
+           | Query.Desc sortBy ->
                match sortBy with
-               | Filter.Date getValue -> List.sortByDescending <| getValue
-               | Filter.String getValue -> List.sortByDescending <| getValue
-               | Filter.Int getValue -> List.sortByDescending <| getValue
-               | Filter.Bool getValue -> List.sortByDescending <| getValue
-               | Filter.Guid getValue -> List.sortByDescending <| getValue
+               | Query.Date getValue -> List.sortByDescending <| getValue
+               | Query.String getValue -> List.sortByDescending <| getValue
+               | Query.Int getValue -> List.sortByDescending <| getValue
+               | Query.Bool getValue -> List.sortByDescending <| getValue
+               | Query.Guid getValue -> List.sortByDescending <| getValue
         |> List.skip (pagination.PageSize * (pagination.Page - 1))
         |> List.truncate pagination.PageSize
 
     module Request =
 
         module private Filters =
-            let searchAppointments (filter: Filter.SearchAppointmentsRequest) (request: Request) =
+            let searchAppointments (filter: Query.SearchAppointmentsRequest) (request: Request) =
                 filter.Embassy = request.Embassy
                 && filter.HasStates request.State
                 && filter.HasConfirmationState request.ConfirmationState
 
-            let makeAppointments (filter: Filter.MakeAppointmentRequest) (request: Request) =
+            let makeAppointments (filter: Query.MakeAppointmentRequest) (request: Request) =
                 filter.Embassy = request.Embassy
                 && filter.HasStates request.State
                 && filter.HasConfirmationStates request.ConfirmationState
 
-        let get ct (filter: Filter.Request) context =
+        let get ct (filter: Query.Request) context =
             async {
                 return
                     match ct |> notCanceled with
                     | true ->
                         let filter (requests: Request list) =
                             match filter with
-                            | Filter.SearchAppointments embassy ->
-                                let filter = Filter.SearchAppointmentsRequest.create embassy
+                            | Query.SearchAppointments embassy ->
+                                let filter = Query.SearchAppointmentsRequest.create embassy
 
                                 requests
                                 |> List.filter (Filters.searchAppointments filter)
                                 |> paginate filter.Pagination
-                            | Filter.MakeAppointments embassy ->
-                                let filter = Filter.MakeAppointmentRequest.create embassy
+                            | Query.MakeAppointments embassy ->
+                                let filter = Query.MakeAppointmentRequest.create embassy
 
                                 requests
                                 |> List.filter (Filters.makeAppointments filter)
@@ -107,20 +107,31 @@ module Command =
 
     module Request =
 
-        let private add (request: Request) (requests: External.Request array) =
-            match
-                requests
-                |> Array.tryFind (fun x ->
-                    x.Id = request.Id.Value
-                    || (x.Payload = request.Payload
-                        && x.Embassy = (request.Embassy |> EmbassyAccess.Mapper.Embassy.toExternal)))
-            with
-            | Some _ ->
-                Error
-                <| Operation
-                    { Message = $"{request.Id} already exists."
-                      Code = Some ErrorCodes.AlreadyExists }
-            | _ -> Ok(requests |> Array.append [| EmbassyAccess.Mapper.Request.toExternal request |])
+        module Filters =
+            let passportsRequest (embassy, payload) (data: External.Request seq) =
+                let embassy = embassy |> EmbassyAccess.Mapper.Embassy.toExternal
+                data |> Seq.exists (fun x -> x.Embassy = embassy && x.Payload = payload)
+
+        let private create (options: Command.CreateOptions) (requests: External.Request array) =
+            match options with
+            | Command.CreateOptions.PassportsRequest value ->
+                match requests |> Filters.passportsRequest (value.Embassy, value.Payload) with
+                | true ->
+                    Error
+                    <| Operation
+                        { Message = $"Request for {value.Embassy} with {value.Payload} already exists."
+                          Code = Some ErrorCodes.AlreadyExists }
+                | _ ->
+                    let request = value.create ()
+
+                    match value.Validation with
+                    | Some validate -> request |> validate
+                    | _ -> Ok()
+                    |> Result.map (fun _ ->
+                        let data =
+                            requests |> Array.append [| EmbassyAccess.Mapper.Request.toExternal request |]
+
+                        (data, request))
 
         let private update (request: Request) (requests: External.Request array) =
             match requests |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
@@ -158,8 +169,7 @@ module Command =
                         |> getEntities<External.Request> RequestsKey
                         |> Result.bind (fun requests ->
                             match command with
-                            | Command.Request.Create request ->
-                                requests |> add request |> Result.map (fun result -> result, request)
+                            | Command.Request.Create request -> requests |> create request |> Result.map id
                             | Command.Request.Update request ->
                                 requests |> update request |> Result.map (fun result -> result, request)
                             | Command.Request.Delete request ->
