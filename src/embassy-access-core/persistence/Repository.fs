@@ -25,21 +25,8 @@ module Query =
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
 module Command =
-
     module Request =
-
-        let private execute ct command storage =
+        let execute ct command storage =
             match storage with
-            | Storage.Type.InMemory context ->
-                Log.trace $"InMemory command request {command}"
-                context |> InMemoryRepository.Command.Request.execute ct command
+            | Storage.Type.InMemory context -> context |> InMemoryRepository.Command.Request.execute ct command
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
-
-        let create ct request =
-            Command.Request.Create request |> execute ct
-
-        let update ct request =
-            Command.Request.Update request |> execute ct
-
-        let delete ct request =
-            Command.Request.Delete request |> execute ct

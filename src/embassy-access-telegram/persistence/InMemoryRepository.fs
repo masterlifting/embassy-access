@@ -24,14 +24,14 @@ module Query =
             let search (requestId: RequestId) (chat: Chat) =
                 chat.Subscriptions |> Set.contains requestId
 
-        let get ct (filter: Filter.Chats) context =
+        let get ct (filter: Query.Chats) context =
             async {
                 return
                     match ct |> notCanceled with
                     | true ->
                         let filter (chats: Chat list) =
                             match filter with
-                            | Filter.Search requestId -> chats |> List.filter (Filters.search requestId)
+                            | Query.Search requestId -> chats |> List.filter (Filters.search requestId)
 
                         context
                         |> getEntities<External.Chat> RequestsKey
@@ -57,14 +57,33 @@ module Command =
 
     module Chat =
 
-        let private add (chat: Chat) (chats: External.Chat array) =
-            match chats |> Array.tryFind (fun x -> x.Id = chat.Id) with
-            | Some _ ->
-                Error
-                <| Operation
-                    { Message = $"{chat.Id} already exists."
-                      Code = Some ErrorCodes.AlreadyExists }
-            | _ -> Ok(chats |> Array.append [| Mapper.Chat.toExternal chat |])
+        module private Filters =
+            let byRequestId (chatId, requestId) (data: External.Chat seq) =
+                let requestId =
+                    requestId
+                    |> function
+                        | RequestId id -> id |> string
+
+                data
+                |> Seq.exists (fun chat -> chat.Id = chatId && chat.Subscriptions |> Seq.contains requestId)
+
+        let private create (options: Command.CreateOptions) (chats: External.Chat array) =
+            match options with
+            | Command.CreateOptions.ByRequestId(chatId, requestId) ->
+                match chats |> Filters.byRequestId (chatId, requestId) with
+                | true ->
+                    Error
+                    <| Operation
+                        { Message = $"ChatId {chatId} already exists."
+                          Code = Some ErrorCodes.AlreadyExists }
+                | false ->
+                    let chat =
+                        { Id = chatId
+                          Subscriptions = Set.singleton requestId }
+
+                    let data = chats |> Array.append [| Mapper.Chat.toExternal chat |]
+
+                    Ok(data, chat)
 
         let private update (chat: Chat) (chats: External.Chat array) =
             match chats |> Array.tryFindIndex (fun x -> x.Id = chat.Id) with
@@ -96,13 +115,13 @@ module Command =
 
                         context
                         |> getEntities<External.Chat> RequestsKey
-                        |> Result.bind (fun chats ->
+                        |> Result.bind (fun data ->
                             match command with
-                            | Command.Chat.Create chat -> chats |> add chat |> Result.map (fun result -> result, chat)
+                            | Command.Chat.Create options -> data |> create options |> Result.map id
                             | Command.Chat.Update chat ->
-                                chats |> update chat |> Result.map (fun result -> result, chat)
+                                data |> update chat |> Result.map (fun result -> result, chat)
                             | Command.Chat.Delete chat ->
-                                chats |> delete chat |> Result.map (fun result -> result, chat))
+                                data |> delete chat |> Result.map (fun result -> result, chat))
                         |> Result.bind (fun (result, chat) ->
                             context |> save RequestsKey result |> Result.map (fun _ -> chat))
                     | false ->

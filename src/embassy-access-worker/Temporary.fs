@@ -7,43 +7,43 @@ open Worker.Domain
 open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 
-let private createRussianSearchRequest ct (value, country) =
+let private createRussianSearchRequest ct (payload, country) =
     InMemory
     |> Storage.create
     |> ResultAsync.wrap (fun storage ->
-        let request =
-            { Id = RequestId.New
-              Payload = value
-              Embassy = Russian country
-              State = Created
-              Attempt = 0
+
+        let request: Command.PassportsRequest =
+            { Embassy = Russian country
+              Payload = payload
               ConfirmationState = Disabled
-              Appointments = Set.empty
-              Description = None
-              GroupBy = Some "Passports"
-              Modified = System.DateTime.UtcNow }
+              Validation = Some EmbassyAccess.Api.validateRequest }
+
+        let command =
+            request
+            |> Command.CreateOptions.PassportsRequest
+            |> Command.Request.Create
 
         storage
-        |> Repository.Command.Request.create ct request
+        |> Repository.Command.Request.execute ct command
         |> ResultAsync.map (fun _ -> Success "Test request was created."))
 
-let private createRussianConfirmRequest ct (value, country) =
+let private createRussianConfirmRequest ct (payload, country) =
     Storage.create InMemory
     |> ResultAsync.wrap (fun storage ->
-        let request =
-            { Id = RequestId.New
-              Payload = value
-              Embassy = Russian country
-              State = Created
-              Attempt = 0
+
+        let request: Command.PassportsRequest =
+            { Embassy = Russian country
+              Payload = payload
               ConfirmationState = Auto <| FirstAvailable
-              Appointments = Set.empty
-              Description = None
-              GroupBy = None
-              Modified = System.DateTime.UtcNow }
+              Validation = Some EmbassyAccess.Api.validateRequest }
+
+        let command =
+            request
+            |> Command.CreateOptions.PassportsRequest
+            |> Command.Request.Create
 
         storage
-        |> Repository.Command.Request.create ct request
+        |> Repository.Command.Request.execute ct command
         |> ResultAsync.map (fun _ -> Success "Test request was created."))
 
 let createTestData ct =

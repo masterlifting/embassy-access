@@ -1,32 +1,14 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Persistence.Filter
+module EmbassyAccess.Persistence.Query
 
-open System
+open Persistence.Domain.Query
 open EmbassyAccess
-
-type internal OrderBy<'a> =
-    | Date of ('a -> DateTime)
-    | String of ('a -> string)
-    | Int of ('a -> int)
-    | Bool of ('a -> bool)
-    | Guid of ('a -> Guid)
-
-type internal SortBy<'a> =
-    | Asc of OrderBy<'a>
-    | Desc of OrderBy<'a>
-
-type internal predicate<'a> = 'a -> bool
-
-type internal Pagination<'a> =
-    { Page: int
-      PageSize: int
-      SortBy: SortBy<'a> }
 
 type internal SearchAppointmentsRequest =
     { Pagination: Pagination<Domain.Request>
       Embassy: Domain.Embassy
-      HasStates: predicate<Domain.RequestState>
-      HasConfirmationState: predicate<Domain.ConfirmationState> }
+      HasStates: Predicate<Domain.RequestState>
+      HasConfirmationState: Predicate<Domain.ConfirmationState> }
 
     static member create embassy =
         { Pagination =
@@ -46,8 +28,8 @@ type internal SearchAppointmentsRequest =
 type internal MakeAppointmentRequest =
     { Pagination: Pagination<Domain.Request>
       Embassy: Domain.Embassy
-      HasStates: predicate<Domain.RequestState>
-      HasConfirmationStates: predicate<Domain.ConfirmationState> }
+      HasStates: Predicate<Domain.RequestState>
+      HasConfirmationStates: Predicate<Domain.ConfirmationState> }
 
     static member create embassy =
         { Pagination =
