@@ -59,11 +59,20 @@ module Create =
 
                     request
                     |> Api.validateRequest
-                    |> Result.bind (fun _ -> Persistence.Storage.create InMemory)
-                    |> ResultAsync.wrap (Repository.Command.Request.create ct request)
+                    |> Result.bind (fun _ -> InMemory |> Persistence.Storage.create)
+                    |> ResultAsync.wrap (fun storage ->
+                        storage
+                        |> Repository.Command.Request.create ct request
+                        |> ResultAsync.bindAsync (fun request ->
+                            let chat: Domain.Chat =
+                                { Id = chatId
+                                  Subscriptions = [ request.Id ] |> set }
+
+                            storage
+                            |> Persistence.Repository.Command.Chat.create ct chat
+                            |> ResultAsync.map (fun _ -> request)))
                     |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
-                    |> ResultAsync.map (create (chatId, New))
-                    |> ResultAsync.map Text
+                    |> ResultAsync.map (create (chatId, New) >> Text)
                 | _ -> embassy' |> NotSupported |> Error |> async.Return)
 
     module Buttons =

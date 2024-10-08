@@ -27,11 +27,11 @@ module Command =
                 context |> InMemoryRepository.Command.Chat.execute ct command
             | _ -> async { return Error <| NotSupported $"Storage {storage}" }
 
-        let create ct request =
-            Command.Chat.Create request |> execute ct
+        let create ct chat =
+            Command.Chat.Create chat |> execute ct
 
-        let update ct request =
-            Command.Chat.Update request |> execute ct
+        let update ct chat =
+            Command.Chat.Update chat |> execute ct
 
-        let delete ct request =
-            Command.Chat.Delete request |> execute ct
+        let delete ct chat =
+            Command.Chat.Delete chat |> execute ct

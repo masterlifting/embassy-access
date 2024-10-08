@@ -4,6 +4,10 @@ Logging:
   LogLevel:
     Default: Debug
 
+Persistence:
+  FileSystem:
+    Requests: "/data/requests"
+
 Workdays: &Workdays
   StartTime: '00:00:00'
   StopTime: '23:00:00'

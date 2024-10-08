@@ -110,7 +110,10 @@ module Command =
         let private add (request: Request) (requests: External.Request array) =
             match
                 requests
-                |> Array.tryFind (fun x -> x.Id = request.Id.Value || x.Payload = request.Payload)
+                |> Array.tryFind (fun x ->
+                    x.Id = request.Id.Value
+                    || (x.Payload = request.Payload
+                        && x.Embassy = (request.Embassy |> EmbassyAccess.Mapper.Embassy.toExternal)))
             with
             | Some _ ->
                 Error

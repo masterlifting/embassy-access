@@ -62,7 +62,7 @@ module private Consume =
             | _ -> return Error <| NotSupported $"Callback: {msg.Value}."
         }
 
-let private handle ct client =
+let private handle ct client configuration =
     fun data ->
         match data with
         | Consumer.Message message ->
@@ -72,9 +72,9 @@ let private handle ct client =
         | Consumer.CallbackQuery dto -> client |> Consume.callback ct dto
         | _ -> $"Data: {data}." |> NotSupported |> Error |> async.Return
 
-let start ct =
+let start ct configuration =
     Domain.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
     |> Web.Telegram.Client.create
-    |> Result.map (fun client -> Web.Domain.Consumer.Telegram(client, handle ct client))
+    |> Result.map (fun client -> Web.Domain.Consumer.Telegram(client, handle ct client configuration))
     |> Web.Client.consume ct

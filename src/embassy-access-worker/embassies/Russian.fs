@@ -25,7 +25,9 @@ let private createDeps ct configuration country =
 
         let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
 
-        let! storage = Persistence.Storage.create InMemory
+        let! storage =
+            InMemory
+            |> Persistence.Storage.create
 
         let notify = EmbassyAccess.Telegram.Producer.Produce.notification ct
 

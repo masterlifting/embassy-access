@@ -8,7 +8,8 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 
 let private createRussianSearchRequest ct (value, country) =
-    Storage.create InMemory
+    InMemory
+    |> Storage.create
     |> ResultAsync.wrap (fun storage ->
         let request =
             { Id = RequestId.New
