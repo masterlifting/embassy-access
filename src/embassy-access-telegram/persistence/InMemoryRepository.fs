@@ -9,7 +9,7 @@ open Persistence.InMemory
 open Persistence.Domain
 
 [<Literal>]
-let private RequestsKey = "requests"
+let private RequestsKey = "chats"
 
 let private getEntities<'a> key context =
     context

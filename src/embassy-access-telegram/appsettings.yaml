@@ -3,3 +3,7 @@
 Logging:
   LogLevel:
     Default: Debug
+
+Persistence:
+  FileSystem:
+    Requests: "/data/requests"
