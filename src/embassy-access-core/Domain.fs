@@ -92,7 +92,7 @@ type ConfirmationState =
     | Manual of Appointment
     | Auto of ConfirmationOption
 
-type RequestState =
+type ProcessState =
     | Created
     | InProcess
     | Completed of string
@@ -102,13 +102,15 @@ type Request =
     { Id: RequestId
       Payload: string
       Embassy: Embassy
-      State: RequestState
       Attempt: int
+      ProcessState: ProcessState
       ConfirmationState: ConfirmationState
       Appointments: Set<Appointment>
       Description: string option
       GroupBy: string option
       Modified: DateTime }
+    
+type Validation = Request -> Result<unit, Error'>
 
 type Notification =
     | Appointments of (RequestId * Embassy * Set<Appointment>)

@@ -5,7 +5,7 @@ open EmbassyAccess.Domain
 module Create =
 
     let appointments request =
-        match request.State with
+        match request.ProcessState with
         | Completed _ ->
             match request.Appointments.IsEmpty with
             | true -> None
@@ -13,7 +13,7 @@ module Create =
         | _ -> None
 
     let confirmations request =
-        match request.State with
+        match request.ProcessState with
         | Completed _ ->
             match request.Appointments.IsEmpty with
             | true -> None

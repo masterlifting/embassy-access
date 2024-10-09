@@ -63,7 +63,7 @@ let private processRequest deps createNotification (request: Request) =
 
     processRequest deps request
     |> ResultAsync.bindAsync sendNotification
-    |> ResultAsync.map (fun request -> request.State |> string)
+    |> ResultAsync.map (fun request -> request.ProcessState |> string)
     |> ResultAsync.mapErrorAsync sendError
 
 let private run getRequests processRequests country =
@@ -110,10 +110,10 @@ module private SearchAppointments =
 
     let private getRequests deps country =
         let filter =
-            Russian country |> EmbassyAccess.Persistence.Query.Request.SearchAppointments
+            Russian country |> EmbassyAccess.Persistence.Query.Request.Filter.SearchAppointments
 
         deps.Storage
-        |> EmbassyAccess.Persistence.Repository.Query.Request.get deps.ct filter
+        |> EmbassyAccess.Persistence.Repository.Query.Request.getMany deps.ct filter
 
     let private processRequests deps requests =
 
@@ -186,10 +186,10 @@ module private MakeAppointments =
 
     let private getRequests deps country =
         let filter =
-            Russian country |> EmbassyAccess.Persistence.Query.Request.MakeAppointments
+            Russian country |> EmbassyAccess.Persistence.Query.RequestFilters.MakeAppointments
 
         deps.Storage
-        |> EmbassyAccess.Persistence.Repository.Query.Request.get deps.ct filter
+        |> EmbassyAccess.Persistence.Repository.Query.Request.getMany deps.ct filter
 
     let private processRequests deps requests =
 

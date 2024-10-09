@@ -49,17 +49,19 @@ module Create =
                     |> Persistence.Storage.create
                     |> ResultAsync.wrap (fun storage ->
 
-                        let createOptions: Command.PassportsRequest =
+                        let options: Command.Request.PassportsGroup =
                             { Embassy = embassy
                               Payload = payload
                               ConfirmationState = Disabled
                               Validation = Some Api.validateRequest }
 
-                        let createRequest =
-                            createOptions |> Command.CreateOptions.PassportsRequest |> Command.Request.Create
+                        let operation =
+                            options
+                            |> Command.Request.Options.Create.PassportsGroup
+                            |> Command.Request.Create
 
                         storage
-                        |> Repository.Command.Request.execute ct createRequest
+                        |> Repository.Request.Command.execute ct operation
                         |> ResultAsync.bindAsync (fun request ->
 
                             let command =

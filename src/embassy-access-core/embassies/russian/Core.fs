@@ -666,7 +666,7 @@ module private Request =
     let setInProcessState deps request =
         deps.updateRequest
             { request with
-                State = InProcess
+                ProcessState = InProcess
                 Description = None
                 Modified = DateTime.UtcNow }
 
@@ -708,7 +708,7 @@ module private Request =
 
         deps.updateRequest
             { request with
-                State = Completed message
+                ProcessState = Completed message
                 Modified = DateTime.UtcNow }
 
     let private setFailedState error deps request =
@@ -719,7 +719,7 @@ module private Request =
 
         deps.updateRequest
             { request with
-                State = Failed error
+                ProcessState = Failed error
                 Attempt = attempt
                 Modified = DateTime.UtcNow }
         |> ResultAsync.bind (fun _ -> Error <| error.extend $"Payload: %s{request.Payload}")
