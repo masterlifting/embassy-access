@@ -1,31 +1,33 @@
 ﻿[<RequireQualifiedAccess>]
 module EmbassyAccess.Persistence.Command
 
-open Infrastructure
-open EmbassyAccess.Domain
+module Request =
+    open EmbassyAccess.Domain
 
-type RequestValidation = (Request -> Result<unit, Error'>) option
+    type PassportsGroup =
+        { Embassy: Embassy
+          Payload: string
+          ConfirmationState: ConfirmationState
+          Validation: Validation option }
 
-type PassportsRequest =
-    { Embassy: Embassy
-      Payload: string
-      ConfirmationState: ConfirmationState
-      Validation: RequestValidation }
+        member this.createRequest() =
+            { Id = RequestId.New
+              Payload = this.Payload
+              Embassy = this.Embassy
+              ProcessState = Created
+              Attempt = 0
+              ConfirmationState = this.ConfirmationState
+              Appointments = Set.empty
+              Description = None
+              GroupBy = Some "Passports"
+              Modified = System.DateTime.UtcNow }
 
-    member this.create() =
-        { Id = RequestId.New
-          Payload = this.Payload
-          Embassy = this.Embassy
-          State = Created
-          Attempt = 0
-          ConfirmationState = this.ConfirmationState
-          Appointments = Set.empty
-          Description = None
-          GroupBy = Some "Passports"
-          Modified = System.DateTime.UtcNow }
-type CreateOptions = PassportsRequest of PassportsRequest
+    module Options =
+        type Create = PassportsGroup of PassportsGroup
+        type Update = Request of Request
+        type Delete = RequestId of RequestId
 
-type Request =
-    | Create of CreateOptions
-    | Update of Request
-    | Delete of Request
+    type Operation =
+        | Create of Options.Create
+        | Update of Options.Update
+        | Delete of Options.Delete

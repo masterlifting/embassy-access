@@ -356,27 +356,27 @@ module ConfirmationState =
 
 module RequestState =
     [<Literal>]
-    let Created = nameof RequestState.Created
+    let Created = nameof ProcessState.Created
 
     [<Literal>]
-    let InProcess = nameof RequestState.InProcess
+    let InProcess = nameof ProcessState.InProcess
 
     [<Literal>]
-    let Completed = nameof RequestState.Completed
+    let Completed = nameof ProcessState.Completed
 
     [<Literal>]
-    let Failed = nameof RequestState.Failed
+    let Failed = nameof ProcessState.Failed
 
     let toExternal state =
         let result = External.RequestState()
 
         match state with
-        | RequestState.Created -> result.Type <- Created
-        | RequestState.InProcess -> result.Type <- InProcess
-        | RequestState.Completed msg ->
+        | ProcessState.Created -> result.Type <- Created
+        | ProcessState.InProcess -> result.Type <- InProcess
+        | ProcessState.Completed msg ->
             result.Type <- Completed
             result.Message <- Some msg
-        | RequestState.Failed error ->
+        | ProcessState.Failed error ->
             result.Type <- Failed
             result.Error <- error |> Mapper.Error.toExternal |> Some
 
@@ -384,18 +384,18 @@ module RequestState =
 
     let toInternal (state: External.RequestState) =
         match state.Type with
-        | Created -> RequestState.Created |> Ok
-        | InProcess -> RequestState.InProcess |> Ok
+        | Created -> ProcessState.Created |> Ok
+        | InProcess -> ProcessState.InProcess |> Ok
         | Completed ->
             let msg =
                 match state.Message with
                 | Some(AP.IsString value) -> value
                 | _ -> "Message not found."
 
-            RequestState.Completed msg |> Ok
+            ProcessState.Completed msg |> Ok
         | Failed ->
             match state.Error with
-            | Some error -> error |> Mapper.Error.toInternal |> Result.map RequestState.Failed
+            | Some error -> error |> Mapper.Error.toInternal |> Result.map ProcessState.Failed
             | None -> Error <| NotSupported "Failed state without error"
         | _ -> Error <| NotSupported $"Request state %s{state.Type}."
 
@@ -406,7 +406,7 @@ module Request =
         result.Id <- request.Id.Value
         result.Payload <- request.Payload
         result.Embassy <- request.Embassy |> Embassy.toExternal
-        result.State <- request.State |> RequestState.toExternal
+        result.State <- request.ProcessState |> RequestState.toExternal
         result.Attempt <- request.Attempt
         result.ConfirmationState <- request.ConfirmationState |> ConfirmationState.toExternal
         result.Appointments <- request.Appointments |> Seq.map Appointment.toExternal |> Seq.toArray
@@ -433,7 +433,7 @@ module Request =
                     { Id = RequestId(request.Id)
                       Payload = request.Payload
                       Embassy = embassy
-                      State = state
+                      ProcessState = state
                       Attempt = request.Attempt
                       ConfirmationState = confirmationState
                       Appointments = appointments

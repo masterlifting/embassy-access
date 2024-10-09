@@ -15,7 +15,7 @@ module private Fixture =
         { Id = RequestId.New
           Payload = "https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F"
           Embassy = Russian <| Germany Berlin
-          State = Created
+          ProcessState = Created
           Attempt = 0
           ConfirmationState = Auto <| FirstAvailable
           Appointments = Set.empty
@@ -163,17 +163,17 @@ let private ``confirmation page should have a valid result`` =
             let! requestRes = request |> Api.processRequest deps
             let request = Expect.wantOk requestRes "Appointments should be Ok"
 
-            match request.State with
-            | Domain.RequestState.Failed error ->
+            match request.ProcessState with
+            | Domain.ProcessState.Failed error ->
                 Expect.isTrue false $"Request should have valid state, but was Failed. Error: {error.Message}"
-            | Domain.RequestState.Completed _ ->
+            | Domain.ProcessState.Completed _ ->
                 let confirmation = request.Appointments |> Seq.tryPick (_.Confirmation)
 
                 Expect.wantSome confirmation "Confirmation should be Some" |> ignore
             | _ ->
                 Expect.isTrue
                     false
-                    $"Request should have valid state, but was {request.State} with description {request.Description}"
+                    $"Request should have valid state, but was {request.ProcessState} with description {request.Description}"
         }
 
 let list =

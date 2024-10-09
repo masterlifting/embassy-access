@@ -6,27 +6,24 @@ open Persistence
 open EmbassyAccess.Persistence
 open Infrastructure.Logging
 
-module Query =
+module Request =
+    module Query =
+        let getOne ct query storageType =
+            match storageType with
+            | Storage.Type.InMemory storage ->
+                Log.trace $"InMemory query request {query}"
+                storage |> InMemoryRepository.Request.Query.getOne ct query
+            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-    module Request =
+        let getMany ct query storageType =
+            match storageType with
+            | Storage.Type.InMemory storage ->
+                Log.trace $"InMemory query request {query}"
+                storage |> InMemoryRepository.Request.Query.getMany ct query
+            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-        let get ct filter storage =
-            match storage with
-            | Storage.Type.InMemory context ->
-                Log.trace $"InMemory query request {filter}"
-                context |> InMemoryRepository.Query.Request.get ct filter
-            | _ -> async { return Error <| NotSupported $"Storage {storage}" }
-
-        let get' ct requestId storage =
-            match storage with
-            | Storage.Type.InMemory context ->
-                Log.trace $"InMemory query request {requestId}"
-                context |> InMemoryRepository.Query.Request.get' ct requestId
-            | _ -> async { return Error <| NotSupported $"Storage {storage}" }
-
-module Command =
-    module Request =
-        let execute ct command storage =
-            match storage with
-            | Storage.Type.InMemory context -> context |> InMemoryRepository.Command.Request.execute ct command
-            | _ -> async { return Error <| NotSupported $"Storage {storage}" }
+    module Command =
+        let execute ct operation storageType =
+            match storageType with
+            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Request.Command.execute ct operation
+            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
