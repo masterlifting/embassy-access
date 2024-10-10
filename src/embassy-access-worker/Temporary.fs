@@ -12,38 +12,38 @@ let private createRussianSearchRequest ct (payload, country) =
     |> Storage.create
     |> ResultAsync.wrap (fun storage ->
 
-        let request: Command.PassportsRequest =
+        let options: Command.Options.Request.PassportsGroup =
             { Embassy = Russian country
               Payload = payload
               ConfirmationState = Disabled
               Validation = Some EmbassyAccess.Api.validateRequest }
 
-        let command =
-            request
-            |> Command.CreateOptions.PassportsRequest
+        let operation =
+            options
+            |> Command.Options.Request.PassportsGroup
             |> Command.Request.Create
 
         storage
-        |> Repository.Command.Request.execute ct command
+        |> Repository.Command.Request.execute ct operation
         |> ResultAsync.map (fun _ -> Success "Test request was created."))
 
 let private createRussianConfirmRequest ct (payload, country) =
     Storage.create InMemory
     |> ResultAsync.wrap (fun storage ->
 
-        let request: Command.PassportsRequest =
+        let options: Command.Options.Request.PassportsGroup =
             { Embassy = Russian country
               Payload = payload
               ConfirmationState = Auto <| FirstAvailable
               Validation = Some EmbassyAccess.Api.validateRequest }
 
-        let command =
-            request
-            |> Command.CreateOptions.PassportsRequest
+        let operation =
+            options
+            |> Command.Options.Request.PassportsGroup
             |> Command.Request.Create
 
         storage
-        |> Repository.Command.Request.execute ct command
+        |> Repository.Command.Request.execute ct operation
         |> ResultAsync.map (fun _ -> Success "Test request was created."))
 
 let createTestData ct =

@@ -6,24 +6,25 @@ open Persistence
 open EmbassyAccess.Persistence
 open Infrastructure.Logging
 
-module Request =
-    module Query =
+module Query =
+    module Request =
         let getOne ct query storageType =
             match storageType with
             | Storage.Type.InMemory storage ->
                 Log.trace $"InMemory query request {query}"
-                storage |> InMemoryRepository.Request.Query.getOne ct query
+                storage |> InMemoryRepository.Query.Request.getOne ct query
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
         let getMany ct query storageType =
             match storageType with
             | Storage.Type.InMemory storage ->
                 Log.trace $"InMemory query request {query}"
-                storage |> InMemoryRepository.Request.Query.getMany ct query
+                storage |> InMemoryRepository.Query.Request.getMany ct query
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-    module Command =
+module Command =
+    module Request =
         let execute ct operation storageType =
             match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Request.Command.execute ct operation
+            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Request.execute ct operation
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return

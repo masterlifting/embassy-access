@@ -6,23 +6,24 @@ open Persistence
 open Infrastructure.Logging
 
 module Query =
-
     module Chat =
+        let getOne ct query storageType =
+            match storageType with
+            | Storage.Type.InMemory storage ->
+                Log.trace $"InMemory query request {query}"
+                storage |> InMemoryRepository.Query.Chat.getOne ct query
+            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-        let get ct filter storage =
-            match storage with
-            | Storage.Type.InMemory context ->
-                Log.trace $"InMemory query request {filter}"
-                context |> InMemoryRepository.Query.Chat.get ct filter
-            | _ -> async { return Error <| NotSupported $"Storage {storage}" }
+        let getMany ct query storageType =
+            match storageType with
+            | Storage.Type.InMemory storage ->
+                Log.trace $"InMemory query request {query}"
+                storage |> InMemoryRepository.Query.Chat.getMany ct query
+            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
 module Command =
-
     module Chat =
-
-        let execute ct command storage =
-            match storage with
-            | Storage.Type.InMemory context ->
-                Log.trace $"InMemory command request {command}"
-                context |> InMemoryRepository.Command.Chat.execute ct command
-            | _ -> async { return Error <| NotSupported $"Storage {storage}" }
+        let execute ct operation storageType =
+            match storageType with
+            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Chat.execute ct operation
+            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return

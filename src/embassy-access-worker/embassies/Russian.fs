@@ -109,11 +109,11 @@ let private toTaskResult (results: Result<string, Error'> array) =
 module private SearchAppointments =
 
     let private getRequests deps country =
-        let filter =
-            Russian country |> EmbassyAccess.Persistence.Query.Request.Filter.SearchAppointments
+        let query =
+            Russian country |> EmbassyAccess.Persistence.Query.Request.SearchAppointments
 
         deps.Storage
-        |> EmbassyAccess.Persistence.Repository.Query.Request.getMany deps.ct filter
+        |> EmbassyAccess.Persistence.Repository.Query.Request.getMany deps.ct query
 
     let private processRequests deps requests =
 
@@ -185,11 +185,11 @@ module private SearchAppointments =
 module private MakeAppointments =
 
     let private getRequests deps country =
-        let filter =
-            Russian country |> EmbassyAccess.Persistence.Query.RequestFilters.MakeAppointments
+        let query =
+            Russian country |> EmbassyAccess.Persistence.Query.Request.MakeAppointments
 
         deps.Storage
-        |> EmbassyAccess.Persistence.Repository.Query.Request.getMany deps.ct filter
+        |> EmbassyAccess.Persistence.Repository.Query.Request.getMany deps.ct query
 
     let private processRequests deps requests =
 
