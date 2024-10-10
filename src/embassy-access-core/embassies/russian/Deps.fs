@@ -10,11 +10,11 @@ let processRequest ct config storage =
 
             let operation =
                 request
-                |> EmbassyAccess.Persistence.Command.Request.Options.Update.Request
+                |> EmbassyAccess.Persistence.Command.Options.Request.Update.Request
                 |> EmbassyAccess.Persistence.Command.Request.Update
 
             storage
-            |> EmbassyAccess.Persistence.Repository.Request.Command.execute ct operation
+            |> EmbassyAccess.Persistence.Repository.Command.Request.execute ct operation
       getInitialPage =
         fun request client ->
             client

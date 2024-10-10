@@ -1,12 +1,19 @@
 ﻿[<RequireQualifiedAccess>]
 module EmbassyAccess.Telegram.Persistence.Command
 
-open EmbassyAccess
+open Web.Telegram.Domain
+open EmbassyAccess.Domain
+open EmbassyAccess.Telegram.Domain
 
-type CreateOptions =
-    | ByRequestId of int64 * Domain.RequestId
+module Options =
+    module Chat =
 
-type Chat =
-    | Create of CreateOptions
-    | Update of Telegram.Domain.Chat
-    | Delete of Telegram.Domain.Chat
+        type Create = ByRequestId of ChatId * RequestId
+        type Update = Chat of Chat
+        type Delete = ChatId of ChatId
+
+module Chat =
+    type Operation =
+        | Create of Options.Chat.Create
+        | Update of Options.Chat.Update
+        | Delete of Options.Chat.Delete

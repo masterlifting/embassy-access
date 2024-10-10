@@ -2,58 +2,58 @@
 module EmbassyAccess.Persistence.Query
 
 open Persistence.Domain.Query
-open EmbassyAccess
+open EmbassyAccess.Domain
 
-module Request =
-
-    module Filter =
+module Filter =
+    module Request =
         type SearchAppointments =
-            { Pagination: Pagination<Domain.Request>
-              Embassy: Domain.Embassy
-              HasStates: Predicate<Domain.ProcessState>
-              HasConfirmationState: Predicate<Domain.ConfirmationState> }
+            { Pagination: Pagination<Request>
+              Embassy: Embassy
+              HasStates: Predicate<ProcessState>
+              HasConfirmationState: Predicate<ConfirmationState> }
 
             static member create embassy =
                 { Pagination =
                     { Page = 1
                       PageSize = 20
-                      SortBy = OrderBy<Domain.Request>.Date _.Modified |> Desc }
+                      SortBy = OrderBy<Request>.Date _.Modified |> Desc }
                   Embassy = embassy
                   HasStates =
                     function
-                    | Domain.InProcess -> false
+                    | InProcess -> false
                     | _ -> true
                   HasConfirmationState =
                     function
-                    | Domain.Auto _ -> false
+                    | Auto _ -> false
                     | _ -> true }
 
         type MakeAppointment =
-            { Pagination: Pagination<Domain.Request>
-              Embassy: Domain.Embassy
-              HasStates: Predicate<Domain.ProcessState>
-              HasConfirmationStates: Predicate<Domain.ConfirmationState> }
+            { Pagination: Pagination<Request>
+              Embassy: Embassy
+              HasStates: Predicate<ProcessState>
+              HasConfirmationStates: Predicate<ConfirmationState> }
 
             static member create embassy =
                 { Pagination =
                     { Page = 1
                       PageSize = 20
-                      SortBy = OrderBy<Domain.Request>.Date _.Modified |> Asc }
+                      SortBy = OrderBy<Request>.Date _.Modified |> Asc }
                   Embassy = embassy
                   HasStates =
                     function
-                    | Domain.InProcess -> true
+                    | InProcess -> true
                     | _ -> false
                   HasConfirmationStates =
                     function
-                    | Domain.Auto _ -> true
+                    | Auto _ -> true
                     | _ -> false }
 
+module Request =
     type GetOne =
-        | Id of Domain.RequestId
+        | Id of RequestId
         | First
         | Single
 
     type GetMany =
-        | SearchAppointments of Domain.Embassy
-        | MakeAppointments of Domain.Embassy
+        | SearchAppointments of Embassy
+        | MakeAppointments of Embassy

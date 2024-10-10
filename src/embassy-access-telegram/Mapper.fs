@@ -1,4 +1,5 @@
-﻿module EmbassyAccess.Telegram.Mapper
+﻿[<RequireQualifiedAccess>]
+module EmbassyAccess.Telegram.Mapper
 
 open System
 open Infrastructure
@@ -8,14 +9,14 @@ open EmbassyAccess.Telegram.Domain
 module Chat =
     let toExternal chat =
         let result = External.Chat()
-        result.Id <- chat.Id
+        result.Id <- chat.Id.Value
 
         result.Subscriptions <-
             chat.Subscriptions
             |> Seq.map (function
                 | RequestId x -> x |> string)
             |> Seq.toList
-            
+
         result
 
     let toInternal (chat: External.Chat) =
@@ -27,5 +28,5 @@ module Chat =
         |> Result.choose
         |> Result.map Set.ofList
         |> Result.map (fun subscriptions ->
-            { Id = chat.Id
+            { Id = chat.Id |> Web.Telegram.Domain.ChatId
               Subscriptions = subscriptions })

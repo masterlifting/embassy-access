@@ -12,8 +12,8 @@ let private AdminChatId = 379444553L
 let private getChats ct requestId =
     Persistence.Storage.create InMemory
     |> ResultAsync.wrap (fun storage ->
-        let filter = Persistence.Query.Chats.Search requestId
-        storage |> Persistence.Repository.Query.Chat.get ct filter)
+        let query = Persistence.Query.Chat.Search requestId
+        storage |> Persistence.Repository.Query.Chat.getMany ct query)
 
 let private send ct message =
     Domain.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN

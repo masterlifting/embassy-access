@@ -49,7 +49,7 @@ module Create =
                     |> Persistence.Storage.create
                     |> ResultAsync.wrap (fun storage ->
 
-                        let options: Command.Request.PassportsGroup =
+                        let options: Command.Options.Request.PassportsGroup =
                             { Embassy = embassy
                               Payload = payload
                               ConfirmationState = Disabled
@@ -57,16 +57,16 @@ module Create =
 
                         let operation =
                             options
-                            |> Command.Request.Options.Create.PassportsGroup
+                            |> Command.Options.Request.Create.PassportsGroup
                             |> Command.Request.Create
 
                         storage
-                        |> Repository.Request.Command.execute ct operation
+                        |> Repository.Command.Request.execute ct operation
                         |> ResultAsync.bindAsync (fun request ->
 
                             let command =
                                 (chatId, request.Id)
-                                |> Telegram.Persistence.Command.CreateOptions.ByRequestId
+                                |> Telegram.Persistence.Command.Options.Chat.ByRequestId
                                 |> Telegram.Persistence.Command.Chat.Create
 
                             storage

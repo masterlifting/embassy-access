@@ -3,22 +3,25 @@ module internal EmbassyAccess.Persistence.InMemoryRepository
 
 open Infrastructure
 open Persistence.Domain
-open EmbassyAccess.Domain
 open Persistence.InMemory
+open EmbassyAccess
+open EmbassyAccess.Domain
 
-module Request =
+[<Literal>]
+let private RequestsKey = "requests"
 
-    [<Literal>]
-    let private Key = "requests"
+module Query =
+    module Request =
+        open EmbassyAccess.Persistence.Query.Filter.Request
+        open EmbassyAccess.Persistence.Query.Request
 
-    module Query =
         module private Filters =
-            let searchAppointments (filter: Query.Request.Filter.SearchAppointments) (request: Request) =
+            let searchAppointments (filter: SearchAppointments) (request: Request) =
                 filter.Embassy = request.Embassy
                 && filter.HasStates request.ProcessState
                 && filter.HasConfirmationState request.ConfirmationState
 
-            let makeAppointment (filter: Query.Request.Filter.MakeAppointment) (request: Request) =
+            let makeAppointment (filter: MakeAppointment) (request: Request) =
                 filter.Embassy = request.Embassy
                 && filter.HasStates request.ProcessState
                 && filter.HasConfirmationStates request.ConfirmationState
@@ -30,16 +33,16 @@ module Request =
                     | true ->
                         let filter (data: Request list) =
                             match query with
-                            | Query.Request.Id id -> data |> List.tryFind (fun x -> x.Id = id)
-                            | Query.Request.First -> data |> List.tryHead
-                            | Query.Request.Single ->
+                            | Id id -> data |> List.tryFind (fun x -> x.Id = id)
+                            | First -> data |> List.tryHead
+                            | Single ->
                                 match data.Length with
                                 | 1 -> Some data[0]
                                 | _ -> None
 
                         storage
-                        |> Query.Json.get Key
-                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Result.choose)
+                        |> Query.Json.get RequestsKey
+                        |> Result.bind (Seq.map Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
                         Error
@@ -54,22 +57,22 @@ module Request =
                     | true ->
                         let filter (data: Request list) =
                             match query with
-                            | Query.Request.SearchAppointments embassy ->
-                                let query = Query.Request.Filter.SearchAppointments.create embassy
+                            | SearchAppointments embassy ->
+                                let query = SearchAppointments.create embassy
 
                                 data
                                 |> List.filter (Filters.searchAppointments query)
                                 |> Query.paginate query.Pagination
-                            | Query.Request.MakeAppointments embassy ->
-                                let query = Query.Request.Filter.MakeAppointment.create embassy
+                            | MakeAppointments embassy ->
+                                let query = MakeAppointment.create embassy
 
                                 data
                                 |> List.filter (Filters.makeAppointment query)
                                 |> Query.paginate query.Pagination
 
                         storage
-                        |> Query.Json.get Key
-                        |> Result.bind (Seq.map EmbassyAccess.Mapper.Request.toInternal >> Result.choose)
+                        |> Query.Json.get RequestsKey
+                        |> Result.bind (Seq.map Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
                         Error
@@ -77,11 +80,15 @@ module Request =
                             <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
             }
 
-    module Command =
+module Command =
+    module Request =
+        open EmbassyAccess.Persistence.Command.Request
+        open EmbassyAccess.Persistence.Command.Options.Request
+
         let private create create (requests: External.Request array) =
             match create with
-            | Command.Request.Options.PassportsGroup passportsGroup ->
-                let embassy = passportsGroup.Embassy |> EmbassyAccess.Mapper.Embassy.toExternal
+            | PassportsGroup passportsGroup ->
+                let embassy = passportsGroup.Embassy |> Mapper.Embassy.toExternal
 
                 match
                     requests
@@ -100,14 +107,13 @@ module Request =
                     | Some validate -> request |> validate
                     | _ -> Ok()
                     |> Result.map (fun _ ->
-                        let data =
-                            requests |> Array.append [| EmbassyAccess.Mapper.Request.toExternal request |]
+                        let data = requests |> Array.append [| Mapper.Request.toExternal request |]
 
                         (data, request))
 
         let private update update (requests: External.Request array) =
             match update with
-            | Command.Request.Options.Request request ->
+            | Request request ->
                 match requests |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
                 | None ->
                     Error
@@ -117,17 +123,13 @@ module Request =
                 | Some index ->
                     let data =
                         requests
-                        |> Array.mapi (fun i x ->
-                            if i = index then
-                                EmbassyAccess.Mapper.Request.toExternal request
-                            else
-                                x)
+                        |> Array.mapi (fun i x -> if i = index then Mapper.Request.toExternal request else x)
 
                     Ok(data, request)
 
         let private delete delete (requests: External.Request array) =
             match delete with
-            | Command.Request.Options.RequestId requestId ->
+            | RequestId requestId ->
                 match requests |> Array.tryFindIndex (fun x -> x.Id = requestId.Value) with
                 | None ->
                     Error
@@ -136,7 +138,7 @@ module Request =
                           Code = Some ErrorCodes.NotFound }
                 | Some index ->
                     requests[index]
-                    |> EmbassyAccess.Mapper.Request.toInternal
+                    |> Mapper.Request.toInternal
                     |> Result.map (fun request ->
                         let data = requests |> Array.removeAt index
                         (data, request))
@@ -148,14 +150,14 @@ module Request =
                     | true ->
 
                         storage
-                        |> Query.Json.get Key
+                        |> Query.Json.get RequestsKey
                         |> Result.bind (fun data ->
                             match operation with
-                            | Command.Request.Create options -> data |> create options |> Result.map id
-                            | Command.Request.Update options -> data |> update options |> Result.map id
-                            | Command.Request.Delete options -> data |> delete options |> Result.map id)
+                            | Create options -> data |> create options |> Result.map id
+                            | Update options -> data |> update options |> Result.map id
+                            | Delete options -> data |> delete options |> Result.map id)
                         |> Result.bind (fun (data, item) ->
-                            storage |> Command.Json.save Key data |> Result.map (fun _ -> item))
+                            storage |> Command.Json.save RequestsKey data |> Result.map (fun _ -> item))
                     | false ->
                         Error
                         <| (Canceled
