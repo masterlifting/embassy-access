@@ -8,7 +8,8 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 
 let private createRussianSearchRequest ct (payload, country) =
-    InMemory
+    "C:/Users/andre/source/repos/embassy-access/requests.txt"
+    |> FileSystem
     |> Storage.create
     |> ResultAsync.wrap (fun storage ->
 
@@ -19,16 +20,16 @@ let private createRussianSearchRequest ct (payload, country) =
               Validation = Some EmbassyAccess.Api.validateRequest }
 
         let operation =
-            options
-            |> Command.Options.Request.PassportsGroup
-            |> Command.Request.Create
+            options |> Command.Options.Request.PassportsGroup |> Command.Request.Create
 
         storage
         |> Repository.Command.Request.execute ct operation
         |> ResultAsync.map (fun _ -> Success "Test request was created."))
 
 let private createRussianConfirmRequest ct (payload, country) =
-    Storage.create InMemory
+    "C:/Users/andre/source/repos/embassy-access/requests.txt"
+    |> FileSystem
+    |> Storage.create
     |> ResultAsync.wrap (fun storage ->
 
         let options: Command.Options.Request.PassportsGroup =
@@ -38,9 +39,7 @@ let private createRussianConfirmRequest ct (payload, country) =
               Validation = Some EmbassyAccess.Api.validateRequest }
 
         let operation =
-            options
-            |> Command.Options.Request.PassportsGroup
-            |> Command.Request.Create
+            options |> Command.Options.Request.PassportsGroup |> Command.Request.Create
 
         storage
         |> Repository.Command.Request.execute ct operation
