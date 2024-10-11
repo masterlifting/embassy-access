@@ -66,11 +66,11 @@ module Create =
 
                             let command =
                                 (chatId, request.Id)
-                                |> Telegram.Persistence.Command.Options.Chat.ByRequestId
-                                |> Telegram.Persistence.Command.Chat.Create
+                                |> Persistence.Command.Options.Chat.ByRequestId
+                                |> Persistence.Command.Chat.Create
 
                             storage
-                            |> Telegram.Persistence.Repository.Command.Chat.execute ct command
+                            |> Persistence.Repository.Command.Chat.execute ct command
                             |> ResultAsync.map (fun _ -> request)))
                     |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
                     |> ResultAsync.map (create (chatId, New) >> Text)

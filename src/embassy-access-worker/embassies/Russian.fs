@@ -24,17 +24,12 @@ let private createDeps ct configuration country =
     deps {
 
         let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
-
-        let! storage =
-            InMemory
-            |> Persistence.Storage.create
-
-        let notify = EmbassyAccess.Telegram.Producer.Produce.notification ct
+        let! storage = Persistence.Storage.create InMemory
 
         return
             { Config = { TimeShift = timeShift }
               Storage = storage
-              notify = notify
+              notify = EmbassyAccess.Telegram.Producer.Produce.notification ct
               ct = ct }
     }
 
@@ -92,7 +87,7 @@ let private toTaskResult (results: Result<string, Error'> array) =
         <| Operation
             { Message =
                 Environment.NewLine
-                + (errors |> List.map _.Message |> String.concat Environment.NewLine)
+                + (errors |> List.map _.MessageEx |> String.concat Environment.NewLine)
               Code = None }
     | messages, [] ->
 
@@ -103,7 +98,7 @@ let private toTaskResult (results: Result<string, Error'> array) =
         Ok
         <| Warn(
             Environment.NewLine
-            + (messages @ (errors |> List.map _.Message) |> String.concat Environment.NewLine)
+            + (messages @ (errors |> List.map _.MessageEx) |> String.concat Environment.NewLine)
         )
 
 module private SearchAppointments =
@@ -155,7 +150,7 @@ module private SearchAppointments =
 
                     | request :: requestsTail ->
                         match! request |> processRequest with
-                        | Error error -> return! choose (errors @ [ error.Message ]) requestsTail
+                        | Error error -> return! choose (errors @ [ error.MessageEx ]) requestsTail
                         | Ok result -> return Ok <| Some result
                 }
 
