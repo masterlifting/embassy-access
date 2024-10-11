@@ -31,6 +31,7 @@ module private Fixture =
         $"./embassies/russian/test_data/{fileName}.html"
         |> Storage.create
         |> ResultAsync.wrap Storage.Read.string
+        |> ResultAsync.map (Option.defaultValue "")
         |> ResultAsync.map (fun data ->
             { Content = data
               Headers = requiredHeaders
@@ -40,11 +41,13 @@ module private Fixture =
         $"./embassies/russian/test_data/{fileName}.html"
         |> Storage.create
         |> ResultAsync.wrap Storage.Read.string
+        |> ResultAsync.map (Option.defaultValue "")
 
     let httpGetBytesRequest fileName =
         $"./embassies/russian/test_data/{fileName}"
         |> Storage.create
         |> ResultAsync.wrap Storage.Read.bytes
+        |> ResultAsync.map (Option.defaultValue [||])
         |> ResultAsync.map (fun data ->
             { Content = data
               Headers = requiredHeaders

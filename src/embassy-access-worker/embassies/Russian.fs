@@ -24,7 +24,11 @@ let private createDeps ct configuration country =
     deps {
 
         let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
-        let! storage = Persistence.Storage.create InMemory
+
+        let! storage =
+            "C:/Users/andre/source/repos/embassy-access/requests.txt"
+            |> FileSystem
+            |> Persistence.Storage.create
 
         return
             { Config = { TimeShift = timeShift }

@@ -7,7 +7,8 @@
     <Compile Include="Mapper.fs" />
     <Compile Include="persistence\Query.fs" />
     <Compile Include="persistence\Command.fs" />
-    <Compile Include="persistence\InMemoryRepository.fs" />
+    <Compile Include="persistence\repositories\InMemoryRepository.fs" />
+    <Compile Include="persistence\repositories\FileSystemRepository.fs" />
     <Compile Include="persistence\Repository.fs" />
     <Compile Include="embassies\russian\Domain.fs" />
     <Compile Include="embassies\russian\Core.fs" />
