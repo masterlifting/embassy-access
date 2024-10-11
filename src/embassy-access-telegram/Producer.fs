@@ -1,13 +1,16 @@
 ﻿module EmbassyAccess.Telegram.Producer
 
 open System
-open EmbassyAccess.Domain
 open Infrastructure
 open Persistence.Domain
 open Web.Telegram
 open Web.Telegram.Domain
+open EmbassyAccess.Domain
+open EmbassyAccess.Telegram.Domain
 
-let private AdminChatId = 379444553L
+let private Admin =
+    { Id = 379444553L |> ChatId
+      Subscriptions = Set.empty }
 
 let private getChats ct requestId =
     Persistence.Storage.create InMemory
@@ -16,7 +19,7 @@ let private getChats ct requestId =
         storage |> Persistence.Repository.Query.Chat.getMany ct query)
 
 let private send ct message =
-    Domain.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
+    EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
     |> Client.create
     |> ResultAsync.wrap (message |> Client.Producer.produce ct)
@@ -27,7 +30,7 @@ module Produce =
         requestId
         |> getChats ct
         |> ResultAsync.bindAsync (fun chats ->
-            chats
+            chats @ [ Admin ]
             |> Seq.map (fun chat -> createMsg chat.Id |> send ct)
             |> Async.Parallel
             |> Async.map Result.choose)
