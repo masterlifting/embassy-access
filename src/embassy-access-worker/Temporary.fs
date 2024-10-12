@@ -8,7 +8,7 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 
 let private createRussianSearchRequest ct (payload, country) =
-    "C:/Users/andre/source/repos/embassy-access/requests.txt"
+    "C:/requests.txt"
     |> FileSystem
     |> Storage.create
     |> ResultAsync.wrap (fun storage ->
@@ -27,7 +27,7 @@ let private createRussianSearchRequest ct (payload, country) =
         |> ResultAsync.map (fun _ -> Success "Test request was created."))
 
 let private createRussianConfirmRequest ct (payload, country) =
-    "C:/Users/andre/source/repos/embassy-access/requests.txt"
+    "C:/requests.txt"
     |> FileSystem
     |> Storage.create
     |> ResultAsync.wrap (fun storage ->

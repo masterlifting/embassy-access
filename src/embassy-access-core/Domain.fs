@@ -109,7 +109,7 @@ type Request =
       Description: string option
       GroupBy: string option
       Modified: DateTime }
-    
+
 type Validation = Request -> Result<unit, Error'>
 
 type Notification =
@@ -131,6 +131,17 @@ module External =
 
         member val Name: string = String.Empty with get, set
         member val Country: Country = Country() with get, set
+
+        override this.Equals(obj: obj) : bool =
+            match obj with
+            | :? Embassy as x ->
+                this.Name = x.Name
+                && this.Country.Name = x.Country.Name
+                && this.Country.City.Name = x.Country.City.Name
+            | _ -> false
+
+        override this.GetHashCode() =
+            HashCode.Combine(this.Name, this.Country.Name, this.Country.City.Name)
 
     type Confirmation() =
         member val Description: string = String.Empty with get, set
