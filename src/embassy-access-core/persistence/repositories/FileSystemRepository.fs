@@ -13,15 +13,15 @@ module Query =
         open EmbassyAccess.Persistence.Query.Request
 
         module private Filters =
-            let searchAppointments (filter: SearchAppointments) (request: Request) =
-                filter.Embassy = request.Embassy
-                && filter.HasStates request.ProcessState
-                && filter.HasConfirmationState request.ConfirmationState
+            let searchAppointments (query: SearchAppointments) (request: Request) =
+                query.Embassy = request.Embassy
+                && query.HasStates request.ProcessState
+                && query.HasConfirmationState request.ConfirmationState
 
-            let makeAppointment (filter: MakeAppointment) (request: Request) =
-                filter.Embassy = request.Embassy
-                && filter.HasStates request.ProcessState
-                && filter.HasConfirmationStates request.ConfirmationState
+            let makeAppointment (query: MakeAppointment) (request: Request) =
+                query.Embassy = request.Embassy
+                && query.HasStates request.ProcessState
+                && query.HasConfirmationStates request.ConfirmationState
 
         let getOne ct query storage =
             match ct |> notCanceled with

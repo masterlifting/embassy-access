@@ -25,10 +25,7 @@ let private createDeps ct configuration country =
 
         let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
 
-        let! storage =
-            "C:/Users/andre/source/repos/embassy-access/requests.txt"
-            |> FileSystem
-            |> Persistence.Storage.create
+        let! storage = "C:/requests.txt" |> FileSystem |> Persistence.Storage.create
 
         return
             { Config = { TimeShift = timeShift }
@@ -151,7 +148,6 @@ module private SearchAppointments =
                                     |> String.concat Environment.NewLine
 
                                 Error $"Multiple errors:%s{Environment.NewLine}%s{msg}"
-
                     | request :: requestsTail ->
                         match! request |> processRequest with
                         | Error error -> return! choose (errors @ [ error.MessageEx ]) requestsTail
