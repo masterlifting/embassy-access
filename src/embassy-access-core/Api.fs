@@ -1,8 +1,8 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Api
+module EA.Api
 
 open Infrastructure
-open EmbassyAccess.Embassies
+open EA.Embassies
 
 type ProcessRequestDeps = Russian of Russian.Domain.ProcessRequestDeps
 

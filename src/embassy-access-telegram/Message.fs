@@ -1,9 +1,9 @@
-﻿module EmbassyAccess.Telegram.Message
+﻿module EA.Telegram.Message
 
 open System
-open EmbassyAccess
-open EmbassyAccess.Domain
-open EmbassyAccess.Persistence
+open EA
+open EA.Domain
+open EA.Persistence
 open Infrastructure
 open Persistence.Domain
 open Persistence.Domain.FileSystem

@@ -1,4 +1,4 @@
-﻿module internal EmbassyAccess.Worker.Embassies.Russian
+﻿module internal EA.Worker.Embassies.Russian
 
 open System
 open System.Threading
@@ -6,9 +6,9 @@ open Infrastructure
 open Persistence.Domain
 open Persistence.Domain.FileSystem
 open Worker.Domain
-open EmbassyAccess.Domain
-open EmbassyAccess.Worker
-open EmbassyAccess.Embassies.Russian.Domain
+open EA.Domain
+open EA.Worker
+open EA.Embassies.Russian.Domain
 
 type private Deps =
     { Config: ProcessRequestConfiguration
@@ -19,7 +19,7 @@ type private Deps =
 let private createDeps ct configuration country =
     let deps = ModelBuilder()
 
-    let country = country |> EmbassyAccess.Mapper.Country.toExternal
+    let country = country |> EA.Mapper.Country.toExternal
     let scheduleTaskName = $"{Settings.AppName}.{country.Name}.{country.City.Name}"
 
     deps {
@@ -37,7 +37,7 @@ let private createDeps ct configuration country =
         return
             { Config = { TimeShift = timeShift }
               Storage = storage
-              notify = EmbassyAccess.Telegram.Producer.Produce.notification ct
+              notify = EA.Telegram.Producer.Produce.notification ct
               ct = ct }
     }
 
@@ -45,8 +45,8 @@ let private processRequest deps createNotification (request: Request) =
 
     let processRequest deps =
         (deps.Storage, deps.Config, deps.ct)
-        |> EmbassyAccess.Deps.Russian.processRequest
-        |> EmbassyAccess.Api.processRequest
+        |> EA.Deps.Russian.processRequest
+        |> EA.Api.processRequest
 
     let sendNotification request =
         createNotification request
@@ -112,15 +112,13 @@ let private toTaskResult (results: Result<string, Error'> array) =
 module private SearchAppointments =
 
     let private getRequests deps country =
-        let query =
-            Russian country |> EmbassyAccess.Persistence.Query.Request.SearchAppointments
+        let query = Russian country |> EA.Persistence.Query.Request.SearchAppointments
 
-        deps.Storage
-        |> EmbassyAccess.Persistence.Repository.Query.Request.getMany deps.ct query
+        deps.Storage |> EA.Persistence.Repository.Query.Request.getMany deps.ct query
 
     let private processRequests deps requests =
 
-        let createNotification = EmbassyAccess.Notification.Create.appointments
+        let createNotification = EA.Notification.Create.appointments
 
         let processRequest = processRequest deps createNotification
 
@@ -187,15 +185,13 @@ module private SearchAppointments =
 module private MakeAppointments =
 
     let private getRequests deps country =
-        let query =
-            Russian country |> EmbassyAccess.Persistence.Query.Request.MakeAppointments
+        let query = Russian country |> EA.Persistence.Query.Request.MakeAppointments
 
-        deps.Storage
-        |> EmbassyAccess.Persistence.Repository.Query.Request.getMany deps.ct query
+        deps.Storage |> EA.Persistence.Repository.Query.Request.getMany deps.ct query
 
     let private processRequests deps requests =
 
-        let createNotification = EmbassyAccess.Notification.Create.confirmations
+        let createNotification = EA.Notification.Create.confirmations
 
         let processRequest = processRequest deps createNotification
 

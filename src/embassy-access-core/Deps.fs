@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Deps
+module EA.Deps
 
 module Russian =
 

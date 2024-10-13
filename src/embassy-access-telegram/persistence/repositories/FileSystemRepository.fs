@@ -1,16 +1,16 @@
 ﻿[<RequireQualifiedAccess>]
-module internal EmbassyAccess.Telegram.Persistence.FileSystemRepository
+module internal EA.Telegram.Persistence.FileSystemRepository
 
 open Infrastructure
 open Persistence.FileSystem
 open Persistence.Domain
-open EmbassyAccess.Domain
-open EmbassyAccess.Telegram
-open EmbassyAccess.Telegram.Domain
+open EA.Domain
+open EA.Telegram
+open EA.Telegram.Domain
 
 module Query =
     module Chat =
-        open EmbassyAccess.Telegram.Persistence.Query.Chat
+        open EA.Telegram.Persistence.Query.Chat
 
         module private Filters =
             let search (requestId: RequestId) (chat: Chat) =
@@ -52,8 +52,8 @@ module Query =
 
 module Command =
     module Chat =
-        open EmbassyAccess.Telegram.Persistence.Command.Chat
-        open EmbassyAccess.Telegram.Persistence.Command.Options.Chat
+        open EA.Telegram.Persistence.Command.Chat
+        open EA.Telegram.Persistence.Command.Options.Chat
 
         let private create create (data: External.Chat array) =
             match create with

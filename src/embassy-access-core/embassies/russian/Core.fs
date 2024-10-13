@@ -1,10 +1,10 @@
-﻿module internal EmbassyAccess.Embassies.Russian.Core
+﻿module internal EA.Embassies.Russian.Core
 
 open System
 open Infrastructure
 open Infrastructure.Parser
-open EmbassyAccess.Domain
-open EmbassyAccess.Embassies.Russian.Domain
+open EA.Domain
+open EA.Embassies.Russian.Domain
 
 module private Http =
     open Web.Http.Domain
@@ -731,7 +731,7 @@ module private Request =
             | Ok request -> return! request |> setCompletedState deps
         }
 
-let validateRequest request = 
+let validateRequest request =
     request.Payload
     |> createCredentials
     |> Result.bind (Request.validateCredentials request)

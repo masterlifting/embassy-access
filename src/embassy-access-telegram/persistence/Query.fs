@@ -1,11 +1,11 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Telegram.Persistence.Query
+module EA.Telegram.Persistence.Query
 
-open EmbassyAccess
+open EA
 
 // module Filter =
 //     module Chat =
-        
+
 module Chat =
     type GetOne = Id of Web.Telegram.Domain.ChatId
     type GetMany = Search of Domain.RequestId

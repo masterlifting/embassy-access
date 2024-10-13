@@ -8,7 +8,7 @@ let main _ =
     Logging.useConsole configuration
 
     configuration
-    |> EmbassyAccess.Telegram.Consumer.start CancellationToken.None
+    |> EA.Telegram.Consumer.start CancellationToken.None
     |> ResultAsync.mapError (fun error -> error.Message |> Logging.Log.critical)
     |> Async.Ignore
     |> Async.RunSynchronously

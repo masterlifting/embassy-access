@@ -1,15 +1,15 @@
-﻿module EmbassyAccess.Embassies.Russian.Test
+﻿module EA.Embassies.Russian.Test
 
 open System
 open Expecto
 open Infrastructure
-open EmbassyAccess
-open EmbassyAccess.Embassies.Russian.Domain
+open EA
+open EA.Embassies.Russian.Domain
 
 module private Fixture =
     open Web.Http.Domain
     open Persistence.FileSystem
-    open EmbassyAccess.Domain
+    open EA.Domain
 
     let request: Request =
         { Id = RequestId.New

@@ -1,6 +1,6 @@
-﻿module EmbassyAccess.Telegram.Domain
+﻿module EA.Telegram.Domain
 
-open EmbassyAccess.Domain
+open EA.Domain
 open Web.Telegram.Domain
 
 module Key =

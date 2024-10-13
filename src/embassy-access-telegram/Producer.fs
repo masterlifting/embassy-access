@@ -1,12 +1,12 @@
-﻿module EmbassyAccess.Telegram.Producer
+﻿module EA.Telegram.Producer
 
 open System
 open Infrastructure
 open Persistence.Domain
 open Web.Telegram
 open Web.Telegram.Domain
-open EmbassyAccess.Domain
-open EmbassyAccess.Telegram.Domain
+open EA.Domain
+open EA.Telegram.Domain
 
 let private Admin =
     { Id = 379444553L |> ChatId

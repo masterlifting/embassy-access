@@ -1,9 +1,9 @@
 [<RequireQualifiedAccess>]
-module EmbassyAccess.Mapper
+module EA.Mapper
 
 open System
 open Infrastructure
-open EmbassyAccess.Domain
+open EA.Domain
 
 module City =
     [<Literal>]

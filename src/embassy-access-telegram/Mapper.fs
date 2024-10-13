@@ -1,10 +1,10 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Telegram.Mapper
+module EA.Telegram.Mapper
 
 open System
 open Infrastructure
-open EmbassyAccess.Domain
-open EmbassyAccess.Telegram.Domain
+open EA.Domain
+open EA.Telegram.Domain
 
 module Chat =
     let toExternal chat =

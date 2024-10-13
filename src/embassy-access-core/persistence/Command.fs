@@ -1,8 +1,8 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Persistence.Command
+module EA.Persistence.Command
 
 open System
-open EmbassyAccess.Domain
+open EA.Domain
 
 module Options =
     module Request =

@@ -1,4 +1,4 @@
-﻿module internal EmbassyAccess.Worker.Settings
+﻿module internal EA.Worker.Settings
 
 open Infrastructure
 open Worker.Domain
