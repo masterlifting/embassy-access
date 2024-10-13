@@ -2,7 +2,7 @@
 module EmbassyAccess.Persistence.Repository
 
 open Infrastructure
-open Persistence
+open Persistence.Domain
 open EmbassyAccess.Persistence
 open Infrastructure.Logging
 

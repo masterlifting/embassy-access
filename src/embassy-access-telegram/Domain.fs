@@ -3,8 +3,12 @@
 open EmbassyAccess.Domain
 open Web.Telegram.Domain
 
-[<Literal>]
-let internal EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
+module Key =
+    [<Literal>]
+    let internal EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
+
+    [<Literal>]
+    let Chats = "chats"
 
 type Chat =
     { Id: ChatId

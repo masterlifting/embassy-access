@@ -13,13 +13,13 @@ let private Admin =
       Subscriptions = Set.empty }
 
 let private getChats ct requestId =
-    Persistence.Storage.create InMemory
+    Persistence.Storage.create Storage.Context.InMemory
     |> ResultAsync.wrap (fun storage ->
         let query = Persistence.Query.Chat.Search requestId
         storage |> Persistence.Repository.Query.Chat.getMany ct query)
 
 let private send ct message =
-    EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
+    Key.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
     |> Client.create
     |> ResultAsync.wrap (message |> Client.Producer.produce ct)

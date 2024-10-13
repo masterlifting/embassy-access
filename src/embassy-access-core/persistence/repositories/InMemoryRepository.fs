@@ -7,9 +7,6 @@ open Persistence.InMemory
 open EmbassyAccess
 open EmbassyAccess.Domain
 
-[<Literal>]
-let private RequestsKey = "requests"
-
 module Query =
     module Request =
         open EmbassyAccess.Persistence.Query.Filter.Request
@@ -41,7 +38,7 @@ module Query =
                                 | _ -> None
 
                         storage
-                        |> Query.Json.get RequestsKey
+                        |> Query.Json.get Key.Requests
                         |> Result.bind (Seq.map Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -71,7 +68,7 @@ module Query =
                                 |> Query.paginate query.Pagination
 
                         storage
-                        |> Query.Json.get RequestsKey
+                        |> Query.Json.get Key.Requests
                         |> Result.bind (Seq.map Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -150,14 +147,14 @@ module Command =
                     | true ->
 
                         storage
-                        |> Query.Json.get RequestsKey
+                        |> Query.Json.get Key.Requests
                         |> Result.bind (fun data ->
                             match operation with
                             | Create options -> data |> create options |> Result.map id
                             | Update options -> data |> update options |> Result.map id
                             | Delete options -> data |> delete options |> Result.map id)
                         |> Result.bind (fun (data, item) ->
-                            storage |> Command.Json.save RequestsKey data |> Result.map (fun _ -> item))
+                            storage |> Command.Json.save Key.Requests data |> Result.map (fun _ -> item))
                     | false ->
                         Error
                         <| (Canceled

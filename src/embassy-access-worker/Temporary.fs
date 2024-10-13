@@ -3,13 +3,14 @@
 open Infrastructure
 open Persistence
 open Persistence.Domain
+open Persistence.Domain.FileSystem
 open Worker.Domain
 open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 
-let private createRussianSearchRequest ct (payload, country) =
-    "C:/requests.txt"
-    |> FileSystem
+let private createRussianSearchRequest ct (pcs: string) (payload, country) =
+    { Path = pcs; File = Key.Requests }
+    |> Storage.Context.FileSystem
     |> Storage.create
     |> ResultAsync.wrap (fun storage ->
 
@@ -26,9 +27,9 @@ let private createRussianSearchRequest ct (payload, country) =
         |> Repository.Command.Request.execute ct operation
         |> ResultAsync.map (fun _ -> Success "Test request was created."))
 
-let private createRussianConfirmRequest ct (payload, country) =
-    "C:/requests.txt"
-    |> FileSystem
+let private createRussianConfirmRequest ct pcs (payload, country) =
+    { Path = pcs; File = Key.Requests }
+    |> Storage.Context.FileSystem
     |> Storage.create
     |> ResultAsync.wrap (fun storage ->
 
@@ -45,7 +46,7 @@ let private createRussianConfirmRequest ct (payload, country) =
         |> Repository.Command.Request.execute ct operation
         |> ResultAsync.map (fun _ -> Success "Test request was created."))
 
-let createTestData ct =
+let createTestData ct pcs =
     async {
         let! requestsToNotify =
             [ ("https://berlin.kdmid.ru/queue/OrderInfo.aspx?id=298905&cd=9D217A77", Germany Berlin)
@@ -57,10 +58,10 @@ let createTestData ct =
               ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20780&cd=4FC17A57", Bosnia Sarajevo)
               ("https://sarajevo.kdmid.ru/queue/orderinfo.aspx?id=20781&cd=F23CB539", Bosnia Sarajevo)
               ("https://hague.kdmid.ru/queue/orderinfo.aspx?id=114878&cd=f1e14d11&ems=2CAA46D6", Netherlands Hague) ]
-            |> List.map (createRussianSearchRequest ct)
+            |> List.map (createRussianSearchRequest ct pcs)
             |> Async.Sequential
 
-        let! requestsToAutoConfirm = [] |> List.map (createRussianConfirmRequest ct) |> Async.Sequential
+        let! requestsToAutoConfirm = [] |> List.map (createRussianConfirmRequest ct pcs) |> Async.Sequential
 
         return requestsToNotify |> Seq.append requestsToAutoConfirm |> Result.choose
     }
