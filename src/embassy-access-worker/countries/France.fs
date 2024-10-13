@@ -1,9 +1,9 @@
-﻿module internal EmbassyAccess.Worker.Countries.France
+﻿module internal EA.Worker.Countries.France
 
 open Infrastructure.Domain
 open Worker.Domain
-open EmbassyAccess.Domain
-open EmbassyAccess.Worker.Embassies
+open EA.Domain
+open EA.Worker.Embassies
 
 let private Paris =
     Graph.Node({ Name = "Paris"; Task = None }, [ Russian.addTasks <| France Paris ])

@@ -1,4 +1,4 @@
-﻿module internal EmbassyAccess.Worker.Initializer
+﻿module internal EA.Worker.Initializer
 
 open Worker.Domain
 

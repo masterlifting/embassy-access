@@ -1,6 +1,6 @@
-﻿module EmbassyAccess.Notification
+﻿module EA.Notification
 
-open EmbassyAccess.Domain
+open EA.Domain
 
 module Create =
 

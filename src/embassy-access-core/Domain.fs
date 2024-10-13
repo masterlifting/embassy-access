@@ -1,4 +1,4 @@
-﻿module EmbassyAccess.Domain
+﻿module EA.Domain
 
 open System
 open Infrastructure

@@ -1,6 +1,6 @@
 ﻿open Infrastructure
 open Worker.Domain
-open EmbassyAccess.Worker
+open EA.Worker
 
 [<EntryPoint>]
 let main _ =

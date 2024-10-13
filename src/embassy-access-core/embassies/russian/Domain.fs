@@ -1,7 +1,7 @@
-﻿module EmbassyAccess.Embassies.Russian.Domain
+﻿module EA.Embassies.Russian.Domain
 
 open Infrastructure
-open EmbassyAccess
+open EA
 open System
 
 module ErrorCodes =

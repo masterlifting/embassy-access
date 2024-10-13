@@ -1,9 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Telegram.Persistence.Command
+module EA.Telegram.Persistence.Command
 
 open Web.Telegram.Domain
-open EmbassyAccess.Domain
-open EmbassyAccess.Telegram.Domain
+open EA.Domain
+open EA.Telegram.Domain
 
 module Options =
     module Chat =

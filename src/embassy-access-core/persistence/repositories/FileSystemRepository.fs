@@ -1,16 +1,16 @@
 ﻿[<RequireQualifiedAccess>]
-module internal EmbassyAccess.Persistence.FileSystemRepository
+module internal EA.Persistence.FileSystemRepository
 
 open Infrastructure
 open Persistence.Domain
 open Persistence.FileSystem
-open EmbassyAccess
-open EmbassyAccess.Domain
+open EA
+open EA.Domain
 
 module Query =
     module Request =
-        open EmbassyAccess.Persistence.Query.Filter.Request
-        open EmbassyAccess.Persistence.Query.Request
+        open EA.Persistence.Query.Filter.Request
+        open EA.Persistence.Query.Request
 
         module private Filters =
             let searchAppointments (query: SearchAppointments) (request: Request) =
@@ -75,8 +75,8 @@ module Query =
 
 module Command =
     module Request =
-        open EmbassyAccess.Persistence.Command.Request
-        open EmbassyAccess.Persistence.Command.Options.Request
+        open EA.Persistence.Command.Request
+        open EA.Persistence.Command.Options.Request
 
         let private create create (requests: External.Request array) =
             match create with

@@ -1,9 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Persistence.Repository
+module EA.Persistence.Repository
 
 open Infrastructure
 open Persistence.Domain
-open EmbassyAccess.Persistence
+open EA.Persistence
 open Infrastructure.Logging
 
 module Query =

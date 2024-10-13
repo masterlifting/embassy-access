@@ -1,4 +1,4 @@
-﻿module EmbassyAccess.Telegram.Consumer
+﻿module EA.Telegram.Consumer
 
 open System
 open Infrastructure

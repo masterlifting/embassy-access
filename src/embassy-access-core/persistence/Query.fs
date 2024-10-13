@@ -1,8 +1,8 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Persistence.Query
+module EA.Persistence.Query
 
 open Persistence.Domain.Query
-open EmbassyAccess.Domain
+open EA.Domain
 
 module Filter =
     module Request =

@@ -1,9 +1,9 @@
-﻿module internal EmbassyAccess.Worker.Countries.Montenegro
+﻿module internal EA.Worker.Countries.Montenegro
 
 open Infrastructure.Domain
 open Worker.Domain
-open EmbassyAccess.Domain
-open EmbassyAccess.Worker.Embassies
+open EA.Domain
+open EA.Worker.Embassies
 
 let private Podgorica =
     Graph.Node({ Name = "Podgorica"; Task = None }, [ Russian.addTasks <| Montenegro Podgorica ])

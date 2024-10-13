@@ -1,6 +1,6 @@
 ﻿open System
 open Expecto
-open EmbassyAccess.Embassies
+open EA.Embassies
 
 let private tests = testList "Tests" [ Russian.Test.list ]
 

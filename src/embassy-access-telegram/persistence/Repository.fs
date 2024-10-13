@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EmbassyAccess.Telegram.Persistence.Repository
+module EA.Telegram.Persistence.Repository
 
 open Infrastructure
 open Infrastructure.Logging

@@ -1,7 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
-module internal EmbassyAccess.Embassies.Russian.Deps
+module internal EA.Embassies.Russian.Deps
 
-open EmbassyAccess.Embassies.Russian.Domain
+open EA.Embassies.Russian.Domain
 
 let processRequest ct config storage =
     { Configuration = config
@@ -10,11 +10,10 @@ let processRequest ct config storage =
 
             let operation =
                 request
-                |> EmbassyAccess.Persistence.Command.Options.Request.Update.Request
-                |> EmbassyAccess.Persistence.Command.Request.Update
+                |> EA.Persistence.Command.Options.Request.Update.Request
+                |> EA.Persistence.Command.Request.Update
 
-            storage
-            |> EmbassyAccess.Persistence.Repository.Command.Request.execute ct operation
+            storage |> EA.Persistence.Repository.Command.Request.execute ct operation
       getInitialPage =
         fun request client ->
             client

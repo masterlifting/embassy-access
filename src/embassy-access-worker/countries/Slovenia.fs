@@ -1,9 +1,9 @@
-﻿module internal EmbassyAccess.Worker.Countries.Slovenia
+﻿module internal EA.Worker.Countries.Slovenia
 
 open Infrastructure.Domain
 open Worker.Domain
-open EmbassyAccess.Domain
-open EmbassyAccess.Worker.Embassies
+open EA.Domain
+open EA.Worker.Embassies
 
 let private Ljubljana =
     Graph.Node({ Name = "Ljubljana"; Task = None }, [ Russian.addTasks <| Slovenia Ljubljana ])
