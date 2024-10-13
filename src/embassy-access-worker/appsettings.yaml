@@ -5,8 +5,7 @@ Logging:
     Default: Debug
 
 Persistence:
-  FileSystem:
-    Requests: "/data/requests"
+  FileSystem: "C:/"
 
 Workdays: &Workdays
   StartTime: '00:00:00'

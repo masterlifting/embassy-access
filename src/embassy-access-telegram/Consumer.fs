@@ -73,7 +73,7 @@ let private handle ct client configuration =
         | _ -> $"Data: {data}." |> NotSupported |> Error |> async.Return
 
 let start ct configuration =
-    Domain.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
+    Domain.Key.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
     |> Web.Telegram.Client.create
     |> Result.map (fun client -> Web.Domain.Consumer.Telegram(client, handle ct client configuration))

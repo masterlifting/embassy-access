@@ -11,7 +11,7 @@ open EmbassyAccess.Embassies.Russian.Domain
 
 type private Deps =
     { Config: ProcessRequestConfiguration
-      Storage: Persistence.Storage.Type
+      Storage: Storage.Type
       notify: Notification -> Async<Result<unit, Error'>>
       ct: CancellationToken }
 
@@ -25,7 +25,13 @@ let private createDeps ct configuration country =
 
         let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
 
-        let! storage = "C:/requests.txt" |> FileSystem |> Persistence.Storage.create
+        let! pcs = configuration |> Persistence.Storage.getConnectionString FileSystem.SectionName
+
+        let! storage =
+            { FileSystem.SourcePath.Path = pcs
+              FileSystem.SourcePath.File = Key.Requests }
+            |> Storage.Context.FileSystem
+            |> Persistence.Storage.create
 
         return
             { Config = { TimeShift = timeShift }

@@ -45,7 +45,7 @@ module Create =
             |> ResultAsync.wrap (fun embassy ->
                 match embassy with
                 | Russian country ->
-                    InMemory
+                    Storage.Context.InMemory
                     |> Persistence.Storage.create
                     |> ResultAsync.wrap (fun storage ->
 

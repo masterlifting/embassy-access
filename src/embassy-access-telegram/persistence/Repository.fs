@@ -2,8 +2,8 @@
 module EmbassyAccess.Telegram.Persistence.Repository
 
 open Infrastructure
-open Persistence
 open Infrastructure.Logging
+open Persistence.Domain
 
 module Query =
     module Chat =
