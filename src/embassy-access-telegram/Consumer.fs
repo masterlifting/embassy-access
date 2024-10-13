@@ -2,6 +2,7 @@
 
 open System
 open Infrastructure
+open Persistence.Domain
 open Web.Telegram.Domain
 
 let private respond ct client data =
@@ -37,14 +38,14 @@ module private Consume =
             | _ -> None
         | _ -> None
 
-    let text ct (msg: Consumer.Dto<string>) client =
+    let text ct pcs (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
             | "/start" -> return! Message.Create.Buttons.embassies msg.ChatId |> respond ct client
             | HasPayload(embassy, country, city, payload) ->
                 return!
                     payload
-                    |> Message.Create.Text.payloadResponse ct msg.ChatId (embassy, country, city)
+                    |> Message.Create.Text.payloadResponse ct pcs msg.ChatId (embassy, country, city)
                     |> Async.bind (respondWithError ct msg.ChatId client)
             | _ -> return Error <| NotSupported $"Text: {msg.Value}."
         }
@@ -67,7 +68,10 @@ let private handle ct client configuration =
         match data with
         | Consumer.Message message ->
             match message with
-            | Consumer.Text dto -> client |> Consume.text ct dto
+            | Consumer.Text dto ->
+                configuration
+                |> Persistence.Storage.getConnectionString FileSystem.SectionName
+                |> ResultAsync.wrap (fun pcs -> client |> Consume.text ct pcs dto)
             | _ -> $"{message}" |> NotSupported |> Error |> async.Return
         | Consumer.CallbackQuery dto -> client |> Consume.callback ct dto
         | _ -> $"Data: {data}." |> NotSupported |> Error |> async.Return

@@ -4,6 +4,7 @@ open System
 open System.Threading
 open Infrastructure
 open Persistence.Domain
+open Persistence.Domain.FileSystem
 open Worker.Domain
 open EmbassyAccess.Domain
 open EmbassyAccess.Worker
@@ -28,8 +29,8 @@ let private createDeps ct configuration country =
         let! pcs = configuration |> Persistence.Storage.getConnectionString FileSystem.SectionName
 
         let! storage =
-            { FileSystem.SourcePath.Path = pcs
-              FileSystem.SourcePath.File = Key.Requests }
+            { Directory = pcs
+              FileName = Key.Requests }
             |> Storage.Context.FileSystem
             |> Persistence.Storage.create
 

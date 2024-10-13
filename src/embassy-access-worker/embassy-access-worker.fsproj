@@ -20,7 +20,6 @@
 		<Compile Include="countries\Serbia.fs" />
 		<Compile Include="countries\Slovenia.fs" />
 		<Compile Include="countries\Switzerland.fs" />
-		<Compile Include="Temporary.fs" />
 		<Compile Include="Initializer.fs" />
 		<Compile Include="Program.fs" />
 	</ItemGroup>

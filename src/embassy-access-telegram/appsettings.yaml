@@ -5,5 +5,4 @@ Logging:
     Default: Debug
 
 Persistence:
-  FileSystem:
-    Requests: "/data/requests"
+  FileSystem: "C:/"

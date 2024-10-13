@@ -243,7 +243,7 @@ module Embassy =
             | British -> Embassy.British country |> Ok
             | _ -> Error <| NotSupported $"Embassy %s{embassy.Name}.")
 
-    let create (embassy, country, city) =
+    let createInternal (embassy, country, city) =
         let city' = External.City()
         city'.Name <- city
         let coutry' = External.Country()

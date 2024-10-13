@@ -6,6 +6,7 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Persistence
 open Infrastructure
 open Persistence.Domain
+open Persistence.Domain.FileSystem
 open Web.Telegram.Domain.Producer
 
 let create<'a> (chatId, msgId) (value: 'a) =
@@ -29,7 +30,7 @@ module Create =
                 |> Text
 
         let payloadRequest (chatId, msgId) (embassy', country', city') =
-            match (embassy', country', city') |> Mapper.Embassy.create with
+            match (embassy', country', city') |> Mapper.Embassy.createInternal with
             | Error error -> error.Message
             | Ok embassy ->
                 match embassy with
@@ -39,15 +40,26 @@ module Create =
             |> create (chatId, msgId |> Replace)
             |> Text
 
-        let payloadResponse ct chatId (embassy', country', city') payload =
+        let payloadResponse ct pcs chatId (embassy', country', city') payload =
+            let chatsStorage =
+                { Directory = pcs
+                  FileName = Domain.Key.Chats }
+                |> Storage.Context.FileSystem
+                |> Persistence.Storage.create
+
+            let requestsStorage =
+                { Directory = pcs
+                  FileName = Key.Requests }
+                |> Storage.Context.FileSystem
+                |> Persistence.Storage.create
+
             (embassy', country', city')
-            |> Mapper.Embassy.create
+            |> Mapper.Embassy.createInternal
             |> ResultAsync.wrap (fun embassy ->
                 match embassy with
                 | Russian country ->
-                    Storage.Context.InMemory
-                    |> Persistence.Storage.create
-                    |> ResultAsync.wrap (fun storage ->
+                    requestsStorage
+                    |> ResultAsync.wrap (fun requestStorage ->
 
                         let options: Command.Options.Request.PassportsGroup =
                             { Embassy = embassy
@@ -60,7 +72,7 @@ module Create =
                             |> Command.Options.Request.Create.PassportsGroup
                             |> Command.Request.Create
 
-                        storage
+                        requestStorage
                         |> Repository.Command.Request.execute ct operation
                         |> ResultAsync.bindAsync (fun request ->
 
@@ -69,8 +81,8 @@ module Create =
                                 |> Persistence.Command.Options.Chat.ByRequestId
                                 |> Persistence.Command.Chat.Create
 
-                            storage
-                            |> Persistence.Repository.Command.Chat.execute ct command
+                            chatsStorage
+                            |> ResultAsync.wrap (Persistence.Repository.Command.Chat.execute ct command)
                             |> ResultAsync.map (fun _ -> request)))
                     |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
                     |> ResultAsync.map (create (chatId, New) >> Text)

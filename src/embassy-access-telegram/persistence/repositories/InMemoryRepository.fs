@@ -8,9 +8,6 @@ open EmbassyAccess.Domain
 open EmbassyAccess.Telegram
 open EmbassyAccess.Telegram.Domain
 
-[<Literal>]
-let private ChatsKey = "chats"
-
 module Query =
     module Chat =
         open EmbassyAccess.Telegram.Persistence.Query.Chat
@@ -29,7 +26,7 @@ module Query =
                             | Id id -> data |> List.tryFind (fun x -> x.Id = id)
 
                         storage
-                        |> Query.Json.get ChatsKey
+                        |> Query.Json.get Key.Chats
                         |> Result.bind (Seq.map Mapper.Chat.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -48,7 +45,7 @@ module Query =
                             | Search requestId -> data |> List.filter (Filters.search requestId)
 
                         storage
-                        |> Query.Json.get ChatsKey
+                        |> Query.Json.get Key.Chats
                         |> Result.bind (Seq.map Mapper.Chat.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -118,14 +115,14 @@ module Command =
                     | true ->
 
                         storage
-                        |> Query.Json.get ChatsKey
+                        |> Query.Json.get Key.Chats
                         |> Result.bind (fun data ->
                             match operation with
                             | Create options -> data |> create options |> Result.map id
                             | Update options -> data |> update options |> Result.map id
                             | Delete options -> data |> delete options |> Result.map id)
                         |> Result.bind (fun (data, item) ->
-                            storage |> Command.Json.save ChatsKey data |> Result.map (fun _ -> item))
+                            storage |> Command.Json.save Key.Chats data |> Result.map (fun _ -> item))
                     | false ->
                         Error
                         <| (Canceled
