@@ -5,24 +5,26 @@ open Infrastructure
 open Persistence.Domain
 open Web.Telegram.Domain
 
-let private respond ct client data =
-    client
-    |> Web.Telegram.Client.Producer.produce ct data
-    |> ResultAsync.map (fun _ -> ())
+module private Respond =
 
-let private respondError ct chatId client (error: Error') =
-    error.Message
-    |> Message.create (chatId, Producer.DtoId.New)
-    |> Producer.Text
-    |> respond ct client
-    |> Async.map (function
-        | Ok _ -> Error error
-        | Error error -> Error error)
+    let Ok ct client data =
+        client
+        |> Web.Telegram.Client.Producer.produce ct data
+        |> ResultAsync.map (fun _ -> ())
 
-let private respondWithError ct chatId client result =
-    match result with
-    | Ok data -> data |> respond ct client
-    | Error error -> error |> respondError ct chatId client
+    let Error ct chatId client (error: Error') =
+        error.Message
+        |> Message.create (chatId, Producer.DtoId.New)
+        |> Producer.Text
+        |> Ok ct client
+        |> Async.map (function
+            | Ok _ -> Error error
+            | Error error -> Error error)
+
+    let Result ct chatId client result =
+        match result with
+        | Ok data -> data |> Ok ct client
+        | Error error -> error |> Error ct chatId client
 
 module private Consume =
     let private (|HasEmbassy|HasCountry|HasCity|HasPayload|None|) value =
@@ -41,12 +43,12 @@ module private Consume =
     let text ct pcs (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
-            | "/start" -> return! Message.Create.Buttons.embassies msg.ChatId |> respond ct client
+            | "/start" -> return! Message.Create.Buttons.embassies msg.ChatId |> Respond.Ok ct client
             | HasPayload(embassy, country, city, payload) ->
                 return!
                     payload
                     |> Message.Create.Text.payloadResponse ct pcs msg.ChatId (embassy, country, city)
-                    |> Async.bind (respondWithError ct msg.ChatId client)
+                    |> Async.bind (Respond.Result ct msg.ChatId client)
             | _ -> return Error <| NotSupported $"Text: {msg.Value}."
         }
 
@@ -54,12 +56,12 @@ module private Consume =
         async {
             match msg.Value with
             | HasEmbassy value ->
-                return! Message.Create.Buttons.countries (msg.ChatId, msg.Id) value |> respond ct client
-            | HasCountry value -> return! Message.Create.Buttons.cities (msg.ChatId, msg.Id) value |> respond ct client
+                return! Message.Create.Buttons.countries (msg.ChatId, msg.Id) value |> Respond.Ok ct client
+            | HasCountry value -> return! Message.Create.Buttons.cities (msg.ChatId, msg.Id) value |> Respond.Ok ct client
             | HasCity value ->
                 return!
                     Message.Create.Text.payloadRequest (msg.ChatId, msg.Id) value
-                    |> respond ct client
+                    |> Respond.Ok ct client
             | _ -> return Error <| NotSupported $"Callback: {msg.Value}."
         }
 
