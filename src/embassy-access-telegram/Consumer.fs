@@ -56,8 +56,11 @@ module private Consume =
         async {
             match msg.Value with
             | HasEmbassy value ->
-                return! Message.Create.Buttons.countries (msg.ChatId, msg.Id) value |> Respond.Ok ct client
-            | HasCountry value -> return! Message.Create.Buttons.cities (msg.ChatId, msg.Id) value |> Respond.Ok ct client
+                return!
+                    Message.Create.Buttons.countries (msg.ChatId, msg.Id) value
+                    |> Respond.Ok ct client
+            | HasCountry value ->
+                return! Message.Create.Buttons.cities (msg.ChatId, msg.Id) value |> Respond.Ok ct client
             | HasCity value ->
                 return!
                     Message.Create.Text.payloadRequest (msg.ChatId, msg.Id) value

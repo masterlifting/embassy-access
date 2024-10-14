@@ -48,6 +48,17 @@ module Filter =
                     | Auto _ -> true
                     | _ -> false }
 
+        module InMemory =
+            let searchAppointments (query: SearchAppointments) (request: Request) =
+                query.Embassy = request.Embassy
+                && query.HasStates request.ProcessState
+                && query.HasConfirmationState request.ConfirmationState
+
+            let makeAppointment (query: MakeAppointment) (request: Request) =
+                query.Embassy = request.Embassy
+                && query.HasStates request.ProcessState
+                && query.HasConfirmationStates request.ConfirmationState
+
 module Request =
     type GetOne =
         | Id of RequestId

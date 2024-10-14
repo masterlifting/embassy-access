@@ -15,7 +15,7 @@ let private Admin =
 let private getChats ct requestId =
     Persistence.Storage.create Storage.Context.InMemory
     |> ResultAsync.wrap (fun storage ->
-        let query = Persistence.Query.Chat.Search requestId
+        let query = Persistence.Query.Chat.SearchSubscription requestId
         storage |> Persistence.Repository.Query.Chat.getMany ct query)
 
 let private send ct message =

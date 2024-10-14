@@ -4,24 +4,12 @@ module internal EA.Persistence.InMemoryRepository
 open Infrastructure
 open Persistence.Domain
 open Persistence.InMemory
-open EA
 open EA.Domain
 
 module Query =
     module Request =
         open EA.Persistence.Query.Filter.Request
         open EA.Persistence.Query.Request
-
-        module private Filters =
-            let searchAppointments (query: SearchAppointments) (request: Request) =
-                query.Embassy = request.Embassy
-                && query.HasStates request.ProcessState
-                && query.HasConfirmationState request.ConfirmationState
-
-            let makeAppointment (query: MakeAppointment) (request: Request) =
-                query.Embassy = request.Embassy
-                && query.HasStates request.ProcessState
-                && query.HasConfirmationStates request.ConfirmationState
 
         let getOne ct query storage =
             async {
@@ -39,7 +27,7 @@ module Query =
 
                         storage
                         |> Query.Json.get Key.Requests
-                        |> Result.bind (Seq.map Mapper.Request.toInternal >> Result.choose)
+                        |> Result.bind (Seq.map EA.Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
                         Error
@@ -58,18 +46,18 @@ module Query =
                                 let query = SearchAppointments.create embassy
 
                                 data
-                                |> List.filter (Filters.searchAppointments query)
+                                |> List.filter (InMemory.searchAppointments query)
                                 |> Query.paginate query.Pagination
                             | MakeAppointments embassy ->
                                 let query = MakeAppointment.create embassy
 
                                 data
-                                |> List.filter (Filters.makeAppointment query)
+                                |> List.filter (InMemory.makeAppointment query)
                                 |> Query.paginate query.Pagination
 
                         storage
                         |> Query.Json.get Key.Requests
-                        |> Result.bind (Seq.map Mapper.Request.toInternal >> Result.choose)
+                        |> Result.bind (Seq.map EA.Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
                         Error
@@ -85,7 +73,7 @@ module Command =
         let private create create (requests: External.Request array) =
             match create with
             | PassportsGroup passportsGroup ->
-                let embassy = passportsGroup.Embassy |> Mapper.Embassy.toExternal
+                let embassy = passportsGroup.Embassy |> EA.Mapper.Embassy.toExternal
 
                 match
                     requests
@@ -104,7 +92,7 @@ module Command =
                     | Some validate -> request |> validate
                     | _ -> Ok()
                     |> Result.map (fun _ ->
-                        let data = requests |> Array.append [| Mapper.Request.toExternal request |]
+                        let data = requests |> Array.append [| EA.Mapper.Request.toExternal request |]
 
                         (data, request))
 
@@ -120,7 +108,11 @@ module Command =
                 | Some index ->
                     let data =
                         requests
-                        |> Array.mapi (fun i x -> if i = index then Mapper.Request.toExternal request else x)
+                        |> Array.mapi (fun i x ->
+                            if i = index then
+                                EA.Mapper.Request.toExternal request
+                            else
+                                x)
 
                     Ok(data, request)
 
@@ -135,7 +127,7 @@ module Command =
                           Code = Some ErrorCodes.NotFound }
                 | Some index ->
                     requests[index]
-                    |> Mapper.Request.toInternal
+                    |> EA.Mapper.Request.toInternal
                     |> Result.map (fun request ->
                         let data = requests |> Array.removeAt index
                         (data, request))

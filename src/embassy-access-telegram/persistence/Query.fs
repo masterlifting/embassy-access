@@ -1,11 +1,16 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Persistence.Query
 
-open EA
+open EA.Domain
+open EA.Telegram.Domain
+open Web.Telegram.Domain
 
-// module Filter =
-//     module Chat =
+module Filter =
+    module Chat =
+        module InMemory =
+            let hasSubscription (subId: RequestId) (chat: Chat) =
+                chat.Subscriptions |> Set.contains subId
 
 module Chat =
-    type GetOne = Id of Web.Telegram.Domain.ChatId
-    type GetMany = Search of Domain.RequestId
+    type GetOne = Id of ChatId
+    type GetMany = SearchSubscription of RequestId
