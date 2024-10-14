@@ -8,7 +8,7 @@ open EA.Telegram.Domain
 module Options =
     module Chat =
 
-        type Create = ByRequestId of ChatId * RequestId
+        type Create = ChatSubscription of ChatId * RequestId
         type Update = Chat of Chat
         type Delete = ChatId of ChatId
 

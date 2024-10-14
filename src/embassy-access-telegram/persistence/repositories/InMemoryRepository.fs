@@ -11,10 +11,7 @@ open EA.Telegram.Domain
 module Query =
     module Chat =
         open EA.Telegram.Persistence.Query.Chat
-
-        module private Filters =
-            let search (requestId: RequestId) (chat: Chat) =
-                chat.Subscriptions |> Set.contains requestId
+        open EA.Telegram.Persistence.Query.Filter.Chat
 
         let getOne ct query storage =
             async {
@@ -42,7 +39,7 @@ module Query =
                     | true ->
                         let filter (data: Chat list) =
                             match query with
-                            | Search requestId -> data |> List.filter (Filters.search requestId)
+                            | SearchSubscription subId -> data |> List.filter (InMemory.hasSubscription subId)
 
                         storage
                         |> Query.Json.get Key.Chats
@@ -61,17 +58,21 @@ module Command =
 
         let private create create (data: External.Chat array) =
             match create with
-            | ByRequestId(chatId, requestId) ->
-                match data |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
+            | ChatSubscription(chatId, subId) ->
+                match
+                    data
+                    |> Array.tryFindIndex (fun x ->
+                        x.Id = chatId.Value && (x.Subscriptions |> Seq.contains (subId.Value |> string)))
+                with
                 | Some _ ->
                     Error
                     <| Operation
-                        { Message = $"{chatId} already exists."
+                        { Message = $" Subscription {subId.Value} already exists in {chatId}."
                           Code = Some ErrorCodes.AlreadyExists }
                 | None ->
                     let chat =
                         { Id = chatId
-                          Subscriptions = Set.singleton requestId }
+                          Subscriptions = Set.singleton subId }
 
                     let data = data |> Array.append [| Mapper.Chat.toExternal chat |]
                     Ok(data, chat)

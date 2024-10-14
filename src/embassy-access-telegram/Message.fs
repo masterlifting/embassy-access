@@ -78,7 +78,7 @@ module Create =
 
                             let command =
                                 (chatId, request.Id)
-                                |> Persistence.Command.Options.Chat.ByRequestId
+                                |> Persistence.Command.Options.Chat.ChatSubscription
                                 |> Persistence.Command.Chat.Create
 
                             chatsStorage
