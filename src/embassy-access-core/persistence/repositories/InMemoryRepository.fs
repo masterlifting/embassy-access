@@ -54,6 +54,8 @@ module Query =
                                 data
                                 |> List.filter (InMemory.makeAppointment query)
                                 |> Query.paginate query.Pagination
+                            | Requests requestIds -> data |> List.filter (fun x -> requestIds.Contains x.Id)
+
 
                         storage
                         |> Query.Json.get Key.Requests

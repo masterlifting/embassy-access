@@ -23,6 +23,19 @@ module Query =
             | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Chat.getMany ct query
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
+        let tryFind ct chatId storage =
+            let query = Query.Chat.Id chatId
+            storage |> getOne ct query
+
+    module Request =
+
+        let getEmbassies ct (chat: EA.Telegram.Domain.Chat) storage =
+            let query = EA.Persistence.Query.Request.GetMany.Requests chat.Subscriptions
+
+            storage
+            |> EA.Persistence.Repository.Query.Request.getMany ct query
+            |> ResultAsync.map (Seq.map _.Embassy)
+
 module Command =
     module Chat =
         let execute ct command storageType =
