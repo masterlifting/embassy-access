@@ -1,13 +1,11 @@
-﻿module EA.Telegram.Message
+﻿[<RequireQualifiedAccess>]
+module EA.Telegram.Message
 
 open System
-open EA
-open EA.Domain
-open EA.Persistence
 open Infrastructure
-open Persistence.Domain
-open Persistence.Domain.FileSystem
 open Web.Telegram.Domain.Producer
+open EA.Telegram.Domain.Message
+open EA.Domain
 
 let create<'a> (chatId, msgId) (value: 'a) =
     { Id = msgId
@@ -30,7 +28,7 @@ module Create =
                 |> Text
 
         let payloadRequest (chatId, msgId) (embassy', country', city') =
-            match (embassy', country', city') |> Mapper.Embassy.createInternal with
+            match (embassy', country', city') |> EA.Mapper.Embassy.createInternal with
             | Error error -> error.Message
             | Ok embassy ->
                 match embassy with
@@ -40,53 +38,32 @@ module Create =
             |> create (chatId, msgId |> Replace)
             |> Text
 
-        let payloadResponse ct pcs chatId (embassy', country', city') payload =
-            let chatsStorage =
-                { Directory = pcs
-                  FileName = Domain.Key.Chats }
-                |> Storage.Context.FileSystem
-                |> Persistence.Storage.create
-
-            let requestsStorage =
-                { Directory = pcs
-                  FileName = Key.Requests }
-                |> Storage.Context.FileSystem
-                |> Persistence.Storage.create
-
-            (embassy', country', city')
-            |> Mapper.Embassy.createInternal
+        let payloadResponse (data: PayloadResponse) =
+            (data.Embassy, data.Country, data.City)
+            |> EA.Mapper.Embassy.createInternal
             |> ResultAsync.wrap (fun embassy ->
                 match embassy with
-                | Russian country ->
-                    requestsStorage
-                    |> ResultAsync.wrap (fun requestStorage ->
+                | Russian _ ->
 
-                        let options: Command.Options.Request.PassportsGroup =
-                            { Embassy = embassy
-                              Payload = payload
-                              ConfirmationState = Disabled
-                              Validation = Some Api.validateRequest }
+                    let createPassportSearchRequest ct =
+                        Persistence.Storage.Request.create data.Config
+                        |> ResultAsync.wrap (
+                            Persistence.Repository.Command.Request.createPassportSearch ct (embassy, data.Payload)
+                        )
 
-                        let operation =
-                            options
-                            |> Command.Options.Request.Create.PassportsGroup
-                            |> Command.Request.Create
+                    let createChatSubscription ct =
+                        ResultAsync.bindAsync (fun (request: Request) ->
+                            Persistence.Storage.Chat.create data.Config
+                            |> ResultAsync.wrap (
+                                Persistence.Repository.Command.Chat.createSubscription ct (data.ChatId, request.Id)
+                            )
+                            |> ResultAsync.map (fun _ -> request))
 
-                        requestStorage
-                        |> Repository.Command.Request.execute ct operation
-                        |> ResultAsync.bindAsync (fun request ->
-
-                            let command =
-                                (chatId, request.Id)
-                                |> Persistence.Command.Options.Chat.ChatSubscription
-                                |> Persistence.Command.Chat.Create
-
-                            chatsStorage
-                            |> ResultAsync.wrap (Persistence.Repository.Command.Chat.execute ct command)
-                            |> ResultAsync.map (fun _ -> request)))
+                    createPassportSearchRequest data.Ct
+                    |> createChatSubscription data.Ct
                     |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
-                    |> ResultAsync.map (create (chatId, New) >> Text)
-                | _ -> embassy' |> NotSupported |> Error |> async.Return)
+                    |> ResultAsync.map (create (data.ChatId, New) >> Text)
+                | _ -> data.Embassy |> NotSupported |> Error |> async.Return)
 
     module Buttons =
 
@@ -103,9 +80,9 @@ module Create =
 
         let embassies chatId =
             let data =
-                Api.getEmbassies ()
+                EA.Api.getEmbassies ()
                 |> Seq.concat
-                |> Seq.map Mapper.Embassy.toExternal
+                |> Seq.map EA.Mapper.Embassy.toExternal
                 |> Seq.map (fun embassy -> embassy.Name, embassy.Name)
                 |> Seq.sortBy fst
                 |> Map
@@ -118,9 +95,9 @@ module Create =
 
         let countries (chatId, msgId) embassy' =
             let data =
-                Api.getEmbassies ()
+                EA.Api.getEmbassies ()
                 |> Seq.concat
-                |> Seq.map Mapper.Embassy.toExternal
+                |> Seq.map EA.Mapper.Embassy.toExternal
                 |> Seq.filter (fun embassy -> embassy.Name = embassy')
                 |> Seq.map _.Country
                 |> Seq.map (fun country -> (embassy' + "|" + country.Name), country.Name)
@@ -135,9 +112,9 @@ module Create =
 
         let cities (chatId, msgId) (embassy', country') =
             let data =
-                Api.getEmbassies ()
+                EA.Api.getEmbassies ()
                 |> Seq.concat
-                |> Seq.map Mapper.Embassy.toExternal
+                |> Seq.map EA.Mapper.Embassy.toExternal
                 |> Seq.filter (fun embassy -> embassy.Name = embassy')
                 |> Seq.map _.Country
                 |> Seq.filter (fun country -> country.Name = country')

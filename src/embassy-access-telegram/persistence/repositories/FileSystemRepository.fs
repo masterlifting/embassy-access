@@ -50,7 +50,7 @@ module Query =
 module Command =
     module Chat =
         open EA.Telegram.Persistence.Command.Chat
-        open EA.Telegram.Persistence.Command.Options.Chat
+        open EA.Telegram.Persistence.Command.Definitions.Chat
 
         let private create create (data: External.Chat array) =
             match create with
@@ -105,17 +105,17 @@ module Command =
                         let data = data |> Array.removeAt index
                         (data, chat))
 
-        let execute ct operation storage =
+        let execute ct command storage =
             match ct |> notCanceled with
             | true ->
 
                 storage
                 |> Query.Json.get
                 |> ResultAsync.bind (fun data ->
-                    match operation with
-                    | Create options -> data |> create options |> Result.map id
-                    | Update options -> data |> update options |> Result.map id
-                    | Delete options -> data |> delete options |> Result.map id)
+                    match command with
+                    | Create definition -> data |> create definition |> Result.map id
+                    | Update definition -> data |> update definition |> Result.map id
+                    | Delete definition -> data |> delete definition |> Result.map id)
                 |> ResultAsync.bindAsync (fun (data, item) ->
                     storage |> Command.Json.save data |> ResultAsync.map (fun _ -> item))
             | false ->

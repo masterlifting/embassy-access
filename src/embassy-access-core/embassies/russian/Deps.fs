@@ -2,18 +2,11 @@
 module internal EA.Embassies.Russian.Deps
 
 open EA.Embassies.Russian.Domain
+open EA.Persistence
 
 let processRequest ct config storage =
     { Configuration = config
-      updateRequest =
-        fun request ->
-
-            let operation =
-                request
-                |> EA.Persistence.Command.Options.Request.Update.Request
-                |> EA.Persistence.Command.Request.Update
-
-            storage |> EA.Persistence.Repository.Command.Request.execute ct operation
+      updateRequest = storage |> Repository.Command.Request.update ct
       getInitialPage =
         fun request client ->
             client

@@ -68,7 +68,7 @@ module Query =
 module Command =
     module Request =
         open EA.Persistence.Command.Request
-        open EA.Persistence.Command.Options.Request
+        open EA.Persistence.Command.Definitions.Request
 
         let private create create (requests: External.Request array) =
             match create with
@@ -132,7 +132,7 @@ module Command =
                         let data = requests |> Array.removeAt index
                         (data, request))
 
-        let execute ct operation storage =
+        let execute ct command storage =
             async {
                 return
                     match ct |> notCanceled with
@@ -141,10 +141,10 @@ module Command =
                         storage
                         |> Query.Json.get Key.Requests
                         |> Result.bind (fun data ->
-                            match operation with
-                            | Create options -> data |> create options |> Result.map id
-                            | Update options -> data |> update options |> Result.map id
-                            | Delete options -> data |> delete options |> Result.map id)
+                            match command with
+                            | Create definition -> data |> create definition |> Result.map id
+                            | Update definition -> data |> update definition |> Result.map id
+                            | Delete definition -> data |> delete definition |> Result.map id)
                         |> Result.bind (fun (data, item) ->
                             storage |> Command.Json.save Key.Requests data |> Result.map (fun _ -> item))
                     | false ->

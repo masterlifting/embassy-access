@@ -4,7 +4,6 @@ open System
 open System.Threading
 open Infrastructure
 open Persistence.Domain
-open Persistence.Domain.FileSystem
 open Worker.Domain
 open EA.Domain
 open EA.Worker
@@ -25,19 +24,14 @@ let private createDeps ct configuration country =
     deps {
 
         let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
-
-        let! pcs = configuration |> Persistence.Storage.getConnectionString FileSystem.SectionName
-
-        let! storage =
-            { Directory = pcs
-              FileName = Key.Requests }
-            |> Storage.Context.FileSystem
-            |> Persistence.Storage.create
+        let processConfig = { TimeShift = timeShift }
+        let! storage = configuration |> Persistence.Storage.Request.create
+        let notify = EA.Telegram.Producer.Produce.notification ct
 
         return
-            { Config = { TimeShift = timeShift }
+            { Config = processConfig
               Storage = storage
-              notify = EA.Telegram.Producer.Produce.notification ct
+              notify = notify
               ct = ct }
     }
 

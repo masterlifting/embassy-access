@@ -26,8 +26,14 @@ module Query =
 
 module Command =
     module Request =
-        let execute ct operation storageType =
+        let execute ct command storageType =
             match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Request.execute ct operation
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Request.execute ct operation
+            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Request.execute ct command
+            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Request.execute ct command
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
+
+        let update ct storage request =
+            let operation =
+                request |> Command.Definitions.Request.Update.Request |> Command.Request.Update
+
+            storage |> execute ct operation

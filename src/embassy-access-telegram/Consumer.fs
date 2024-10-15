@@ -1,6 +1,7 @@
 ﻿module EA.Telegram.Consumer
 
 open System
+open EA.Telegram.Domain.Message
 open Infrastructure
 open Persistence.Domain
 open Web.Telegram.Domain
@@ -40,14 +41,22 @@ module private Consume =
             | _ -> None
         | _ -> None
 
-    let text ct pcs (msg: Consumer.Dto<string>) client =
+    let text ct cgf (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
             | "/start" -> return! Message.Create.Buttons.embassies msg.ChatId |> Respond.Ok ct client
             | HasPayload(embassy, country, city, payload) ->
+                let data: PayloadResponse =
+                    { Config = cgf
+                      Ct = ct
+                      ChatId = msg.ChatId
+                      Embassy = embassy
+                      Country = country
+                      City = city
+                      Payload = payload }
+
                 return!
-                    payload
-                    |> Message.Create.Text.payloadResponse ct pcs msg.ChatId (embassy, country, city)
+                    Message.Create.Text.payloadResponse data
                     |> Async.bind (Respond.Result ct msg.ChatId client)
             | _ -> return Error <| NotSupported $"Text: {msg.Value}."
         }
@@ -68,22 +77,19 @@ module private Consume =
             | _ -> return Error <| NotSupported $"Callback: {msg.Value}."
         }
 
-let private handle ct client configuration =
+let private handle ct cfg client =
     fun data ->
         match data with
         | Consumer.Message message ->
             match message with
-            | Consumer.Text dto ->
-                configuration
-                |> Persistence.Storage.getConnectionString FileSystem.SectionName
-                |> ResultAsync.wrap (fun pcs -> client |> Consume.text ct pcs dto)
+            | Consumer.Text dto -> client |> Consume.text ct cfg dto
             | _ -> $"{message}" |> NotSupported |> Error |> async.Return
         | Consumer.CallbackQuery dto -> client |> Consume.callback ct dto
         | _ -> $"Data: {data}." |> NotSupported |> Error |> async.Return
 
-let start ct configuration =
+let start ct cfg =
     Domain.Key.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
     |> Web.Telegram.Client.create
-    |> Result.map (fun client -> Web.Domain.Consumer.Telegram(client, handle ct client configuration))
+    |> Result.map (fun client -> Web.Domain.Consumer.Telegram(client, handle ct cfg client))
     |> Web.Client.consume ct

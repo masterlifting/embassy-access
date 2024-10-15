@@ -25,8 +25,34 @@ module Query =
 
 module Command =
     module Chat =
-        let execute ct operation storageType =
+        let execute ct command storageType =
             match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Chat.execute ct operation
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Chat.execute ct operation
+            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Chat.execute ct command
+            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Chat.execute ct command
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
+
+        let createSubscription ct (chatId, requestId) storage =
+            let command =
+                (chatId, requestId)
+                |> Command.Definitions.Chat.ChatSubscription
+                |> Command.Chat.Create
+
+            storage |> execute ct command
+
+    module Request =
+        open EA.Domain
+        open EA.Persistence.Command.Definitions.Request
+
+        let createPassportSearch ct (embassy, payload) storage =
+            let commandDefinition: PassportsGroup =
+                { Embassy = embassy
+                  Payload = payload
+                  ConfirmationState = Disabled
+                  Validation = Some EA.Api.validateRequest }
+
+            let command =
+                commandDefinition
+                |> Create.PassportsGroup
+                |> EA.Persistence.Command.Request.Create
+
+            storage |> EA.Persistence.Repository.Command.Request.execute ct command

@@ -4,7 +4,7 @@ module EA.Persistence.Command
 open System
 open EA.Domain
 
-module Options =
+module Definitions =
     module Request =
 
         type PassportsGroup =
@@ -31,6 +31,6 @@ module Options =
 
 module Request =
     type Operation =
-        | Create of Options.Request.Create
-        | Update of Options.Request.Update
-        | Delete of Options.Request.Delete
+        | Create of Definitions.Request.Create
+        | Update of Definitions.Request.Update
+        | Delete of Definitions.Request.Delete
