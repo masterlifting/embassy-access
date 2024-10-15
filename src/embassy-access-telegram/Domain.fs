@@ -1,6 +1,7 @@
 ﻿module EA.Telegram.Domain
 
 open EA.Domain
+open Microsoft.Extensions.Configuration
 open Web.Telegram.Domain
 
 module Key =
@@ -13,6 +14,18 @@ module Key =
 type Chat =
     { Id: ChatId
       Subscriptions: Set<RequestId> }
+
+module Message =
+    open System.Threading
+
+    type PayloadResponse =
+        { Config: IConfigurationRoot
+          Ct: CancellationToken
+          ChatId: ChatId
+          Embassy: string
+          Country: string
+          City: string
+          Payload: string }
 
 module External =
 

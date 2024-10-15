@@ -13,6 +13,7 @@
 		<Compile Include="persistence\repositories\FileSystemRepository.fs" />
 		<Compile Include="persistence\repositories\InMemoryRepository.fs" />
 		<Compile Include="persistence\Repository.fs" />
+		<Compile Include="persistence\Storage.fs" />
 		<Compile Include="Message.fs" />
 		<Compile Include="Producer.fs" />
 		<Compile Include="Consumer.fs" />

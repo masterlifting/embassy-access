@@ -5,7 +5,7 @@ open Web.Telegram.Domain
 open EA.Domain
 open EA.Telegram.Domain
 
-module Options =
+module Definitions =
     module Chat =
 
         type Create = ChatSubscription of ChatId * RequestId
@@ -14,6 +14,6 @@ module Options =
 
 module Chat =
     type Operation =
-        | Create of Options.Chat.Create
-        | Update of Options.Chat.Update
-        | Delete of Options.Chat.Delete
+        | Create of Definitions.Chat.Create
+        | Update of Definitions.Chat.Update
+        | Delete of Definitions.Chat.Delete
