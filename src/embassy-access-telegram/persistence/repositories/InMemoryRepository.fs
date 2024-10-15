@@ -56,11 +56,11 @@ module Command =
         open EA.Telegram.Persistence.Command.Chat
         open EA.Telegram.Persistence.Command.Definitions.Chat
 
-        let private create create (data: External.Chat array) =
-            match create with
-            | ChatSubscription(chatId, subId) ->
+        let private create definition (chats: External.Chat array) =
+            match definition with
+            | Create.ChatSubscription(chatId, subId) ->
                 match
-                    data
+                    chats
                     |> Array.tryFindIndex (fun x ->
                         x.Id = chatId.Value && (x.Subscriptions |> Seq.contains (subId.Value |> string)))
                 with
@@ -74,13 +74,33 @@ module Command =
                         { Id = chatId
                           Subscriptions = Set.singleton subId }
 
-                    let data = data |> Array.append [| Mapper.Chat.toExternal chat |]
+                    let data = chats |> Array.append [| Mapper.Chat.toExternal chat |]
                     Ok(data, chat)
 
-        let private update update (data: External.Chat array) =
-            match update with
+        let private createOrUpdate definition (chats: External.Chat array) =
+            match definition with
+            | CreateOrUpdate.ChatSubscription(chatId, subId) ->
+                match
+                    chats
+                    |> Seq.tryFind (fun x ->
+                        x.Id = chatId.Value && (x.Subscriptions |> Seq.contains (subId.Value |> string)))
+                with
+                | Some chat ->
+                    let data = chats |> Array.mapi (fun i x -> if x.Id = chat.Id then chat else x)
+
+                    chat |> Mapper.Chat.toInternal |> Result.map (fun chat -> (data, chat))
+                | None ->
+                    let chat =
+                        { Id = chatId
+                          Subscriptions = Set.singleton subId }
+
+                    let data = chats |> Array.append [| Mapper.Chat.toExternal chat |]
+                    Ok(data, chat)
+
+        let private update definition (chats: External.Chat array) =
+            match definition with
             | Chat chat ->
-                match data |> Array.tryFindIndex (fun x -> x.Id = chat.Id.Value) with
+                match chats |> Array.tryFindIndex (fun x -> x.Id = chat.Id.Value) with
                 | None ->
                     Error
                     <| Operation
@@ -88,25 +108,25 @@ module Command =
                           Code = Some ErrorCodes.NotFound }
                 | Some index ->
                     let data =
-                        data
+                        chats
                         |> Array.mapi (fun i x -> if i = index then Mapper.Chat.toExternal chat else x)
 
                     Ok(data, chat)
 
-        let private delete delete (data: External.Chat array) =
-            match delete with
+        let private delete definition (chats: External.Chat array) =
+            match definition with
             | ChatId chatId ->
-                match data |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
+                match chats |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
                 | None ->
                     Error
                     <| Operation
                         { Message = $"{chatId} not found to delete."
                           Code = Some ErrorCodes.NotFound }
                 | Some index ->
-                    data[index]
+                    chats[index]
                     |> Mapper.Chat.toInternal
                     |> Result.map (fun chat ->
-                        let data = data |> Array.removeAt index
+                        let data = chats |> Array.removeAt index
                         (data, chat))
 
         let execute ct command storage =
@@ -120,6 +140,7 @@ module Command =
                         |> Result.bind (fun data ->
                             match command with
                             | Create definition -> data |> create definition |> Result.map id
+                            | CreateOrUpdate definition -> data |> createOrUpdate definition |> Result.map id
                             | Update definition -> data |> update definition |> Result.map id
                             | Delete definition -> data |> delete definition |> Result.map id)
                         |> Result.bind (fun (data, item) ->

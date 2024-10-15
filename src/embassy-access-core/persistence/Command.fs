@@ -26,11 +26,13 @@ module Definitions =
                   Modified = DateTime.UtcNow }
 
         type Create = PassportsGroup of PassportsGroup
+        type CreateOrUpdate = PassportsGroup of PassportsGroup
         type Update = Request of Request
         type Delete = RequestId of RequestId
 
 module Request =
     type Operation =
         | Create of Definitions.Request.Create
+        | CreateOrUpdate of Definitions.Request.CreateOrUpdate
         | Update of Definitions.Request.Update
         | Delete of Definitions.Request.Delete
