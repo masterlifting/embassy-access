@@ -41,13 +41,17 @@ module private Consume =
             | _ -> None
         | _ -> None
 
-    let text ct cgf (msg: Consumer.Dto<string>) client =
+    let text ct cfg (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
             | "/start" -> return! Message.Create.Buttons.embassies msg.ChatId |> Respond.Ok ct client
+            | "/mine" ->
+                return!
+                    Message.Create.Buttons.chatEmbassies ct cfg msg.ChatId
+                    |> Async.bind (Respond.Result ct msg.ChatId client)
             | HasPayload(embassy, country, city, payload) ->
                 let data: PayloadResponse =
-                    { Config = cgf
+                    { Config = cfg
                       Ct = ct
                       ChatId = msg.ChatId
                       Embassy = embassy
