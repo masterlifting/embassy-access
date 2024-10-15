@@ -45,23 +45,27 @@ module Create =
                 match embassy with
                 | Russian _ ->
 
-                    let createPassportSearchRequest ct =
+                    let createOrUpdatePassportSearchRequest ct =
                         Persistence.Storage.Request.create data.Config
                         |> ResultAsync.wrap (
-                            Persistence.Repository.Command.Request.createPassportSearch ct (embassy, data.Payload)
+                            Persistence.Repository.Command.Request.createOrUpdatePassportSearch
+                                ct
+                                (embassy, data.Payload)
                         )
 
-                    let createChatSubscription ct =
+                    let createOrUpdateChatSubscription ct =
                         ResultAsync.bindAsync (fun (request: Request) ->
                             Persistence.Storage.Chat.create data.Config
                             |> ResultAsync.wrap (
-                                Persistence.Repository.Command.Chat.createSubscription ct (data.ChatId, request.Id)
+                                Persistence.Repository.Command.Chat.createOrUpdateSubscription
+                                    ct
+                                    (data.ChatId, request.Id)
                             )
                             |> ResultAsync.map (fun _ -> request))
 
-                    createPassportSearchRequest data.Ct
-                    |> createChatSubscription data.Ct
-                    |> ResultAsync.map (fun request -> $"Request created for '{request.Embassy}'.")
+                    createOrUpdatePassportSearchRequest data.Ct
+                    |> createOrUpdateChatSubscription data.Ct
+                    |> ResultAsync.map (fun request -> $"Subscription has been activated for '{request.Embassy}'.")
                     |> ResultAsync.map (create (data.ChatId, New) >> Text)
                 | _ -> data.Embassy |> NotSupported |> Error |> async.Return)
 

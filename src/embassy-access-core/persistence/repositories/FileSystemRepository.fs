@@ -66,9 +66,9 @@ module Command =
         open EA.Persistence.Command.Request
         open EA.Persistence.Command.Definitions.Request
 
-        let private create create (requests: External.Request array) =
-            match create with
-            | PassportsGroup passportsGroup ->
+        let private create definition (requests: External.Request array) =
+            match definition with
+            | Create.PassportsGroup passportsGroup ->
                 let embassy = passportsGroup.Embassy |> EA.Mapper.Embassy.toExternal
 
                 match
@@ -92,8 +92,34 @@ module Command =
 
                         (data, request))
 
-        let private update update (requests: External.Request array) =
-            match update with
+        let private createOrUpdate definition (requests: External.Request array) =
+            match definition with
+            | CreateOrUpdate.PassportsGroup passportsGroup ->
+                let embassy = passportsGroup.Embassy |> EA.Mapper.Embassy.toExternal
+
+                match
+                    requests
+                    |> Seq.tryFind (fun x -> x.Embassy = embassy && x.Payload = passportsGroup.Payload)
+                with
+                | Some request ->
+                    let data =
+                        requests |> Array.mapi (fun i x -> if x.Id = request.Id then request else x)
+
+                    request
+                    |> EA.Mapper.Request.toInternal
+                    |> Result.map (fun request -> (data, request))
+                | None ->
+                    let request = passportsGroup.createRequest ()
+
+                    match passportsGroup.Validation with
+                    | Some validate -> request |> validate
+                    | _ -> Ok()
+                    |> Result.map (fun _ ->
+                        let data = requests |> Array.append [| EA.Mapper.Request.toExternal request |]
+                        (data, request))
+
+        let private update definition (requests: External.Request array) =
+            match definition with
             | Request request ->
                 match requests |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
                 | None ->
@@ -112,8 +138,8 @@ module Command =
 
                     Ok(data, request)
 
-        let private delete delete (requests: External.Request array) =
-            match delete with
+        let private delete definition (requests: External.Request array) =
+            match definition with
             | RequestId requestId ->
                 match requests |> Array.tryFindIndex (fun x -> x.Id = requestId.Value) with
                 | None ->
@@ -137,6 +163,7 @@ module Command =
                 |> ResultAsync.bind (fun data ->
                     match command with
                     | Create definition -> data |> create definition |> Result.map id
+                    | CreateOrUpdate definition -> data |> createOrUpdate definition |> Result.map id
                     | Update definition -> data |> update definition |> Result.map id
                     | Delete definition -> data |> delete definition |> Result.map id)
                 |> ResultAsync.bindAsync (fun (data, item) ->

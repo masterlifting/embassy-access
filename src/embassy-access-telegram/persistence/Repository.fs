@@ -31,11 +31,11 @@ module Command =
             | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Chat.execute ct command
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-        let createSubscription ct (chatId, requestId) storage =
+        let createOrUpdateSubscription ct (chatId, requestId) storage =
             let command =
                 (chatId, requestId)
-                |> Command.Definitions.Chat.ChatSubscription
-                |> Command.Chat.Create
+                |> Command.Definitions.Chat.CreateOrUpdate.ChatSubscription
+                |> Command.Chat.CreateOrUpdate
 
             storage |> execute ct command
 
@@ -43,7 +43,7 @@ module Command =
         open EA.Domain
         open EA.Persistence.Command.Definitions.Request
 
-        let createPassportSearch ct (embassy, payload) storage =
+        let createOrUpdatePassportSearch ct (embassy, payload) storage =
             let commandDefinition: PassportsGroup =
                 { Embassy = embassy
                   Payload = payload
@@ -52,7 +52,7 @@ module Command =
 
             let command =
                 commandDefinition
-                |> Create.PassportsGroup
-                |> EA.Persistence.Command.Request.Create
+                |> EA.Persistence.Command.Definitions.Request.CreateOrUpdate.PassportsGroup
+                |> EA.Persistence.Command.Request.CreateOrUpdate
 
             storage |> EA.Persistence.Repository.Command.Request.execute ct command
