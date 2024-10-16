@@ -1,7 +1,9 @@
 ﻿module EA.Telegram.Consumer
 
 open System
+open System.Threading
 open Infrastructure
+open Microsoft.Extensions.Configuration
 open Web.Telegram.Domain
 open EA.Telegram.Domain.Message
 
@@ -21,18 +23,39 @@ module private Respond =
             | Ok _ -> Error error
             | Error error -> Error error)
 
-    let Result ct chatId client result =
-        match result with
-        | Ok data -> data |> Ok ct client
-        | Error error -> error |> Error ct chatId client
+    let Result ct chatId client =
+        Async.bind (function
+            | Ok data -> data |> Ok ct client
+            | Error error -> error |> Error ct chatId client)
 
 module private Consume =
-    let private (|Start|Mine|None|) value =
+
+    type MineCmdType = CancellationToken -> IConfigurationRoot -> ChatId -> Async<Result<Producer.Data, Error'>>
+
+    let private (|Start|Mine|Ask|None|) value : Choice<_, MineCmdType, Error', string> =
         match value with
         | AP.IsString value ->
-            match value.Substring(0, 5) with
-            | "strt$" -> Start(value.Substring 5)
-            | "mine$" -> Mine(value.Substring 5)
+            match value with
+            | "/start" -> Start Message.Create.Buttons.embassies
+            | "/mine" -> Mine Message.Create.Buttons.chatEmbassies
+            | "/ask" -> Ask("/ask command" |> NotSupported)
+            | _ -> None value
+        | _ -> None value
+
+    let private (|StartCtx|MineCtx|AskCtx|None|) (value: string) =
+        let data = value.Split '|'
+        match data with
+        | [|"SUBSCRIBE"|] ->
+            match data.Length with
+            | 2 -> StartCtx(fun (chatId, msgId) -> Message.Create.Buttons.countries (chatId, msgId) data[1])
+            | 3 -> StartCtx(HasCountry(data.[1], data.[2]))
+            | 4 -> StartCtx(HasCity(data.[1], data.[2], data.[3]))
+            | _ -> None
+        | [|"GET"|] ->
+            match data.Length with
+            | 2 -> MineCtx(HasEmbassy data.[1])
+            | 3 -> MineCtx(HasCountry(data.[1], data.[2]))
+            | 4 -> MineCtx(HasCity(data.[1], data.[2], data.[3]))
             | _ -> None
         | _ -> None
 
@@ -52,11 +75,11 @@ module private Consume =
     let text ct cfg (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
-            | "/start" -> return! Message.Create.Buttons.embassies msg.ChatId |> Respond.Ok ct client
-            | "/mine" ->
-                return!
-                    Message.Create.Buttons.chatEmbassies ct cfg msg.ChatId
-                    |> Async.bind (Respond.Result ct msg.ChatId client)
+            | Start cmd -> return! cmd msg.ChatId |> Respond.Ok ct client
+            | Mine cmd -> return! cmd ct cfg msg.ChatId |> Respond.Result ct msg.ChatId client
+            | Ask error -> return! error |> Respond.Error ct msg.ChatId client
+            | None value ->
+                match value with
             | HasPayload(embassy, country, city, payload) ->
                 let data: PayloadResponse =
                     { Config = cfg
@@ -67,16 +90,14 @@ module private Consume =
                       City = city
                       Payload = payload }
 
-                return!
-                    Message.Create.Text.payloadResponse data
-                    |> Async.bind (Respond.Result ct msg.ChatId client)
+                return! Message.Create.Text.payloadResponse data |> Respond.Result ct msg.ChatId client
             | _ -> return Error <| NotSupported $"Text: {msg.Value}."
         }
 
     let callback ct cfg (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
-            | Start value ->
+            | StartCtx value ->
                 match value with
                 | HasEmbassy value ->
                     return!
@@ -89,23 +110,22 @@ module private Consume =
                         Message.Create.Text.payloadRequest (msg.ChatId, msg.Id) value
                         |> Respond.Ok ct client
                 | None -> return Error <| NotSupported $"Callback: {msg.Value}."
-            | Mine value ->
+            | MineCtx value ->
                 match value with
                 | HasEmbassy value ->
                     return!
                         Message.Create.Buttons.chatCountries ct cfg (msg.ChatId, msg.Id) value
-                        |> Async.bind (Respond.Result ct msg.ChatId client)
+                        |> Respond.Result ct msg.ChatId client
                 | HasCountry value ->
                     return!
                         Message.Create.Buttons.chatCities ct cfg (msg.ChatId, msg.Id) value
-                        |> Async.bind (Respond.Result ct msg.ChatId client)
+                        |> Respond.Result ct msg.ChatId client
                 | HasCity value ->
                     return!
                         Message.Create.Text.listRequests ct cfg (msg.ChatId, msg.Id) value
-                        |> Async.bind (Respond.Result ct msg.ChatId client)
+                        |> Respond.Result ct msg.ChatId client
                 | None -> return Error <| NotSupported $"Callback: {msg.Value}."
             | None -> return Error <| NotSupported $"Callback: {msg.Value}."
-
         }
 
 let private handle ct cfg client =
