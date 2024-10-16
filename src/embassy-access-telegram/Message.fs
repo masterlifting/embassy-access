@@ -38,6 +38,24 @@ module Create =
             |> create (chatId, msgId |> Replace)
             |> Text
 
+        let listRequests ct cfg (chatId, msgId) (embassy', country', city') =
+            EA.Mapper.Embassy.createInternal (embassy', country', city')
+            |> ResultAsync.wrap (fun embassy ->
+                Persistence.Storage.Chat.create cfg
+                |> ResultAsync.wrap (Persistence.Repository.Query.Chat.tryFind ct chatId)
+                |> ResultAsync.bindAsync (function
+                    | None -> "Subscriptions" |> NotFound |> Error |> async.Return
+                    | Some chat ->
+                        Persistence.Storage.Request.create cfg
+                        |> ResultAsync.wrap (Persistence.Repository.Query.Request.getRequests ct chat))
+                |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy))
+                |> ResultAsync.map (fun requests ->
+                    requests
+                    |> Seq.map (fun request -> $"{request.Id} -> {request.Payload}")
+                    |> String.concat Environment.NewLine
+                    |> create (chatId, msgId |> Replace)
+                    |> Text))
+
         let payloadResponse (data: PayloadResponse) =
             (data.Embassy, data.Country, data.City)
             |> EA.Mapper.Embassy.createInternal
@@ -87,11 +105,11 @@ module Create =
                 EA.Api.getEmbassies ()
                 |> Seq.concat
                 |> Seq.map EA.Mapper.Embassy.toExternal
-                |> Seq.map (fun embassy -> "Mine$" + embassy.Name, embassy.Name)
+                |> Seq.map (fun embassy -> "strt$" + embassy.Name, embassy.Name)
                 |> Seq.sortBy fst
                 |> Map
 
-            { Buttons.Name = "Available Embassies."
+            { Buttons.Name = "Available Embassies"
               Columns = 3
               Data = data }
             |> create (chatId, New)
@@ -106,11 +124,11 @@ module Create =
                     Persistence.Storage.Request.create cfg
                     |> ResultAsync.wrap (Persistence.Repository.Query.Request.getEmbassies ct chat))
             |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
-            |> ResultAsync.map (Seq.map (fun embassy -> embassy.Name, embassy.Name))
+            |> ResultAsync.map (Seq.map (fun embassy -> "mine$" + embassy.Name, embassy.Name))
             |> ResultAsync.map (Seq.sortBy fst)
             |> ResultAsync.map Map
             |> ResultAsync.map (fun data ->
-                { Buttons.Name = "Mine Embassies."
+                { Buttons.Name = "My Embassies"
                   Columns = 3
                   Data = data }
                 |> create (chatId, New)
@@ -123,11 +141,11 @@ module Create =
                 |> Seq.map EA.Mapper.Embassy.toExternal
                 |> Seq.filter (fun embassy -> embassy.Name = embassy')
                 |> Seq.map _.Country
-                |> Seq.map (fun country -> (embassy' + "|" + country.Name), country.Name)
+                |> Seq.map (fun country -> "strt$" + embassy' + "|" + country.Name, country.Name)
                 |> Seq.sortBy fst
                 |> Map
 
-            { Buttons.Name = $"Countries for '{embassy'}' embassy."
+            { Buttons.Name = $"Available Countries"
               Columns = 3
               Data = data }
             |> create (chatId, msgId |> Replace)
@@ -142,11 +160,13 @@ module Create =
                     Persistence.Storage.Request.create cfg
                     |> ResultAsync.wrap (Persistence.Repository.Query.Request.getEmbassies ct chat))
             |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
-            |> ResultAsync.map (Seq.map (fun country -> (embassy' + "Mine$" + country.Name), country.Name))
+            |> ResultAsync.map (Seq.filter (fun embassy -> embassy.Name = embassy'))
+            |> ResultAsync.map (Seq.map _.Country)
+            |> ResultAsync.map (Seq.map (fun country -> "mine$" + embassy' + "|" + country.Name, country.Name))
             |> ResultAsync.map (Seq.sortBy fst)
             |> ResultAsync.map Map
             |> ResultAsync.map (fun data ->
-                { Buttons.Name = $"Countries for '{embassy'}' embassy."
+                { Buttons.Name = $"My Countries"
                   Columns = 3
                   Data = data }
                 |> create (chatId, msgId |> Replace)
@@ -161,12 +181,35 @@ module Create =
                 |> Seq.map _.Country
                 |> Seq.filter (fun country -> country.Name = country')
                 |> Seq.map _.City
-                |> Seq.map (fun city -> (embassy' + "|" + country' + "|" + city.Name), city.Name)
+                |> Seq.map (fun city -> "strt$" + embassy' + "|" + country' + "|" + city.Name, city.Name)
                 |> Seq.sortBy fst
                 |> Map
 
-            { Buttons.Name = $"Cities for '{embassy'}' embassy in '{country'}'."
+            { Buttons.Name = $"Available Cities"
               Columns = 3
               Data = data }
             |> create (chatId, msgId |> Replace)
             |> Buttons
+
+        let chatCities ct cfg (chatId, msgId) (embassy', country') =
+            Persistence.Storage.Chat.create cfg
+            |> ResultAsync.wrap (Persistence.Repository.Query.Chat.tryFind ct chatId)
+            |> ResultAsync.bindAsync (function
+                | None -> "Subscriptions" |> NotFound |> Error |> async.Return
+                | Some chat ->
+                    Persistence.Storage.Request.create cfg
+                    |> ResultAsync.wrap (Persistence.Repository.Query.Request.getEmbassies ct chat))
+            |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
+            |> ResultAsync.map (Seq.filter (fun country -> country.Name = embassy'))
+            |> ResultAsync.map (Seq.map _.Country)
+            |> ResultAsync.map (Seq.filter (fun city -> city.Name = country'))
+            |> ResultAsync.map (Seq.map _.City)
+            |> ResultAsync.map (Seq.map (fun city -> "mine$" + embassy' + "|" + country' + "|" + city.Name, city.Name))
+            |> ResultAsync.map (Seq.sortBy fst)
+            |> ResultAsync.map Map
+            |> ResultAsync.map (fun data ->
+                { Buttons.Name = $"My Cities"
+                  Columns = 3
+                  Data = data }
+                |> create (chatId, msgId |> Replace)
+                |> Buttons)
