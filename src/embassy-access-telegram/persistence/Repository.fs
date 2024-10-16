@@ -29,6 +29,11 @@ module Query =
 
     module Request =
 
+        let getRequests ct (chat: EA.Telegram.Domain.Chat) storage =
+            let query = EA.Persistence.Query.Request.GetMany.Requests chat.Subscriptions
+
+            storage |> EA.Persistence.Repository.Query.Request.getMany ct query
+
         let getEmbassies ct (chat: EA.Telegram.Domain.Chat) storage =
             let query = EA.Persistence.Query.Request.GetMany.Requests chat.Subscriptions
 

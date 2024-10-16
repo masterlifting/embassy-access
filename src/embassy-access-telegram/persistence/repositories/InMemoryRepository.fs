@@ -80,14 +80,10 @@ module Command =
         let private createOrUpdate definition (chats: External.Chat array) =
             match definition with
             | CreateOrUpdate.ChatSubscription(chatId, subId) ->
-                match
-                    chats
-                    |> Seq.tryFind (fun x ->
-                        x.Id = chatId.Value && (x.Subscriptions |> Seq.contains (subId.Value |> string)))
-                with
+                match chats |> Seq.tryFind (fun x -> x.Id = chatId.Value) with
                 | Some chat ->
+                    chat.Subscriptions <- chat.Subscriptions |> set |> Set.add (subId.Value |> string) |> Seq.toList
                     let data = chats |> Array.mapi (fun i x -> if x.Id = chat.Id then chat else x)
-
                     chat |> Mapper.Chat.toInternal |> Result.map (fun chat -> (data, chat))
                 | None ->
                     let chat =
