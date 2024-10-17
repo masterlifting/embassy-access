@@ -32,7 +32,7 @@ module private Consume =
 
     type MineCmdType = CancellationToken -> IConfigurationRoot -> ChatId -> Async<Result<Producer.Data, Error'>>
 
-    let private (|Start|Mine|Ask|None|) value : Choice<_, MineCmdType, Error', string> =
+    let private (|Start|Mine|Ask|None|Error|) value =
         match value with
         | AP.IsString value ->
             match value with
@@ -40,36 +40,38 @@ module private Consume =
             | "/mine" -> Mine Message.Create.Buttons.chatEmbassies
             | "/ask" -> Ask("/ask command" |> NotSupported)
             | _ -> None value
-        | _ -> None value
+        | _ -> Error(NotSupported $"Command: {value}.")
+    
+    // let data: PayloadResponse =
+    //                     { Config = cfg
+    //                       Ct = ct
+    //                       ChatId = msg.ChatId
+    //                       Embassy = embassy
+    //                       Country = country
+    //                       City = city
+    //                       Payload = payload }
+    let private respondSubscriptionCallback (data: string array) =
+        fun (chatId, msgId) ->
+            match data.Length with
+            | 1 -> Message.Create.Buttons.countries (chatId, msgId) data[0] |> Some
+            | 2 -> Message.Create.Buttons.cities (chatId, msgId) (data.[0], data.[1]) |> Some
+            | 3 -> Message.Create.Text.payloadRequest (chatId, msgId) (data.[0], data.[1], data.[2]) |> Some
+            | _ -> None
+            
+    let private respondInformationCallback (data: string array) =
+        fun ct cfg ->
+            fun (chatId, msgId) ->
+                match data.Length with
+                | 1 -> Message.Create.Buttons.chatCountries ct cfg (chatId, msgId) data[0] |> Some
+                | 2 -> Message.Create.Buttons.chatCities ct cfg (chatId, msgId) (data.[0], data.[1]) |> Some
+                | 3 -> Message.Create.Text.listRequests ct cfg (chatId, msgId) (data.[0], data.[1], data.[2]) |> Some
+                | _ -> None
 
-    let private (|StartCtx|MineCtx|AskCtx|None|) (value: string) =
+    let private (|Subscribe|Information|None|) (value: string) =
         let data = value.Split '|'
         match data with
-        | [|"SUBSCRIBE"|] ->
-            match data.Length with
-            | 2 -> StartCtx(fun (chatId, msgId) -> Message.Create.Buttons.countries (chatId, msgId) data[1])
-            | 3 -> StartCtx(HasCountry(data.[1], data.[2]))
-            | 4 -> StartCtx(HasCity(data.[1], data.[2], data.[3]))
-            | _ -> None
-        | [|"GET"|] ->
-            match data.Length with
-            | 2 -> MineCtx(HasEmbassy data.[1])
-            | 3 -> MineCtx(HasCountry(data.[1], data.[2]))
-            | 4 -> MineCtx(HasCity(data.[1], data.[2], data.[3]))
-            | _ -> None
-        | _ -> None
-
-    let private (|HasEmbassy|HasCountry|HasCity|HasPayload|None|) value =
-        match value with
-        | AP.IsString value ->
-            let data = value.Split '|'
-
-            match data.Length with
-            | 1 -> HasEmbassy(data[0])
-            | 2 -> HasCountry(data[0], data[1])
-            | 3 -> HasCity(data[0], data[1], data[2])
-            | 4 -> HasPayload(data[0], data[1], data[2], data[3])
-            | _ -> None
+        | [|"SUBSCRIBE"|] -> Subscribe ( respondSubscriptionCallback data)
+        | [|"GET"|] -> Information ( respondInformationCallback data)
         | _ -> None
 
     let text ct cfg (msg: Consumer.Dto<string>) client =
@@ -78,54 +80,18 @@ module private Consume =
             | Start cmd -> return! cmd msg.ChatId |> Respond.Ok ct client
             | Mine cmd -> return! cmd ct cfg msg.ChatId |> Respond.Result ct msg.ChatId client
             | Ask error -> return! error |> Respond.Error ct msg.ChatId client
-            | None value ->
-                match value with
-            | HasPayload(embassy, country, city, payload) ->
-                let data: PayloadResponse =
-                    { Config = cfg
-                      Ct = ct
-                      ChatId = msg.ChatId
-                      Embassy = embassy
-                      Country = country
-                      City = city
-                      Payload = payload }
-
-                return! Message.Create.Text.payloadResponse data |> Respond.Result ct msg.ChatId client
+            | Error error -> return! error |> Respond.Error ct msg.ChatId client
+            | None value ->return Error <| NotSupported $"Text: {msg.Value}."
             | _ -> return Error <| NotSupported $"Text: {msg.Value}."
         }
 
     let callback ct cfg (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
-            | StartCtx value ->
-                match value with
-                | HasEmbassy value ->
-                    return!
-                        Message.Create.Buttons.countries (msg.ChatId, msg.Id) value
-                        |> Respond.Ok ct client
-                | HasCountry value ->
-                    return! Message.Create.Buttons.cities (msg.ChatId, msg.Id) value |> Respond.Ok ct client
-                | HasCity value ->
-                    return!
-                        Message.Create.Text.payloadRequest (msg.ChatId, msg.Id) value
-                        |> Respond.Ok ct client
-                | None -> return Error <| NotSupported $"Callback: {msg.Value}."
-            | MineCtx value ->
-                match value with
-                | HasEmbassy value ->
-                    return!
-                        Message.Create.Buttons.chatCountries ct cfg (msg.ChatId, msg.Id) value
-                        |> Respond.Result ct msg.ChatId client
-                | HasCountry value ->
-                    return!
-                        Message.Create.Buttons.chatCities ct cfg (msg.ChatId, msg.Id) value
-                        |> Respond.Result ct msg.ChatId client
-                | HasCity value ->
-                    return!
-                        Message.Create.Text.listRequests ct cfg (msg.ChatId, msg.Id) value
-                        |> Respond.Result ct msg.ChatId client
-                | None -> return Error <| NotSupported $"Callback: {msg.Value}."
+            | Subscribe cmd -> return! cmd (msg.ChatId, msg.Id) |> Respond.Ok ct client
+            | Information cmd -> return! cmd ct cfg (msg.ChatId, msg.Id) |> Respond.Ok ct client
             | None -> return Error <| NotSupported $"Callback: {msg.Value}."
+            | _ -> return Error <| NotSupported $"Callback: {msg.Value}."
         }
 
 let private handle ct cfg client =
