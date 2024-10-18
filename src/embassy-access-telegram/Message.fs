@@ -27,7 +27,7 @@ module Create =
                 |> create (chatId, New)
                 |> Text
 
-        let payloadRequest (chatId, msgId) (embassy', country', city') =
+        let payloadRequest (embassy', country', city') (chatId, msgId) =
             match (embassy', country', city') |> EA.Mapper.Embassy.createInternal with
             | Error error -> error.Message
             | Ok embassy ->
@@ -38,7 +38,7 @@ module Create =
             |> create (chatId, msgId |> Replace)
             |> Text
 
-        let listRequests ct cfg (chatId, msgId) (embassy', country', city') =
+        let listRequests (embassy', country', city') (chatId, msgId) cfg ct =
             EA.Mapper.Embassy.createInternal (embassy', country', city')
             |> ResultAsync.wrap (fun embassy ->
                 Persistence.Storage.Chat.create cfg
@@ -115,7 +115,7 @@ module Create =
             |> create (chatId, New)
             |> Buttons
 
-        let chatEmbassies ct cfg chatId =
+        let chatEmbassies chatId cfg ct =
             Persistence.Storage.Chat.create cfg
             |> ResultAsync.wrap (Persistence.Repository.Query.Chat.tryFind ct chatId)
             |> ResultAsync.bindAsync (function
@@ -134,7 +134,7 @@ module Create =
                 |> create (chatId, New)
                 |> Buttons)
 
-        let countries (chatId, msgId) embassy' =
+        let countries embassy' (chatId, msgId) =
             let data =
                 EA.Api.getEmbassies ()
                 |> Seq.concat
@@ -151,7 +151,7 @@ module Create =
             |> create (chatId, msgId |> Replace)
             |> Buttons
 
-        let chatCountries ct cfg (chatId, msgId) embassy' =
+        let chatCountries embassy' (chatId, msgId) cfg ct =
             Persistence.Storage.Chat.create cfg
             |> ResultAsync.wrap (Persistence.Repository.Query.Chat.tryFind ct chatId)
             |> ResultAsync.bindAsync (function
@@ -172,7 +172,7 @@ module Create =
                 |> create (chatId, msgId |> Replace)
                 |> Buttons)
 
-        let cities (chatId, msgId) (embassy', country') =
+        let cities (embassy', country') (chatId, msgId) =
             let data =
                 EA.Api.getEmbassies ()
                 |> Seq.concat
@@ -191,7 +191,7 @@ module Create =
             |> create (chatId, msgId |> Replace)
             |> Buttons
 
-        let chatCities ct cfg (chatId, msgId) (embassy', country') =
+        let chatCities (embassy', country') (chatId, msgId) cfg ct =
             Persistence.Storage.Chat.create cfg
             |> ResultAsync.wrap (Persistence.Repository.Query.Chat.tryFind ct chatId)
             |> ResultAsync.bindAsync (function
