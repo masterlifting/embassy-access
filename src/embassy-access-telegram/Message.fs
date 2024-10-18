@@ -4,7 +4,7 @@ module EA.Telegram.Message
 open System
 open Infrastructure
 open Web.Telegram.Domain.Producer
-open EA.Telegram.Domain.Message
+open EA.Telegram.Persistence
 open EA.Domain
 
 let create<'a> (chatId, msgId) (value: 'a) =
@@ -27,65 +27,64 @@ module Create =
                 |> create (chatId, New)
                 |> Text
 
-        let payloadRequest (embassy', country', city') (chatId, msgId) =
-            match (embassy', country', city') |> EA.Mapper.Embassy.createInternal with
-            | Error error -> error.Message
-            | Ok embassy ->
-                match embassy with
-                | Russian _ ->
-                    $"Send your payload using the following format: '{embassy'}|{country'}|{city'}|your_link_here'."
-                | _ -> $"Not supported embassy: '{embassy'}'."
-            |> create (chatId, msgId |> Replace)
-            |> Text
+        let payloadRequest (embassy', country', city') =
+            fun (chatId, msgId) ->
+                match (embassy', country', city') |> EA.Mapper.Embassy.createInternal with
+                | Error error -> error.Message
+                | Ok embassy ->
+                    match embassy with
+                    | Russian _ ->
+                        $"Send your payload using the following format: '{embassy'}|{country'}|{city'}|your_link_here'."
+                    | _ -> $"Not supported embassy: '{embassy'}'."
+                |> create (chatId, msgId |> Replace)
+                |> Text
 
-        let listRequests (embassy', country', city') (chatId, msgId) cfg ct =
-            EA.Mapper.Embassy.createInternal (embassy', country', city')
-            |> ResultAsync.wrap (fun embassy ->
-                Persistence.Storage.Chat.create cfg
-                |> ResultAsync.wrap (Persistence.Repository.Query.Chat.tryFind ct chatId)
-                |> ResultAsync.bindAsync (function
-                    | None -> "Subscriptions" |> NotFound |> Error |> async.Return
-                    | Some chat ->
-                        Persistence.Storage.Request.create cfg
-                        |> ResultAsync.wrap (Persistence.Repository.Query.Request.getRequests ct chat))
-                |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy))
-                |> ResultAsync.map (fun requests ->
-                    requests
-                    |> Seq.map (fun request -> $"{request.Id} -> {request.Payload}")
-                    |> String.concat Environment.NewLine
-                    |> create (chatId, msgId |> Replace)
-                    |> Text))
+        let userRequests (embassy', country', city') =
+            fun (chatId, msgId) cfg ct ->
+                EA.Mapper.Embassy.createInternal (embassy', country', city')
+                |> ResultAsync.wrap (fun embassy ->
+                    Storage.Chat.create cfg
+                    |> ResultAsync.wrap (Repository.Query.Chat.tryFind ct chatId)
+                    |> ResultAsync.bindAsync (function
+                        | None -> "Subscriptions" |> NotFound |> Error |> async.Return
+                        | Some chat ->
+                            Storage.Request.create cfg
+                            |> ResultAsync.wrap (Repository.Query.Request.getRequests ct chat))
+                    |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy))
+                    |> ResultAsync.map (fun requests ->
+                        requests
+                        |> Seq.map (fun request -> $"{request.Id} -> {request.Payload}")
+                        |> String.concat Environment.NewLine
+                        |> create (chatId, msgId |> Replace)
+                        |> Text))
 
-        let payloadResponse (data: PayloadResponse) =
-            (data.Embassy, data.Country, data.City)
-            |> EA.Mapper.Embassy.createInternal
-            |> ResultAsync.wrap (fun embassy ->
-                match embassy with
-                | Russian _ ->
+        let subscribe (embassy', country', city', payload) =
+            fun chatId cfg ct ->
+                (embassy', country', city')
+                |> EA.Mapper.Embassy.createInternal
+                |> ResultAsync.wrap (fun embassy ->
+                    match embassy with
+                    | Russian _ ->
 
-                    let createOrUpdatePassportSearchRequest ct =
-                        Persistence.Storage.Request.create data.Config
-                        |> ResultAsync.wrap (
-                            Persistence.Repository.Command.Request.createOrUpdatePassportSearch
-                                ct
-                                (embassy, data.Payload)
-                        )
-
-                    let createOrUpdateChatSubscription ct =
-                        ResultAsync.bindAsync (fun (request: Request) ->
-                            Persistence.Storage.Chat.create data.Config
+                        let createOrUpdatePassportSearchRequest ct =
+                            Storage.Request.create cfg
                             |> ResultAsync.wrap (
-                                Persistence.Repository.Command.Chat.createOrUpdateSubscription
-                                    ct
-                                    (data.ChatId, request.Id)
+                                Repository.Command.Request.createOrUpdatePassportSearch ct (embassy, payload)
                             )
-                            |> ResultAsync.map (fun _ -> request))
 
-                    createOrUpdatePassportSearchRequest data.Ct
-                    |> createOrUpdateChatSubscription data.Ct
-                    |> ResultAsync.map (fun request -> $"Subscription has been activated for '{request.Embassy}'.")
-                    |> ResultAsync.map (create (data.ChatId, New) >> Text)
-                | _ -> data.Embassy |> NotSupported |> Error |> async.Return)
+                        let createOrUpdateChatSubscription ct =
+                            ResultAsync.bindAsync (fun (request: Request) ->
+                                Storage.Chat.create cfg
+                                |> ResultAsync.wrap (
+                                    Repository.Command.Chat.createOrUpdateSubscription ct (chatId, request.Id)
+                                )
+                                |> ResultAsync.map (fun _ -> request))
+
+                        createOrUpdatePassportSearchRequest ct
+                        |> createOrUpdateChatSubscription ct
+                        |> ResultAsync.map (fun request -> $"Subscription has been activated for '{request.Embassy}'.")
+                        |> ResultAsync.map (create (chatId, New) >> Text)
+                    | _ -> embassy' |> NotSupported |> Error |> async.Return)
 
     module Buttons =
 
@@ -100,65 +99,68 @@ module Create =
                 |> create (chatId, New)
                 |> Buttons
 
-        let embassies chatId =
-            let data =
-                EA.Api.getEmbassies ()
-                |> Seq.concat
-                |> Seq.map EA.Mapper.Embassy.toExternal
-                |> Seq.map (fun embassy -> "strt$" + embassy.Name, embassy.Name)
-                |> Seq.sortBy fst
-                |> Map
+        let embassies () =
+            fun chatId ->
+                let data =
+                    EA.Api.getEmbassies ()
+                    |> Seq.concat
+                    |> Seq.map EA.Mapper.Embassy.toExternal
+                    |> Seq.map (fun embassy -> "strt$" + embassy.Name, embassy.Name)
+                    |> Seq.sortBy fst
+                    |> Map
 
-            { Buttons.Name = "Available Embassies"
-              Columns = 3
-              Data = data }
-            |> create (chatId, New)
-            |> Buttons
-
-        let chatEmbassies chatId cfg ct =
-            Persistence.Storage.Chat.create cfg
-            |> ResultAsync.wrap (Persistence.Repository.Query.Chat.tryFind ct chatId)
-            |> ResultAsync.bindAsync (function
-                | None -> "Subscriptions" |> NotFound |> Error |> async.Return
-                | Some chat ->
-                    Persistence.Storage.Request.create cfg
-                    |> ResultAsync.wrap (Persistence.Repository.Query.Request.getEmbassies ct chat))
-            |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
-            |> ResultAsync.map (Seq.map (fun embassy -> "mine$" + embassy.Name, embassy.Name))
-            |> ResultAsync.map (Seq.sortBy fst)
-            |> ResultAsync.map Map
-            |> ResultAsync.map (fun data ->
-                { Buttons.Name = "My Embassies"
+                { Buttons.Name = "Available Embassies"
                   Columns = 3
                   Data = data }
                 |> create (chatId, New)
-                |> Buttons)
+                |> Buttons
 
-        let countries embassy' (chatId, msgId) =
-            let data =
-                EA.Api.getEmbassies ()
-                |> Seq.concat
-                |> Seq.map EA.Mapper.Embassy.toExternal
-                |> Seq.filter (fun embassy -> embassy.Name = embassy')
-                |> Seq.map _.Country
-                |> Seq.map (fun country -> "strt$" + embassy' + "|" + country.Name, country.Name)
-                |> Seq.sortBy fst
-                |> Map
+        let userEmbassies () =
+            fun chatId cfg ct ->
+                Storage.Chat.create cfg
+                |> ResultAsync.wrap (Repository.Query.Chat.tryFind ct chatId)
+                |> ResultAsync.bindAsync (function
+                    | None -> "Subscriptions" |> NotFound |> Error |> async.Return
+                    | Some chat ->
+                        Storage.Request.create cfg
+                        |> ResultAsync.wrap (Repository.Query.Request.getEmbassies ct chat))
+                |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
+                |> ResultAsync.map (Seq.map (fun embassy -> "mine$" + embassy.Name, embassy.Name))
+                |> ResultAsync.map (Seq.sortBy fst)
+                |> ResultAsync.map Map
+                |> ResultAsync.map (fun data ->
+                    { Buttons.Name = "My Embassies"
+                      Columns = 3
+                      Data = data }
+                    |> create (chatId, New)
+                    |> Buttons)
 
-            { Buttons.Name = $"Available Countries"
-              Columns = 3
-              Data = data }
-            |> create (chatId, msgId |> Replace)
-            |> Buttons
+        let countries embassy' =
+            fun (chatId, msgId) ->
+                let data =
+                    EA.Api.getEmbassies ()
+                    |> Seq.concat
+                    |> Seq.map EA.Mapper.Embassy.toExternal
+                    |> Seq.filter (fun embassy -> embassy.Name = embassy')
+                    |> Seq.map _.Country
+                    |> Seq.map (fun country -> "strt$" + embassy' + "|" + country.Name, country.Name)
+                    |> Seq.sortBy fst
+                    |> Map
 
-        let chatCountries embassy' (chatId, msgId) cfg ct =
-            Persistence.Storage.Chat.create cfg
-            |> ResultAsync.wrap (Persistence.Repository.Query.Chat.tryFind ct chatId)
+                { Buttons.Name = $"Available Countries"
+                  Columns = 3
+                  Data = data }
+                |> create (chatId, msgId |> Replace)
+                |> Buttons
+
+        let userCountries embassy' (chatId, msgId) cfg ct =
+            Storage.Chat.create cfg
+            |> ResultAsync.wrap (Repository.Query.Chat.tryFind ct chatId)
             |> ResultAsync.bindAsync (function
                 | None -> "Subscriptions" |> NotFound |> Error |> async.Return
                 | Some chat ->
-                    Persistence.Storage.Request.create cfg
-                    |> ResultAsync.wrap (Persistence.Repository.Query.Request.getEmbassies ct chat))
+                    Storage.Request.create cfg
+                    |> ResultAsync.wrap (Repository.Query.Request.getEmbassies ct chat))
             |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
             |> ResultAsync.map (Seq.filter (fun embassy -> embassy.Name = embassy'))
             |> ResultAsync.map (Seq.map _.Country)
@@ -191,14 +193,14 @@ module Create =
             |> create (chatId, msgId |> Replace)
             |> Buttons
 
-        let chatCities (embassy', country') (chatId, msgId) cfg ct =
-            Persistence.Storage.Chat.create cfg
-            |> ResultAsync.wrap (Persistence.Repository.Query.Chat.tryFind ct chatId)
+        let userCities (embassy', country') (chatId, msgId) cfg ct =
+            Storage.Chat.create cfg
+            |> ResultAsync.wrap (Repository.Query.Chat.tryFind ct chatId)
             |> ResultAsync.bindAsync (function
                 | None -> "Subscriptions" |> NotFound |> Error |> async.Return
                 | Some chat ->
-                    Persistence.Storage.Request.create cfg
-                    |> ResultAsync.wrap (Persistence.Repository.Query.Request.getEmbassies ct chat))
+                    Storage.Request.create cfg
+                    |> ResultAsync.wrap (Repository.Query.Request.getEmbassies ct chat))
             |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
             |> ResultAsync.map (Seq.filter (fun country -> country.Name = embassy'))
             |> ResultAsync.map (Seq.map _.Country)

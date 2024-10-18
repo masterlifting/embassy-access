@@ -1,11 +1,8 @@
 ﻿module EA.Telegram.Consumer
 
 open System
-open System.Threading
 open Infrastructure
-open Microsoft.Extensions.Configuration
 open Web.Telegram.Domain
-open EA.Telegram.Domain.Message
 
 module private Respond =
 
@@ -30,31 +27,18 @@ module private Respond =
 
 module private Consume =
 
-    type MineCmdType = CancellationToken -> IConfigurationRoot -> ChatId -> Async<Result<Producer.Data, Error'>>
-
-    let private (|StartCmd|MineCmd|AskCmd|NoCmd|ErrorCmd|) value =
+    let private (|SupportedEmbassies|UserEmbassies|SupportInstruction|NoMenu|) value =
         match value with
-        | AP.IsString value ->
-            match value with
-            | "/start" -> StartCmd Message.Create.Buttons.embassies
-            | "/mine" -> MineCmd Message.Create.Buttons.chatEmbassies
-            | "/ask" -> AskCmd("/ask command" |> NotSupported)
-            | _ -> NoCmd value
-        | _ -> ErrorCmd(NotSupported value)
+        | "/start" -> SupportedEmbassies(Message.Create.Buttons.embassies ())
+        | "/mine" -> UserEmbassies(Message.Create.Buttons.userEmbassies ())
+        | "/ask" -> SupportInstruction("/ask command" |> NotSupported)
+        | _ -> NoMenu
 
-    // let data: PayloadResponse =
-    //                     { Config = cfg
-    //                       Ct = ct
-    //                       ChatId = msg.ChatId
-    //                       Embassy = embassy
-    //                       Country = country
-    //                       City = city
-    //                       Payload = payload }
-    let private (|SubscribeCallback|InformationCallback|NoCallback|) (value: string) =
+    let private (|SupportedCountries|SupportedCities|UserCountries|UserCities|NoCallback|) (value: string) =
         let data = value.Split '|'
 
         if data.Length < 2 then
-            NoCallback value
+            NoCallback
         else
             match data[0] with
             | "SUBSCRIBE" ->
@@ -62,76 +46,76 @@ module private Consume =
                 | 1 ->
                     let embassy = data[1]
                     let cmd = Message.Create.Buttons.countries embassy
-                    SubscribeCallback cmd
+                    SupportedCountries cmd
                 | 2 ->
                     let embassy = data[1]
                     let country = data[2]
                     let cmd = Message.Create.Buttons.cities (embassy, country)
-                    SubscribeCallback cmd
-                | _ -> NoCallback value
+                    SupportedCities cmd
+                | _ -> NoCallback
             | "INFO" ->
                 match data.Length - 1 with
                 | 1 ->
                     let embassy = data[1]
-                    let cmd = Message.Create.Buttons.chatCountries embassy
-                    InformationCallback cmd
+                    let cmd = Message.Create.Buttons.userCountries embassy
+                    UserCountries cmd
                 | 2 ->
                     let embassy = data[1]
                     let country = data[2]
-                    let cmd = Message.Create.Buttons.chatCities (embassy, country)
-                    InformationCallback cmd
-                | _ -> NoCallback value
-            | _ -> NoCallback value
+                    let cmd = Message.Create.Buttons.userCities (embassy, country)
+                    UserCities cmd
+                | _ -> NoCallback
+            | _ -> NoCallback
 
-    let private (|SubscribeAction|InfoAction|NoAction|) (value: string) =
+    let private (|SubscriptionResult|UserSubscriptions|NoText|) (value: string) =
         let data = value.Split '|'
 
         if data.Length < 2 then
-            NoAction
+            NoText
         else
             match data[0] with
             | "SUBSCRIBE" ->
                 match data.Length - 1 with
-                | 3 ->
-                    let embassy = data.[1]
-                    let country = data.[2]
-                    let city = data.[3]
-                    let cmd = Message.Create.Text.payloadRequest (embassy, country, city)
-                    SubscribeAction cmd
-                | _ -> NoAction
+                | 4 ->
+                    let embassy = data[1]
+                    let country = data[2]
+                    let city = data[3]
+                    let payload = data[4]
+                    let cmd = Message.Create.Text.subscribe (embassy, country, city, payload)
+                    SubscriptionResult cmd
+                | _ -> NoText
             | "INFO" ->
                 match data.Length - 1 with
                 | 3 ->
                     let embassy = data.[1]
                     let country = data.[2]
                     let city = data.[3]
-                    let cmd = Message.Create.Text.listRequests (embassy, country, city)
-                    InfoAction cmd
-                | _ -> NoAction
-            | _ -> NoAction
+                    let cmd = Message.Create.Text.userRequests (embassy, country, city)
+                    UserSubscriptions cmd
+                | _ -> NoText
+            | _ -> NoText
 
     let text ct cfg (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
-            | StartCmd cmd -> return! cmd msg.ChatId |> Respond.Ok ct client
-            | MineCmd cmd -> return! cmd msg.ChatId cfg ct |> Respond.Result ct msg.ChatId client
-            | AskCmd error -> return! client |> Respond.Error ct msg.ChatId error
-            | NoCmd value ->
-                match value with
-                | SubscribeAction cmd -> return! cmd (msg.ChatId, msg.Id) |> Respond.Ok ct client
-                | InfoAction cmd -> return! cmd (msg.ChatId, msg.Id) cfg ct |> Respond.Result ct msg.ChatId client
-                | NoAction
-                | _ -> return Error <| NotSupported $"Text: {msg.Value}."
-            | ErrorCmd error -> return! client |> Respond.Error ct msg.ChatId error
+            | SupportedEmbassies cmd -> return! cmd msg.ChatId |> Respond.Ok ct client
+            | UserEmbassies cmd -> return! cmd msg.ChatId cfg ct |> Respond.Result ct msg.ChatId client
+            | SupportInstruction error -> return! client |> Respond.Error ct msg.ChatId error
+            | SubscriptionResult cmd -> return! cmd msg.ChatId cfg ct |> Respond.Result ct msg.ChatId client
+            | UserSubscriptions cmd -> return! cmd (msg.ChatId, msg.Id) cfg ct |> Respond.Result ct msg.ChatId client
+            | NoMenu
+            | NoText
             | _ -> return Error <| NotSupported $"Text: {msg.Value}."
         }
 
     let callback ct cfg (msg: Consumer.Dto<string>) client =
         async {
             match msg.Value with
-            | SubscribeCallback cmd -> return! cmd (msg.ChatId, msg.Id) |> Respond.Ok ct client
-            | InformationCallback cmd -> return! cmd (msg.ChatId, msg.Id) cfg ct |> Respond.Result ct msg.ChatId client
-            | NoCallback _
+            | SupportedCountries cmd -> return! cmd (msg.ChatId, msg.Id) |> Respond.Ok ct client
+            | SupportedCities cmd -> return! cmd (msg.ChatId, msg.Id) |> Respond.Ok ct client
+            | UserCountries cmd -> return! cmd (msg.ChatId, msg.Id) cfg ct |> Respond.Result ct msg.ChatId client
+            | UserCities cmd -> return! cmd (msg.ChatId, msg.Id) cfg ct |> Respond.Result ct msg.ChatId client
+            | NoCallback
             | _ -> return Error <| NotSupported $"Callback: {msg.Value}."
         }
 
@@ -141,9 +125,9 @@ let private handle ct cfg client =
         | Consumer.Message message ->
             match message with
             | Consumer.Text dto -> client |> Consume.text ct cfg dto
-            | _ -> $"{message}" |> NotSupported |> Error |> async.Return
+            | _ -> $"%A{message}" |> NotSupported |> Error |> async.Return
         | Consumer.CallbackQuery dto -> client |> Consume.callback ct cfg dto
-        | _ -> $"{data}." |> NotSupported |> Error |> async.Return
+        | _ -> $"%A{data}." |> NotSupported |> Error |> async.Return
 
 let start ct cfg =
     Domain.Key.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
