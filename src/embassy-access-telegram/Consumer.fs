@@ -3,8 +3,10 @@
 open System
 open Infrastructure
 open Web.Telegram.Domain
+open EA.Telegram.Domain.Message
 
 module private Respond =
+
     module Message =
 
         let Ok ct client data =
@@ -26,19 +28,18 @@ module private Respond =
                 | Ok data -> data |> Ok ct client
                 | Error error -> client |> Error ct chatId error)
 
-    let (|SupportedEmbassies|UserEmbassies|SupportInstruction|NoMenu|) value =
-        match value with
-        | "/start" -> SupportedEmbassies(Message.Create.Buttons.embassies ())
-        | "/mine" -> UserEmbassies(Message.Create.Buttons.userEmbassies ())
-        | "/ask" -> SupportInstruction("/ask command" |> NotSupported)
-        | _ -> NoMenu
+    let text (value: string) =
 
-    let (|SubscriptionResult|UserSubscriptions|NoText|) (value: string) =
         let data = value.Split '|'
 
-        if data.Length < 2 then
-            NoText
-        else
+        match data.Length with
+        | 0 -> NoText
+        | 1 ->
+            match data[0] with
+            | "/start" -> SupportedEmbassies(Message.Create.Buttons.embassies ())
+            | "/mine" -> UserEmbassies(Message.Create.Buttons.userEmbassies ())
+            | _ -> NoText
+        | _ ->
             match data[0] with
             | "SUBSCRIBE" ->
                 match data.Length - 1 with
@@ -61,12 +62,13 @@ module private Respond =
                 | _ -> NoText
             | _ -> NoText
 
-    let (|SupportedCountries|SupportedCities|UserCountries|UserCities|NoCallback|) (value: string) =
+    let callback (value: string) =
         let data = value.Split '|'
 
-        if data.Length < 2 then
-            NoCallback
-        else
+        match data.Length with
+        | 0 -> NoCallback
+        | 1 -> NoCallback
+        | _ ->
             match data[0] with
             | "SUBSCRIBE" ->
                 match data.Length - 1 with
@@ -98,28 +100,22 @@ module private Consume =
     open Respond
 
     let text ct cfg (msg: Consumer.Dto<string>) client =
-        async {
-            match msg.Value with
-            | SupportedEmbassies cmd -> return! cmd msg.ChatId |> Message.Ok ct client
-            | UserEmbassies cmd -> return! cmd msg.ChatId cfg ct |> Message.Result ct msg.ChatId client
-            | SupportInstruction error -> return! client |> Message.Error ct msg.ChatId error
-            | SubscriptionResult cmd -> return! cmd msg.ChatId cfg ct |> Message.Result ct msg.ChatId client
-            | UserSubscriptions cmd -> return! cmd (msg.ChatId, msg.Id) cfg ct |> Message.Result ct msg.ChatId client
-            | NoMenu
-            | NoText
-            | _ -> return Error <| NotSupported $"Text: {msg.Value}."
-        }
+        match msg.Value |> text with
+        | SupportedEmbassies cmd -> cmd msg.ChatId |> Message.Ok ct client
+        | UserEmbassies cmd -> cmd msg.ChatId cfg ct |> Message.Result ct msg.ChatId client
+        | SubscriptionResult cmd -> cmd msg.ChatId cfg ct |> Message.Result ct msg.ChatId client
+        | UserSubscriptions cmd -> cmd (msg.ChatId, msg.Id) cfg ct |> Message.Result ct msg.ChatId client
+        | NoText
+        | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
     let callback ct cfg (msg: Consumer.Dto<string>) client =
-        async {
-            match msg.Value with
-            | SupportedCountries cmd -> return! cmd (msg.ChatId, msg.Id) |> Message.Ok ct client
-            | SupportedCities cmd -> return! cmd (msg.ChatId, msg.Id) |> Message.Ok ct client
-            | UserCountries cmd -> return! cmd (msg.ChatId, msg.Id) cfg ct |> Message.Result ct msg.ChatId client
-            | UserCities cmd -> return! cmd (msg.ChatId, msg.Id) cfg ct |> Message.Result ct msg.ChatId client
-            | NoCallback
-            | _ -> return Error <| NotSupported $"Callback: {msg.Value}."
-        }
+        match msg.Value |> callback with
+        | SupportedCountries cmd -> cmd (msg.ChatId, msg.Id) |> Message.Ok ct client
+        | SupportedCities cmd -> cmd (msg.ChatId, msg.Id) |> Message.Ok ct client
+        | UserCountries cmd -> cmd (msg.ChatId, msg.Id) cfg ct |> Message.Result ct msg.ChatId client
+        | UserCities cmd -> cmd (msg.ChatId, msg.Id) cfg ct |> Message.Result ct msg.ChatId client
+        | NoCallback
+        | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
 let private handle ct cfg client =
     fun data ->
