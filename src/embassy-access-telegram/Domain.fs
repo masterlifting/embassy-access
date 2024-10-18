@@ -15,18 +15,6 @@ type Chat =
     { Id: ChatId
       Subscriptions: Set<RequestId> }
 
-module Message =
-    open System.Threading
-
-    type PayloadResponse =
-        { Config: IConfigurationRoot
-          Ct: CancellationToken
-          ChatId: ChatId
-          Embassy: string
-          Country: string
-          City: string
-          Payload: string }
-
 module External =
 
     type Chat() =
