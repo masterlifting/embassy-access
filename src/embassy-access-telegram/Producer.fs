@@ -7,6 +7,8 @@ open Web.Telegram
 open Web.Telegram.Domain
 open EA.Domain
 open EA.Telegram.Domain
+open EA.Telegram.Persistence
+open EA.Telegram.Responses
 
 let private Admin =
     { Id = 379444553L |> ChatId
@@ -15,8 +17,8 @@ let private Admin =
 let private getChats ct requestId =
     Persistence.Storage.create Storage.Context.InMemory
     |> ResultAsync.wrap (fun storage ->
-        let query = Persistence.Query.Chat.SearchSubscription requestId
-        storage |> Persistence.Repository.Query.Chat.getMany ct query)
+        let query = Query.Chat.SearchSubscription requestId
+        storage |> Repository.Query.Chat.getMany ct query)
 
 let private send ct message =
     Key.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
@@ -26,7 +28,7 @@ let private send ct message =
 
 module Produce =
 
-    let private send ct requestId createMsg =
+    let private send requestId ct createMsg =
         requestId
         |> getChats ct
         |> ResultAsync.bindAsync (fun chats ->
@@ -39,11 +41,7 @@ module Produce =
     let notification ct =
         function
         | Appointments(requestId, embassy, appointments) ->
-            (embassy, appointments)
-            |> Message.Create.Buttons.appointments
-            |> send ct requestId
+            (embassy, appointments) |> Buttons.Create.appointments |> send requestId ct
         | Confirmations(requestId, embassy, confirmations) ->
-            (embassy, confirmations)
-            |> Message.Create.Text.confirmation
-            |> send ct requestId
-        | Fail(requestId, error) -> error |> Message.Create.Text.error |> send ct requestId
+            (embassy, confirmations) |> Text.Create.confirmation |> send requestId ct
+        | Fail(requestId, error) -> error |> Text.Create.error |> send requestId ct

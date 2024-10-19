@@ -15,24 +15,31 @@ type Chat =
     { Id: ChatId
       Subscriptions: Set<RequestId> }
 
-module Message =
+module Response =
     open System.Threading
     open Web.Telegram.Domain.Producer
     open Microsoft.Extensions.Configuration
 
+    [<Literal>]
+    let StartCtx = "SUB"
+
+    [<Literal>]
+    let MineCtx = "INF"
+
     type Text =
-        | SupportedEmbassies of (ChatId -> Data)
+        | Embassies of (ChatId -> Async<Result<Data, Error'>>)
         | UserEmbassies of (ChatId -> IConfigurationRoot -> CancellationToken -> Async<Result<Data, Error'>>)
-        | SubscriptionResult of (ChatId -> IConfigurationRoot -> CancellationToken -> Async<Result<Data, Error'>>)
-        | UserSubscriptions of
-            ((ChatId * int) -> IConfigurationRoot -> CancellationToken -> Async<Result<Data, Error'>>)
+        | Subscribe of (ChatId -> IConfigurationRoot -> CancellationToken -> Async<Result<Data, Error'>>)
         | NoText
 
     type Callback =
-        | SupportedCountries of ((ChatId * int) -> Data)
-        | SupportedCities of ((ChatId * int) -> Data)
+        | Countries of ((ChatId * int) -> Async<Result<Data, Error'>>)
+        | Cities of ((ChatId * int) -> Async<Result<Data, Error'>>)
         | UserCountries of ((ChatId * int) -> IConfigurationRoot -> CancellationToken -> Async<Result<Data, Error'>>)
         | UserCities of ((ChatId * int) -> IConfigurationRoot -> CancellationToken -> Async<Result<Data, Error'>>)
+        | SubscriptionRequest of ((ChatId * int) -> Async<Result<Data, Error'>>)
+        | UserSubscriptions of
+            ((ChatId * int) -> IConfigurationRoot -> CancellationToken -> Async<Result<Data, Error'>>)
         | NoCallback
 
 
