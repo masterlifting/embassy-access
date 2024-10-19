@@ -3,6 +3,7 @@
 open System
 open Infrastructure
 open Web.Telegram.Domain.Consumer
+open EA.Telegram.Domain
 open EA.Telegram.Domain.Response
 open EA.Telegram.Responses
 
@@ -19,7 +20,7 @@ module private Router =
             | _ -> NoText
         | _ ->
             match s[0] with
-            | StartCtx ->
+            | Key.SUB ->
                 match s.Length - 1 with
                 | 4 -> Subscribe(Text.Create.subscribe (s[1], s[2], s[3], s[4]))
                 | _ -> NoText
@@ -33,13 +34,13 @@ module private Router =
         | 1 -> NoCallback
         | _ ->
             match s[0] with
-            | StartCtx ->
+            | Key.SUB ->
                 match s.Length - 1 with
                 | 1 -> Countries(Buttons.Create.countries s[1])
                 | 2 -> Cities(Buttons.Create.cities (s[1], s[2]))
                 | 3 -> SubscriptionRequest(Text.Create.subscriptionRequest (s[1], s[2], s[3]))
                 | _ -> NoCallback
-            | MineCtx ->
+            | Key.INF ->
                 match s.Length - 1 with
                 | 1 -> UserCountries(Buttons.Create.userCountries s[1])
                 | 2 -> UserCities(Buttons.Create.userCities (s[1], s[2]))
