@@ -722,7 +722,7 @@ module private Request =
                 ProcessState = Failed error
                 Attempt = attempt
                 Modified = DateTime.UtcNow }
-        |> ResultAsync.bind (fun _ -> Error <| error.extend $"Payload: %s{request.Payload}")
+        |> ResultAsync.bind (fun _ -> Error <| error.add $"Payload: %s{request.Payload}")
 
     let completeConfirmation deps request confirmation =
         async {

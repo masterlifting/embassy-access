@@ -14,7 +14,9 @@
 		<Compile Include="persistence\repositories\InMemoryRepository.fs" />
 		<Compile Include="persistence\Repository.fs" />
 		<Compile Include="persistence\Storage.fs" />
-		<Compile Include="Message.fs" />
+		<Compile Include="responses\Response.fs" />
+		<Compile Include="responses\Buttons.fs" />
+		<Compile Include="responses\Text.fs" />
 		<Compile Include="Producer.fs" />
 		<Compile Include="Consumer.fs" />
 		<Compile Include="Program.fs" />
