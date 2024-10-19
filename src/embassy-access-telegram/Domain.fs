@@ -11,6 +11,12 @@ module Key =
     [<Literal>]
     let Chats = "chats"
 
+    [<Literal>]
+    let SUB = "SUB"
+
+    [<Literal>]
+    let INF = "INF"
+
 type Chat =
     { Id: ChatId
       Subscriptions: Set<RequestId> }
@@ -19,12 +25,6 @@ module Response =
     open System.Threading
     open Web.Telegram.Domain.Producer
     open Microsoft.Extensions.Configuration
-
-    [<Literal>]
-    let StartCtx = "SUB"
-
-    [<Literal>]
-    let MineCtx = "INF"
 
     type Text =
         | Embassies of (ChatId -> Async<Result<Data, Error'>>)

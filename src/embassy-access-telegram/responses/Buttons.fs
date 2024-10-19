@@ -6,7 +6,7 @@ open Infrastructure
 open Web.Telegram.Domain.Producer
 open EA.Telegram.Persistence
 open EA.Telegram.Responses
-open EA.Telegram.Domain.Response
+open EA.Telegram.Domain
 open EA.Domain
 
 module Create =
@@ -28,7 +28,7 @@ module Create =
                 EA.Api.getEmbassies ()
                 |> Seq.concat
                 |> Seq.map EA.Mapper.Embassy.toExternal
-                |> Seq.map (fun embassy -> StartCtx + "|" + embassy.Name, embassy.Name)
+                |> Seq.map (fun embassy -> Key.SUB + "|" + embassy.Name, embassy.Name)
                 |> Seq.sortBy fst
                 |> Map
 
@@ -50,7 +50,7 @@ module Create =
                     Storage.Request.create cfg
                     |> ResultAsync.wrap (Repository.Query.Request.getEmbassies ct chat))
             |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
-            |> ResultAsync.map (Seq.map (fun embassy -> MineCtx + "|" + embassy.Name, embassy.Name))
+            |> ResultAsync.map (Seq.map (fun embassy -> Key.INF + "|" + embassy.Name, embassy.Name))
             |> ResultAsync.map (Seq.sortBy fst)
             |> ResultAsync.map Map
             |> ResultAsync.map (fun data ->
@@ -68,7 +68,7 @@ module Create =
                 |> Seq.map EA.Mapper.Embassy.toExternal
                 |> Seq.filter (fun embassy -> embassy.Name = embassy')
                 |> Seq.map _.Country
-                |> Seq.map (fun country -> StartCtx + "|" + embassy' + "|" + country.Name, country.Name)
+                |> Seq.map (fun country -> Key.SUB + "|" + embassy' + "|" + country.Name, country.Name)
                 |> Seq.sortBy fst
                 |> Map
 
@@ -91,7 +91,7 @@ module Create =
         |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
         |> ResultAsync.map (Seq.filter (fun embassy -> embassy.Name = embassy'))
         |> ResultAsync.map (Seq.map _.Country)
-        |> ResultAsync.map (Seq.map (fun country -> MineCtx + "|" + embassy' + "|" + country.Name, country.Name))
+        |> ResultAsync.map (Seq.map (fun country -> Key.INF + "|" + embassy' + "|" + country.Name, country.Name))
         |> ResultAsync.map (Seq.sortBy fst)
         |> ResultAsync.map Map
         |> ResultAsync.map (fun data ->
@@ -110,7 +110,7 @@ module Create =
             |> Seq.map _.Country
             |> Seq.filter (fun country -> country.Name = country')
             |> Seq.map _.City
-            |> Seq.map (fun city -> StartCtx + "|" + embassy' + "|" + country' + "|" + city.Name, city.Name)
+            |> Seq.map (fun city -> Key.SUB + "|" + embassy' + "|" + country' + "|" + city.Name, city.Name)
             |> Seq.sortBy fst
             |> Map
 
@@ -135,7 +135,9 @@ module Create =
         |> ResultAsync.map (Seq.map _.Country)
         |> ResultAsync.map (Seq.filter (fun city -> city.Name = country'))
         |> ResultAsync.map (Seq.map _.City)
-        |> ResultAsync.map (Seq.map (fun city -> MineCtx + "|" + embassy' + "|" + country' + "|" + city.Name, city.Name))
+        |> ResultAsync.map (
+            Seq.map (fun city -> Key.INF + "|" + embassy' + "|" + country' + "|" + city.Name, city.Name)
+        )
         |> ResultAsync.map (Seq.sortBy fst)
         |> ResultAsync.map Map
         |> ResultAsync.map (fun data ->

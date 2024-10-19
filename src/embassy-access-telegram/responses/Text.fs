@@ -6,7 +6,7 @@ open Infrastructure
 open Web.Telegram.Domain.Producer
 open EA.Telegram.Persistence
 open EA.Telegram.Responses
-open EA.Telegram.Domain.Response
+open EA.Telegram.Domain
 open EA.Domain
 
 
@@ -30,7 +30,7 @@ module Create =
             | Ok embassy ->
                 match embassy with
                 | Russian _ ->
-                    $"Send your payload using the following format: '{StartCtx}|{embassy'}|{country'}|{city'}|your_link_here'."
+                    $"Send your payload using the following format: '{Key.SUB}|{embassy'}|{country'}|{city'}|your_link_here'."
                 | _ -> $"Not supported embassy: '{embassy'}'."
             |> Response.create (chatId, msgId |> Replace)
             |> Text
