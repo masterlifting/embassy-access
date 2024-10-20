@@ -11,7 +11,7 @@ module Query =
         open EA.Persistence.Query.Filter.Request
         open EA.Persistence.Query.Request
 
-        let getOne ct query storage =
+        let getOne query ct storage =
             match ct |> notCanceled with
             | true ->
                 let filter (data: Request list) =
@@ -33,7 +33,7 @@ module Query =
                     <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
                 |> async.Return
 
-        let getMany ct query storage =
+        let getMany query ct storage =
             match ct |> notCanceled with
             | true ->
                 let filter (data: Request list) =
@@ -50,7 +50,8 @@ module Query =
                         data
                         |> List.filter (InMemory.makeAppointment query)
                         |> Query.paginate query.Pagination
-                    | Requests requestIds -> data |> List.filter (fun x -> requestIds.Contains x.Id)
+                    | ByIds requestIds -> data |> List.filter (fun x -> requestIds.Contains x.Id)
+                    | ByEmbassy embassy -> data |> List.filter (fun x -> x.Embassy = embassy)
 
                 storage
                 |> Query.Json.get
@@ -155,7 +156,7 @@ module Command =
                         let data = requests |> Array.removeAt index
                         (data, request))
 
-        let execute ct command storage =
+        let execute command ct storage =
             match ct |> notCanceled with
             | true ->
 

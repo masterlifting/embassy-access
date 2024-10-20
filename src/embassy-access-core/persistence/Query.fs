@@ -68,4 +68,5 @@ module Request =
     type GetMany =
         | SearchAppointments of Embassy
         | MakeAppointments of Embassy
-        | Requests of Set<RequestId>
+        | ByIds of Set<RequestId>
+        | ByEmbassy of Embassy

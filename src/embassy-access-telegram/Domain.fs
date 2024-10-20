@@ -5,6 +5,9 @@ open EA.Domain
 open Web.Telegram.Domain
 
 module Key =
+    open System
+    open System.Text
+    
     [<Literal>]
     let internal EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
 
@@ -16,6 +19,24 @@ module Key =
 
     [<Literal>]
     let INF = "INF"
+
+    [<Literal>]
+    let APT = "APT"
+
+    [<Literal>]
+    let CNF = "CNF"
+
+    let private toBase64 (input: string) =
+        let bytes = Encoding.UTF8.GetBytes(input)
+        Convert.ToBase64String(bytes)
+
+    let private fromBase64 (input: string) =
+        let bytes = Convert.FromBase64String(input)
+        Encoding.UTF8.GetString(bytes)
+
+    let wrap (values: string seq) = values |> String.concat "|" |> toBase64
+
+    let unwrap (value: string) = value |> fromBase64 |> fun x -> x.Split '|'
 
 type Chat =
     { Id: ChatId
@@ -40,6 +61,7 @@ module Response =
         | SubscriptionRequest of ((ChatId * int) -> Async<Result<Data, Error'>>)
         | UserSubscriptions of
             ((ChatId * int) -> IConfigurationRoot -> CancellationToken -> Async<Result<Data, Error'>>)
+        | ConfirmAppointment of (ChatId -> IConfigurationRoot -> CancellationToken -> Async<Result<Data, Error'>>)
         | NoCallback
 
 

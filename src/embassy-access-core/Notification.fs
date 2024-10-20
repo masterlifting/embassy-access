@@ -9,7 +9,7 @@ module Create =
         | Completed _ ->
             match request.Appointments.IsEmpty with
             | true -> None
-            | false -> Some <| Appointments(request.Id, request.Embassy, request.Appointments)
+            | false -> Some <| Appointments(request.Embassy, request.Appointments)
         | _ -> None
 
     let confirmations request =

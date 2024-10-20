@@ -18,7 +18,7 @@ module Query =
             | true ->
                 let filter (data: Chat list) =
                     match query with
-                    | Id id -> data |> List.tryFind (fun x -> x.Id = id)
+                    | ById id -> data |> List.tryFind (fun x -> x.Id = id)
 
                 storage
                 |> Query.Json.get
@@ -35,7 +35,8 @@ module Query =
             | true ->
                 let filter (data: Chat list) =
                     match query with
-                    | SearchSubscription subtId -> data |> List.filter (InMemory.hasSubscription subtId)
+                    | BySubscription subtId -> data |> List.filter (InMemory.hasSubscription subtId)
+                    | BySubscriptions subIds -> data |> List.filter (InMemory.hasSubscriptions subIds)
 
                 storage
                 |> Query.Json.get
@@ -121,7 +122,7 @@ module Command =
                         let data = chats |> Array.removeAt index
                         (data, chat))
 
-        let execute ct command storage =
+        let execute command ct storage =
             match ct |> notCanceled with
             | true ->
                 storage

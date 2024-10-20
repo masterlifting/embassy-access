@@ -6,7 +6,7 @@ open EA.Persistence
 
 let processRequest ct config storage =
     { Configuration = config
-      updateRequest = storage |> Repository.Command.Request.update ct
+      updateRequest = fun request -> storage |> Repository.Command.Request.update request ct
       getInitialPage =
         fun request client ->
             client
