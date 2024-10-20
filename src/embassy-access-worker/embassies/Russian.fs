@@ -26,7 +26,7 @@ let private createDeps ct configuration country =
         let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
         let processConfig = { TimeShift = timeShift }
         let! storage = configuration |> Persistence.Storage.Request.create
-        let notify = EA.Telegram.Producer.Produce.notification ct
+        let notify = EA.Telegram.Producer.Produce.notification configuration ct
 
         return
             { Config = processConfig
@@ -108,7 +108,7 @@ module private SearchAppointments =
     let private getRequests deps country =
         let query = Russian country |> EA.Persistence.Query.Request.SearchAppointments
 
-        deps.Storage |> EA.Persistence.Repository.Query.Request.getMany deps.ct query
+        deps.Storage |> EA.Persistence.Repository.Query.Request.getMany query deps.ct
 
     let private processRequests deps requests =
 
@@ -181,7 +181,7 @@ module private MakeAppointments =
     let private getRequests deps country =
         let query = Russian country |> EA.Persistence.Query.Request.MakeAppointments
 
-        deps.Storage |> EA.Persistence.Repository.Query.Request.getMany deps.ct query
+        deps.Storage |> EA.Persistence.Repository.Query.Request.getMany query deps.ct
 
     let private processRequests deps requests =
 

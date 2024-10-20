@@ -8,32 +8,32 @@ open Infrastructure.Logging
 
 module Query =
     module Request =
-        let getOne ct query storageType =
+        let getOne query ct storageType =
             Log.trace $"InMemory query request {query}"
 
             match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Query.Request.getOne ct query
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Request.getOne ct query
+            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Query.Request.getOne query ct
+            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Request.getOne query ct
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-        let getMany ct query storageType =
+        let getMany query ct storageType =
             Log.trace $"InMemory query request {query}"
 
             match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Query.Request.getMany ct query
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Request.getMany ct query
+            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Query.Request.getMany query ct
+            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Request.getMany query ct
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
 module Command =
     module Request =
-        let execute ct command storageType =
+        let execute command ct storageType =
             match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Request.execute ct command
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Request.execute ct command
+            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Request.execute command ct
+            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Request.execute command ct
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-        let update ct storage request =
-            let operation =
+        let update request ct storage =
+            let command =
                 request |> Command.Definitions.Request.Update.Request |> Command.Request.Update
 
-            storage |> execute ct operation
+            storage |> execute command ct

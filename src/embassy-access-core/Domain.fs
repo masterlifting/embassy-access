@@ -75,6 +75,12 @@ type RequestId =
         match this with
         | RequestId id -> id
 
+    static member create value =
+        match value with
+        | AP.IsGuid id -> RequestId id |> Ok
+        | _ -> $"RequestId value: {value}" |> NotSupported |> Error
+
+
     static member New = RequestId <| Guid.NewGuid()
 
 type Confirmation = { Description: string }
@@ -117,7 +123,7 @@ type Request =
 type Validation = Request -> Result<unit, Error'>
 
 type Notification =
-    | Appointments of (RequestId * Embassy * Set<Appointment>)
+    | Appointments of (Embassy * Set<Appointment>)
     | Confirmations of (RequestId * Embassy * Set<Confirmation>)
     | Fail of (RequestId * Error')
 

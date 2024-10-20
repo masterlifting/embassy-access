@@ -9,13 +9,13 @@ module Query =
     module Chat =
         Log.trace $"InMemory query request {query}"
 
-        let getOne ct query storageType =
+        let getOne query ct storageType =
             match storageType with
             | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Query.Chat.getOne ct query
             | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Chat.getOne ct query
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-        let getMany ct query storageType =
+        let getMany query ct storageType =
             Log.trace $"InMemory query request {query}"
 
             match storageType with
@@ -23,45 +23,66 @@ module Query =
             | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Chat.getMany ct query
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-        let tryFind ct chatId storage =
-            let query = Query.Chat.Id chatId
-            storage |> getOne ct query
+        let tryGetOne chatId ct storage =
+            let query = Query.Chat.GetOne.ById chatId
+            storage |> getOne query ct
 
-    module Request =
+        let getManyBySubscription requestId ct storage =
+            let query = Query.Chat.GetMany.BySubscription requestId
+            storage |> getMany query ct
 
-        let getRequests ct (chat: EA.Telegram.Domain.Chat) storage =
-            let query = EA.Persistence.Query.Request.GetMany.Requests chat.Subscriptions
+        let getManyBySubscriptions requestIds ct storage =
+            let query = Query.Chat.GetMany.BySubscriptions requestIds
+            storage |> getMany query ct
 
-            storage |> EA.Persistence.Repository.Query.Request.getMany ct query
+        let getChatRequests (chat: EA.Telegram.Domain.Chat) ct storage =
+            let query = EA.Persistence.Query.Request.GetMany.ByIds chat.Subscriptions
 
-        let getEmbassies ct (chat: EA.Telegram.Domain.Chat) storage =
-            let query = EA.Persistence.Query.Request.GetMany.Requests chat.Subscriptions
+            storage |> EA.Persistence.Repository.Query.Request.getMany query ct
+
+        let getChatEmbassies (chat: EA.Telegram.Domain.Chat) ct storage =
+            let query = EA.Persistence.Query.Request.GetMany.ByIds chat.Subscriptions
 
             storage
-            |> EA.Persistence.Repository.Query.Request.getMany ct query
+            |> EA.Persistence.Repository.Query.Request.getMany query ct
             |> ResultAsync.map (Seq.map _.Embassy)
+
+        let getEmbassyRequests embassy ct storage =
+            let query = EA.Persistence.Query.Request.GetMany.ByEmbassy embassy
+            storage |> EA.Persistence.Repository.Query.Request.getMany query ct
+
+        let getChatEmbassyRequests (chatId: Web.Telegram.Domain.ChatId) embassy ct storage =
+            storage
+            |> tryGetOne chatId ct
+            |> ResultAsync.bindAsync (function
+                | None -> Seq.empty |> Ok |> async.Return
+                | Some chat ->
+                    storage
+                    |> getChatRequests chat ct
+                    |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy)))
+
 
 module Command =
     module Chat =
-        let execute ct command storageType =
+        let execute command ct storageType =
             match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Chat.execute ct command
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Chat.execute ct command
+            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Chat.execute command ct
+            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Chat.execute command ct
             | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
 
-        let createOrUpdateSubscription ct (chatId, requestId) storage =
+        let createOrUpdateSubscription (chatId, requestId) ct storage =
             let command =
                 (chatId, requestId)
                 |> Command.Definitions.Chat.CreateOrUpdate.ChatSubscription
                 |> Command.Chat.CreateOrUpdate
 
-            storage |> execute ct command
+            storage |> execute command ct
 
     module Request =
         open EA.Domain
         open EA.Persistence.Command.Definitions.Request
 
-        let createOrUpdatePassportSearch ct (embassy, payload) storage =
+        let createOrUpdatePassportSearch (embassy, payload) ct storage =
             let commandDefinition: PassportsGroup =
                 { Embassy = embassy
                   Payload = payload
@@ -73,4 +94,4 @@ module Command =
                 |> EA.Persistence.Command.Definitions.Request.CreateOrUpdate.PassportsGroup
                 |> EA.Persistence.Command.Request.CreateOrUpdate
 
-            storage |> EA.Persistence.Repository.Command.Request.execute ct command
+            storage |> EA.Persistence.Repository.Command.Request.execute command ct

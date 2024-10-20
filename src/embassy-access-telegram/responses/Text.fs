@@ -18,10 +18,9 @@ module Create =
     let confirmation (embassy, (confirmations: Set<Confirmation>)) =
         fun chatId ->
             confirmations
-            |> Seq.map _.Description
+            |> Seq.map (fun confirmation -> $"'{embassy}'. Confirmation: {confirmation.Description}")
             |> String.concat "\n"
-            |> Response.create (chatId, New)
-            |> Text
+            |> Response.createText (chatId, New)
 
     let subscriptionRequest (embassy', country', city') =
         fun (chatId, msgId) ->
@@ -30,10 +29,10 @@ module Create =
             | Ok embassy ->
                 match embassy with
                 | Russian _ ->
-                    $"Send your payload using the following format: '{Key.SUB}|{embassy'}|{country'}|{city'}|your_link_here'."
+                    let key = [ Key.SUB; embassy'; country'; city' ] |> Key.wrap
+                    $"Send your payload using the following format: '{key}|your_link_here'."
                 | _ -> $"Not supported embassy: '{embassy'}'."
-            |> Response.create (chatId, msgId |> Replace)
-            |> Text
+            |> Response.createText (chatId, msgId |> Replace)
             |> Ok
             |> async.Return
 
@@ -42,19 +41,18 @@ module Create =
             EA.Mapper.Embassy.createInternal (embassy', country', city')
             |> ResultAsync.wrap (fun embassy ->
                 Storage.Chat.create cfg
-                |> ResultAsync.wrap (Repository.Query.Chat.tryFind ct chatId)
+                |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
                 |> ResultAsync.bindAsync (function
                     | None -> "Subscriptions" |> NotFound |> Error |> async.Return
                     | Some chat ->
                         Storage.Request.create cfg
-                        |> ResultAsync.wrap (Repository.Query.Request.getRequests ct chat))
+                        |> ResultAsync.wrap (Repository.Query.Chat.getChatRequests chat ct))
                 |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy))
                 |> ResultAsync.map (fun requests ->
                     requests
                     |> Seq.map (fun request -> $"{request.Id} -> {request.Payload}")
                     |> String.concat Environment.NewLine
-                    |> Response.create (chatId, msgId |> Replace)
-                    |> Text))
+                    |> (Response.createText (chatId, msgId |> Replace))))
 
     let subscribe (embassy', country', city', payload) =
         fun chatId cfg ct ->
@@ -67,19 +65,61 @@ module Create =
                     let createOrUpdatePassportSearchRequest ct =
                         Storage.Request.create cfg
                         |> ResultAsync.wrap (
-                            Repository.Command.Request.createOrUpdatePassportSearch ct (embassy, payload)
+                            Repository.Command.Request.createOrUpdatePassportSearch (embassy, payload) ct
                         )
 
                     let createOrUpdateChatSubscription ct =
                         ResultAsync.bindAsync (fun (request: Request) ->
                             Storage.Chat.create cfg
                             |> ResultAsync.wrap (
-                                Repository.Command.Chat.createOrUpdateSubscription ct (chatId, request.Id)
+                                Repository.Command.Chat.createOrUpdateSubscription (chatId, request.Id) ct
                             )
                             |> ResultAsync.map (fun _ -> request))
 
                     createOrUpdatePassportSearchRequest ct
                     |> createOrUpdateChatSubscription ct
                     |> ResultAsync.map (fun request -> $"Subscription has been activated for '{request.Embassy}'.")
-                    |> ResultAsync.map (Response.create (chatId, New) >> Text)
+                    |> ResultAsync.map (Response.createText (chatId, New))
                 | _ -> embassy' |> NotSupported |> Error |> async.Return)
+
+    let private confirmRussianAppointment request ct storage =
+        let config: EA.Embassies.Russian.Domain.ProcessRequestConfiguration =
+            { TimeShift = 0y }
+
+        (storage, config, ct) |> EA.Deps.Russian.processRequest |> EA.Api.processRequest
+        <| request
+
+    let confirmAppointment (embassy', country',city', payload) =
+        fun chatId cfg ct ->
+            (embassy', country', city')
+            |> EA.Mapper.Embassy.createInternal
+            |> Result.bind (fun embassy -> Storage.Request.create cfg |> Result.map (fun storage -> (embassy, storage)))
+            |> ResultAsync.wrap (fun (embassy, storage) ->
+                storage
+                |> Repository.Query.Chat.getChatEmbassyRequests chatId embassy ct
+                |> ResultAsync.bindAsync (Seq.map(fun request -> 
+                    match
+                        request.Appointments
+                        |> Seq.tryFind (fun appointment -> appointment.Value = payload)
+                    with
+                    | None -> "Appointment" |> NotFound |> Error |> async.Return
+                    | Some appointment ->
+                        let request =
+                            { request with
+                                ConfirmationState = Manual appointment }
+
+                        match request.Embassy with
+                        | Russian _ -> storage |> confirmRussianAppointment request ct
+                        | _ -> "Embassy" |> NotSupported |> Error |> async.Return
+                        |> ResultAsync.map (fun request ->
+                            let confirmation =
+                                request.Appointments
+                                |> Seq.tryFind (fun appointment -> appointment.Value = payload)
+                                |> Option.map (fun appointment ->
+                                    appointment.Confirmation
+                                    |> Option.map _.Description
+                                    |> Option.defaultValue "Not found")
+
+                            $"'{request.Embassy}'. Confirmation: {confirmation}")
+                        |> ResultAsync.map (Response.createText (chatId, New)))))
+                |> Async.Parallel

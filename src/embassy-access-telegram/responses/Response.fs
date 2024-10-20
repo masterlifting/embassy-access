@@ -9,6 +9,18 @@ let create<'a> (chatId, msgId) (value: 'a) =
       ChatId = chatId
       Value = value }
 
+let createText (chatId, msgId) (value: string) =
+    { Id = msgId
+      ChatId = chatId
+      Value = value }
+    |> Text
+
+let createButtons (chatId, msgId) (value: Buttons) =
+    { Id = msgId
+      ChatId = chatId
+      Value = value }
+    |> Buttons
+
 let Ok client ct =
     ResultAsync.bindAsync (fun data ->
         client

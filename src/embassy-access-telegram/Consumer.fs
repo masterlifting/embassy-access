@@ -9,7 +9,7 @@ open EA.Telegram.Responses
 
 module private Router =
     let text (value: string) =
-        let s = value.Split '|'
+        let s = value |> Key.unwrap
 
         match s.Length with
         | 0 -> NoText
@@ -19,32 +19,40 @@ module private Router =
             | "/mine" -> UserEmbassies(Buttons.Create.userEmbassies ())
             | _ -> NoText
         | _ ->
+            let length = s.Length - 1
+
             match s[0] with
             | Key.SUB ->
-                match s.Length - 1 with
+                match length with
                 | 4 -> Subscribe(Text.Create.subscribe (s[1], s[2], s[3], s[4]))
                 | _ -> NoText
             | _ -> NoText
 
     let callback (value: string) =
-        let s = value.Split '|'
+        let s = value |> Key.unwrap
 
         match s.Length with
         | 0 -> NoCallback
         | 1 -> NoCallback
         | _ ->
+            let length = s.Length - 1
+
             match s[0] with
             | Key.SUB ->
-                match s.Length - 1 with
+                match length with
                 | 1 -> Countries(Buttons.Create.countries s[1])
                 | 2 -> Cities(Buttons.Create.cities (s[1], s[2]))
                 | 3 -> SubscriptionRequest(Text.Create.subscriptionRequest (s[1], s[2], s[3]))
                 | _ -> NoCallback
             | Key.INF ->
-                match s.Length - 1 with
+                match length with
                 | 1 -> UserCountries(Buttons.Create.userCountries s[1])
                 | 2 -> UserCities(Buttons.Create.userCities (s[1], s[2]))
                 | 3 -> UserSubscriptions(Text.Create.userSubscriptions (s[1], s[2], s[3]))
+                | _ -> NoCallback
+            | Key.APT ->
+                match length with
+                | 4 -> ConfirmAppointment(Text.Create.confirmAppointment (s[1], s[2], s[3], s[4]))
                 | _ -> NoCallback
             | _ -> NoCallback
 
