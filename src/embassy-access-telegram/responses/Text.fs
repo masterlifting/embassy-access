@@ -89,7 +89,32 @@ module Create =
         (storage, config, ct) |> EA.Deps.Russian.processRequest |> EA.Api.processRequest
         <| request
 
-    let confirmAppointment (embassy', country',city', payload) =
+    let private handleRequest appointmentValue ct storage request =
+        match
+            request.Appointments
+            |> Seq.tryFind (fun appointment -> appointment.Value = appointmentValue)
+        with
+        | None -> "Appointment" |> NotFound |> Error |> async.Return
+        | Some appointment ->
+            let request =
+                { request with
+                    ConfirmationState = Manual appointment }
+
+            match request.Embassy with
+            | Russian _ -> storage |> confirmRussianAppointment request ct
+            | _ -> "Embassy" |> NotSupported |> Error |> async.Return
+            |> ResultAsync.map (fun request ->
+                let confirmation =
+                    request.Appointments
+                    |> Seq.tryFind (fun appointment -> appointment.Value = appointmentValue)
+                    |> Option.map (fun appointment ->
+                        appointment.Confirmation
+                        |> Option.map _.Description
+                        |> Option.defaultValue "Not found")
+
+                $"'{request.Embassy}'. Confirmation: {confirmation}")
+
+    let confirmAppointment (embassy', country', city', payload) =
         fun chatId cfg ct ->
             (embassy', country', city')
             |> EA.Mapper.Embassy.createInternal
@@ -97,29 +122,9 @@ module Create =
             |> ResultAsync.wrap (fun (embassy, storage) ->
                 storage
                 |> Repository.Query.Chat.getChatEmbassyRequests chatId embassy ct
-                |> ResultAsync.bindAsync (Seq.map(fun request -> 
-                    match
-                        request.Appointments
-                        |> Seq.tryFind (fun appointment -> appointment.Value = payload)
-                    with
-                    | None -> "Appointment" |> NotFound |> Error |> async.Return
-                    | Some appointment ->
-                        let request =
-                            { request with
-                                ConfirmationState = Manual appointment }
+                |> ResultAsync.mapAsync (Seq.map (handleRequest payload ct storage)))
+            |> ResultAsync.map (Seq.map (ResultAsync.map (Response.createText (chatId, New))))
 
-                        match request.Embassy with
-                        | Russian _ -> storage |> confirmRussianAppointment request ct
-                        | _ -> "Embassy" |> NotSupported |> Error |> async.Return
-                        |> ResultAsync.map (fun request ->
-                            let confirmation =
-                                request.Appointments
-                                |> Seq.tryFind (fun appointment -> appointment.Value = payload)
-                                |> Option.map (fun appointment ->
-                                    appointment.Confirmation
-                                    |> Option.map _.Description
-                                    |> Option.defaultValue "Not found")
 
-                            $"'{request.Embassy}'. Confirmation: {confirmation}")
-                        |> ResultAsync.map (Response.createText (chatId, New)))))
-                |> Async.Parallel
+
+///|> ResultAsync.map (Response.createText (chatId, New)))))

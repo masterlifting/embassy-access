@@ -11,7 +11,7 @@ open EA.Domain
 
 module Create =
 
-    let appointments (embassy, appointments: Set<Appointment>) =
+    let appointments (requestId, embassy, appointments: Set<Appointment>) =
         fun chatId ->
             let embassy = embassy |> EA.Mapper.Embassy.toExternal
 
