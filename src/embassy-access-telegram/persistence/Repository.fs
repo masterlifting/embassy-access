@@ -37,7 +37,6 @@ module Query =
 
         let getChatRequests (chat: EA.Telegram.Domain.Chat) ct storage =
             let query = EA.Persistence.Query.Request.GetMany.ByIds chat.Subscriptions
-
             storage |> EA.Persistence.Repository.Query.Request.getMany query ct
 
         let getChatEmbassies (chat: EA.Telegram.Domain.Chat) ct storage =
@@ -60,7 +59,6 @@ module Query =
                     storage
                     |> getChatRequests chat ct
                     |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy)))
-
 
 module Command =
     module Chat =
