@@ -59,6 +59,7 @@ module Query =
                     storage
                     |> getChatRequests chat ct
                     |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy)))
+                    |> ResultAsync.map List.ofSeq
 
 module Command =
     module Chat =
