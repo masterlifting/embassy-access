@@ -55,6 +55,17 @@ module private Router =
                 | 4 -> ConfirmAppointment(Text.Create.confirmAppointment (s[1], s[2], s[3], s[4]))
                 | _ -> NoCallback
             | _ -> NoCallback
+            
+    let callback' (value: string) =
+        let payload = value |> Key.unwrap'
+
+        match payload.Route with
+        | "countries/get" ->
+            let  data = payload.Data
+            match data.["embassy"] |> Json.deserialize<EA.Domain.External.Embassy> with
+            | Ok embassy -> Countries(Buttons.Create.countries embassy.Name)
+            | Error _ -> NoCallback
+        | _ -> NoCallback
 
 module private Consume =
     let text (msg: Dto<string>) cfg ct client =
@@ -66,7 +77,7 @@ module private Consume =
         | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
     let callback (msg: Dto<string>) cfg ct client =
-        match msg.Value |> Router.callback with
+        match msg.Value |> Router.callback' with
         | Countries cmd -> cmd (msg.ChatId, msg.Id) |> Response.Ok client ct
         | Cities cmd -> cmd (msg.ChatId, msg.Id) |> Response.Ok client ct
         | UserCountries cmd -> cmd (msg.ChatId, msg.Id) cfg ct |> Response.Result msg.ChatId client ct
