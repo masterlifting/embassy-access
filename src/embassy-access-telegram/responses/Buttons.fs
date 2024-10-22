@@ -47,21 +47,33 @@ module Create =
     //            |> Map }
     //        |> Response.createButtons (chatId, New)
 
+
+    let private toPayload name embassy =
+        embassy
+        |> Json.serialize
+        |> Result.map (fun embassy ->
+            let payload: Web.Telegram.Domain.Payload =
+                { Route = "countries/get"
+                  Data = Map [ "embassy", embassy ] }
+
+            payload |> Key.wrap', name)
+
     let embassies () =
         fun chatId ->
-            let data =
-                EA.Api.getEmbassies ()
-                |> Seq.concat
-                |> Seq.map EA.Mapper.Embassy.toExternal
-                |> Seq.map (fun embassy -> [ Key.SUB; embassy.Name ] |> Key.wrap, embassy.Name)
-                |> Seq.sortBy fst
-                |> Map
-
-            { Buttons.Name = "Available Embassies"
-              Columns = 3
-              Data = data }
-            |> Response.createButtons (chatId, New)
-            |> Ok
+            EA.Api.getEmbassies ()
+            |> Seq.concat
+            |> Seq.map EA.Mapper.Embassy.toExternal
+            // |> Seq.map (fun embassy ->
+            //     [ Key.SUB; embassy.Name ] |> Key.wrap, embassy.Name)
+            |> Seq.map (fun embassy -> embassy |> toPayload embassy.Name)
+            |> Result.choose
+            |> Result.map (Seq.sortBy snd)
+            |> Result.map Map
+            |> Result.map (fun data ->
+                { Buttons.Name = "Available Embassies"
+                  Columns = 3
+                  Data = data }
+                |> Response.createButtons (chatId, New))
             |> async.Return
 
     let userEmbassies () =
