@@ -17,23 +17,14 @@ let private getSubscriptionChats requestId cfg ct =
     Storage.Chat.create cfg
     |> ResultAsync.wrap (Repository.Query.Chat.getManyBySubscription requestId ct)
 
-let private getEmbassyChatSubscriptionsMap embassy cfg ct =
+let private getEmbassyChats embassy cfg ct =
     Storage.Request.create cfg
     |> ResultAsync.wrap (fun storage ->
-
-        let filterSubscriptions subs chat =
-            chat, subs |> Seq.filter (fun sub -> chat.Subscriptions |> Set.contains sub)
-
-        let getChatSubscriptions subscriptions =
-            storage
-            |> Repository.Query.Chat.getManyBySubscriptions subscriptions ct
-            |> ResultAsync.map (Seq.map (filterSubscriptions subscriptions))
-            |> ResultAsync.map Map
-
         storage
         |> Repository.Query.Chat.getEmbassyRequests embassy ct
         |> ResultAsync.map (Seq.map _.Id)
-        |> ResultAsync.bindAsync getChatSubscriptions)
+        |> ResultAsync.bindAsync (fun subscriptions ->
+            storage |> Repository.Query.Chat.getManyBySubscriptions subscriptions ct))
 
 let private send ct message =
     Key.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
@@ -53,19 +44,9 @@ module Produce =
     let notification cfg ct =
         function
         | Appointments(embassy, appointments) ->
-            getEmbassyChatSubscriptionsMap embassy cfg ct
-            |> ResultAsync.bindAsync (fun chatSubMap ->
-                let a =
-                    chatSubMap
-                    |> Map.toSeq
-                    |> Seq.map (fun (chat, subs) ->
-                        (subs, embassy, appointments)
-                        |> Buttons.Create.appointments
-                        |>  spread [ chat ] ct)
-                    |> Async.Parallel
-                    |> Async.map Result.choose
-                
-                
+            getEmbassyChats embassy cfg ct
+            |> ResultAsync.bindAsync (fun chats ->
+                (embassy, appointments) |> Buttons.Create.appointments |> spread chats ct)
         | Confirmations(requestId, embassy, confirmations) ->
             getSubscriptionChats requestId cfg ct
             |> ResultAsync.bindAsync (fun chats ->

@@ -11,7 +11,7 @@ open EA.Domain
 
 module Create =
 
-    let appointments (requestId, embassy, appointments: Set<Appointment>) =
+    let appointments (embassy, appointments: Set<Appointment>) =
         fun chatId ->
             let embassy = embassy |> EA.Mapper.Embassy.toExternal
 
@@ -29,6 +29,23 @@ module Create =
                     x.Description |> Option.defaultValue "No description")
                 |> Map }
             |> Response.createButtons (chatId, New)
+
+    //let appointments' (requests, appointmentValue) =
+    //    fun chatId ->
+    //        let embassy = appointment.Embassy |> EA.Mapper.Embassy.toExternal
+
+    //        { Buttons.Name = $"Appointments for {embassy}"
+    //          Columns = 1
+    //          Data =
+    //            requests
+    //            |> Seq.map (fun x ->
+    //                [ Key.APT
+    //                  x.Id.Value |> string
+    //                  appointmentValue ]
+    //                |> Key.wrap,
+    //                x.Payload)
+    //            |> Map }
+    //        |> Response.createButtons (chatId, New)
 
     let embassies () =
         fun chatId ->

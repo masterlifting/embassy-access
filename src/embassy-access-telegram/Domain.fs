@@ -26,17 +26,9 @@ module Key =
     [<Literal>]
     let CNF = "CNF"
 
-    let private toBase64 (input: string) =
-        let bytes = Encoding.UTF8.GetBytes(input)
-        Convert.ToBase64String(bytes)
+    let wrap (values: string seq) = values |> String.concat "|"
 
-    let private fromBase64 (input: string) =
-        let bytes = Convert.FromBase64String(input)
-        Encoding.UTF8.GetString(bytes)
-
-    let wrap (values: string seq) = values |> String.concat "|" |> toBase64
-
-    let unwrap (value: string) = value |> fromBase64 |> fun x -> x.Split '|'
+    let unwrap (value: string) = value |> fun x -> x.Split '|'
 
 type Chat =
     { Id: ChatId

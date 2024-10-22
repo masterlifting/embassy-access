@@ -89,30 +89,32 @@ module Create =
         (storage, config, ct) |> EA.Deps.Russian.processRequest |> EA.Api.processRequest
         <| request
 
-    let private handleRequest appointmentValue ct storage request =
-        match
-            request.Appointments
-            |> Seq.tryFind (fun appointment -> appointment.Value = appointmentValue)
-        with
-        | None -> "Appointment" |> NotFound |> Error |> async.Return
-        | Some appointment ->
-            let request =
-                { request with
-                    ConfirmationState = Manual appointment }
+    let private handleRequest storage ct (request, appointmentValue) =
 
-            match request.Embassy with
-            | Russian _ -> storage |> confirmRussianAppointment request ct
-            | _ -> "Embassy" |> NotSupported |> Error |> async.Return
-            |> ResultAsync.map (fun request ->
-                let confirmation =
-                    request.Appointments
-                    |> Seq.tryFind (fun appointment -> appointment.Value = appointmentValue)
-                    |> Option.map (fun appointment ->
-                        appointment.Confirmation
-                        |> Option.map _.Description
-                        |> Option.defaultValue "Not found")
+        let appointment =
+            { Value = appointmentValue
+              Date = DateOnly.FromDateTime(DateTime.Now)
+              Time = TimeOnly.FromDateTime(DateTime.Now)
+              Confirmation = None
+              Description = None }
 
-                $"'{request.Embassy}'. Confirmation: {confirmation}")
+        let request =
+            { request with
+                ConfirmationState = Manual appointment }
+
+        match request.Embassy with
+        | Russian _ -> storage |> confirmRussianAppointment request ct
+        | _ -> "Embassy" |> NotSupported |> Error |> async.Return
+        |> ResultAsync.map (fun request ->
+            let confirmation =
+                request.Appointments
+                |> Seq.tryFind (fun x -> x.Value = appointmentValue)
+                |> Option.map (fun appointment ->
+                    appointment.Confirmation
+                    |> Option.map _.Description
+                    |> Option.defaultValue "Not found")
+
+            $"'{request.Embassy}'. Confirmation: {confirmation}")
 
     let confirmAppointment (embassy', country', city', payload) =
         fun chatId cfg ct ->
@@ -122,9 +124,10 @@ module Create =
             |> ResultAsync.wrap (fun (embassy, storage) ->
                 storage
                 |> Repository.Query.Chat.getChatEmbassyRequests chatId embassy ct
-                |> ResultAsync.mapAsync (Seq.map (handleRequest payload ct storage)))
-            |> ResultAsync.map (Seq.map (ResultAsync.map (Response.createText (chatId, New))))
-
-
-
-///|> ResultAsync.map (Response.createText (chatId, New)))))
+                |> ResultAsync.bindAsync (fun requests ->
+                    match requests.Length with
+                    | 0 -> "Request" |> NotFound |> Error |> async.Return
+                    | 1 ->
+                        (requests[0], payload)
+                        |> handleRequest storage ct
+                        |> ResultAsync.map (Response.createText (chatId, New))))
