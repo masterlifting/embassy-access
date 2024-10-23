@@ -29,8 +29,12 @@ module Create =
             | Ok embassy ->
                 match embassy with
                 | Russian _ ->
-                    let key = [ Key.SUB; embassy'; country'; city' ] |> Key.wrap
-                    $"Send your payload using the following format: '{key}|your_link_here'."
+                    let command =
+                        (embassy', country', city', "your_link_here")
+                        |> EA.Telegram.Command.Name.Subscribe
+                        |> EA.Telegram.Command.set
+
+                    $"Send your payload using the following format: '{command}'."
                 | _ -> $"Not supported embassy: '{embassy'}'."
             |> Response.createText (chatId, msgId |> Replace)
             |> Ok
