@@ -90,6 +90,27 @@ module Create =
             |> Response.createButtons (chatId, msgId |> Replace)
             |> Ok
             |> async.Return
+            
+        let countries' embassy =
+            fun (chatId, msgId) ->
+                EA.Api.getEmbassies ()
+                |> Seq.concat
+                |> Seq.filter (fun embassy -> embassy = embassy)
+                |> Seq.map _.Country
+                |> Seq.map (fun country ->
+                    (embassy, country.Name)
+                    |> EA.Telegram.Command.Name.Cities
+                    |> EA.Telegram.Command.set,
+                    country.Name)
+                |> Seq.sortBy fst
+                |> Map
+                |> fun data ->
+                    { Buttons.Name = $"Available Countries"
+                      Columns = 3
+                      Data = data }
+                    |> Response.createButtons (chatId, msgId |> Replace)
+                |> Ok
+                |> async.Return
 
     let userCountries embassy' =
         fun (chatId, msgId) cfg ct ->
