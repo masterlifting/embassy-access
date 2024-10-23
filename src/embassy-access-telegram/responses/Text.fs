@@ -6,7 +6,6 @@ open Infrastructure
 open Web.Telegram.Domain.Producer
 open EA.Telegram.Persistence
 open EA.Telegram.Responses
-open EA.Telegram.Domain
 open EA.Domain
 
 

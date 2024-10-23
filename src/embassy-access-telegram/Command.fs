@@ -1,6 +1,8 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Command
 
+open Infrastructure
+
 module private List =
     [<Literal>]
     let Start = "/start"
@@ -10,6 +12,9 @@ module private List =
 
     [<Literal>]
     let Countries = "/countries"
+    
+    [<Literal>]
+    let Countries' = "/countries'"
 
     [<Literal>]
     let Cities = "/cities"
@@ -36,6 +41,7 @@ type Name =
     | Start
     | Mine
     | Countries of string
+    | Countries' of EA.Domain.Embassy
     | UserCountries of string
     | Cities of string * string
     | UserCities of string * string
@@ -51,6 +57,9 @@ let set command =
     | Start -> List.Start
     | Mine -> List.Mine
     | Countries embassy -> [ List.Countries; embassy ] |> build
+    | Countries' embassy ->
+        let embassy = embassy |> EA.Mapper.Embassy.toExternal |> Json.serialize |> Result.defaultValue ""
+        [ List.Countries'; embassy ] |> build
     | Cities(embassy, country) -> [ List.Cities; embassy; country ] |> build
     | UserCountries embassy -> [ List.UserCountries; embassy ] |> build
     | UserCities(embassy, country) -> [ List.UserCities; embassy; country ] |> build
@@ -74,6 +83,12 @@ let tryFind (value: string) =
         | List.Countries ->
             match argsLength with
             | 1 -> Some(Countries(parts[1]))
+            | _ -> None
+        | List.Countries' ->
+            match argsLength with
+            | 1 ->
+                let  embassy = parts[1] |> Json.deserialize<EA.Domain.External.Embassy> |> Result.defaultValue Unchecked.defaultof<_> |> EA.Mapper.Embassy.toInternal
+                Some(Countries'(embassy))
             | _ -> None
         | List.Cities ->
             match argsLength with
