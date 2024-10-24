@@ -26,25 +26,39 @@ module Create =
                 |> Map }
             |> Response.createButtons (chatId, New)
 
-    let embassies () =
-        fun chatId ->
-            EA.Api.getEmbassies ()
-            |> Seq.concat
-            |> Seq.map EA.Mapper.Embassy.toExternal
-            |> Seq.map (fun embassy ->
-                embassy.Name |> EA.Telegram.Command.Name.Countries |> EA.Telegram.Command.set, embassy.Name)
-            |> Seq.sortBy snd
-            |> Map
-            |> fun data ->
-                { Buttons.Name = "Available Embassies"
-                  Columns = 3
-                  Data = data }
-                |> Response.createButtons (chatId, New)
-            |> Ok
-            |> async.Return
+    let embassies chatId =
+        EA.Api.getEmbassies ()
+        |> Seq.concat
+        |> Seq.map EA.Mapper.Embassy.toExternal
+        |> Seq.map (fun embassy ->
+            embassy.Name |> EA.Telegram.Command.Name.Countries |> EA.Telegram.Command.set, embassy.Name)
+        |> Seq.sortBy snd
+        |> Map
+        |> fun data ->
+            { Buttons.Name = "Available Embassies"
+              Columns = 3
+              Data = data }
+            |> Response.createButtons (chatId, New)
+        |> Ok
+        |> async.Return
 
-    let userEmbassies () =
-        fun chatId cfg ct ->
+    let embassies' chatId =
+        EA.Api.getEmbassies ()
+        |> Seq.concat
+        |> Seq.map (fun embassy ->
+            embassy |> EA.Telegram.Command.Name.Countries' |> EA.Telegram.Command.set, embassy |> string)
+        |> Seq.sortBy snd
+        |> Map
+        |> fun data ->
+            { Buttons.Name = "Available Embassies"
+              Columns = 3
+              Data = data }
+            |> Response.createButtons (chatId, New)
+        |> Ok
+        |> async.Return
+
+    let userEmbassies chatId =
+        fun cfg ct ->
             Storage.Chat.create cfg
             |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
             |> ResultAsync.bindAsync (function
@@ -90,27 +104,6 @@ module Create =
             |> Response.createButtons (chatId, msgId |> Replace)
             |> Ok
             |> async.Return
-            
-        let countries' embassy =
-            fun (chatId, msgId) ->
-                EA.Api.getEmbassies ()
-                |> Seq.concat
-                |> Seq.filter (fun embassy -> embassy = embassy)
-                |> Seq.map _.Country
-                |> Seq.map (fun country ->
-                    (embassy, country.Name)
-                    |> EA.Telegram.Command.Name.Cities
-                    |> EA.Telegram.Command.set,
-                    country.Name)
-                |> Seq.sortBy fst
-                |> Map
-                |> fun data ->
-                    { Buttons.Name = $"Available Countries"
-                      Columns = 3
-                      Data = data }
-                    |> Response.createButtons (chatId, msgId |> Replace)
-                |> Ok
-                |> async.Return
 
     let userCountries embassy' =
         fun (chatId, msgId) cfg ct ->

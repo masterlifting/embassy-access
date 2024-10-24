@@ -1,7 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Command
 
-open Infrastructure
+open Infrastructure.Logging
 
 module private List =
     [<Literal>]
@@ -12,9 +12,9 @@ module private List =
 
     [<Literal>]
     let Countries = "/countries"
-    
+
     [<Literal>]
-    let Countries' = "/countries'"
+    let Countries' = "1"
 
     [<Literal>]
     let Cities = "/cities"
@@ -52,13 +52,17 @@ type Name =
 
 let private build args = args |> String.concat "|"
 
+let private printSize (value: string) =
+    let size  = System.Text.Encoding.UTF8.GetByteCount(value)
+    $"'{value}' -> {size}" |> Log.info
+
 let set command =
     match command with
     | Start -> List.Start
     | Mine -> List.Mine
     | Countries embassy -> [ List.Countries; embassy ] |> build
     | Countries' embassy ->
-        let embassy = embassy |> EA.Mapper.Embassy.toExternal |> Json.serialize |> Result.defaultValue ""
+        let embassy = embassy |> SerDe.Emassy.toCompactString
         [ List.Countries'; embassy ] |> build
     | Cities(embassy, country) -> [ List.Cities; embassy; country ] |> build
     | UserCountries embassy -> [ List.UserCountries; embassy ] |> build
@@ -68,6 +72,9 @@ let set command =
     | Subscribe(embassy, country, city, payload) -> [ List.Subscribe; embassy; country; city; payload ] |> build
     | ConfirmAppointment(embassy, country, city, payload) ->
         [ List.ConfirmAppointment; embassy; country; city; payload ] |> build
+    |> fun result -> 
+        result |> printSize 
+        result
 
 let tryFind (value: string) =
     let parts = value.Split '|'
@@ -87,7 +94,7 @@ let tryFind (value: string) =
         | List.Countries' ->
             match argsLength with
             | 1 ->
-                let  embassy = parts[1] |> Json.deserialize<EA.Domain.External.Embassy> |> Result.defaultValue Unchecked.defaultof<_> |> EA.Mapper.Embassy.toInternal
+                let embassy = parts[1] |> SerDe.Emassy.fromCompactString
                 Some(Countries'(embassy))
             | _ -> None
         | List.Cities ->
