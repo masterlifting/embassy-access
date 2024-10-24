@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Responses.Response
+module EA.Telegram.Response
 
 open Infrastructure
 open Web.Telegram.Domain.Producer
@@ -8,18 +8,6 @@ let create<'a> (chatId, msgId) (value: 'a) =
     { Id = msgId
       ChatId = chatId
       Value = value }
-
-let createText (chatId, msgId) (value: string) =
-    { Id = msgId
-      ChatId = chatId
-      Value = value }
-    |> Text
-
-let createButtons (chatId, msgId) (value: Buttons) =
-    { Id = msgId
-      ChatId = chatId
-      Value = value }
-    |> Buttons
 
 let Ok client ct =
     ResultAsync.bindAsync (fun data ->
@@ -43,3 +31,20 @@ let Result chatId client ct =
                 | Ok _ -> return Error error
                 | Error error -> return Error error
         }
+
+module Text =
+    let error (error: Error') =
+        fun chatId -> error.Message |> create (chatId, New) |> Text
+
+    let create (chatId, msgId) (value: string) =
+        { Id = msgId
+          ChatId = chatId
+          Value = value }
+        |> Text
+
+module Buttons =
+    let create (chatId, msgId) (value: Buttons) =
+        { Id = msgId
+          ChatId = chatId
+          Value = value }
+        |> Buttons

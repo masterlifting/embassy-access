@@ -1,11 +1,7 @@
 ﻿module EA.Telegram.Domain
 
-open System.Threading
-open Microsoft.Extensions.Configuration
-open Infrastructure
 open EA.Domain
 open Web.Telegram.Domain
-open Web.Telegram.Domain.Producer
 
 module Key =
 
