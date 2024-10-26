@@ -41,18 +41,18 @@ module private SerDe =
     module Embassy =
         open EA.Mapper.Embassy
 
-        let wrap (embassy: EA.Domain.Embassy) =
+        let wrap (embassy: Embassy) =
             let external = toExternal embassy
             let sb = StringBuilder()
             sb.Append external.Name |> ignore
-            sb.Append '|' |> ignore
+            sb.Append ',' |> ignore
             sb.Append external.Country.Name |> ignore
-            sb.Append '|' |> ignore
+            sb.Append ',' |> ignore
             sb.Append external.Country.City.Name |> ignore
             sb.ToString()
 
         let unwrap (value: string) =
-            let parts = value.Split '|'
+            let parts = value.Split ','
             let embassy = parts[0]
             let country = parts[1]
             let city = parts[2]
@@ -60,17 +60,43 @@ module private SerDe =
             (embassy, country, city)
             |> createInternal
             |> Result.defaultValue (Unchecked.defaultof<_>)
+            
+    module Appointment =
+        open EA.Mapper.Appointment
+        
+        let wrap (appointment: Appointment) =
+            let external = toExternal appointment
+            let sb = StringBuilder()
+            sb.Append external.Value |> ignore
+            sb.Append ',' |> ignore
+            sb.Append external.Description |> ignore
+            sb.ToString()
+            
+        let unwrap (value: string) =
+            let parts = value.Split ','
+            let value = parts[0]
+            let description = parts[1]
+            
+            let appointment = {
+                Value = value
+                Date = Unchecked.defaultof<_>
+                Time = Unchecked.defaultof<_>
+                Confirmation = None 
+                Description = None
+            }
+            appointment
+            
 
 type Name =
     | Start
     | Mine
-    | Countries of Embassy
-    | UserCountries of Embassy
-    | Cities of Embassy *Country
-    | UserCities of Embassy* Country
-    | SubscriptionRequest of Embassy * Country * City
-    | Subscribe of Embassy
-    | UserSubscriptions of Embassy * Country * City
+    | Countries of embassy: string
+    | UserCountries of embassy: string
+    | Cities of embassy: string * country: string
+    | UserCities of embassy: string * country: string
+    | SubscriptionRequest of Embassy
+    | Subscribe of Embassy * payload: string
+    | UserSubscriptions of Embassy
     | ConfirmAppointment of Embassy * Appointment
 
 let private build args = args |> String.concat "|"
@@ -87,12 +113,19 @@ let private create command =
     | Cities(embassy, country) -> [ List.Cities; embassy; country ] |> build
     | UserCountries embassy -> [ List.UserCountries; embassy ] |> build
     | UserCities(embassy, country) -> [ List.UserCities; embassy; country ] |> build
-    | UserSubscriptions(embassy, country, city) -> [ List.UserSubscriptions; embassy; country; city ] |> build
-    | SubscriptionRequest(embassy, country, city) -> [ List.SubscriptionRequest; embassy; country; city ] |> build
-    | Subscribe(embassy, country, city, payload) -> [ List.Subscribe; embassy; country; city; payload ] |> build
+    | UserSubscriptions embassy ->
+        let embassy = embassy |> SerDe.Embassy.wrap
+        [ List.UserSubscriptions; embassy ] |> build
+    | SubscriptionRequest embassy ->
+        let embassy = embassy |> SerDe.Embassy.wrap
+        [ List.SubscriptionRequest; embassy ] |> build
+    | Subscribe (embassy, payload) ->
+        let embassy = embassy |> SerDe.Embassy.wrap
+        [ List.Subscribe; embassy; payload ] |> build
     | ConfirmAppointment(embassy, appointment) ->
-
-        [ List.ConfirmAppointment; embassy; country; city; payload ] |> build
+        let embassy = embassy |> SerDe.Embassy.wrap
+        let appointment = appointment |> SerDe.Appointment.wrap
+        [ List.ConfirmAppointment; embassy; appointment ] |> build
     |> fun result ->
         result |> printSize
         result
@@ -126,19 +159,29 @@ let tryFind (value: string) =
             | _ -> None
         | List.SubscriptionRequest ->
             match argsLength with
-            | 3 -> Some(SubscriptionRequest(parts[1], parts[2], parts[3]))
+            | 1 ->
+                let embassy = parts[1] |> SerDe.Embassy.unwrap
+                Some(SubscriptionRequest(embassy))
             | _ -> None
         | List.Subscribe ->
             match argsLength with
-            | 4 -> Some(Subscribe(parts[1], parts[2], parts[3], parts[4]))
+            | 2 ->
+                let embassy = parts[1] |> SerDe.Embassy.unwrap
+                let payload = parts[2]
+                Some(Subscribe(embassy, payload))
             | _ -> None
         | List.UserSubscriptions ->
             match argsLength with
-            | 3 -> Some(UserSubscriptions(parts[1], parts[2], parts[3]))
+            | 1 ->
+                let embassy = parts[1] |> SerDe.Embassy.unwrap
+                Some(UserSubscriptions(embassy))
             | _ -> None
         | List.ConfirmAppointment ->
             match argsLength with
-            | 4 -> Some(ConfirmAppointment(parts[1], parts[2], parts[3], parts[4]))
+            | 2 ->
+                let embassy = parts[1] |> SerDe.Embassy.unwrap
+                let appointment = parts[2] |> SerDe.Appointment.unwrap
+                Some(ConfirmAppointment(embassy,appointment))
             | _ -> None
         | _ -> None
 
@@ -166,11 +209,14 @@ module Create =
             |> Seq.map (fun confirmation -> $"'{embassy}'. Confirmation: {confirmation.Description}")
             |> String.concat "\n"
             |> Response.Text.create (chatId, New)
-
+            
     let start chatId =
-        EA.Api.getEmbassies ()
-        |> Seq.map (fun embassy -> embassy |> Name.Countries |> create, embassy.Name)
-        |> Seq.sortBy snd
+         EA.Api.getEmbassies ()
+        |> Seq.map EA.Mapper.Embassy.toExternal
+        |> Seq.groupBy _.Name
+        |> Seq.map fst
+        |> Seq.sort
+        |> Seq.map (fun embassyName -> embassyName |> Name.Countries |> create, embassyName)
         |> Map
         |> fun data ->
             { Buttons.Name = "Embassies"
@@ -179,6 +225,46 @@ module Create =
             |> Response.Buttons.create (chatId, New)
         |> Ok
         |> async.Return
+
+    let countries embassyName =
+        fun (chatId, msgId) ->
+            let data =
+                EA.Api.getEmbassies ()
+                |> Seq.map EA.Mapper.Embassy.toExternal
+                |> Seq.filter (fun embassy -> embassy.Name = embassyName)
+                |> Seq.groupBy _.Country.Name
+                |> Seq.map fst
+                |> Seq.sort
+                |> Seq.map (fun countryName -> (embassyName, countryName) |> Name.Cities |> create, countryName)
+                |> Map
+
+            { Buttons.Name = $"Countries"
+              Columns = 3
+              Data = data }
+            |> Response.Buttons.create (chatId, msgId |> Replace)
+            |> Ok
+            |> async.Return
+    
+    let cities (embassyName, countryName) =
+        fun (chatId, msgId) ->
+            EA.Api.getEmbassies ()
+            |> Seq.map EA.Mapper.Embassy.toExternal
+            |> Seq.filter (fun embassy -> embassy.Name = embassyName && embassy.Country.Name = countryName)
+            |> Seq.groupBy _.Country.City.Name
+            |> Seq.sortBy fst
+            |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
+            |> Seq.map (fun embassy ->
+                embassy
+                |> EA.Mapper.Embassy.toInternal
+                |> Result.map (fun x -> x |> Name.SubscriptionRequest |> create, embassy.Country.City.Name))
+            |> Result.choose
+            |> Result.map Map
+            |> Result.map(fun data ->
+                { Buttons.Name = $"Cities"
+                  Columns = 3
+                  Data = data }
+                |> Response.Buttons.create (chatId, msgId |> Replace))
+            |> async.Return
 
     let mine chatId =
         fun cfg ct ->
@@ -189,31 +275,21 @@ module Create =
                 | Some chat ->
                     Storage.Request.create cfg
                     |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-            |> ResultAsync.map (Seq.map (fun embassy -> embassy |> Name.UserCountries |> create, embassy.Name))
-            |> ResultAsync.map (Seq.sortBy snd)
-            |> ResultAsync.map Map
+            |> ResultAsync.map (fun embassies ->
+                embassies
+                |> Seq.map EA.Mapper.Embassy.toExternal
+                |> Seq.groupBy _.Name
+                |> Seq.map fst
+                |> Seq.sort
+                |> Seq.map (fun embassyName -> embassyName |> Name.UserCountries |> create, embassyName)
+                |> Map)
             |> ResultAsync.map (fun data ->
                 { Buttons.Name = "My Embassies"
                   Columns = 3
                   Data = data }
                 |> Response.Buttons.create (chatId, New))
 
-    let countries embassy =
-        fun (chatId, msgId) ->
-            let data =
-                EA.Api.getEmbassyCountries embassy
-                |> Seq.map (fun country -> country |> Name.Cities |> create, country.Name)
-                |> Seq.sortBy snd
-                |> Map
-
-            { Buttons.Name = $"Available Countries"
-              Columns = 3
-              Data = data }
-            |> Response.Buttons.create (chatId, msgId |> Replace)
-            |> Ok
-            |> async.Return
-
-    let userCountries embassy =
+    let userCountries embassyName =
         fun (chatId, msgId) cfg ct ->
             Storage.Chat.create cfg
             |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
@@ -222,33 +298,22 @@ module Create =
                 | Some chat ->
                     Storage.Request.create cfg
                     |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-            |> ResultAsync.map (Seq.filter (fun x -> x = embassy))
-            |> ResultAsync.map (Seq.map _.Country)
-            |> ResultAsync.map (Seq.map (fun country -> country |> Name.UserCities |> create, country.Name))
-            |> ResultAsync.map (Seq.sortBy snd)
-            |> ResultAsync.map Map
+            |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
+            |> ResultAsync.map (fun embassies ->
+                embassies
+                |> Seq.filter (fun embassy -> embassy.Name = embassyName)
+                |> Seq.groupBy _.Country.Name
+                |> Seq.map fst
+                |> Seq.sort
+                |> Seq.map (fun countryName -> (embassyName, countryName) |> Name.UserCities |> create, countryName)
+                |> Map)
             |> ResultAsync.map (fun data ->
                 { Buttons.Name = $"My Countries"
                   Columns = 3
                   Data = data }
                 |> Response.Buttons.create (chatId, msgId |> Replace))
 
-    let cities (embassy, country) =
-        fun (chatId, msgId) ->
-            let data =
-                EA.Api.getEmbassyCountryCities embassy country
-                |> Seq.map (fun city -> (embassy, country, city) |> Name.SubscriptionRequest |> create, city.Name)
-                |> Seq.sortBy snd
-                |> Map
-
-            { Buttons.Name = $"Available Cities"
-              Columns = 3
-              Data = data }
-            |> Response.Buttons.create (chatId, msgId |> Replace)
-            |> Ok
-            |> async.Return
-
-    let userCities (embassy, country) =
+    let userCities (embassyName, countryName) =
         fun (chatId, msgId) cfg ct ->
             Storage.Chat.create cfg
             |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
@@ -257,13 +322,19 @@ module Create =
                 | Some chat ->
                     Storage.Request.create cfg
                     |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-            |> ResultAsync.map (Seq.filter (fun x -> x = embassy && x.Country = country))
-            |> ResultAsync.map (Seq.map _.Country.City)
-            |> ResultAsync.map (
-                Seq.map (fun city -> (embassy, country, city) |> Name.UserSubscriptions |> create, city.Name)
-            )
-            |> ResultAsync.map (Seq.sortBy fst)
-            |> ResultAsync.map Map
+            |> ResultAsync.bind (fun embassies ->
+                embassies
+                |> Seq.map EA.Mapper.Embassy.toExternal
+                |> Seq.filter (fun embassy -> embassy.Name = embassyName && embassy.Country.Name = countryName)
+                |> Seq.groupBy _.Country.City.Name
+                |> Seq.sortBy fst
+                |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
+                |> Seq.map (fun embassy ->
+                    embassy
+                    |> EA.Mapper.Embassy.toInternal
+                    |> Result.map (fun x -> x |> Name.UserSubscriptions |> create, embassy.Country.City.Name))
+                |> Result.choose
+                |> Result.map Map)
             |> ResultAsync.map (fun data ->
                 { Buttons.Name = $"My Cities"
                   Columns = 3
@@ -274,7 +345,7 @@ module Create =
         fun (chatId, msgId) ->
             match embassy with
             | Russian _ ->
-                let command = embassy |> Name.Subscribe |> create
+                let command = (embassy, "your_link_here") |> Name.Subscribe |> create
                 $"Send your payload using the following format: '{command}'."
             | _ -> $"Not supported embassy: '{embassy}'."
             |> Response.Text.create (chatId, msgId |> Replace)
@@ -295,7 +366,7 @@ module Create =
                 requests
                 |> Seq.map (fun request -> $"{request.Id} -> {request.Payload}")
                 |> String.concat Environment.NewLine
-                |> (Response.Text.create (chatId, msgId |> Replace))))
+                |> (Response.Text.create (chatId, msgId |> Replace)))
 
     let subscribe (embassy, payload) =
         fun chatId cfg ct ->
@@ -320,7 +391,7 @@ module Create =
                 |> createOrUpdateChatSubscription ct
                 |> ResultAsync.map (fun request -> $"Subscription has been activated for '{request.Embassy}'.")
                 |> ResultAsync.map (Response.Text.create (chatId, New))
-            | _ -> embassy.Name |> NotSupported |> Error |> async.Return)
+            | _ -> $"{embassy}" |> NotSupported |> Error |> async.Return
 
     let private confirmRussianAppointment request ct storage =
         let config: EA.Embassies.Russian.Domain.ProcessRequestConfiguration =

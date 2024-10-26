@@ -22,8 +22,6 @@ type City =
     | Hague
     | Ljubljana
 
-    member this.Name = nameof this
-
 type Country =
     | Serbia of City
     | Germany of City
@@ -53,22 +51,6 @@ type Country =
         | Netherlands city -> city
         | Slovenia city -> city
 
-    member this.Name =
-        match this with
-        | Serbia _ -> nameof Serbia
-        | Germany _ -> nameof Germany
-        | Bosnia _ -> nameof Bosnia
-        | Montenegro _ -> nameof Montenegro
-        | Albania _ -> nameof Albania
-        | Hungary _ -> nameof Hungary
-        | Ireland _ -> nameof Ireland
-        | Switzerland _ -> nameof Switzerland
-        | Finland _ -> nameof Finland
-        | France _ -> nameof France
-        | Netherlands _ -> nameof Netherlands
-        | Slovenia _ -> nameof Slovenia
-
-
 type Embassy =
     | Russian of Country
     | Spanish of Country
@@ -85,15 +67,6 @@ type Embassy =
         | French country -> country
         | German country -> country
         | British country -> country
-
-    member this.Name =
-        match this with
-        | Russian _ -> nameof Russian
-        | Spanish _ -> nameof Spanish
-        | Italian _ -> nameof Italian
-        | French _ -> nameof French
-        | German _ -> nameof German
-        | British _ -> nameof British
 
 type RequestId =
     | RequestId of Guid

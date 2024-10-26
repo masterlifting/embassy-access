@@ -13,8 +13,8 @@ module private Consume =
             match cmd with
             | Command.Start -> Command.Create.start msg.ChatId |> Response.Ok client ct
             | Command.Mine -> Command.Create.mine msg.ChatId cfg ct |> Response.Result msg.ChatId client ct
-            | Command.Subscribe(embassy, country, city, payload) ->
-                Command.Create.subscribe (embassy, country, city, payload) msg.ChatId cfg ct
+            | Command.Subscribe(embassy, payload) ->
+                Command.Create.subscribe (embassy, payload) msg.ChatId cfg ct
                 |> Response.Result msg.ChatId client ct
             | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
@@ -25,8 +25,8 @@ module private Consume =
             match cmd with
             | Command.Countries embassy ->
                 Command.Create.countries embassy (msg.ChatId, msg.Id) |> Response.Ok client ct
-            | Command.Cities country ->
-                Command.Create.cities country (msg.ChatId, msg.Id)
+            | Command.Cities(embassy, country) ->
+                Command.Create.cities (embassy, country) (msg.ChatId, msg.Id)
                 |> Response.Ok client ct
             | Command.UserCountries embassy ->
                 Command.Create.userCountries embassy (msg.ChatId, msg.Id) cfg ct
@@ -34,11 +34,11 @@ module private Consume =
             | Command.UserCities(embassy, country) ->
                 Command.Create.userCities (embassy, country) (msg.ChatId, msg.Id) cfg ct
                 |> Response.Result msg.ChatId client ct
-            | Command.SubscriptionRequest(embassy, country, city) ->
-                Command.Create.subscriptionRequest (embassy, country, city) (msg.ChatId, msg.Id)
+            | Command.SubscriptionRequest embassy ->
+                Command.Create.subscriptionRequest embassy (msg.ChatId, msg.Id)
                 |> Response.Ok client ct
-            | Command.UserSubscriptions(embassy, country, city) ->
-                Command.Create.userSubscriptions (embassy, country, city) (msg.ChatId, msg.Id) cfg ct
+            | Command.UserSubscriptions embassy ->
+                Command.Create.userSubscriptions embassy (msg.ChatId, msg.Id) cfg ct
                 |> Response.Result msg.ChatId client ct
             | Command.ConfirmAppointment(embassy, appointment) ->
                 Command.Create.confirmAppointment (embassy, appointment) msg.ChatId cfg ct
