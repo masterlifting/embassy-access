@@ -80,13 +80,28 @@ type RequestId =
         | AP.IsGuid id -> RequestId id |> Ok
         | _ -> $"RequestId value: {value}" |> NotSupported |> Error
 
-
     static member New = RequestId <| Guid.NewGuid()
+
+type AppointmentId =
+    | AppointmentId of Guid
+
+    member this.Value =
+        match this with
+        | AppointmentId id -> id
+
+    static member create value =
+        match value with
+        | AP.IsGuid id -> AppointmentId id |> Ok
+        | _ -> $"AppointmentId value: {value}" |> NotSupported |> Error
+
+    static member New = AppointmentId <| Guid.NewGuid()
+
 
 type Confirmation = { Description: string }
 
 type Appointment =
-    { Value: string
+    { Id: AppointmentId
+      Value: string
       Date: DateOnly
       Time: TimeOnly
       Confirmation: Confirmation option
@@ -99,7 +114,7 @@ type ConfirmationOption =
 
 type ConfirmationState =
     | Disabled
-    | Manual of Appointment
+    | Manual of AppointmentId
     | Auto of ConfirmationOption
 
 type ProcessState =
@@ -157,6 +172,7 @@ module External =
         member val Description: string = String.Empty with get, set
 
     type Appointment() =
+        member val Id: Guid = Guid.Empty with get, set
         member val Value: string = String.Empty with get, set
         member val Confirmation: Confirmation option = None with get, set
         member val DateTime: DateTime = DateTime.UtcNow with get, set
@@ -172,7 +188,7 @@ module External =
 
         member val Type: string = String.Empty with get, set
         member val Option: ConfirmationOption option = None with get, set
-        member val Appointment: Appointment option = None with get, set
+        member val AppointmentId: Guid option = None with get, set
 
     type RequestState() =
 

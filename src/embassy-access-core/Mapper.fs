@@ -269,6 +269,7 @@ module Appointment =
     let toExternal (appointment: Appointment) =
         let result = External.Appointment()
 
+        result.Id <- appointment.Id.Value
         result.Value <- appointment.Value
         result.Confirmation <- appointment.Confirmation |> Option.map Confirmation.toExternal
         result.Description <- appointment.Description
@@ -277,7 +278,8 @@ module Appointment =
         result
 
     let toInternal (appointment: External.Appointment) =
-        { Value = appointment.Value
+        { Id = appointment.Id |> AppointmentId
+          Value = appointment.Value
           Date = DateOnly.FromDateTime(appointment.DateTime)
           Time = TimeOnly.FromDateTime(appointment.DateTime)
           Confirmation = appointment.Confirmation |> Option.map Confirmation.toInternal
@@ -332,9 +334,9 @@ module ConfirmationState =
 
         match state with
         | ConfirmationState.Disabled -> result.Type <- Disabled
-        | ConfirmationState.Manual appointment ->
+        | ConfirmationState.Manual appointmentId ->
             result.Type <- Manual
-            result.Appointment <- Some appointment |> Option.map Appointment.toExternal
+            result.AppointmentId <- Some appointmentId.Value
         | ConfirmationState.Auto option ->
             result.Type <- Auto
             result.Option <- Some option |> Option.map ConfirmationOption.toExternal
@@ -345,8 +347,8 @@ module ConfirmationState =
         match state.Type with
         | Disabled -> ConfirmationState.Disabled |> Ok
         | Manual ->
-            match state.Appointment with
-            | Some appointment -> appointment |> Appointment.toInternal |> ConfirmationState.Manual |> Ok
+            match state.AppointmentId with
+            | Some id -> id |> AppointmentId |> ConfirmationState.Manual |> Ok
             | None -> Error <| NotFound "Appointment."
         | Auto ->
             match state.Option with

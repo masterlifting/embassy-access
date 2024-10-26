@@ -452,7 +452,8 @@ module private AppointmentsPage =
                 match date, time with
                 | (true, date), (true, time) ->
                     Ok
-                    <| { Value = value
+                    <| { Id = AppointmentId.New
+                         Value = value
                          Date = date
                          Time = time
                          Confirmation = None
@@ -521,10 +522,10 @@ module private ConfirmationPage =
     let private handleRequestConfirmation request =
         match request.ConfirmationState with
         | Disabled -> Ok <| None
-        | Manual appointment ->
-            match request.Appointments |> Seq.tryFind (fun x -> x.Value = appointment.Value) with
+        | Manual appointmentId ->
+            match request.Appointments |> Seq.tryFind (fun x -> x.Id = appointmentId) with
             | Some appointment -> Ok <| Some appointment
-            | None -> Error <| NotFound $"Appointment '%s{appointment.Value}'."
+            | None -> Error <| NotFound $"%A{appointmentId}."
         | Auto confirmationOption ->
             match request.Appointments.Count > 0, confirmationOption with
             | false, _ -> Ok None

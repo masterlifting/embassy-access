@@ -40,8 +40,8 @@ module private Consume =
             | Command.UserSubscriptions embassy ->
                 Command.Create.userSubscriptions embassy (msg.ChatId, msg.Id) cfg ct
                 |> Response.Result msg.ChatId client ct
-            | Command.ConfirmAppointment(embassy, appointment) ->
-                Command.Create.confirmAppointment (embassy, appointment) msg.ChatId cfg ct
+            | Command.ConfirmAppointment(embassy, appointmentId) ->
+                Command.Create.confirmAppointment (embassy, appointmentId) msg.ChatId cfg ct
                 |> Response.Result msg.ChatId client ct
             | _ -> msg.Value |> NotSupported |> Error |> async.Return
 

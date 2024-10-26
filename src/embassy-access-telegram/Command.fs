@@ -1,6 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Command
 
+open System
 open EA.Domain
 open Infrastructure.Logging
 
@@ -12,28 +13,28 @@ module private List =
     let Mine = "/mine"
 
     [<Literal>]
-    let Countries = "/countries"
+    let Countries = "/001"
 
     [<Literal>]
-    let Cities = "/cities"
+    let Cities = "/002"
 
     [<Literal>]
-    let UserCountries = "/user_countries"
+    let UserCountries = "/003"
 
     [<Literal>]
-    let UserCities = "/user_cities"
+    let UserCities = "/004"
 
     [<Literal>]
-    let SubscriptionRequest = "/subscription_request"
+    let SubscriptionRequest = "/005"
 
     [<Literal>]
-    let Subscribe = "/subscribe"
+    let Subscribe = "/006"
 
     [<Literal>]
-    let UserSubscriptions = "/user_subscriptions"
+    let UserSubscriptions = "/007"
 
     [<Literal>]
-    let ConfirmAppointment = "/confirm_appointment"
+    let ConfirmAppointment = "/008"
 
 module private SerDe =
     open System.Text
@@ -42,50 +43,29 @@ module private SerDe =
         open EA.Mapper.Embassy
 
         let wrap (embassy: Embassy) =
-            let external = toExternal embassy
-            let sb = StringBuilder()
-            sb.Append external.Name |> ignore
-            sb.Append ',' |> ignore
-            sb.Append external.Country.Name |> ignore
-            sb.Append ',' |> ignore
-            sb.Append external.Country.City.Name |> ignore
-            sb.ToString()
+            match embassy with
+            | Russian embassy ->
+                match embassy.Country with
+                | Serbia city ->
+                    match city with
+                    | Belgrade -> "001"
+                | Albania city ->
+                    match city with
+                    | Tirana -> "014"
+            | _ -> "000"
+            
 
         let unwrap (value: string) =
             let parts = value.Split ','
             let embassy = parts[0]
             let country = parts[1]
             let city = parts[2]
+            let guid = parts[3] |> Guid.Parse
+
 
             (embassy, country, city)
             |> createInternal
             |> Result.defaultValue (Unchecked.defaultof<_>)
-            
-    module Appointment =
-        open EA.Mapper.Appointment
-        
-        let wrap (appointment: Appointment) =
-            let external = toExternal appointment
-            let sb = StringBuilder()
-            sb.Append external.Value |> ignore
-            sb.Append ',' |> ignore
-            sb.Append external.Description |> ignore
-            sb.ToString()
-            
-        let unwrap (value: string) =
-            let parts = value.Split ','
-            let value = parts[0]
-            let description = parts[1]
-            
-            let appointment = {
-                Value = value
-                Date = Unchecked.defaultof<_>
-                Time = Unchecked.defaultof<_>
-                Confirmation = None 
-                Description = None
-            }
-            appointment
-            
 
 type Name =
     | Start
@@ -97,7 +77,7 @@ type Name =
     | SubscriptionRequest of Embassy
     | Subscribe of Embassy * payload: string
     | UserSubscriptions of Embassy
-    | ConfirmAppointment of Embassy * Appointment
+    | ConfirmAppointment of Embassy * AppointmentId
 
 let private build args = args |> String.concat "|"
 
@@ -119,13 +99,13 @@ let private create command =
     | SubscriptionRequest embassy ->
         let embassy = embassy |> SerDe.Embassy.wrap
         [ List.SubscriptionRequest; embassy ] |> build
-    | Subscribe (embassy, payload) ->
+    | Subscribe(embassy, payload) ->
         let embassy = embassy |> SerDe.Embassy.wrap
         [ List.Subscribe; embassy; payload ] |> build
-    | ConfirmAppointment(embassy, appointment) ->
+    | ConfirmAppointment(embassy, appointmentId) ->
         let embassy = embassy |> SerDe.Embassy.wrap
-        let appointment = appointment |> SerDe.Appointment.wrap
-        [ List.ConfirmAppointment; embassy; appointment ] |> build
+        let appointmentId = appointmentId.Value |> string
+        [ List.ConfirmAppointment; embassy; appointmentId ] |> build
     |> fun result ->
         result |> printSize
         result
@@ -180,13 +160,12 @@ let tryFind (value: string) =
             match argsLength with
             | 2 ->
                 let embassy = parts[1] |> SerDe.Embassy.unwrap
-                let appointment = parts[2] |> SerDe.Appointment.unwrap
-                Some(ConfirmAppointment(embassy,appointment))
+                let appointmentId = parts[2] |> Guid.Parse |> AppointmentId
+                Some(ConfirmAppointment(embassy, appointmentId))
             | _ -> None
         | _ -> None
 
 module Create =
-    open System
     open Infrastructure
     open Web.Telegram.Domain.Producer
     open EA.Telegram.Persistence
@@ -197,9 +176,9 @@ module Create =
               Columns = 1
               Data =
                 appointments
-                |> Seq.map (fun x ->
-                    (embassy, x) |> Name.ConfirmAppointment |> create,
-                    x.Description |> Option.defaultValue "No description")
+                |> Seq.map (fun appointment ->
+                    (embassy, appointment.Id) |> Name.ConfirmAppointment |> create,
+                    appointment.Description |> Option.defaultValue "No description")
                 |> Map }
             |> Response.Buttons.create (chatId, New)
 
@@ -209,9 +188,9 @@ module Create =
             |> Seq.map (fun confirmation -> $"'{embassy}'. Confirmation: {confirmation.Description}")
             |> String.concat "\n"
             |> Response.Text.create (chatId, New)
-            
+
     let start chatId =
-         EA.Api.getEmbassies ()
+        EA.Api.getEmbassies ()
         |> Seq.map EA.Mapper.Embassy.toExternal
         |> Seq.groupBy _.Name
         |> Seq.map fst
@@ -244,7 +223,7 @@ module Create =
             |> Response.Buttons.create (chatId, msgId |> Replace)
             |> Ok
             |> async.Return
-    
+
     let cities (embassyName, countryName) =
         fun (chatId, msgId) ->
             EA.Api.getEmbassies ()
@@ -259,7 +238,7 @@ module Create =
                 |> Result.map (fun x -> x |> Name.SubscriptionRequest |> create, embassy.Country.City.Name))
             |> Result.choose
             |> Result.map Map
-            |> Result.map(fun data ->
+            |> Result.map (fun data ->
                 { Buttons.Name = $"Cities"
                   Columns = 3
                   Data = data }
@@ -375,9 +354,7 @@ module Create =
 
                 let createOrUpdatePassportSearchRequest ct =
                     Storage.Request.create cfg
-                    |> ResultAsync.wrap (
-                        Repository.Command.Request.createOrUpdatePassportSearch (embassy, payload) ct
-                    )
+                    |> ResultAsync.wrap (Repository.Command.Request.createOrUpdatePassportSearch (embassy, payload) ct)
 
                 let createOrUpdateChatSubscription ct =
                     ResultAsync.bindAsync (fun (request: Request) ->
@@ -400,11 +377,11 @@ module Create =
         (storage, config, ct) |> EA.Deps.Russian.processRequest |> EA.Api.processRequest
         <| request
 
-    let private handleRequest storage ct (request, appointment) =
+    let private handleRequest storage ct (request, appointmentId) =
 
         let request =
             { request with
-                ConfirmationState = Manual appointment }
+                ConfirmationState = Manual appointmentId }
 
         match request.Embassy with
         | Russian _ -> storage |> confirmRussianAppointment request ct
@@ -412,7 +389,7 @@ module Create =
         |> ResultAsync.map (fun request ->
             let confirmation =
                 request.Appointments
-                |> Seq.tryFind (fun x -> x.Value = appointment.Value)
+                |> Seq.tryFind (fun x -> x.Id = appointmentId)
                 |> Option.map (fun appointment ->
                     appointment.Confirmation
                     |> Option.map _.Description
@@ -420,7 +397,7 @@ module Create =
 
             $"'{request.Embassy}'. Confirmation: {confirmation}")
 
-    let confirmAppointment (embassy, appointment) =
+    let confirmAppointment (embassy, appointmentId) =
         fun chatId cfg ct ->
             Storage.Request.create cfg
             |> ResultAsync.wrap (fun storage ->
@@ -430,6 +407,6 @@ module Create =
                     match requests.Length with
                     | 0 -> "Request" |> NotFound |> Error |> async.Return
                     | 1 ->
-                        (requests[0], appointment)
+                        (requests[0], appointmentId)
                         |> handleRequest storage ct
                         |> ResultAsync.map (Response.Text.create (chatId, New))))
