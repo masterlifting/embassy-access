@@ -9,7 +9,7 @@ let main _ =
 
     configuration
     |> EA.Telegram.Consumer.start CancellationToken.None
-    |> ResultAsync.mapError (fun error -> error.Message |> Logging.Log.critical)
+    |> ResultAsync.mapError (_.Message >> Logging.Log.critical)
     |> Async.Ignore
     |> Async.RunSynchronously
 

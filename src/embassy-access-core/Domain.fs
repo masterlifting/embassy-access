@@ -105,7 +105,7 @@ type Appointment =
       Date: DateOnly
       Time: TimeOnly
       Confirmation: Confirmation option
-      Description: string option }
+      Description: string }
 
 type ConfirmationOption =
     | FirstAvailable
@@ -176,7 +176,7 @@ module External =
         member val Value: string = String.Empty with get, set
         member val Confirmation: Confirmation option = None with get, set
         member val DateTime: DateTime = DateTime.UtcNow with get, set
-        member val Description: string option = None with get, set
+        member val Description: string = String.Empty with get, set
 
     type ConfirmationOption() =
 

@@ -457,7 +457,7 @@ module private AppointmentsPage =
                          Date = date
                          Time = time
                          Confirmation = None
-                         Description = Some window }
+                         Description = window }
 
                 | _ -> Error <| NotSupported $"Appointment date: %s{dateTime}."
             | _ -> Error <| NotSupported $"Appointment row: %s{value}."

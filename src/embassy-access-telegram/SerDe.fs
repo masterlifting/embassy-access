@@ -1,6 +1,5 @@
 ﻿module EA.Telegram.SerDe
 
-open System
 open Infrastructure
 open EA.Domain
 
@@ -79,14 +78,12 @@ module City =
         | Code.Ljubljana -> Ok Ljubljana
         | _ ->
             Error
-            <| Operation
-                { Message = $"Unknown city symbol: {city}. EA.Telegram.SerDe.Embassy.toCity"
-                  Code = None }
+            <| NotSupported $"{city}. {ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__)}"
 
 module Country =
 
     [<Literal>]
-    let internal Delimiter = ","
+    let private Delimiter = ","
 
     //ISO 3166-1 alpha-3
     module private Code =
@@ -150,7 +147,8 @@ module Country =
             let country = parts[0]
             let city = parts[1]
 
-            City.deserialize city
+            city
+            |> City.deserialize
             |> Result.bind (fun city ->
                 match country with
                 | Code.Serbia -> Ok <| Serbia city
@@ -167,19 +165,16 @@ module Country =
                 | Code.Slovenia -> Ok <| Slovenia city
                 | _ ->
                     Error
-                    <| Operation
-                        { Message = $"Unknown country code: {country}. EA.Telegram.SerDe.Embassy.toCountry"
-                          Code = None })
+                    <| NotSupported
+                        $"{country}. {ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__)}")
         | _ ->
             Error
-            <| Operation
-                { Message = $"Invalid country format: {value}. EA.Telegram.SerDe.Embassy.deserialize"
-                  Code = None }
+            <| NotSupported $"{value}. {ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__)}"
 
 module Embassy =
 
     [<Literal>]
-    let internal Delimiter = ","
+    let private Delimiter = ","
 
     //ISO 3166-1 alpha-2
     module private Code =
@@ -214,13 +209,13 @@ module Embassy =
     let deserialize (value: string) =
         let parts = value.Split Delimiter
 
-        match parts.Length with
-        | 3 ->
+        match parts.Length > 1 with
+        | true ->
             let embassy = parts[0]
-            let country = parts[1]
-            let city = parts[2]
+            let countryValue = parts[1..] |> String.concat Delimiter
 
-            Country.deserialize (country + Country.Delimiter + city)
+            countryValue
+            |> Country.deserialize
             |> Result.bind (fun country ->
                 match embassy with
                 | Code.Russian -> Ok <| Russian country
@@ -231,14 +226,11 @@ module Embassy =
                 | Code.British -> Ok <| British country
                 | _ ->
                     Error
-                    <| Operation
-                        { Message = $"Unknown embassy code: {embassy}. EA.Telegram.SerDe.Embassy.deserialize"
-                          Code = None })
-        | _ ->
+                    <| NotSupported
+                        $"{embassy}. {ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__)}")
+        | false ->
             Error
-            <| Operation
-                { Message = $"Invalid embassy format: {value}. EA.Telegram.SerDe.Embassy.deserialize"
-                  Code = None }
+            <| NotSupported $"{value}. {ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__)}"
 
 module Command =
 
@@ -276,35 +268,39 @@ module Command =
         let UserSubscriptions = "/007"
 
         [<Literal>]
-        let ConfirmAppointment = "/008"
+        let ChooseAppointmentRequest = "/008"
+
+        [<Literal>]
+        let ConfirmAppointment = "/009"
 
     type Name =
         | Start
         | Mine
-        | Countries of embassy: string
-        | UserCountries of embassy: string
-        | Cities of embassy: string * country: string
-        | UserCities of embassy: string * country: string
+        | Countries of embassyName: string
+        | UserCountries of embassyName: string
+        | Cities of embassyName: string * countryName: string
+        | UserCities of embassyName: string * countryName: string
         | SubscriptionRequest of Embassy
         | Subscribe of Embassy * payload: string
         | UserSubscriptions of Embassy
-        | ConfirmAppointment of Embassy * AppointmentId
+        | ChooseAppointmentRequest of Embassy * AppointmentId
+        | ConfirmAppointment of RequestId * AppointmentId
 
     let private build args = args |> String.concat Delimiter
 
     let private printSize (value: string) =
         let size = System.Text.Encoding.UTF8.GetByteCount(value)
         $"'{value}' -> {size}" |> Log.info
+        value
 
     let serialize command =
         match command with
         | Start -> List.Start
         | Mine -> List.Mine
-        | Countries embassy -> [ List.Countries; embassy ] |> build
-        | Cities(embassy, country) ->
-            [ List.Cities; embassy; country ] |> build
-        | UserCountries embassy -> [ List.UserCountries; embassy ] |> build
-        | UserCities(embassy, country) -> [ List.UserCities; embassy; country ] |> build
+        | Countries embassyName -> [ List.Countries; embassyName ] |> build
+        | Cities(embassyName, countryName) -> [ List.Cities; embassyName; countryName ] |> build
+        | UserCountries embassyName -> [ List.UserCountries; embassyName ] |> build
+        | UserCities(embassyName, countryName) -> [ List.UserCities; embassyName; countryName ] |> build
         | UserSubscriptions embassy ->
             embassy
             |> Embassy.serialize
@@ -317,13 +313,18 @@ module Command =
             embassy
             |> Embassy.serialize
             |> fun embassy -> [ List.Subscribe; embassy; payload ] |> build
-        | ConfirmAppointment(embassy, appointmentId) ->
+        | ChooseAppointmentRequest(embassy, appointmentId) ->
             embassy
             |> Embassy.serialize
-            |> fun embassy -> [ List.ConfirmAppointment; embassy; appointmentId.Value |> string ] |> build
-        |> fun result ->
-            result |> printSize
-            result
+            |> fun embassy ->
+                [ List.ChooseAppointmentRequest; embassy; appointmentId.Value |> string ]
+                |> build
+        | ConfirmAppointment(requestId, appointmentId) ->
+            [ List.ConfirmAppointment
+              requestId.Value |> string
+              appointmentId.Value |> string ]
+            |> build
+        |> printSize
 
     let deserialize (value: string) =
         let parts = value.Split Delimiter
@@ -354,10 +355,7 @@ module Command =
                 | _ -> Ok <| None
             | List.SubscriptionRequest ->
                 match argsLength with
-                | 1 ->
-                    parts[1]
-                    |> Embassy.deserialize
-                    |> Result.map (fun embassy -> Some(SubscriptionRequest(embassy)))
+                | 1 -> parts[1] |> Embassy.deserialize |> Result.map (Some << SubscriptionRequest)
                 | _ -> Ok <| None
             | List.Subscribe ->
                 match argsLength with
@@ -370,18 +368,26 @@ module Command =
                 | _ -> Ok <| None
             | List.UserSubscriptions ->
                 match argsLength with
-                | 1 ->
+                | 1 -> parts[1] |> Embassy.deserialize |> Result.map (Some << UserSubscriptions)
+                | _ -> Ok <| None
+            | List.ChooseAppointmentRequest ->
+                match argsLength with
+                | 2 ->
                     parts[1]
                     |> Embassy.deserialize
-                    |> Result.map (fun embassy -> Some(UserSubscriptions(embassy)))
+                    |> Result.bind (fun embassy ->
+                        parts[2]
+                        |> AppointmentId.create
+                        |> Result.map (fun appointmentId -> Some(ChooseAppointmentRequest(embassy, appointmentId))))
                 | _ -> Ok <| None
             | List.ConfirmAppointment ->
                 match argsLength with
                 | 2 ->
                     parts[1]
-                    |> Embassy.deserialize
-                    |> Result.map (fun embassy ->
-                        let appointmentId = parts[2] |> Guid.Parse |> AppointmentId
-                        Some(ConfirmAppointment(embassy, appointmentId)))
+                    |> RequestId.create
+                    |> Result.bind (fun requestId ->
+                        parts[2]
+                        |> AppointmentId.create
+                        |> Result.map (fun appointmentId -> Some(ConfirmAppointment(requestId, appointmentId))))
                 | _ -> Ok <| None
             | _ -> Ok <| None

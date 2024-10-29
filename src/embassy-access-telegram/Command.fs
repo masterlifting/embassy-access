@@ -15,8 +15,10 @@ let appointments (embassy, appointments: Set<Appointment>) =
           Data =
             appointments
             |> Seq.map (fun appointment ->
-                (embassy, appointment.Id) |> Command.ConfirmAppointment |> Command.serialize,
-                appointment.Description |> Option.defaultValue "No description")
+                (embassy, appointment.Id)
+                |> Command.ChooseAppointmentRequest
+                |> Command.serialize,
+                appointment.Description)
             |> Map }
         |> Response.Buttons.create (chatId, New)
 
@@ -237,7 +239,22 @@ let private handleRequest storage ct (request, appointmentId) =
 
         $"'{request.Embassy}'. Confirmation: {confirmation}")
 
-let confirmAppointment (embassy, appointmentId) =
+let confirmAppointment (requestId, appointmentId) =
+    fun chatId cfg ct ->
+        Storage.Request.create cfg
+        |> ResultAsync.wrap (fun storage ->
+            let query = EA.Persistence.Query.Request.GetOne.Id requestId
+
+            storage
+            |> EA.Persistence.Repository.Query.Request.getOne query ct
+            |> ResultAsync.bindAsync (function
+                | None -> "Request" |> NotFound |> Error |> async.Return
+                | Some request ->
+                    (request, appointmentId)
+                    |> handleRequest storage ct
+                    |> ResultAsync.map (Response.Text.create (chatId, New))))
+
+let chooseAppointmentRequest (embassy, appointmentId) =
     fun chatId cfg ct ->
         Storage.Request.create cfg
         |> ResultAsync.wrap (fun storage ->
@@ -246,7 +263,17 @@ let confirmAppointment (embassy, appointmentId) =
             |> ResultAsync.bindAsync (fun requests ->
                 match requests.Length with
                 | 0 -> "Request" |> NotFound |> Error |> async.Return
-                | 1 ->
-                    (requests[0], appointmentId)
-                    |> handleRequest storage ct
-                    |> ResultAsync.map (Response.Text.create (chatId, New))))
+                | 1 -> confirmAppointment (requests[0].Id, appointmentId) chatId cfg ct
+                | _ ->
+                    requests
+                    |> Seq.map (fun request ->
+                        (request.Id, appointmentId) |> Command.ConfirmAppointment |> Command.serialize,
+                        request.Payload)
+                    |> Map
+                    |> (fun data ->
+                        { Buttons.Name = $"Choose the Request"
+                          Columns = 1
+                          Data = data }
+                        |> Response.Buttons.create (chatId, New))
+                    |> Ok
+                    |> async.Return))
