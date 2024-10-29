@@ -277,3 +277,27 @@ let chooseAppointmentRequest (embassy, appointmentId) =
                         |> Response.Buttons.create (chatId, New))
                     |> Ok
                     |> async.Return))
+
+let removeSubscription subscriptionId =
+    fun chatId cfg ct ->
+        Storage.Request.create cfg
+        |> ResultAsync.wrap (fun storage ->
+            let command =
+                subscriptionId
+                |> EA.Persistence.Command.Definitions.Request.Delete.RequestId
+                |> EA.Persistence.Command.Request.Delete
+
+            storage
+            |> EA.Persistence.Repository.Command.Request.execute command ct
+            |> ResultAsync.bindAsync (fun _ ->
+                Storage.Chat.create cfg
+                |> ResultAsync.wrap (fun storage ->
+                    let command =
+                        (chatId, subscriptionId)
+                        |> EA.Telegram.Persistence.Command.Definitions.Chat.Delete.Subscription
+                        |> EA.Telegram.Persistence.Command.Chat.Delete
+
+                    storage
+                    |> Repository.Command.Chat.execute command ct
+                    |> ResultAsync.map (fun _ -> $"{subscriptionId} has been removed."))))
+        |> ResultAsync.map (Response.Text.create (chatId, New))

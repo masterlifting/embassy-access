@@ -92,7 +92,7 @@ module Command =
 
         let private update definition (chats: External.Chat array) =
             match definition with
-            | Chat chat ->
+            | Command.Definitions.Chat.Update.Chat chat ->
                 match chats |> Array.tryFindIndex (fun x -> x.Id = chat.Id.Value) with
                 | None ->
                     Error
@@ -108,7 +108,7 @@ module Command =
 
         let private delete definition (chats: External.Chat array) =
             match definition with
-            | ChatId chatId ->
+            | Chat chatId ->
                 match chats |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
                 | None ->
                     Error
@@ -121,6 +121,25 @@ module Command =
                     |> Result.map (fun chat ->
                         let data = chats |> Array.removeAt index
                         (data, chat))
+            | Subscription (chatId, subId) ->
+                match chats |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
+                | None ->
+                    Error
+                    <| Operation
+                        { Message = $"{chatId} not found to delete subscription."
+                          Code = Some ErrorCodes.NotFound }
+                | Some index ->
+                    let chat = chats[index]
+                    match chat.Subscriptions |> Seq.tryFindIndex (fun x -> x = (subId.Value |> string)) with
+                    | None ->
+                        Error
+                        <| Operation
+                            { Message = $"Subscription {subId.Value} not found in {chatId}."
+                              Code = Some ErrorCodes.NotFound }
+                    | Some subIndex ->
+                        chat.Subscriptions <- chat.Subscriptions |> Seq.removeAt subIndex |> Seq.toList
+                        let data = chats |> Array.mapi (fun i x -> if i = index then chat else x)
+                        chat |> Mapper.Chat.toInternal |> Result.map (fun chat -> (data, chat))
 
         let execute command ct storage =
             match ct |> notCanceled with

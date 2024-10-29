@@ -20,6 +20,9 @@ module private Consume =
                 | Command.Subscribe(embassy, payload) ->
                     Command.subscribe (embassy, payload) msg.ChatId cfg ct
                     |> Response.Result msg.ChatId client ct
+                | Command.RemoveSubscription subscriptionId ->
+                    Command.removeSubscription subscriptionId msg.ChatId cfg ct
+                    |> Response.Result msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
     let callback (msg: Dto<string>) cfg ct client =

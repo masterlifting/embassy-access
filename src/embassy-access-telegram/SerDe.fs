@@ -239,7 +239,7 @@ module Command =
     [<Literal>]
     let private Delimiter = "|"
 
-    module private List =
+    module private Code =
         [<Literal>]
         let Start = "/start"
 
@@ -273,6 +273,9 @@ module Command =
         [<Literal>]
         let ConfirmAppointment = "/009"
 
+        [<Literal>]
+        let RemoveSubscription = "/010"
+
     type Name =
         | Start
         | Mine
@@ -285,6 +288,7 @@ module Command =
         | UserSubscriptions of Embassy
         | ChooseAppointmentRequest of Embassy * AppointmentId
         | ConfirmAppointment of RequestId * AppointmentId
+        | RemoveSubscription of RequestId
 
     let private build args = args |> String.concat Delimiter
 
@@ -295,35 +299,36 @@ module Command =
 
     let serialize command =
         match command with
-        | Start -> List.Start
-        | Mine -> List.Mine
-        | Countries embassyName -> [ List.Countries; embassyName ] |> build
-        | Cities(embassyName, countryName) -> [ List.Cities; embassyName; countryName ] |> build
-        | UserCountries embassyName -> [ List.UserCountries; embassyName ] |> build
-        | UserCities(embassyName, countryName) -> [ List.UserCities; embassyName; countryName ] |> build
+        | Start -> Code.Start
+        | Mine -> Code.Mine
+        | Countries embassyName -> [ Code.Countries; embassyName ] |> build
+        | Cities(embassyName, countryName) -> [ Code.Cities; embassyName; countryName ] |> build
+        | UserCountries embassyName -> [ Code.UserCountries; embassyName ] |> build
+        | UserCities(embassyName, countryName) -> [ Code.UserCities; embassyName; countryName ] |> build
         | UserSubscriptions embassy ->
             embassy
             |> Embassy.serialize
-            |> fun embassy -> [ List.UserSubscriptions; embassy ] |> build
+            |> fun embassy -> [ Code.UserSubscriptions; embassy ] |> build
         | SubscriptionRequest embassy ->
             embassy
             |> Embassy.serialize
-            |> fun embassy -> [ List.SubscriptionRequest; embassy ] |> build
+            |> fun embassy -> [ Code.SubscriptionRequest; embassy ] |> build
         | Subscribe(embassy, payload) ->
             embassy
             |> Embassy.serialize
-            |> fun embassy -> [ List.Subscribe; embassy; payload ] |> build
+            |> fun embassy -> [ Code.Subscribe; embassy; payload ] |> build
         | ChooseAppointmentRequest(embassy, appointmentId) ->
             embassy
             |> Embassy.serialize
             |> fun embassy ->
-                [ List.ChooseAppointmentRequest; embassy; appointmentId.Value |> string ]
+                [ Code.ChooseAppointmentRequest; embassy; appointmentId.Value |> string ]
                 |> build
         | ConfirmAppointment(requestId, appointmentId) ->
-            [ List.ConfirmAppointment
+            [ Code.ConfirmAppointment
               requestId.Value |> string
               appointmentId.Value |> string ]
             |> build
+        | RemoveSubscription requestId -> [ Code.RemoveSubscription; requestId.Value |> string ] |> build
         |> printSize
 
     let deserialize (value: string) =
@@ -335,29 +340,29 @@ module Command =
             let argsLength = parts.Length - 1
 
             match parts[0] with
-            | List.Start -> Ok <| Some Start
-            | List.Mine -> Ok <| Some Mine
-            | List.Countries ->
+            | Code.Start -> Ok <| Some Start
+            | Code.Mine -> Ok <| Some Mine
+            | Code.Countries ->
                 match argsLength with
                 | 1 -> Ok <| Some(Countries(parts[1]))
                 | _ -> Ok <| None
-            | List.Cities ->
+            | Code.Cities ->
                 match argsLength with
                 | 2 -> Ok <| Some(Cities(parts[1], parts[2]))
                 | _ -> Ok <| None
-            | List.UserCountries ->
+            | Code.UserCountries ->
                 match argsLength with
                 | 1 -> Ok <| Some(UserCountries(parts[1]))
                 | _ -> Ok <| None
-            | List.UserCities ->
+            | Code.UserCities ->
                 match argsLength with
                 | 2 -> Ok <| Some(UserCities(parts[1], parts[2]))
                 | _ -> Ok <| None
-            | List.SubscriptionRequest ->
+            | Code.SubscriptionRequest ->
                 match argsLength with
                 | 1 -> parts[1] |> Embassy.deserialize |> Result.map (Some << SubscriptionRequest)
                 | _ -> Ok <| None
-            | List.Subscribe ->
+            | Code.Subscribe ->
                 match argsLength with
                 | 2 ->
                     parts[1]
@@ -366,11 +371,11 @@ module Command =
                         let payload = parts[2]
                         Some(Subscribe(embassy, payload)))
                 | _ -> Ok <| None
-            | List.UserSubscriptions ->
+            | Code.UserSubscriptions ->
                 match argsLength with
                 | 1 -> parts[1] |> Embassy.deserialize |> Result.map (Some << UserSubscriptions)
                 | _ -> Ok <| None
-            | List.ChooseAppointmentRequest ->
+            | Code.ChooseAppointmentRequest ->
                 match argsLength with
                 | 2 ->
                     parts[1]
@@ -380,7 +385,7 @@ module Command =
                         |> AppointmentId.create
                         |> Result.map (fun appointmentId -> Some(ChooseAppointmentRequest(embassy, appointmentId))))
                 | _ -> Ok <| None
-            | List.ConfirmAppointment ->
+            | Code.ConfirmAppointment ->
                 match argsLength with
                 | 2 ->
                     parts[1]
@@ -389,5 +394,9 @@ module Command =
                         parts[2]
                         |> AppointmentId.create
                         |> Result.map (fun appointmentId -> Some(ConfirmAppointment(requestId, appointmentId))))
+                | _ -> Ok <| None
+            | Code.RemoveSubscription ->
+                match argsLength with
+                | 1 -> parts[1] |> RequestId.create |> Result.map (Some << RemoveSubscription)
                 | _ -> Ok <| None
             | _ -> Ok <| None

@@ -11,7 +11,9 @@ module Definitions =
         type Create = ChatSubscription of ChatId * RequestId
         type CreateOrUpdate = ChatSubscription of ChatId * RequestId
         type Update = Chat of Chat
-        type Delete = ChatId of ChatId
+        type Delete =
+            | Chat of ChatId
+            | Subscription of ChatId * RequestId
 
 module Chat =
     type Operation =
