@@ -44,12 +44,10 @@ module Produce =
         function
         | Appointments(embassy, appointments) ->
             getEmbassyChats embassy cfg ct
-            |> ResultAsync.bindAsync (fun chats ->
-                (embassy, appointments) |> Command.Create.appointments |> spread chats ct)
+            |> ResultAsync.bindAsync (fun chats -> (embassy, appointments) |> Command.appointments |> spread chats ct)
         | Confirmations(requestId, embassy, confirmations) ->
             getSubscriptionChats requestId cfg ct
-            |> ResultAsync.bindAsync (fun chats ->
-                (embassy, confirmations) |> Command.Create.confirmation |> spread chats ct)
+            |> ResultAsync.bindAsync (fun chats -> (embassy, confirmations) |> Command.confirmation |> spread chats ct)
         | Fail(requestId, error) ->
             getSubscriptionChats requestId cfg ct
             |> ResultAsync.bindAsync (fun chats -> error |> Response.Text.error |> spread chats ct)
