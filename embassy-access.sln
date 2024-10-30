@@ -29,7 +29,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-core", "src\
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-telegram", "src\embassy-access-telegram\embassy-access-telegram.fsproj", "{CCA691D2-B3A9-422C-BA17-6FB0424976C1}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "embassy-access-telegram-api", "src\embassy-access-telegram-api\embassy-access-telegram-api\embassy-access-telegram-api.fsproj", "{6E2EA096-5E72-4AE4-96BC-A486FA3ED62B}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "embassy-access-telegram-api", "src\embassy-access-telegram-api\embassy-access-telegram-api.fsproj", "{E0B50737-A997-4BE7-98F8-2E548C5A8E91}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "embassy-access-worker", "src\embassy-access-worker\embassy-access-worker.fsproj", "{45F26EBC-BE22-4C6E-B27A-8D4212826E33}"
 EndProject
@@ -71,10 +71,10 @@ Global
 		{CCA691D2-B3A9-422C-BA17-6FB0424976C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCA691D2-B3A9-422C-BA17-6FB0424976C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCA691D2-B3A9-422C-BA17-6FB0424976C1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E2EA096-5E72-4AE4-96BC-A486FA3ED62B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E2EA096-5E72-4AE4-96BC-A486FA3ED62B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E2EA096-5E72-4AE4-96BC-A486FA3ED62B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E2EA096-5E72-4AE4-96BC-A486FA3ED62B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0B50737-A997-4BE7-98F8-2E548C5A8E91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0B50737-A997-4BE7-98F8-2E548C5A8E91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0B50737-A997-4BE7-98F8-2E548C5A8E91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0B50737-A997-4BE7-98F8-2E548C5A8E91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

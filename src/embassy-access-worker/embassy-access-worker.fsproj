@@ -26,18 +26,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Dockerfile" />
-		<Content Include="..\..\.dockerignore">
-		  <Link>.dockerignore</Link>
-		</Content>
 		<Content Include="appsettings.yaml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Dockerfile" />
+		<Content Include="..\..\.dockerignore">
+			<Link>.dockerignore</Link>
 		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
-		<ProjectReference Include="..\embassy-access-core\embassy-access-core.fsproj" />
 		<ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj" />
 	</ItemGroup>
 

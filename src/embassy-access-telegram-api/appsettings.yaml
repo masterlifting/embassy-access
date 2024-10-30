@@ -5,4 +5,4 @@ Logging:
     Default: Debug
 
 Persistence:
-  FileSystem: "C:/"
+  FileSystem: "/app"

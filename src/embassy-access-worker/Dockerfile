@@ -22,4 +22,6 @@ RUN printf "\n\n[ssl_default_sect]\nMinProtocol = TLSv1\nCipherString = DEFAULT@
 
 COPY --from=build-env /app/src/embassy-access-worker/publish .
 
+RUN touch /app/requests && chmod 777 /app/requests
+
 ENTRYPOINT ["dotnet", "embassy-access-worker.dll"]
