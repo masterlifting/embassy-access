@@ -6,7 +6,7 @@ open Infrastructure
 module Key =
     [<Literal>]
     let Requests = "requests"
-
+    
 type City =
     | Belgrade
     | Berlin

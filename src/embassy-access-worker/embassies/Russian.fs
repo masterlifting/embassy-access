@@ -24,9 +24,10 @@ let private createDeps ct configuration country =
     deps {
 
         let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
-        let processConfig = { TimeShift = timeShift }
-        let! storage = configuration |> Persistence.Storage.Request.create
+        let! storage = configuration |> EA.Persistence.Storage.FileSystem.Request.create
         let notify = EA.Telegram.Producer.Produce.notification configuration ct
+
+        let processConfig = { TimeShift = timeShift }
 
         return
             { Config = processConfig

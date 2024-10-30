@@ -2,58 +2,60 @@
 
 open System
 open Infrastructure
+open Web.Telegram.Producer
 open Web.Telegram.Domain.Consumer
 open EA.Telegram.Domain
-open EA.Telegram.SerDe
 
 module private Consume =
     let text (msg: Dto<string>) cfg ct client =
-        match msg.Value |> Command.deserialize with
+        match msg.Value |> Command.get with
         | Error error -> error |> Error |> async.Return
         | Ok cmd ->
             match cmd with
             | None -> msg.Value |> NotSupported |> Error |> async.Return
             | Some cmd ->
                 match cmd with
-                | Command.Start -> Command.start msg.ChatId |> Response.Ok client ct
-                | Command.Mine -> Command.mine msg.ChatId cfg ct |> Response.Result msg.ChatId client ct
+                | Command.Start -> CommandHandler.start msg.ChatId |> produceOk client ct
+                | Command.Mine -> CommandHandler.mine msg.ChatId cfg ct |> produceResult msg.ChatId client ct
                 | Command.Subscribe(embassy, payload) ->
-                    Command.subscribe (embassy, payload) msg.ChatId cfg ct
-                    |> Response.Result msg.ChatId client ct
+                    CommandHandler.subscribe (embassy, payload) msg.ChatId cfg ct
+                    |> produceResult msg.ChatId client ct
                 | Command.RemoveSubscription subscriptionId ->
-                    Command.removeSubscription subscriptionId msg.ChatId cfg ct
-                    |> Response.Result msg.ChatId client ct
+                    CommandHandler.removeSubscription subscriptionId msg.ChatId cfg ct
+                    |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
     let callback (msg: Dto<string>) cfg ct client =
-        match msg.Value |> Command.deserialize with
+        match msg.Value |> Command.get with
         | Error error -> error |> Error |> async.Return
         | Ok cmd ->
             match cmd with
             | None -> msg.Value |> NotSupported |> Error |> async.Return
             | Some cmd ->
                 match cmd with
-                | Command.Countries embassy -> Command.countries embassy (msg.ChatId, msg.Id) |> Response.Ok client ct
+                | Command.Countries embassy ->
+                    CommandHandler.countries embassy (msg.ChatId, msg.Id) |> produceOk client ct
                 | Command.Cities(embassy, country) ->
-                    Command.cities (embassy, country) (msg.ChatId, msg.Id) |> Response.Ok client ct
+                    CommandHandler.cities (embassy, country) (msg.ChatId, msg.Id)
+                    |> produceOk client ct
                 | Command.UserCountries embassy ->
-                    Command.userCountries embassy (msg.ChatId, msg.Id) cfg ct
-                    |> Response.Result msg.ChatId client ct
+                    CommandHandler.userCountries embassy (msg.ChatId, msg.Id) cfg ct
+                    |> produceResult msg.ChatId client ct
                 | Command.UserCities(embassy, country) ->
-                    Command.userCities (embassy, country) (msg.ChatId, msg.Id) cfg ct
-                    |> Response.Result msg.ChatId client ct
+                    CommandHandler.userCities (embassy, country) (msg.ChatId, msg.Id) cfg ct
+                    |> produceResult msg.ChatId client ct
                 | Command.SubscriptionRequest embassy ->
-                    Command.subscriptionRequest embassy (msg.ChatId, msg.Id)
-                    |> Response.Ok client ct
+                    CommandHandler.subscriptionRequest embassy (msg.ChatId, msg.Id)
+                    |> produceOk client ct
                 | Command.UserSubscriptions embassy ->
-                    Command.userSubscriptions embassy (msg.ChatId, msg.Id) cfg ct
-                    |> Response.Result msg.ChatId client ct
+                    CommandHandler.userSubscriptions embassy (msg.ChatId, msg.Id) cfg ct
+                    |> produceResult msg.ChatId client ct
                 | Command.ChooseAppointmentRequest(embassy, appointmentId) ->
-                    Command.chooseAppointmentRequest (embassy, appointmentId) msg.ChatId cfg ct
-                    |> Response.Result msg.ChatId client ct
+                    CommandHandler.chooseAppointmentRequest (embassy, appointmentId) msg.ChatId cfg ct
+                    |> produceResult msg.ChatId client ct
                 | Command.ConfirmAppointment(requestId, appointmentId) ->
-                    Command.confirmAppointment (requestId, appointmentId) msg.ChatId cfg ct
-                    |> Response.Result msg.ChatId client ct
+                    CommandHandler.confirmAppointment (requestId, appointmentId) msg.ChatId cfg ct
+                    |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
 let private create ct cfg client =
