@@ -8,10 +8,6 @@ open EA.Domain
 open EA.Telegram.Domain
 open EA.Telegram.Persistence
 
-let private Admin =
-    { Id = 379444553L |> ChatId
-      Subscriptions = Set.empty }
-
 let private send ct message =
     Key.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
@@ -21,7 +17,7 @@ let private send ct message =
 module Produce =
 
     let private spread chats ct createMsg =
-        chats @ [ Admin ]
+        chats
         |> Seq.map (fun chat -> createMsg chat.Id |> send ct)
         |> Async.Parallel
         |> Async.map Result.choose

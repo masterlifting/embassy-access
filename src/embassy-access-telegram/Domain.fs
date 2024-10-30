@@ -3,6 +3,9 @@
 open EA.Domain
 open Web.Telegram.Domain
 
+
+let internal Admin = 379444553L |> ChatId
+
 module Key =
 
     [<Literal>]
