@@ -2,10 +2,10 @@
 
 Logging:
   LogLevel:
-    Default: Debug
+    Default: Information
 
 Persistence:
-  FileSystem: "/app/data"
+  FileSystem: "C:/"
 
 Workdays: &Workdays
   StartTime: '00:00:00'

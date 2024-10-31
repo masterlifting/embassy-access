@@ -10,7 +10,7 @@ let main _ =
 
     let rootTask =
         { Name = Settings.AppName
-          Task = Initializer.initialize () }
+          Task = Some Initializer.initialize }
 
     let taskHandlers =
         Graph.Node(

@@ -96,7 +96,6 @@ let set command =
           appointmentId.Value |> string ]
         |> build
     | RemoveSubscription requestId -> [ Code.RemoveSubscription; requestId.Value |> string ] |> build
-    |> printSize
 
 let get (value: string) =
     let parts = value.Split Delimiter
