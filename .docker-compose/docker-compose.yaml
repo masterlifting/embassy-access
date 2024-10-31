@@ -10,6 +10,8 @@
     environment:
       - ANTI_CAPTCHA_API_KEY=${ANTI_CAPTCHA_API_KEY}
       - EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN=${EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN}
+    volumes:
+      - ./data:/app/data:rw
       
   embassy-access-telegram:
     image: embassy-access-telegram
@@ -22,3 +24,5 @@
     environment:
       - ANTI_CAPTCHA_API_KEY=${ANTI_CAPTCHA_API_KEY}
       - EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN=${EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN}
+    volumes:
+      - ./data:/app/data:rw

@@ -17,6 +17,4 @@ WORKDIR /app/src/embassy-access-telegram-api/publish
 
 COPY --from=build-env /app/src/embassy-access-telegram-api/publish .
 
-RUN touch /app/chats && chmod 777 /app/chats
-
 ENTRYPOINT ["dotnet", "embassy-access-telegram-api.dll"]
