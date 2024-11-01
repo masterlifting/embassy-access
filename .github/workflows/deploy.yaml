@@ -19,10 +19,10 @@ jobs:
       - name: Fast deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.DO_KDMID_HOST }}
-          username: ${{ secrets.DO_KDMID_USERNAME }}
-          key: ${{ secrets.DO_KDMID_SSH }}
-          passphrase: ${{ secrets.DO_KDMID_PASSPHRASE }}
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH }}
+          passphrase: ${{ secrets.VPS_PASSPHRASE }}
           script: |
             chmod +x /app/src/embassy-access/.github/workflows/deploy.sh
             /app/src/embassy-access/.github/workflows/deploy.sh
