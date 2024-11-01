@@ -1,8 +1,0 @@
-# @format
-
-Logging:
-  LogLevel:
-    Default: Debug
-
-Persistence:
-  FileSystem: "/app/data"
