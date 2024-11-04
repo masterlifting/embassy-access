@@ -5,12 +5,12 @@ Logging:
     Default: Information
 
 Persistence:
-  FileSystem: "/app/data"
+  FileSystem: "/usr/src/embassy-access-data"
 
 Workdays: &Workdays
-  StartTime: '00:00:00'
-  StopTime: '23:00:00'
-  Workdays: mon,tue,wed,thu,fri,sat,sun
+  StartTime: '00:09:00'
+  StopTime: '16:30:00'
+  Workdays: mon,tue,wed,thu,fri
 
 SearchAppointments: &SearchAppointments
   Name: Search appointments
@@ -26,7 +26,7 @@ MakeAppointments: &MakeAppointments
 
 RussianTask: &RussianTask
   Name: Russian
-  Recursively: '00:01:00'
+  Recursively: '00:25:00'
   Parallel: true
 
 Worker:

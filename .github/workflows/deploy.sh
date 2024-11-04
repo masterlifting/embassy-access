@@ -2,13 +2,19 @@
 
 set -e
 
-cd /app/src/embassy-access
+cd /usr/src/embassy-access/src/embassy-access-worker/
 
 git stash
 git pull origin main --recurse-submodules
 
-chmod 600 .docker-compose/data/
+# Check if the PID file exists and contains a running process
+PID_FILE="/tmp/embassy-access-pid"
+if [[ -f "$PID_FILE" ]]; then
+    LAST_PID=$(cat "$PID_FILE")
+    if kill -0 $LAST_PID 2>/dev/null; then
+        kill $LAST_PID
+    fi
+fi
 
-docker-compose -p embassy-access -f .docker-compose/docker-compose.yaml down
-docker-compose -p embassy-access -f .docker-compose/docker-compose.yaml up -d --build
-docker system prune -af --volumes
+nohup dotnet run -c Release &
+echo $! > "$PID_FILE"

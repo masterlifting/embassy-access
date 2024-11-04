@@ -50,8 +50,7 @@ Open embassy-access.sln in Visual Studio and build the solution. Ensure all subm
 
 ### Running the Application
 
-- `embassy-access-worker`: Run the worker service to process background tasks.
-- `embassy-access-telegram`: Run the Telegram bot for user interaction.
+- `embassy-access-worker`: Run the worker service to process background tasks and telegram bot.
 
 ### Contributing
 

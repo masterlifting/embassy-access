@@ -24,5 +24,5 @@ jobs:
           key: ${{ secrets.VPS_SSH }}
           passphrase: ${{ secrets.VPS_PASSPHRASE }}
           script: |
-            chmod +x /app/src/embassy-access/.github/workflows/deploy.sh
-            /app/src/embassy-access/.github/workflows/deploy.sh
+            chmod +x /usr/src/embassy-access/.github/workflows/deploy.sh
+            /usr/src/embassy-access/.github/workflows/deploy.sh
