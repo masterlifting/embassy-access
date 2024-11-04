@@ -24,11 +24,8 @@ jobs:
           key: ${{ secrets.VPS_SSH }}
           passphrase: ${{ secrets.VPS_PASSPHRASE }}
           script: |
-            if [ -d "/usr/src/embassy-access/" ]; then
-              echo "Directory exists"
-            else
-              echo "Directory does not exist"
-              exit 1
-            fi
+            cd /usr/src/embassy-access/
+            git stash
+            git pull origin main --recurse-submodules
             chmod +x /usr/src/embassy-access/.github/workflows/deploy.sh
             /usr/src/embassy-access/.github/workflows/deploy.sh
