@@ -16,11 +16,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Update Git repository
+      - name: Check if directory exists
         run: |
-          cd /usr/src/embassy-access/
-          git stash
-          git pull origin main --recurse-submodules
+          if [ -d "/usr/src/embassy-access/" ]; then
+            echo "Directory exists"
+          else
+            echo "Directory does not exist"
+            exit 1
+          fi
 
       - name: Fast deploy
         uses: appleboy/ssh-action@master
