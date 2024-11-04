@@ -14,3 +14,5 @@ fi
 
 nohup dotnet run -c Release &
 echo $! > "$PID_FILE"
+
+exit 0
