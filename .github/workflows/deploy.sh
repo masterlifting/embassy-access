@@ -4,10 +4,6 @@ set -e
 
 cd /usr/src/embassy-access/src/embassy-access-worker/
 
-git stash
-git pull origin main --recurse-submodules
-
-# Check if the PID file exists and contains a running process
 PID_FILE="/tmp/embassy-access-pid"
 if [[ -f "$PID_FILE" ]]; then
     LAST_PID=$(cat "$PID_FILE")

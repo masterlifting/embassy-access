@@ -16,6 +16,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Update Git repository
+        run: |
+          cd /usr/src/embassy-access/
+          git stash
+          git pull origin main --recurse-submodules
+
       - name: Fast deploy
         uses: appleboy/ssh-action@master
         with:
