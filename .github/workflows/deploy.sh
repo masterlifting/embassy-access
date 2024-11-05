@@ -13,7 +13,7 @@ if [[ -f "$PID_FILE" ]]; then
     fi
 fi
 
-nohup dotnet run -c Release > /dev/null 2>&1 &
+nohup dotnet run -c Release > nohup.out 2>&1 &
 echo $! > "$PID_FILE"
 
 exit 0
