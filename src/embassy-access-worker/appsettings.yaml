@@ -8,7 +8,7 @@ Persistence:
   FileSystem: "/usr/src/embassy-access-data"
 
 Workdays: &Workdays
-  StartTime: '00:09:00'
+  StartTime: '09:00:00'
   StopTime: '16:30:00'
   Workdays: mon,tue,wed,thu,fri
 
@@ -45,7 +45,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
 
     - Name: Germany
@@ -59,7 +59,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
 
     - Name: France
@@ -73,7 +73,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
 
     - Name: Montenegro
@@ -87,7 +87,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
 
     - Name: Ireland
@@ -101,7 +101,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 1
+            TimeShift: 0
             <<: *Workdays
 
     - Name: Switzerland
@@ -115,7 +115,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
 
     - Name: Finland
@@ -129,7 +129,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 3
+            TimeShift: 2
             <<: *Workdays
 
     - Name: Netherlands
@@ -143,7 +143,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
 
     - Name: Albania
@@ -157,7 +157,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
 
     - Name: Slovenia
@@ -171,7 +171,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
 
     - Name: Bosnia
@@ -185,7 +185,7 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
 
     - Name: Hungary
@@ -199,5 +199,5 @@ Worker:
                 - <<: *SearchAppointments
                 - <<: *MakeAppointments
           Schedule:
-            TimeShift: 2
+            TimeShift: 1
             <<: *Workdays
