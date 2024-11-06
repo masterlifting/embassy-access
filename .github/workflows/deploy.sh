@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-echo "Changing directory to /usr/src/embassy-access/src/embassy-access-worker/"
 cd /usr/src/embassy-access/src/embassy-access-worker/
 
 PID_FILE="/tmp/embassy-access-pid"
