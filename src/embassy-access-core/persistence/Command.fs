@@ -25,8 +25,52 @@ module Definitions =
                   GroupBy = Some "Passports"
                   Modified = DateTime.UtcNow }
 
-        type Create = PassportsGroup of PassportsGroup
-        type CreateOrUpdate = PassportsGroup of PassportsGroup
+        type OthersGroup =
+            { Embassy: Embassy
+              Payload: string
+              ConfirmationState: ConfirmationState
+              Validation: Validation option }
+
+            member this.createRequest() =
+                { Id = RequestId.New
+                  Payload = this.Payload
+                  Embassy = this.Embassy
+                  ProcessState = Created
+                  Attempt = 0
+                  ConfirmationState = this.ConfirmationState
+                  Appointments = Set.empty
+                  Description = None
+                  GroupBy = Some "Others"
+                  Modified = DateTime.UtcNow }
+
+        type PassportResultGroup =
+            { Embassy: Embassy
+              Payload: string
+              Validation: Validation option }
+
+            member this.createRequest() =
+                { Id = RequestId.New
+                  Payload = this.Payload
+                  Embassy = this.Embassy
+                  ProcessState = Created
+                  Attempt = 0
+                  ConfirmationState = Disabled
+                  Appointments = Set.empty
+                  Description = None
+                  GroupBy = Some "Passports"
+                  Modified = DateTime.UtcNow }
+
+
+        type Create =
+            | PassportsGroup of PassportsGroup
+            | OthersGroup of OthersGroup
+            | PassportResultGroup of PassportResultGroup
+
+        type CreateOrUpdate =
+            | PassportsGroup of PassportsGroup
+            | OthersGroup of OthersGroup
+            | PassportResultGroup of PassportResultGroup
+
         type Update = Request of Request
         type Delete = RequestId of RequestId
 

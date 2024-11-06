@@ -29,9 +29,6 @@ module private Code =
     let SubscriptionRequest = "/005"
 
     [<Literal>]
-    let Subscribe = "/006"
-
-    [<Literal>]
     let UserSubscriptions = "/007"
 
     [<Literal>]
@@ -43,6 +40,19 @@ module private Code =
     [<Literal>]
     let RemoveSubscription = "/010"
 
+    [<Literal>]
+    let SubscribeSearchAppointments = "/006"
+
+    [<Literal>]
+    let SubscribeSearchOthers = "/011"
+
+    [<Literal>]
+    let SubscribeSearchPassportResult = "/012"
+
+    [<Literal>]
+    let ChooseSubscriptionRequest = "/013"
+
+
 type Name =
     | Start
     | Mine
@@ -50,8 +60,11 @@ type Name =
     | UserCountries of embassyName: string
     | Cities of embassyName: string * countryName: string
     | UserCities of embassyName: string * countryName: string
+    | ChoseSubscriptionRequest of Embassy * command: string
     | SubscriptionRequest of Embassy
-    | Subscribe of Embassy * payload: string
+    | SubscribeSearchAppointments of Embassy * payload: string
+    | SubscribeSearchOthers of Embassy * payload: string
+    | SubscribeSearchPassportResult of Embassy * payload: string
     | UserSubscriptions of Embassy
     | ChooseAppointmentRequest of Embassy * AppointmentId
     | ConfirmAppointment of RequestId * AppointmentId
@@ -76,14 +89,26 @@ let set command =
         embassy
         |> EA.SerDe.Embassy.serialize
         |> fun embassy -> [ Code.UserSubscriptions; embassy ] |> build
+    | ChoseSubscriptionRequest(embassy, command) ->
+        embassy
+        |> EA.SerDe.Embassy.serialize
+        |> fun embassy -> [ Code.ChooseSubscriptionRequest; embassy; command ] |> build
     | SubscriptionRequest embassy ->
         embassy
         |> EA.SerDe.Embassy.serialize
         |> fun embassy -> [ Code.SubscriptionRequest; embassy ] |> build
-    | Subscribe(embassy, payload) ->
+    | SubscribeSearchAppointments(embassy, payload) ->
         embassy
         |> EA.SerDe.Embassy.serialize
-        |> fun embassy -> [ Code.Subscribe; embassy; payload ] |> build
+        |> fun embassy -> [ Code.SubscribeSearchAppointments; embassy; payload ] |> build
+    | SubscribeSearchOthers(embassy, payload) ->
+        embassy
+        |> EA.SerDe.Embassy.serialize
+        |> fun embassy -> [ Code.SubscribeSearchOthers; embassy; payload ] |> build
+    | SubscribeSearchPassportResult(embassy, payload) ->
+        embassy
+        |> EA.SerDe.Embassy.serialize
+        |> fun embassy -> [ Code.SubscribeSearchPassportResult; embassy; payload ] |> build
     | ChooseAppointmentRequest(embassy, appointmentId) ->
         embassy
         |> EA.SerDe.Embassy.serialize
@@ -124,6 +149,15 @@ let get (value: string) =
             match argsLength with
             | 2 -> Ok <| Some(UserCities(parts[1], parts[2]))
             | _ -> Ok <| None
+        | Code.ChooseSubscriptionRequest ->
+            match argsLength with
+            | 2 ->
+                parts[1]
+                |> EA.SerDe.Embassy.deserialize
+                |> Result.map (fun embassy ->
+                    let command = parts[2]
+                    Some(ChoseSubscriptionRequest(embassy, command)))
+            | _ -> Ok <| None
         | Code.SubscriptionRequest ->
             match argsLength with
             | 1 ->
@@ -131,14 +165,32 @@ let get (value: string) =
                 |> EA.SerDe.Embassy.deserialize
                 |> Result.map (Some << SubscriptionRequest)
             | _ -> Ok <| None
-        | Code.Subscribe ->
+        | Code.SubscribeSearchAppointments ->
             match argsLength with
             | 2 ->
                 parts[1]
                 |> EA.SerDe.Embassy.deserialize
                 |> Result.map (fun embassy ->
                     let payload = parts[2]
-                    Some(Subscribe(embassy, payload)))
+                    Some(SubscribeSearchAppointments(embassy, payload)))
+            | _ -> Ok <| None
+        | Code.SubscribeSearchOthers ->
+            match argsLength with
+            | 2 ->
+                parts[1]
+                |> EA.SerDe.Embassy.deserialize
+                |> Result.map (fun embassy ->
+                    let payload = parts[2]
+                    Some(SubscribeSearchOthers(embassy, payload)))
+            | _ -> Ok <| None
+        | Code.SubscribeSearchPassportResult ->
+            match argsLength with
+            | 2 ->
+                parts[1]
+                |> EA.SerDe.Embassy.deserialize
+                |> Result.map (fun embassy ->
+                    let payload = parts[2]
+                    Some(SubscribeSearchPassportResult(embassy, payload)))
             | _ -> Ok <| None
         | Code.UserSubscriptions ->
             match argsLength with

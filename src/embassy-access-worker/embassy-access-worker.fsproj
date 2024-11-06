@@ -26,9 +26,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="appsettings.yaml">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 		<Content Include="Dockerfile" />
 		<Content Include="..\..\.dockerignore">
 			<Link>.dockerignore</Link>

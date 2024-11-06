@@ -94,3 +94,30 @@ module Command =
                 |> EA.Persistence.Command.Request.CreateOrUpdate
 
             storage |> EA.Persistence.Repository.Command.Request.execute command ct
+
+        let createOrUpdateOthersSearch (embassy, payload) ct storage =
+            let commandDefinition: OthersGroup =
+                { Embassy = embassy
+                  Payload = payload
+                  ConfirmationState = Disabled
+                  Validation = Some EA.Api.validateRequest }
+
+            let command =
+                commandDefinition
+                |> EA.Persistence.Command.Definitions.Request.CreateOrUpdate.OthersGroup
+                |> EA.Persistence.Command.Request.CreateOrUpdate
+
+            storage |> EA.Persistence.Repository.Command.Request.execute command ct
+
+        let createOrUpdatePassportResultSearch (embassy, payload) ct storage =
+            let commandDefinition: PassportResultGroup =
+                { Embassy = embassy
+                  Payload = payload
+                  Validation = Some EA.Api.validateRequest }
+
+            let command =
+                commandDefinition
+                |> EA.Persistence.Command.Definitions.Request.CreateOrUpdate.PassportResultGroup
+                |> EA.Persistence.Command.Request.CreateOrUpdate
+
+            storage |> EA.Persistence.Repository.Command.Request.execute command ct

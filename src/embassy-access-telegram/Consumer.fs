@@ -17,11 +17,14 @@ module private Consume =
                 match cmd with
                 | Command.Start -> CommandHandler.start msg.ChatId |> produceOk client ct
                 | Command.Mine -> CommandHandler.mine msg.ChatId cfg ct |> produceResult msg.ChatId client ct
-                | Command.Subscribe(embassy, payload) ->
-                    CommandHandler.subscribe (embassy, payload) msg.ChatId cfg ct
+                | Command.SubscribeSearchAppointments(embassy, payload) ->
+                    CommandHandler.subscribe (embassy, payload, "searchappointments") msg.ChatId cfg ct
                     |> produceResult msg.ChatId client ct
-                | Command.RemoveSubscription subscriptionId ->
-                    CommandHandler.removeSubscription subscriptionId msg.ChatId cfg ct
+                | Command.SubscribeSearchOthers(embassy, payload) ->
+                    CommandHandler.subscribe (embassy, payload, "searchothers") msg.ChatId cfg ct
+                    |> produceResult msg.ChatId client ct
+                | Command.SubscribeSearchPassportResult(embassy, payload) ->
+                    CommandHandler.subscribe (embassy, payload, "searchpassportresult") msg.ChatId cfg ct
                     |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
@@ -55,6 +58,12 @@ module private Consume =
                     |> produceResult msg.ChatId client ct
                 | Command.ConfirmAppointment(requestId, appointmentId) ->
                     CommandHandler.confirmAppointment (requestId, appointmentId) msg.ChatId cfg ct
+                    |> produceResult msg.ChatId client ct
+                | Command.RemoveSubscription subscriptionId ->
+                    CommandHandler.removeSubscription subscriptionId msg.ChatId cfg ct
+                    |> produceResult msg.ChatId client ct
+                | Command.ChoseSubscriptionRequest(embassy, command) ->
+                    CommandHandler.choseSubscriptionRequest (embassy, command) (msg.ChatId, msg.Id)
                     |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 

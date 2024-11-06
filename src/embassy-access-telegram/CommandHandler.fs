@@ -15,10 +15,7 @@ let appointments (embassy, appointments: Set<Appointment>) =
           Data =
             appointments
             |> Seq.map (fun appointment ->
-                (embassy, appointment.Id)
-                |> Command.ChooseAppointmentRequest
-                |> Command.set,
-                appointment.Description)
+                (embassy, appointment.Id) |> Command.ChooseAppointmentRequest |> Command.set, appointment.Description)
             |> Map }
         |> Web.Telegram.Producer.Buttons.create (chatId, New)
 
@@ -28,7 +25,7 @@ let confirmation (embassy, confirmations: Set<Confirmation>) =
         |> Seq.map (fun confirmation -> $"'{embassy}'. Confirmation: {confirmation.Description}")
         |> String.concat "\n"
         |> Web.Telegram.Producer.Text.create (chatId, New)
-        
+
 let start chatId =
     EA.Api.getEmbassies ()
     |> Seq.map EA.Mapper.Embassy.toExternal
@@ -165,12 +162,34 @@ let subscriptionRequest embassy =
     fun (chatId, msgId) ->
         match embassy with
         | Russian _ ->
-            let command = (embassy, "your_link_here") |> Command.Subscribe |> Command.set
+            [ "searchappointments"; "searchothers"; "searchpassportresult" ]
+            |> Seq.map (fun name -> (embassy, name) |> Command.ChoseSubscriptionRequest |> Command.set, name)
+            |> Map
+            |> Ok
+        | _ -> $"{embassy}" |> NotSupported |> Error
+        |> Result.map (fun data ->
+            { Buttons.Name = "Choose subscription request"
+              Columns = 1
+              Data = data }
+            |> Buttons.create (chatId, msgId |> Replace))
+        |> async.Return
 
-            $"Send your payload using the following format: '{command}'."
-        | _ -> $"Not supported embassy: '{embassy}'."
-        |> Text.create (chatId, msgId |> Replace)
-        |> Ok
+let choseSubscriptionRequest (embassy, command) =
+    fun (chatId, msgId) ->
+        match embassy with
+        | Russian _ ->
+            let command =
+                match command with
+                | "searchappointments" -> (embassy, "your_link_here") |> Command.SubscribeSearchAppointments |> Ok
+                | "searchothers" -> (embassy, "your_link_here") |> Command.SubscribeSearchOthers |> Ok
+                | "searchpassportresult" -> command |> NotSupported |> Error
+                | _ -> command |> NotSupported |> Error
+
+            command
+            |> Result.map Command.set
+            |> Result.map (fun cmd -> $"Send your payload using the following format: '{cmd}'.")
+        | _ -> $"{embassy}" |> NotSupported |> Error
+        |> Result.map (Text.create (chatId, Replace msgId))
         |> async.Return
 
 let userSubscriptions embassy =
@@ -185,18 +204,31 @@ let userSubscriptions embassy =
         |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy))
         |> ResultAsync.map (fun requests ->
             requests
-            |> Seq.map (fun request -> $"{request.Id} -> {request.Payload}")
-            |> String.concat Environment.NewLine
-            |> (Text.create (chatId, msgId |> Replace)))
+            |> Seq.map (fun request -> request.Id |> Command.RemoveSubscription |> Command.set, request.Payload)
+            |> Map)
+        |> ResultAsync.map (fun data ->
+            { Buttons.Name = "Remove subscription"
+              Columns = 1
+              Data = data }
+            |> Buttons.create (chatId, msgId |> Replace))
 
-let subscribe (embassy, payload) =
+let subscribe (embassy, payload, name) =
     fun chatId cfg ct ->
         match embassy with
         | Russian _ ->
 
             let createOrUpdatePassportSearchRequest ct =
                 EA.Persistence.Storage.FileSystem.Request.create cfg
-                |> ResultAsync.wrap (Repository.Command.Request.createOrUpdatePassportSearch (embassy, payload) ct)
+                |> ResultAsync.wrap (fun storage ->
+                    let command =
+                        match name with
+                        | "searchappointments" ->
+                            Repository.Command.Request.createOrUpdatePassportSearch (embassy, payload) ct
+                        | "searchothers" -> Repository.Command.Request.createOrUpdateOthersSearch (embassy, payload) ct
+                        | "searchpassportresult" -> fun _ -> name |> NotSupported |> Error |> async.Return
+                        | _ -> fun _ -> name |> NotSupported |> Error |> async.Return
+
+                    storage |> command)
 
             let createOrUpdateChatSubscription ct =
                 ResultAsync.bindAsync (fun (request: Request) ->

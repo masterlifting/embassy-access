@@ -456,4 +456,3 @@ Scripts/
 ### Test Data ###
 tests/embassies/russian/test_data/
 .env
-.docker-compose/data/

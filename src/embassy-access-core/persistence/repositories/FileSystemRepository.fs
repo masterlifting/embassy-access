@@ -119,6 +119,52 @@ module Command =
                     |> Result.map (fun _ ->
                         let data = requests |> Array.append [| EA.Mapper.Request.toExternal request |]
                         (data, request))
+            | CreateOrUpdate.OthersGroup othersGroup ->
+                let embassy = othersGroup.Embassy |> EA.Mapper.Embassy.toExternal
+
+                match
+                    requests
+                    |> Seq.tryFind (fun x -> x.Embassy = embassy && x.Payload = othersGroup.Payload)
+                with
+                | Some request ->
+                    let data =
+                        requests |> Array.mapi (fun i x -> if x.Id = request.Id then request else x)
+
+                    request
+                    |> EA.Mapper.Request.toInternal
+                    |> Result.map (fun request -> (data, request))
+                | None ->
+                    let request = othersGroup.createRequest ()
+
+                    match othersGroup.Validation with
+                    | Some validate -> request |> validate
+                    | _ -> Ok()
+                    |> Result.map (fun _ ->
+                        let data = requests |> Array.append [| EA.Mapper.Request.toExternal request |]
+                        (data, request))
+            | CreateOrUpdate.PassportResultGroup passportResultGroup ->
+                let embassy = passportResultGroup.Embassy |> EA.Mapper.Embassy.toExternal
+
+                match
+                    requests
+                    |> Seq.tryFind (fun x -> x.Embassy = embassy && x.Payload = passportResultGroup.Payload)
+                with
+                | Some request ->
+                    let data =
+                        requests |> Array.mapi (fun i x -> if x.Id = request.Id then request else x)
+
+                    request
+                    |> EA.Mapper.Request.toInternal
+                    |> Result.map (fun request -> (data, request))
+                | None ->
+                    let request = passportResultGroup.createRequest ()
+
+                    match passportResultGroup.Validation with
+                    | Some validate -> request |> validate
+                    | _ -> Ok()
+                    |> Result.map (fun _ ->
+                        let data = requests |> Array.append [| EA.Mapper.Request.toExternal request |]
+                        (data, request))
 
         let private update definition (requests: External.Request array) =
             match definition with
