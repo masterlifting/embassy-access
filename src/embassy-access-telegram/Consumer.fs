@@ -49,7 +49,7 @@ module private Consume =
                     |> produceResult msg.ChatId client ct
                 | Command.SubscriptionRequest embassy ->
                     CommandHandler.subscriptionRequest embassy (msg.ChatId, msg.Id)
-                    |> produceOk client ct
+                    |> produceResult msg.ChatId client ct
                 | Command.UserSubscriptions embassy ->
                     CommandHandler.userSubscriptions embassy (msg.ChatId, msg.Id) cfg ct
                     |> produceResult msg.ChatId client ct

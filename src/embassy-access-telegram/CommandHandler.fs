@@ -229,7 +229,8 @@ let userSubscriptions embassy =
             |> Seq.map (fun request -> request.Id |> Command.RemoveSubscription |> Command.set, request.Payload)
             |> Map)
         |> ResultAsync.map (fun data ->
-            { Buttons.Name = "You have the following subscriptions to remove"
+            { Buttons.Name =
+                $"Your subscriptions for{Environment.NewLine}{embassy}{Environment.NewLine}To remove a subscription, click on it."
               Columns = 1
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))

@@ -429,7 +429,7 @@ module private AppointmentsPage =
 
         (formData, data)
 
-    let private creatrRequestAppointments (formData: Map<string, string>, data) =
+    let private createRequestAppointments (formData: Map<string, string>, data) =
 
         let appointments =
             data
@@ -488,7 +488,7 @@ module private AppointmentsPage =
 
         let parseResponse = ResultAsync.bind parseHttpResponse
         let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
-        let parseAppointments = ResultAsync.bind creatrRequestAppointments
+        let parseAppointments = ResultAsync.bind createRequestAppointments
         let createResult = ResultAsync.map (createResult request)
 
         // pipe
