@@ -127,7 +127,7 @@ type Request =
     { Id: RequestId
       Payload: string
       Embassy: Embassy
-      Attempt: int
+      Attempt: DateTime * int
       ProcessState: ProcessState
       ConfirmationState: ConfirmationState
       Appointments: Set<Appointment>
@@ -208,6 +208,7 @@ module External =
             state with get, set
 
         member val Attempt: int = 0 with get, set
+        member val AttemptModified: DateTime = DateTime.UtcNow with get, set
 
         member val ConfirmationState: ConfirmationState =
             let state = ConfirmationState()

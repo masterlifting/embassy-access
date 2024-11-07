@@ -162,8 +162,8 @@ let subscriptionRequest embassy =
     fun (chatId, msgId) ->
         match embassy with
         | Russian _ ->
-            [ "searchappointments", "Check passport appointments"
-              "searchothers", "Check other appointments"
+            [ "searchappointments", "Search passport appointments"
+              "searchothers", "Search others appointments"
               "searchpassportresult", "Check passport readiness" ]
             |> Seq.map (fun (key, name) -> (embassy, key) |> Command.ChoseSubscriptionRequestWay |> Command.set, name)
             |> Map

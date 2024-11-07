@@ -16,7 +16,7 @@ module private Fixture =
           Payload = "https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F"
           Embassy = Russian <| Germany Berlin
           ProcessState = Created
-          Attempt = 0
+          Attempt = DateTime.UtcNow, 0
           ConfirmationState = Auto <| FirstAvailable
           Appointments = Set.empty
           Description = None

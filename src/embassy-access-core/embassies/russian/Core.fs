@@ -673,23 +673,22 @@ module private Request =
 
     let private setAttempt' timeShift request =
         let timeShift = timeShift |> int
-        let modifiedDay = request.Modified.AddHours timeShift
+        let modified, attempt = request.Attempt
+        let modified = modified.AddHours timeShift
         let today = DateTime.UtcNow.AddHours timeShift
 
-        match modifiedDay.DayOfYear = today.DayOfYear, request.Attempt > 20 with
+        match modified.DayOfYear = today.DayOfYear, attempt > 20 with
         | true, true ->
             Error
-            <| Canceled $"The request was cancelled due to the number of attempts reached the %i{request.Attempt}."
+            <| Canceled $"The request was cancelled due to the number of attempts reached the %i{attempt}."
         | false, true ->
             Ok
             <| { request with
-                   Attempt = 1
-                   Modified = DateTime.UtcNow }
+                   Attempt = DateTime.UtcNow, 1 }
         | _ ->
             Ok
             <| { request with
-                   Attempt = request.Attempt + 1
-                   Modified = DateTime.UtcNow }
+                   Attempt = DateTime.UtcNow, attempt + 1 }
 
     let setAttempt deps =
         ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
@@ -716,7 +715,7 @@ module private Request =
         let attempt =
             match error with
             | Operation { Code = Some Web.Captcha.CaptchaErrorCode } -> request.Attempt
-            | _ -> request.Attempt + 1
+            | _ -> DateTime.UtcNow, snd request.Attempt + 1
 
         deps.updateRequest
             { request with

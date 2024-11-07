@@ -398,7 +398,8 @@ module Request =
         result.Payload <- request.Payload
         result.Embassy <- request.Embassy |> Embassy.toExternal
         result.State <- request.ProcessState |> RequestState.toExternal
-        result.Attempt <- request.Attempt
+        result.Attempt <- request.Attempt |> snd
+        result.AttemptModified <- request.Attempt |> fst
         result.ConfirmationState <- request.ConfirmationState |> ConfirmationState.toExternal
         result.Appointments <- request.Appointments |> Seq.map Appointment.toExternal |> Seq.toArray
         result.Description <- request.Description
@@ -425,7 +426,7 @@ module Request =
                       Payload = request.Payload
                       Embassy = embassy
                       ProcessState = state
-                      Attempt = request.Attempt
+                      Attempt = (request.AttemptModified,request.Attempt)
                       ConfirmationState = confirmationState
                       Appointments = appointments
                       Description = request.Description
