@@ -10,21 +10,21 @@ open EA.Telegram.Persistence
 
 let appointments (embassy, appointments: Set<Appointment>) =
     fun chatId ->
-        { Buttons.Name = $"Appointments for {embassy}"
+        { Buttons.Name = $"Choose the appointment for '{embassy}'"
           Columns = 1
           Data =
             appointments
             |> Seq.map (fun appointment ->
                 (embassy, appointment.Id) |> Command.ChooseAppointmentRequest |> Command.set, appointment.Description)
             |> Map }
-        |> Web.Telegram.Producer.Buttons.create (chatId, New)
+        |> Buttons.create (chatId, New)
 
 let confirmation (embassy, confirmations: Set<Confirmation>) =
     fun chatId ->
         confirmations
         |> Seq.map (fun confirmation -> $"'{embassy}'. Confirmation: {confirmation.Description}")
         |> String.concat "\n"
-        |> Web.Telegram.Producer.Text.create (chatId, New)
+        |> Text.create (chatId, New)
 
 let start chatId =
     EA.Api.getEmbassies ()
@@ -35,7 +35,7 @@ let start chatId =
     |> Seq.map (fun embassyName -> embassyName |> Command.Countries |> Command.set, embassyName)
     |> Map
     |> fun data ->
-        { Buttons.Name = "Choose embassy to get a service"
+        { Buttons.Name = "Which embassy do you need?"
           Columns = 3
           Data = data }
         |> Buttons.create (chatId, New)
@@ -100,7 +100,7 @@ let mine chatId =
             |> Seq.map (fun embassyName -> embassyName |> Command.UserCountries |> Command.set, embassyName)
             |> Map)
         |> ResultAsync.map (fun data ->
-            { Buttons.Name = "Choose embassy to look at your services"
+            { Buttons.Name = "Choose embassy you are following"
               Columns = 3
               Data = data }
             |> Buttons.create (chatId, New))
@@ -170,7 +170,7 @@ let subscriptionRequest embassy =
             |> Ok
         | _ -> $"{embassy}" |> NotSupported |> Error
         |> Result.map (fun data ->
-            { Buttons.Name = "Which service do you want to use?"
+            { Buttons.Name = "Which service would you like to get?"
               Columns = 1
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
@@ -180,14 +180,14 @@ let chooseSubscriptionRequestWay (embassy, command) =
     fun (chatId, msgId) ->
         match embassy with
         | Russian _ ->
-            [ "now", "Immediately"; "background", "In background" ]
+            [ "now", "Immediately"; "background", "When it will be available" ]
             |> Seq.map (fun (key, name) ->
                 (embassy, command, key) |> Command.ChoseSubscriptionRequest |> Command.set, name)
             |> Map
             |> Ok
         | _ -> $"{embassy}" |> NotSupported |> Error
         |> Result.map (fun data ->
-            { Buttons.Name = "Which way do you want to use?"
+            { Buttons.Name = "When do you need the result?"
               Columns = 1
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
@@ -208,7 +208,8 @@ let choseSubscriptionRequest (embassy, command, way) =
 
                 command
                 |> Result.map Command.set
-                |> Result.map (fun cmd -> $"Send your payload using the following format: '{cmd}'.")
+                |> Result.map (fun cmd ->
+                    $"To obtain the result for this service, please send back the command along with the link where you need to check the result.{Environment.NewLine}The command is: {cmd}.")
             | _ -> $"{way}" |> NotSupported |> Error
         | _ -> $"{embassy}" |> NotSupported |> Error
         |> Result.map (Text.create (chatId, Replace msgId))
@@ -323,7 +324,7 @@ let chooseAppointmentRequest (embassy, appointmentId) =
                         (request.Id, appointmentId) |> Command.ConfirmAppointment |> Command.set, request.Payload)
                     |> Map
                     |> (fun data ->
-                        { Buttons.Name = $"Choose the Request"
+                        { Buttons.Name = $"Which subscription do you want to confirm?"
                           Columns = 1
                           Data = data }
                         |> Buttons.create (chatId, New))
