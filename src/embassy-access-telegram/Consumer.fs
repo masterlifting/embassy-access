@@ -62,8 +62,11 @@ module private Consume =
                 | Command.RemoveSubscription subscriptionId ->
                     CommandHandler.removeSubscription subscriptionId msg.ChatId cfg ct
                     |> produceResult msg.ChatId client ct
-                | Command.ChoseSubscriptionRequest(embassy, command) ->
-                    CommandHandler.choseSubscriptionRequest (embassy, command) (msg.ChatId, msg.Id)
+                | Command.ChoseSubscriptionRequestWay(embassy, command) ->
+                    CommandHandler.chooseSubscriptionRequestWay (embassy, command) (msg.ChatId, msg.Id)
+                    |> produceResult msg.ChatId client ct
+                | Command.ChoseSubscriptionRequest(embassy, command, way) ->
+                    CommandHandler.choseSubscriptionRequest (embassy, command, way) (msg.ChatId, msg.Id)
                     |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 

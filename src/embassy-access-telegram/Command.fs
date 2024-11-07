@@ -52,6 +52,9 @@ module private Code =
     [<Literal>]
     let ChooseSubscriptionRequest = "/013"
 
+    [<Literal>]
+    let ChooseSubscriptionRequestWay = "/014"
+
 
 type Name =
     | Start
@@ -60,7 +63,8 @@ type Name =
     | UserCountries of embassyName: string
     | Cities of embassyName: string * countryName: string
     | UserCities of embassyName: string * countryName: string
-    | ChoseSubscriptionRequest of Embassy * command: string
+    | ChoseSubscriptionRequest of Embassy * command: string * way: string
+    | ChoseSubscriptionRequestWay of Embassy * command: string
     | SubscriptionRequest of Embassy
     | SubscribeSearchAppointments of Embassy * payload: string
     | SubscribeSearchOthers of Embassy * payload: string
@@ -89,10 +93,14 @@ let set command =
         embassy
         |> EA.SerDe.Embassy.serialize
         |> fun embassy -> [ Code.UserSubscriptions; embassy ] |> build
-    | ChoseSubscriptionRequest(embassy, command) ->
+    | ChoseSubscriptionRequestWay(embassy, command) ->
         embassy
         |> EA.SerDe.Embassy.serialize
-        |> fun embassy -> [ Code.ChooseSubscriptionRequest; embassy; command ] |> build
+        |> fun embassy -> [ Code.ChooseSubscriptionRequestWay; embassy; command ] |> build
+    | ChoseSubscriptionRequest(embassy, command, way) ->
+        embassy
+        |> EA.SerDe.Embassy.serialize
+        |> fun embassy -> [ Code.ChooseSubscriptionRequest; embassy; command; way ] |> build
     | SubscriptionRequest embassy ->
         embassy
         |> EA.SerDe.Embassy.serialize
@@ -149,14 +157,24 @@ let get (value: string) =
             match argsLength with
             | 2 -> Ok <| Some(UserCities(parts[1], parts[2]))
             | _ -> Ok <| None
-        | Code.ChooseSubscriptionRequest ->
+        | Code.ChooseSubscriptionRequestWay ->
             match argsLength with
             | 2 ->
                 parts[1]
                 |> EA.SerDe.Embassy.deserialize
                 |> Result.map (fun embassy ->
                     let command = parts[2]
-                    Some(ChoseSubscriptionRequest(embassy, command)))
+                    Some(ChoseSubscriptionRequestWay(embassy, command)))
+            | _ -> Ok <| None
+        | Code.ChooseSubscriptionRequest ->
+            match argsLength with
+            | 3 ->
+                parts[1]
+                |> EA.SerDe.Embassy.deserialize
+                |> Result.map (fun embassy ->
+                    let command = parts[2]
+                    let way = parts[3]
+                    Some(ChoseSubscriptionRequest(embassy, command, way)))
             | _ -> Ok <| None
         | Code.SubscriptionRequest ->
             match argsLength with

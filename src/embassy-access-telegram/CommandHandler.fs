@@ -35,7 +35,7 @@ let start chatId =
     |> Seq.map (fun embassyName -> embassyName |> Command.Countries |> Command.set, embassyName)
     |> Map
     |> fun data ->
-        { Buttons.Name = "Embassies"
+        { Buttons.Name = "Choose embassy to get a service"
           Columns = 3
           Data = data }
         |> Buttons.create (chatId, New)
@@ -54,7 +54,7 @@ let countries embassyName =
             |> Seq.map (fun countryName -> (embassyName, countryName) |> Command.Cities |> Command.set, countryName)
             |> Map
 
-        { Buttons.Name = $"Countries"
+        { Buttons.Name = $"Where is {embassyName} embassy located?"
           Columns = 3
           Data = data }
         |> Buttons.create (chatId, msgId |> Replace)
@@ -76,7 +76,7 @@ let cities (embassyName, countryName) =
         |> Result.choose
         |> Result.map Map
         |> Result.map (fun data ->
-            { Buttons.Name = $"Cities"
+            { Buttons.Name = $"Which city in {countryName}?"
               Columns = 3
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
@@ -100,7 +100,7 @@ let mine chatId =
             |> Seq.map (fun embassyName -> embassyName |> Command.UserCountries |> Command.set, embassyName)
             |> Map)
         |> ResultAsync.map (fun data ->
-            { Buttons.Name = "My Embassies"
+            { Buttons.Name = "Choose embassy to look at your services"
               Columns = 3
               Data = data }
             |> Buttons.create (chatId, New))
@@ -125,7 +125,7 @@ let userCountries embassyName =
                 (embassyName, countryName) |> Command.UserCities |> Command.set, countryName)
             |> Map)
         |> ResultAsync.map (fun data ->
-            { Buttons.Name = $"My Countries"
+            { Buttons.Name = $"Where is {embassyName} embassy located?"
               Columns = 3
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
@@ -153,7 +153,7 @@ let userCities (embassyName, countryName) =
             |> Result.choose
             |> Result.map Map)
         |> ResultAsync.map (fun data ->
-            { Buttons.Name = $"My Cities"
+            { Buttons.Name = $"Which city in {countryName}?"
               Columns = 3
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
@@ -162,32 +162,54 @@ let subscriptionRequest embassy =
     fun (chatId, msgId) ->
         match embassy with
         | Russian _ ->
-            [ "searchappointments"; "searchothers"; "searchpassportresult" ]
-            |> Seq.map (fun name -> (embassy, name) |> Command.ChoseSubscriptionRequest |> Command.set, name)
+            [ "searchappointments", "Check passport appointments"
+              "searchothers", "Check other appointments"
+              "searchpassportresult", "Check passport readiness" ]
+            |> Seq.map (fun (key, name) -> (embassy, key) |> Command.ChoseSubscriptionRequestWay |> Command.set, name)
             |> Map
             |> Ok
         | _ -> $"{embassy}" |> NotSupported |> Error
         |> Result.map (fun data ->
-            { Buttons.Name = "Choose subscription request"
+            { Buttons.Name = "Which service do you want to use?"
               Columns = 1
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
         |> async.Return
 
-let choseSubscriptionRequest (embassy, command) =
+let chooseSubscriptionRequestWay (embassy, command) =
     fun (chatId, msgId) ->
         match embassy with
         | Russian _ ->
-            let command =
-                match command with
-                | "searchappointments" -> (embassy, "your_link_here") |> Command.SubscribeSearchAppointments |> Ok
-                | "searchothers" -> (embassy, "your_link_here") |> Command.SubscribeSearchOthers |> Ok
-                | "searchpassportresult" -> command |> NotSupported |> Error
-                | _ -> command |> NotSupported |> Error
+            [ "now", "Immediately"; "background", "In background" ]
+            |> Seq.map (fun (key, name) ->
+                (embassy, command, key) |> Command.ChoseSubscriptionRequest |> Command.set, name)
+            |> Map
+            |> Ok
+        | _ -> $"{embassy}" |> NotSupported |> Error
+        |> Result.map (fun data ->
+            { Buttons.Name = "Which way do you want to use?"
+              Columns = 1
+              Data = data }
+            |> Buttons.create (chatId, msgId |> Replace))
+        |> async.Return
 
-            command
-            |> Result.map Command.set
-            |> Result.map (fun cmd -> $"Send your payload using the following format: '{cmd}'.")
+let choseSubscriptionRequest (embassy, command, way) =
+    fun (chatId, msgId) ->
+        match embassy with
+        | Russian _ ->
+            match way with
+            | "background" ->
+                let command =
+                    match command with
+                    | "searchappointments" -> (embassy, "your_link_here") |> Command.SubscribeSearchAppointments |> Ok
+                    | "searchothers" -> (embassy, "your_link_here") |> Command.SubscribeSearchOthers |> Ok
+                    | "searchpassportresult" -> command |> NotSupported |> Error
+                    | _ -> command |> NotSupported |> Error
+
+                command
+                |> Result.map Command.set
+                |> Result.map (fun cmd -> $"Send your payload using the following format: '{cmd}'.")
+            | _ -> $"{way}" |> NotSupported |> Error
         | _ -> $"{embassy}" |> NotSupported |> Error
         |> Result.map (Text.create (chatId, Replace msgId))
         |> async.Return
@@ -207,7 +229,7 @@ let userSubscriptions embassy =
             |> Seq.map (fun request -> request.Id |> Command.RemoveSubscription |> Command.set, request.Payload)
             |> Map)
         |> ResultAsync.map (fun data ->
-            { Buttons.Name = "Remove subscription"
+            { Buttons.Name = "You have the following subscriptions to remove"
               Columns = 1
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
