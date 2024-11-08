@@ -3,7 +3,7 @@ module EA.Telegram.Mapper
 
 open System
 open Infrastructure
-open EA.Domain
+open EA.Core.Domain
 open EA.Telegram.Domain
 
 module Chat =

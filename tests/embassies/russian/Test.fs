@@ -13,6 +13,7 @@ module private Fixture =
 
     let request: Request =
         { Id = RequestId.New
+          Name = "Test"
           Payload = "https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F"
           Embassy = Russian <| Germany Berlin
           ProcessState = Created

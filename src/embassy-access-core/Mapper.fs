@@ -1,9 +1,9 @@
 [<RequireQualifiedAccess>]
-module EA.Mapper
+module EA.Core.Mapper
 
 open System
 open Infrastructure
-open EA.Domain
+open EA.Core.Domain
 
 module City =
     [<Literal>]
@@ -423,6 +423,7 @@ module Request =
                 embassyRes
                 |> Result.map (fun embassy ->
                     { Id = RequestId(request.Id)
+                      Name = request.Name 
                       Payload = request.Payload
                       Embassy = embassy
                       ProcessState = state

@@ -3,10 +3,10 @@
 open System
 open Infrastructure
 open Infrastructure.Parser
-open EA.Domain
+open EA.Core.Domain
 open EA.Embassies.Russian.Domain
 
-module private Http =
+module internal Http =
     open Web.Http.Domain
     open Web.Http.Client
 
@@ -34,7 +34,7 @@ module private Http =
         create baseUrl headers
 
     let createClient =
-        ResultAsync.bind (fun (credentials: Credentials, request) ->
+        ResultAsync.bind (fun (credentials: Credentials, request: EA.Core.Domain.Request) ->
             let city, _, _, _ = credentials.Value
 
             city
@@ -88,10 +88,10 @@ let private hasError page =
                 Error
                 <| Operation
                     { Message = text
-                      Code = Some ErrorCodes.PageHasError }
+                      Code = Some ErrorCodes.PAGE_HAS_ERROR }
             | _ -> Ok page)
 
-module private InitialPage =
+module internal InitialPage =
     open SkiaSharp
 
     type private Deps =
@@ -239,7 +239,7 @@ module private InitialPage =
             handle' (deps, queryParams)
             |> ResultAsync.map (fun formData -> httpClient, queryParams, formData, request))
 
-module private ValidationPage =
+module internal ValidationPage =
     open System.Text.RegularExpressions
 
     type private Deps =
@@ -283,17 +283,17 @@ module private ValidationPage =
                         Error
                         <| Operation
                             { Message = text
-                              Code = Some ErrorCodes.ConfirmationExists }
+                              Code = Some ErrorCodes.CONFIRMATIONS_EXISTS }
                     | text when text |> has "Ваша заявка требует подтверждения" ->
                         Error
                         <| Operation
                             { Message = text
-                              Code = Some ErrorCodes.NotConfirmed }
+                              Code = Some ErrorCodes.NOT_CONFIRMED }
                     | text when text |> has "Заявка удалена" ->
                         Error
                         <| Operation
                             { Message = text
-                              Code = Some ErrorCodes.RequestDeleted }
+                              Code = Some ErrorCodes.REQUEST_DELETED }
                     | _ -> Ok page
                 | _ -> Ok page)
 
@@ -354,7 +354,7 @@ module private ValidationPage =
             handle' (deps, queryParams, formData)
             |> ResultAsync.map (fun formData -> httpClient, queryParams, formData, request))
 
-module private AppointmentsPage =
+module internal AppointmentsPage =
     type private Deps =
         { HttpClient: Web.Http.Domain.Client
           postAppointmentsPage: HttpPostStringRequest }
@@ -509,7 +509,7 @@ module private AppointmentsPage =
                 handle' (deps, queryParams, formData, request)
                 |> ResultAsync.map (fun (formData, request) -> httpClient, queryParamsId, formData, request)))
 
-module private ConfirmationPage =
+module internal ConfirmationPage =
 
     type private Deps =
         { HttpClient: Web.Http.Domain.Client
@@ -647,7 +647,7 @@ module private ConfirmationPage =
             let deps = createDeps deps httpClient
             handle' (deps, queryParamsId, formData, request))
 
-module private Request =
+module internal Request =
 
     let validateCredentials request credentials =
         match request.Embassy.Country.City = credentials.City with
@@ -730,51 +730,3 @@ module private Request =
             | Error error -> return! request |> setFailedState error deps
             | Ok request -> return! request |> setCompletedState deps
         }
-
-let validateRequest request =
-    request.Payload
-    |> createCredentials
-    |> Result.bind (Request.validateCredentials request)
-    |> Result.map (fun _ -> ())
-
-let processRequest deps request =
-
-    // define
-    let setRequestInProcessState = Request.setInProcessState deps
-    let createRequestCredentials = Request.createCredentials
-    let createHttpClient = Http.createClient
-    let processInitialPage = InitialPage.handle deps
-    let setRequestAttempt = Request.setAttempt deps
-    let processValidationPage = ValidationPage.handle deps
-    let processAppointmentsPage = AppointmentsPage.handle deps
-    let processConfirmationPage = ConfirmationPage.handle deps
-    let setRequestFinalState = Request.completeConfirmation deps request
-
-    // pipe
-    let start =
-        setRequestInProcessState
-        >> createRequestCredentials
-        >> createHttpClient
-        >> processInitialPage
-        >> setRequestAttempt
-        >> processValidationPage
-        >> processAppointmentsPage
-        >> processConfirmationPage
-        >> setRequestFinalState
-
-    request |> start
-
-let getCountries () =
-    Set
-        [ Albania <| Tirana
-          Bosnia <| Sarajevo
-          Finland <| Helsinki
-          France <| Paris
-          Germany <| Berlin
-          Hungary <| Budapest
-          Ireland <| Dublin
-          Montenegro <| Podgorica
-          Netherlands <| Hague
-          Serbia <| Belgrade
-          Slovenia <| Ljubljana
-          Switzerland <| Bern ]

@@ -5,7 +5,7 @@ open System.Threading
 open Infrastructure
 open Persistence.Domain
 open Worker.Domain
-open EA.Domain
+open EA.Core.Domain
 open EA.Worker
 open EA.Embassies.Russian.Domain
 

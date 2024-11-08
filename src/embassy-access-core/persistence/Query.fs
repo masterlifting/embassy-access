@@ -2,7 +2,7 @@
 module EA.Persistence.Query
 
 open Persistence.Domain.Query
-open EA.Domain
+open EA.Core.Domain
 
 module Filter =
     module Request =

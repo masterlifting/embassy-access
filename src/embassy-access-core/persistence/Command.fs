@@ -2,19 +2,21 @@
 module EA.Persistence.Command
 
 open System
-open EA.Domain
+open EA.Core.Domain
 
 module Definitions =
     module Request =
 
         type PassportsGroup =
-            { Embassy: Embassy
+            { Name: string option
+              Embassy: Embassy
               Payload: string
               ConfirmationState: ConfirmationState
               Validation: Validation option }
 
             member this.createRequest() =
                 { Id = RequestId.New
+                  Name = this.Name |> Option.defaultValue this.Payload
                   Payload = this.Payload
                   Embassy = this.Embassy
                   ProcessState = Created
@@ -26,13 +28,15 @@ module Definitions =
                   Modified = DateTime.UtcNow }
 
         type OthersGroup =
-            { Embassy: Embassy
+            { Name: string option
+              Embassy: Embassy
               Payload: string
               ConfirmationState: ConfirmationState
               Validation: Validation option }
 
             member this.createRequest() =
                 { Id = RequestId.New
+                  Name = this.Name |> Option.defaultValue this.Payload
                   Payload = this.Payload
                   Embassy = this.Embassy
                   ProcessState = Created
@@ -44,12 +48,14 @@ module Definitions =
                   Modified = DateTime.UtcNow }
 
         type PassportResultGroup =
-            { Embassy: Embassy
+            { Name: string option
+              Embassy: Embassy
               Payload: string
               Validation: Validation option }
 
             member this.createRequest() =
                 { Id = RequestId.New
+                  Name = this.Name |> Option.defaultValue this.Payload
                   Payload = this.Payload
                   Embassy = this.Embassy
                   ProcessState = Created

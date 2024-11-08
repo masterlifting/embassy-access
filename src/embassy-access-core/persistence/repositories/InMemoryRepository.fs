@@ -4,7 +4,7 @@ module internal EA.Persistence.InMemoryRepository
 open Infrastructure
 open Persistence.Domain
 open Persistence.InMemory
-open EA.Domain
+open EA.Core.Domain
 
 module Query =
     module Request =
@@ -26,8 +26,8 @@ module Query =
                                 | _ -> None
 
                         storage
-                        |> Query.Json.get Key.Requests
-                        |> Result.bind (Seq.map EA.Mapper.Request.toInternal >> Result.choose)
+                        |> Query.Json.get Key.REQUESTS_TABLE_NAME
+                        |> Result.bind (Seq.map EA.Core.Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
                         Error
@@ -59,8 +59,8 @@ module Query =
 
 
                         storage
-                        |> Query.Json.get Key.Requests
-                        |> Result.bind (Seq.map EA.Mapper.Request.toInternal >> Result.choose)
+                        |> Query.Json.get Key.REQUESTS_TABLE_NAME
+                        |> Result.bind (Seq.map EA.Core.Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
                         Error
@@ -76,7 +76,7 @@ module Command =
         let private create definition (requests: External.Request array) =
             match definition with
             | Create.PassportsGroup passportsGroup ->
-                let embassy = passportsGroup.Embassy |> EA.Mapper.Embassy.toExternal
+                let embassy = passportsGroup.Embassy |> EA.Core.Mapper.Embassy.toExternal
 
                 match
                     requests
@@ -95,14 +95,14 @@ module Command =
                     | Some validate -> request |> validate
                     | _ -> Ok()
                     |> Result.map (fun _ ->
-                        let data = requests |> Array.append [| EA.Mapper.Request.toExternal request |]
+                        let data = requests |> Array.append [| EA.Core.Mapper.Request.toExternal request |]
 
                         (data, request))
 
         let private createOrUpdate definition (requests: External.Request array) =
             match definition with
             | CreateOrUpdate.PassportsGroup passportsGroup ->
-                let embassy = passportsGroup.Embassy |> EA.Mapper.Embassy.toExternal
+                let embassy = passportsGroup.Embassy |> EA.Core.Mapper.Embassy.toExternal
 
                 match
                     requests
@@ -113,7 +113,7 @@ module Command =
                         requests |> Array.mapi (fun i x -> if x.Id = request.Id then request else x)
 
                     request
-                    |> EA.Mapper.Request.toInternal
+                    |> EA.Core.Mapper.Request.toInternal
                     |> Result.map (fun request -> (data, request))
                 | None ->
                     let request = passportsGroup.createRequest ()
@@ -122,7 +122,7 @@ module Command =
                     | Some validate -> request |> validate
                     | _ -> Ok()
                     |> Result.map (fun _ ->
-                        let data = requests |> Array.append [| EA.Mapper.Request.toExternal request |]
+                        let data = requests |> Array.append [| EA.Core.Mapper.Request.toExternal request |]
 
                         (data, request))
 
@@ -140,7 +140,7 @@ module Command =
                         requests
                         |> Array.mapi (fun i x ->
                             if i = index then
-                                EA.Mapper.Request.toExternal request
+                                EA.Core.Mapper.Request.toExternal request
                             else
                                 x)
 
@@ -157,7 +157,7 @@ module Command =
                           Code = Some ErrorCodes.NotFound }
                 | Some index ->
                     requests[index]
-                    |> EA.Mapper.Request.toInternal
+                    |> EA.Core.Mapper.Request.toInternal
                     |> Result.map (fun request ->
                         let data = requests |> Array.removeAt index
                         (data, request))
@@ -169,7 +169,7 @@ module Command =
                     | true ->
 
                         storage
-                        |> Query.Json.get Key.Requests
+                        |> Query.Json.get Key.REQUESTS_TABLE_NAME
                         |> Result.bind (fun data ->
                             match command with
                             | Create definition -> data |> create definition |> Result.map id
@@ -177,7 +177,7 @@ module Command =
                             | Update definition -> data |> update definition |> Result.map id
                             | Delete definition -> data |> delete definition |> Result.map id)
                         |> Result.bind (fun (data, item) ->
-                            storage |> Command.Json.save Key.Requests data |> Result.map (fun _ -> item))
+                            storage |> Command.Json.save Key.REQUESTS_TABLE_NAME data |> Result.map (fun _ -> item))
                     | false ->
                         Error
                         <| (Canceled

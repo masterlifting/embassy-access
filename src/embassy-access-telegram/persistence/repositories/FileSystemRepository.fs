@@ -4,7 +4,7 @@ module internal EA.Telegram.Persistence.FileSystemRepository
 open Infrastructure
 open Persistence.FileSystem
 open Persistence.Domain
-open EA.Domain
+open EA.Core.Domain
 open EA.Telegram
 open EA.Telegram.Domain
 

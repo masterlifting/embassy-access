@@ -14,9 +14,6 @@
         <Compile Include="persistence\repositories\FileSystemRepository.fs"/>
         <Compile Include="persistence\Repository.fs"/>
         <Compile Include="persistence\Storage.fs"/>
-        <Compile Include="embassies\russian\Domain.fs"/>
-        <Compile Include="embassies\russian\Core.fs"/>
-        <Compile Include="embassies\russian\Deps.fs"/>
         <Compile Include="Notification.fs"/>
         <Compile Include="Api.fs"/>
         <Compile Include="Deps.fs"/>

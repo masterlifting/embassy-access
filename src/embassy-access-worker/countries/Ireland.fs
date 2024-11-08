@@ -2,7 +2,7 @@
 
 open Infrastructure.Domain
 open Worker.Domain
-open EA.Domain
+open EA.Core.Domain
 open EA.Worker.Embassies
 
 let private Dublin =

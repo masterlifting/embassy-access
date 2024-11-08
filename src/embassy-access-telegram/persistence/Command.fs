@@ -2,7 +2,7 @@
 module EA.Telegram.Persistence.Command
 
 open Web.Telegram.Domain
-open EA.Domain
+open EA.Core.Domain
 open EA.Telegram.Domain
 
 module Definitions =

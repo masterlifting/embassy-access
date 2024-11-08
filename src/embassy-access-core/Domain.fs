@@ -1,11 +1,11 @@
-﻿module EA.Domain
+﻿module EA.Core.Domain
 
 open System
 open Infrastructure
 
 module Key =
     [<Literal>]
-    let Requests = "requests"
+    let REQUESTS_TABLE_NAME = "requests"
     
 type City =
     | Belgrade
@@ -125,6 +125,7 @@ type ProcessState =
 
 type Request =
     { Id: RequestId
+      Name: string
       Payload: string
       Embassy: Embassy
       Attempt: DateTime * int
@@ -199,6 +200,7 @@ module External =
 
     type Request() =
         member val Id: Guid = Guid.Empty with get, set
+        member val Name: string = String.Empty with get, set
         member val Payload: string = String.Empty with get, set
         member val Embassy: Embassy = Embassy() with get, set
 

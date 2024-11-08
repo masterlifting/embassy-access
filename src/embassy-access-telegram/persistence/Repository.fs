@@ -78,12 +78,13 @@ module Command =
             storage |> execute command ct
 
     module Request =
-        open EA.Domain
+        open EA.Core.Domain
         open EA.Persistence.Command.Definitions.Request
 
         let createOrUpdatePassportSearch (embassy, payload) ct storage =
             let commandDefinition: PassportsGroup =
-                { Embassy = embassy
+                { Name = None
+                  Embassy = embassy
                   Payload = payload
                   ConfirmationState = Disabled
                   Validation = Some EA.Api.validateRequest }
@@ -97,7 +98,8 @@ module Command =
 
         let createOrUpdateOthersSearch (embassy, payload) ct storage =
             let commandDefinition: OthersGroup =
-                { Embassy = embassy
+                { Name = None
+                  Embassy = embassy
                   Payload = payload
                   ConfirmationState = Disabled
                   Validation = Some EA.Api.validateRequest }
@@ -111,7 +113,8 @@ module Command =
 
         let createOrUpdatePassportResultSearch (embassy, payload) ct storage =
             let commandDefinition: PassportResultGroup =
-                { Embassy = embassy
+                { Name = None
+                  Embassy = embassy
                   Payload = payload
                   Validation = Some EA.Api.validateRequest }
 

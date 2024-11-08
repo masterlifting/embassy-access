@@ -4,7 +4,7 @@ open System
 open Infrastructure
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
-open EA.Domain
+open EA.Core.Domain
 open EA.Telegram
 open EA.Telegram.Persistence
 
@@ -28,7 +28,7 @@ let confirmation (embassy, confirmations: Set<Confirmation>) =
 
 let start chatId =
     EA.Api.getEmbassies ()
-    |> Seq.map EA.Mapper.Embassy.toExternal
+    |> Seq.map EA.Core.Mapper.Embassy.toExternal
     |> Seq.groupBy _.Name
     |> Seq.map fst
     |> Seq.sort
@@ -46,7 +46,7 @@ let countries embassyName =
     fun (chatId, msgId) ->
         let data =
             EA.Api.getEmbassies ()
-            |> Seq.map EA.Mapper.Embassy.toExternal
+            |> Seq.map EA.Core.Mapper.Embassy.toExternal
             |> Seq.filter (fun embassy -> embassy.Name = embassyName)
             |> Seq.groupBy _.Country.Name
             |> Seq.map fst
@@ -64,14 +64,14 @@ let countries embassyName =
 let cities (embassyName, countryName) =
     fun (chatId, msgId) ->
         EA.Api.getEmbassies ()
-        |> Seq.map EA.Mapper.Embassy.toExternal
+        |> Seq.map EA.Core.Mapper.Embassy.toExternal
         |> Seq.filter (fun embassy -> embassy.Name = embassyName && embassy.Country.Name = countryName)
         |> Seq.groupBy _.Country.City.Name
         |> Seq.sortBy fst
         |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
         |> Seq.map (fun embassy ->
             embassy
-            |> EA.Mapper.Embassy.toInternal
+            |> EA.Core.Mapper.Embassy.toInternal
             |> Result.map (fun x -> x |> Command.SubscriptionRequest |> Command.set, embassy.Country.City.Name))
         |> Result.choose
         |> Result.map Map
@@ -93,7 +93,7 @@ let mine chatId =
                 |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
         |> ResultAsync.map (fun embassies ->
             embassies
-            |> Seq.map EA.Mapper.Embassy.toExternal
+            |> Seq.map EA.Core.Mapper.Embassy.toExternal
             |> Seq.groupBy _.Name
             |> Seq.map fst
             |> Seq.sort
@@ -114,7 +114,7 @@ let userCountries embassyName =
             | Some chat ->
                 EA.Persistence.Storage.FileSystem.Request.create cfg
                 |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-        |> ResultAsync.map (Seq.map EA.Mapper.Embassy.toExternal)
+        |> ResultAsync.map (Seq.map EA.Core.Mapper.Embassy.toExternal)
         |> ResultAsync.map (fun embassies ->
             embassies
             |> Seq.filter (fun embassy -> embassy.Name = embassyName)
@@ -141,14 +141,14 @@ let userCities (embassyName, countryName) =
                 |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
         |> ResultAsync.bind (fun embassies ->
             embassies
-            |> Seq.map EA.Mapper.Embassy.toExternal
+            |> Seq.map EA.Core.Mapper.Embassy.toExternal
             |> Seq.filter (fun embassy -> embassy.Name = embassyName && embassy.Country.Name = countryName)
             |> Seq.groupBy _.Country.City.Name
             |> Seq.sortBy fst
             |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
             |> Seq.map (fun embassy ->
                 embassy
-                |> EA.Mapper.Embassy.toInternal
+                |> EA.Core.Mapper.Embassy.toInternal
                 |> Result.map (fun x -> x |> Command.UserSubscriptions |> Command.set, embassy.Country.City.Name))
             |> Result.choose
             |> Result.map Map)
@@ -236,7 +236,7 @@ let userSubscriptions embassy =
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
 
-let subscribe (embassy, payload, name) =
+let subscribe (embassy, payload, service) =
     fun chatId cfg ct ->
         match embassy with
         | Russian _ ->
@@ -245,12 +245,12 @@ let subscribe (embassy, payload, name) =
                 EA.Persistence.Storage.FileSystem.Request.create cfg
                 |> ResultAsync.wrap (fun storage ->
                     let command =
-                        match name with
+                        match service with
                         | "searchappointments" ->
                             Repository.Command.Request.createOrUpdatePassportSearch (embassy, payload) ct
                         | "searchothers" -> Repository.Command.Request.createOrUpdateOthersSearch (embassy, payload) ct
-                        | "searchpassportresult" -> fun _ -> name |> NotSupported |> Error |> async.Return
-                        | _ -> fun _ -> name |> NotSupported |> Error |> async.Return
+                        | "searchpassportresult" -> fun _ -> service |> NotSupported |> Error |> async.Return
+                        | _ -> fun _ -> service |> NotSupported |> Error |> async.Return
 
                     storage |> command)
 

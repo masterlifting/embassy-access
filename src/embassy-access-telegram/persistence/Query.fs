@@ -1,7 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Persistence.Query
 
-open EA.Domain
+open EA.Core.Domain
 open EA.Telegram.Domain
 open Web.Telegram.Domain
 

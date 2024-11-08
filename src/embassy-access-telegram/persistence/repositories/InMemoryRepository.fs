@@ -5,7 +5,7 @@ open EA.Persistence
 open Infrastructure
 open Persistence.InMemory
 open Persistence.Domain
-open EA.Domain
+open EA.Core.Domain
 open EA.Telegram
 open EA.Telegram.Domain
 
@@ -24,7 +24,7 @@ module Query =
                             | ById id -> data |> List.tryFind (fun x -> x.Id = id)
 
                         storage
-                        |> Query.Json.get Key.Chats
+                        |> Query.Json.get Key.CHATS_TABLE_NAME
                         |> Result.bind (Seq.map Mapper.Chat.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -44,7 +44,7 @@ module Query =
                             | BySubscriptions subIds -> data |> List.filter (InMemory.hasSubscriptions subIds)
 
                         storage
-                        |> Query.Json.get Key.Chats
+                        |> Query.Json.get Key.CHATS_TABLE_NAME
                         |> Result.bind (Seq.map Mapper.Chat.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -153,7 +153,7 @@ module Command =
                     | true ->
 
                         storage
-                        |> Query.Json.get Key.Chats
+                        |> Query.Json.get Key.CHATS_TABLE_NAME
                         |> Result.bind (fun data ->
                             match command with
                             | Create definition -> data |> create definition |> Result.map id
@@ -161,7 +161,7 @@ module Command =
                             | Update definition -> data |> update definition |> Result.map id
                             | Delete definition -> data |> delete definition |> Result.map id)
                         |> Result.bind (fun (data, item) ->
-                            storage |> Command.Json.save Key.Chats data |> Result.map (fun _ -> item))
+                            storage |> Command.Json.save Key.CHATS_TABLE_NAME data |> Result.map (fun _ -> item))
                     | false ->
                         Error
                         <| (Canceled

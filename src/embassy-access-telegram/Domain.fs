@@ -1,6 +1,6 @@
 ﻿module EA.Telegram.Domain
 
-open EA.Domain
+open EA.Core.Domain
 open Web.Telegram.Domain
 
 
@@ -12,7 +12,7 @@ module Key =
     let internal EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
 
     [<Literal>]
-    let Chats = "chats"
+    let CHATS_TABLE_NAME = "chats"
 
 type Chat =
     { Id: ChatId

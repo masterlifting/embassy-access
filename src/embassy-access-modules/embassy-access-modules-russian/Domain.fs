@@ -1,26 +1,29 @@
 ﻿module EA.Embassies.Russian.Domain
 
-open Infrastructure
-open EA
 open System
+open Infrastructure
+
+type Services =
+    | Passport of Services.Passport.Domain.Services
+    | Notary
 
 module ErrorCodes =
 
     [<Literal>]
-    let PageHasError = "PageHasError"
+    let PAGE_HAS_ERROR = "PageHasError"
 
     [<Literal>]
-    let NotConfirmed = "NotConfirmed"
+    let NOT_CONFIRMED = "NotConfirmed"
 
     [<Literal>]
-    let ConfirmationExists = "ConfirmationExists"
+    let CONFIRMATIONS_EXISTS = "ConfirmationExists"
 
     [<Literal>]
-    let RequestDeleted = "RequestDeleted"
+    let REQUEST_DELETED = "RequestDeleted"
 
 type ProcessRequestConfiguration = { TimeShift: int8 }
 
-type StorageUpdateRequest = Domain.Request -> Async<Result<Domain.Request, Error'>>
+type StorageUpdateRequest = EA.Core.Domain.Request -> Async<Result<EA.Core.Domain.Request, Error'>>
 
 type HttpGetStringRequest =
     Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<string>, Error'>>
@@ -48,7 +51,7 @@ type Cd = private Cd of string
 type Ems = private Ems of string option
 
 type Credentials =
-    { City: Domain.City
+    { City: EA.Core.Domain.City
       Id: Id
       Cd: Cd
       Ems: Ems }
@@ -60,19 +63,19 @@ type Credentials =
             Cd = Cd cd
             Ems = Ems ems } ->
             match city with
-            | Domain.Belgrade -> ("belgrad", id, cd, ems)
-            | Domain.Budapest -> ("budapest", id, cd, ems)
-            | Domain.Sarajevo -> ("sarajevo", id, cd, ems)
-            | Domain.Podgorica -> ("podgorica", id, cd, ems)
-            | Domain.Tirana -> ("tirana", id, cd, ems)
-            | Domain.Paris -> ("paris", id, cd, ems)
-            | Domain.Rome -> ("rome", id, cd, ems)
-            | Domain.Berlin -> ("berlin", id, cd, ems)
-            | Domain.Dublin -> ("dublin", id, cd, ems)
-            | Domain.Bern -> ("bern", id, cd, ems)
-            | Domain.Helsinki -> ("helsinki", id, cd, ems)
-            | Domain.Hague -> ("hague", id, cd, ems)
-            | Domain.Ljubljana -> ("ljubljana", id, cd, ems)
+            | EA.Core.Domain.Belgrade -> ("belgrad", id, cd, ems)
+            | EA.Core.Domain.Budapest -> ("budapest", id, cd, ems)
+            | EA.Core.Domain.Sarajevo -> ("sarajevo", id, cd, ems)
+            | EA.Core.Domain.Podgorica -> ("podgorica", id, cd, ems)
+            | EA.Core.Domain.Tirana -> ("tirana", id, cd, ems)
+            | EA.Core.Domain.Paris -> ("paris", id, cd, ems)
+            | EA.Core.Domain.Rome -> ("rome", id, cd, ems)
+            | EA.Core.Domain.Berlin -> ("berlin", id, cd, ems)
+            | EA.Core.Domain.Dublin -> ("dublin", id, cd, ems)
+            | EA.Core.Domain.Bern -> ("bern", id, cd, ems)
+            | EA.Core.Domain.Helsinki -> ("helsinki", id, cd, ems)
+            | EA.Core.Domain.Hague -> ("hague", id, cd, ems)
+            | EA.Core.Domain.Ljubljana -> ("ljubljana", id, cd, ems)
 
 let createCredentials url =
     url
@@ -86,19 +89,19 @@ let createCredentials url =
             |> Result.bind (fun paramsMap ->
                 let city =
                     match hostParts[0] with
-                    | "belgrad" -> Ok Domain.Belgrade
-                    | "budapest" -> Ok Domain.Budapest
-                    | "sarajevo" -> Ok Domain.Sarajevo
-                    | "berlin" -> Ok Domain.Berlin
-                    | "podgorica" -> Ok Domain.Podgorica
-                    | "tirana" -> Ok Domain.Tirana
-                    | "paris" -> Ok Domain.Paris
-                    | "rome" -> Ok Domain.Rome
-                    | "dublin" -> Ok Domain.Dublin
-                    | "bern" -> Ok Domain.Bern
-                    | "helsinki" -> Ok Domain.Helsinki
-                    | "hague" -> Ok Domain.Hague
-                    | "ljubljana" -> Ok Domain.Ljubljana
+                    | "belgrad" -> Ok EA.Core.Domain.Belgrade
+                    | "budapest" -> Ok EA.Core.Domain.Budapest
+                    | "sarajevo" -> Ok EA.Core.Domain.Sarajevo
+                    | "berlin" -> Ok EA.Core.Domain.Berlin
+                    | "podgorica" -> Ok EA.Core.Domain.Podgorica
+                    | "tirana" -> Ok EA.Core.Domain.Tirana
+                    | "paris" -> Ok EA.Core.Domain.Paris
+                    | "rome" -> Ok EA.Core.Domain.Rome
+                    | "dublin" -> Ok EA.Core.Domain.Dublin
+                    | "bern" -> Ok EA.Core.Domain.Bern
+                    | "helsinki" -> Ok EA.Core.Domain.Helsinki
+                    | "hague" -> Ok EA.Core.Domain.Hague
+                    | "ljubljana" -> Ok EA.Core.Domain.Ljubljana
                     | _ -> Error $"City {hostParts[0]} is not supported"
 
                 let id =

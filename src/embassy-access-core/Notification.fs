@@ -1,6 +1,6 @@
 ﻿module EA.Notification
 
-open EA.Domain
+open EA.Core.Domain
 
 module Create =
 
