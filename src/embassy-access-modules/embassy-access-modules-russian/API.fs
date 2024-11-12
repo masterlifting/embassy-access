@@ -5,6 +5,20 @@ open EA.Core.Domain
 open EA.Embassies.Russian.Domain
 open EA.Embassies.Russian.Core
 
+let handleService service =
+    match service with
+    | Passport service ->
+        match service with
+        | IssueForeignPassport service -> Passport.handle service
+        | CheckPassportStatus service -> Passport.handle service
+        | TakeReadyPassport service -> Passport.handle service
+    | Notary service ->
+        match service with
+        | CertPowerAttorney service -> Notary.handle service
+    | Citizenship service ->
+        match service with
+        | RenunciationOfCitizenship service -> Citizenship.handle service
+
 let validateRequest request =
     request.Payload
     |> createCredentials

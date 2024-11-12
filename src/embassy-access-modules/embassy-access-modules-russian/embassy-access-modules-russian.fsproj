@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="services\passport\Domain.fs" />
         <Compile Include="Domain.fs" />
         <Compile Include="Core.fs" />
         <Compile Include="Deps.fs" />
         <Compile Include="API.fs" />
+        <Folder Include="handlers\kdmid.ru\" />
     </ItemGroup>
 
     <ItemGroup>

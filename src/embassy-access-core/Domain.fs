@@ -122,6 +122,12 @@ type ProcessState =
     | InProcess
     | Completed of string
     | Failed of Error'
+    
+type Service =
+    { Name : string
+      Payload : string
+      Embassy : Embassy
+      Description : string option }
 
 type Request =
     { Id: RequestId

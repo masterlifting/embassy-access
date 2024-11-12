@@ -2,10 +2,76 @@
 
 open System
 open Infrastructure
+open EA.Core.Domain
+
+type Service =
+    { Country: Country
+      Payload: string
+      Confirmation: ConfirmationState }
+
+type PassportServices =
+    | IssueForeignPassport of Service
+    | CheckPassportStatus of Service
+    | TakeReadyPassport of Service
+
+    member this.Name =
+        match this with
+        | IssueForeignPassport _ -> "Подача заявления на оформление загранпаспорта"
+        | CheckPassportStatus _ -> "Проверка статуса готовности загранпаспорта"
+        | TakeReadyPassport _ -> "Получение готового загранпаспорта"
+
+type NotaryServices =
+    | CertPowerAttorney of Service
+
+    member this.Name =
+        match this with
+        | CertPowerAttorney _ -> "Оформление доверенности"
+
+type CitizenshipServices =
+    | RenunciationOfCitizenship of Service
+
+    member this.Name =
+        match this with
+        | RenunciationOfCitizenship _ -> "Оформление отказа от гражданства"
 
 type Services =
-    | Passport of Services.Passport.Domain.Services
-    | Notary
+    | Passport of PassportServices
+    | Notary of NotaryServices
+    | Citizenship of CitizenshipServices
+
+    member this.Name =
+        match this with
+        | Passport _ -> "Паспорт"
+        | Notary _ -> "Нотариат"
+        | Citizenship _ -> "Гражданство"
+
+    member this.createRequest() =
+
+        let service =
+            match this with
+            | Passport service ->
+                match service with
+                | IssueForeignPassport service -> service
+                | CheckPassportStatus service -> service
+                | TakeReadyPassport service -> service
+            | Notary service ->
+                match service with
+                | CertPowerAttorney service -> service
+            | Citizenship service ->
+                match service with
+                | RenunciationOfCitizenship service -> service
+
+        { Id = RequestId.New
+          Name = this.Name
+          Payload = service.Payload
+          Embassy = Russian service.Country
+          ProcessState = Created
+          Attempt = (DateTime.UtcNow, 0)
+          ConfirmationState = service.Confirmation
+          Appointments = Set.empty
+          Description = None
+          GroupBy = Some this.Name
+          Modified = DateTime.UtcNow }
 
 module ErrorCodes =
 

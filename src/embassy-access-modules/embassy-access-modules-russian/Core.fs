@@ -520,7 +520,7 @@ module internal ConfirmationPage =
           postConfirmationPage = deps.postConfirmationPage }
 
     let private handleRequestConfirmation request =
-        match request.ConfirmationState with
+        match request.Confirmation with
         | Disabled -> Ok <| None
         | Manual appointmentId ->
             match request.Appointments |> Seq.tryFind (fun x -> x.Id = appointmentId) with
@@ -610,10 +610,10 @@ module internal ConfirmationPage =
         async {
             return
                 Ok
-                <| match request.ConfirmationState with
+                <| match request.Confirmation with
                    | Manual _ ->
                        { request with
-                           ConfirmationState = Disabled }
+                           Confirmation = Disabled }
                    | _ -> request
         }
 
@@ -681,14 +681,14 @@ module internal Request =
         | true, true ->
             Error
             <| Canceled $"The request was cancelled due to the number of attempts reached the %i{attempt}."
-        | false, true ->
-            Ok
-            <| { request with
-                   Attempt = DateTime.UtcNow, 1 }
-        | _ ->
+        | true, false ->
             Ok
             <| { request with
                    Attempt = DateTime.UtcNow, attempt + 1 }
+        | _ ->
+            Ok
+            <| { request with
+                   Attempt = DateTime.UtcNow, 1 }
 
     let setAttempt deps =
         ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
