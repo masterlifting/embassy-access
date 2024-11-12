@@ -7,11 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="handlers\city.kdmid.ru\Domain.fs" />
+        <Compile Include="handlers\info.midpass.ru\Domain.fs" />
         <Compile Include="Domain.fs" />
         <Compile Include="Core.fs" />
         <Compile Include="Deps.fs" />
         <Compile Include="API.fs" />
-        <Folder Include="handlers\kdmid.ru\" />
     </ItemGroup>
 
     <ItemGroup>

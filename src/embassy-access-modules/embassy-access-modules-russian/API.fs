@@ -10,14 +10,14 @@ let handleService service =
     | Passport service ->
         match service with
         | IssueForeignPassport service -> Passport.handle service
-        | CheckPassportStatus service -> Passport.handle service
-        | TakeReadyPassport service -> Passport.handle service
+        | CheckAppointment service -> Passport.handle service
+        | CheckReadiness service -> Passport.handle service
     | Notary service ->
         match service with
         | CertPowerAttorney service -> Notary.handle service
     | Citizenship service ->
         match service with
-        | RenunciationOfCitizenship service -> Citizenship.handle service
+        | CitizenshipRenunciation service -> Citizenship.handle service
 
 let validateRequest request =
     request.Payload

@@ -2,37 +2,31 @@
 
 open System
 open Infrastructure
+open EA.Embassies.Russian
 open EA.Core.Domain
 
-type Service =
-    { Country: Country
-      Payload: string
-      Confirmation: ConfirmationState }
-
 type PassportServices =
-    | IssueForeignPassport of Service
-    | CheckPassportStatus of Service
-    | TakeReadyPassport of Service
+    | CheckAppointment of Kdmid.Domain.Request
+    | CheckReadiness of Midpass.Domain.Request
 
     member this.Name =
         match this with
-        | IssueForeignPassport _ -> "Подача заявления на оформление загранпаспорта"
-        | CheckPassportStatus _ -> "Проверка статуса готовности загранпаспорта"
-        | TakeReadyPassport _ -> "Получение готового загранпаспорта"
+        | CheckAppointment _ -> "Проверка записи на прием"
+        | CheckReadiness _ -> "Проверка готовности"
 
 type NotaryServices =
-    | CertPowerAttorney of Service
+    | CertPowerAttorney of Kdmid.Domain.Request
 
     member this.Name =
         match this with
         | CertPowerAttorney _ -> "Оформление доверенности"
 
 type CitizenshipServices =
-    | RenunciationOfCitizenship of Service
+    | CitizenshipRenunciation of Kdmid.Domain.Request
 
     member this.Name =
         match this with
-        | RenunciationOfCitizenship _ -> "Оформление отказа от гражданства"
+        | CitizenshipRenunciation _ -> "Отказ от гражданства"
 
 type Services =
     | Passport of PassportServices
@@ -44,34 +38,33 @@ type Services =
         | Passport _ -> "Паспорт"
         | Notary _ -> "Нотариат"
         | Citizenship _ -> "Гражданство"
+        
 
     member this.createRequest() =
 
-        let service =
             match this with
-            | Passport service ->
-                match service with
-                | IssueForeignPassport service -> service
-                | CheckPassportStatus service -> service
-                | TakeReadyPassport service -> service
+            | Passport (CheckReadiness service) -> 
+                { Id = RequestId.New
+                  Service =
+                      { Name = this.Name + "." + service.
+                        Payload = service.StatementNumber
+                        Embassy = Russian service.Country
+                        Description = None }
+                  Attempt = (DateTime.UtcNow, 0)
+                  ProcessState = Created
+                  ConfirmationState = Disabled
+                  Appointments = Set.empty
+                  Modified = DateTime.UtcNow }        
+            | Passport (CheckAppointment service) -> service
+                |  -> service
             | Notary service ->
                 match service with
                 | CertPowerAttorney service -> service
             | Citizenship service ->
                 match service with
-                | RenunciationOfCitizenship service -> service
+                | CitizenshipRenunciation service -> service
 
-        { Id = RequestId.New
-          Name = this.Name
-          Payload = service.Payload
-          Embassy = Russian service.Country
-          ProcessState = Created
-          Attempt = (DateTime.UtcNow, 0)
-          ConfirmationState = service.Confirmation
-          Appointments = Set.empty
-          Description = None
-          GroupBy = Some this.Name
-          Modified = DateTime.UtcNow }
+        
 
 module ErrorCodes =
 

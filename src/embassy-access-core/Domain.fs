@@ -131,15 +131,11 @@ type Service =
 
 type Request =
     { Id: RequestId
-      Name: string
-      Payload: string
-      Embassy: Embassy
+      Service: Service
       Attempt: DateTime * int
       ProcessState: ProcessState
       ConfirmationState: ConfirmationState
       Appointments: Set<Appointment>
-      Description: string option
-      GroupBy: string option
       Modified: DateTime }
 
 type Validation = Request -> Result<unit, Error'>
