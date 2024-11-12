@@ -681,14 +681,14 @@ module private Request =
         | true, true ->
             Error
             <| Canceled $"The request was cancelled due to the number of attempts reached the %i{attempt}."
-        | false, true ->
-            Ok
-            <| { request with
-                   Attempt = DateTime.UtcNow, 1 }
-        | _ ->
+        | true, false ->
             Ok
             <| { request with
                    Attempt = DateTime.UtcNow, attempt + 1 }
+        | _ ->
+            Ok
+            <| { request with
+                   Attempt = DateTime.UtcNow, 1 }
 
     let setAttempt deps =
         ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
