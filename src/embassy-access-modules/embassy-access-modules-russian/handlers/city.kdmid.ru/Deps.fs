@@ -1,8 +1,7 @@
-﻿[<RequireQualifiedAccess>]
-module internal EA.Embassies.Russian.Deps
+﻿module EA.Embassies.Russian.Kdmid.Deps
 
-open EA.Embassies.Russian.Domain
 open EA.Persistence
+open EA.Embassies.Russian.Kdmid.Domain
 
 let processRequest ct config storage =
     { Configuration = config
