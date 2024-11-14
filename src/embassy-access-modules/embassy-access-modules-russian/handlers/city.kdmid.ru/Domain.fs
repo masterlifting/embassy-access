@@ -4,6 +4,38 @@ open System
 open Infrastructure
 open EA.Core.Domain
 
+[<RequireQualifiedAccess>]
+module Constants =
+    let internal SUPPORTED_DOMAINS =
+        Map
+            [ "belgrad", Belgrade |> Serbia
+              "budapest", Budapest |> Hungary
+              "sarajevo", Sarajevo |> Bosnia
+              "berlin", Berlin |> Germany
+              "podgorica", Podgorica |> Montenegro
+              "tirana", Tirana |> Albania
+              "paris", Paris |> France
+              "rome", Rome |> Italy
+              "dublin", Dublin |> Ireland
+              "bern", Bern |> Switzerland
+              "helsinki", Helsinki |> Finland
+              "hague", Hague |> Netherlands
+              "ljubljana", Ljubljana |> Slovenia ]
+
+    module ErrorCodes =
+
+        [<Literal>]
+        let PAGE_HAS_ERROR = "PageHasError"
+
+        [<Literal>]
+        let NOT_CONFIRMED = "NotConfirmed"
+
+        [<Literal>]
+        let CONFIRMATIONS_EXISTS = "ConfirmationExists"
+
+        [<Literal>]
+        let REQUEST_DELETED = "RequestDeleted"
+
 type Request =
     { Country: Country
       Url: Uri
@@ -22,145 +54,75 @@ type Request =
           Appointments = Set.empty
           Modified = DateTime.UtcNow }
 
-module ErrorCodes =
+type Configuration = { TimeShift: int8 }
 
-    [<Literal>]
-    let PAGE_HAS_ERROR = "PageHasError"
-
-    [<Literal>]
-    let NOT_CONFIRMED = "NotConfirmed"
-
-    [<Literal>]
-    let CONFIRMATIONS_EXISTS = "ConfirmationExists"
-
-    [<Literal>]
-    let REQUEST_DELETED = "RequestDeleted"
-
-type ProcessRequestConfiguration = { TimeShift: int8 }
-
-type StorageUpdateRequest = EA.Core.Domain.Request -> Async<Result<EA.Core.Domain.Request, Error'>>
-
-type HttpGetStringRequest =
-    Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<string>, Error'>>
-
-type HttpGetBytesRequest =
-    Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<byte array>, Error'>>
-
-type HttpPostStringRequest =
-    Web.Http.Domain.Request -> Web.Http.Domain.RequestContent -> Web.Http.Domain.Client -> Async<Result<string, Error'>>
-
-type SolveCaptchaImage = byte array -> Async<Result<int, Error'>>
-
-type ProcessRequestDeps =
-    { Configuration: ProcessRequestConfiguration
-      updateRequest: StorageUpdateRequest
-      getInitialPage: HttpGetStringRequest
-      getCaptcha: HttpGetBytesRequest
-      solveCaptcha: SolveCaptchaImage
-      postValidationPage: HttpPostStringRequest
-      postAppointmentsPage: HttpPostStringRequest
-      postConfirmationPage: HttpPostStringRequest }
-
-type internal Id = private Id of int
-type internal Cd = private Cd of string
-type internal Ems = private Ems of string option
+type Dependencies =
+    { Configuration: Configuration
+      storageUpdateRequest: EA.Core.Domain.Request -> Async<Result<EA.Core.Domain.Request, Error'>>
+      httpStringGet:
+          Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<string>, Error'>>
+      httpBytesGet:
+          Web.Http.Domain.Request
+              -> Web.Http.Domain.Client
+              -> Async<Result<Web.Http.Domain.Response<byte array>, Error'>>
+      httpStringPost:
+          Web.Http.Domain.Request
+              -> Web.Http.Domain.RequestContent
+              -> Web.Http.Domain.Client
+              -> Async<Result<string, Error'>>
+      solveCaptcha: byte array -> Async<Result<int, Error'>> }
 
 type internal Credentials =
-    { City: EA.Core.Domain.City
-      Id: Id
-      Cd: Cd
-      Ems: Ems }
+    { Country: Country
+      SubDomain: string
+      Id: int
+      Cd: string
+      Ems: string option }
 
-    member this.Value =
-        match this with
-        | { City = city
-            Id = Id id
-            Cd = Cd cd
-            Ems = Ems ems } ->
-            match city with
-            | Belgrade -> ("belgrad", id, cd, ems)
-            | Budapest -> ("budapest", id, cd, ems)
-            | Sarajevo -> ("sarajevo", id, cd, ems)
-            | Podgorica -> ("podgorica", id, cd, ems)
-            | Tirana -> ("tirana", id, cd, ems)
-            | Paris -> ("paris", id, cd, ems)
-            | Rome -> ("rome", id, cd, ems)
-            | Berlin -> ("berlin", id, cd, ems)
-            | Dublin -> ("dublin", id, cd, ems)
-            | Bern -> ("bern", id, cd, ems)
-            | Helsinki -> ("helsinki", id, cd, ems)
-            | Hague -> ("hague", id, cd, ems)
-            | Ljubljana -> ("ljubljana", id, cd, ems)
-
-let createCredentials url =
-    url
-    |> Web.Http.Client.Route.toUri
-    |> Result.bind (fun uri ->
+    static member create(uri: Uri) =
         match uri.Host.Split '.' with
-        | hostParts when hostParts.Length < 3 -> Error <| NotSupported $"Kdmid. City in {url}."
+        | hostParts when hostParts.Length < 3 -> uri.Host |> NotSupported |> Error
         | hostParts ->
-            uri
-            |> Web.Http.Client.Route.toQueryParams
-            |> Result.bind (fun paramsMap ->
-                let city =
-                    match hostParts[0] with
-                    | "belgrad" -> Ok Belgrade
-                    | "budapest" -> Ok Budapest
-                    | "sarajevo" -> Ok Sarajevo
-                    | "berlin" -> Ok Berlin
-                    | "podgorica" -> Ok Podgorica
-                    | "tirana" -> Ok Tirana
-                    | "paris" -> Ok Paris
-                    | "rome" -> Ok Rome
-                    | "dublin" -> Ok Dublin
-                    | "bern" -> Ok Bern
-                    | "helsinki" -> Ok Helsinki
-                    | "hague" -> Ok Hague
-                    | "ljubljana" -> Ok Ljubljana
-                    | _ -> Error $"City {hostParts[0]} is not supported"
+            let credentials = ResultBuilder()
 
-                let id =
-                    paramsMap
+            credentials {
+                let subDomain = hostParts[0]
+
+                let! country =
+                    match Constants.SUPPORTED_DOMAINS |> Map.tryFind subDomain with
+                    | Some country -> Ok country
+                    | None -> subDomain |> NotSupported |> Error
+
+                let! queryParams = uri |> Web.Http.Client.Route.toQueryParams
+
+                let! id =
+                    queryParams
                     |> Map.tryFind "id"
                     |> Option.map (function
-                        | AP.IsInt id when id > 1000 -> Ok <| Id id
-                        | _ -> Error $"Invalid id parameter ")
-                    |> Option.defaultValue (Error $"Id parameter is missing")
+                        | AP.IsInt id when id > 1000 -> id |> Ok
+                        | _ -> "id query parameter" |> NotSupported |> Error)
+                    |> Option.defaultValue ("id query parameter" |> NotFound |> Error)
 
-                let cd =
-                    paramsMap
+                let! cd =
+                    queryParams
                     |> Map.tryFind "cd"
                     |> Option.map (function
-                        | AP.IsLettersOrNumbers cd -> Ok <| Cd cd
-                        | _ -> Error $"Invalid cd parameter")
-                    |> Option.defaultValue (Error $"Cd parameter is missing")
+                        | AP.IsLettersOrNumbers cd -> cd |> Ok
+                        | _ -> "cd query parameter" |> NotSupported |> Error)
+                    |> Option.defaultValue ("cd query parameter" |> NotFound |> Error)
 
-                let ems =
-                    paramsMap
+                let! ems =
+                    queryParams
                     |> Map.tryFind "ems"
                     |> Option.map (function
-                        | AP.IsLettersOrNumbers ems -> Ok <| Ems(Some ems)
-                        | _ -> Error $"Invalid ems parameter")
-                    |> Option.defaultValue (Ok <| Ems None)
+                        | AP.IsLettersOrNumbers ems -> ems |> Some |> Ok
+                        | _ -> "ems query parameter" |> NotSupported |> Error)
+                    |> Option.defaultValue (None |> Ok)
 
-                match city, id, cd, ems with
-                | Ok city, Ok id, Ok cd, Ok ems ->
-                    let credentials: Credentials =
-                        { City = city
-                          Id = id
-                          Cd = cd
-                          Ems = ems }
-
-                    Ok credentials
-                | _ ->
-                    let errors =
-                        let error =
-                            function
-                            | Error error -> Some error
-                            | _ -> None
-
-                        [ error city; error id; error cd; error ems ]
-                        |> List.choose Operators.id
-                        |> List.fold (fun acc error -> $"{acc},{error}") ""
-
-                    Error <| NotSupported $"Parameters in {url}. {errors}."))
+                return
+                    { Country = country
+                      SubDomain = subDomain
+                      Id = id
+                      Cd = cd
+                      Ems = ems }
+            }

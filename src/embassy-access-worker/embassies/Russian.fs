@@ -16,7 +16,7 @@ type private Deps =
       ct: CancellationToken }
 
 let private createDeps ct configuration country =
-    let deps = ModelBuilder()
+    let deps = ResultBuilder()
 
     let country = country |> EA.Mapper.Country.toExternal
     let scheduleTaskName = $"{Settings.AppName}.{country.Name}.{country.City.Name}"

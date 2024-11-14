@@ -37,17 +37,4 @@ let processRequest request deps =
 
     request |> start
 
-let getCountries () =
-    Set
-        [ Albania <| Tirana
-          Bosnia <| Sarajevo
-          Finland <| Helsinki
-          France <| Paris
-          Germany <| Berlin
-          Hungary <| Budapest
-          Ireland <| Dublin
-          Montenegro <| Podgorica
-          Netherlands <| Hague
-          Serbia <| Belgrade
-          Slovenia <| Ljubljana
-          Switzerland <| Bern ]
+let getCountries () = Constants.SUPPORTED_DOMAINS.Values |> set

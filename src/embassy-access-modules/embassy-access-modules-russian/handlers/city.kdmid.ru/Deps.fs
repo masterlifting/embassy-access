@@ -5,19 +5,19 @@ open EA.Embassies.Russian.Kdmid.Domain
 
 let processRequest ct config storage =
     { Configuration = config
-      updateRequest = fun request -> storage |> Repository.Command.Request.update request ct
-      getInitialPage =
+      storageUpdateRequest = fun request -> storage |> Repository.Command.Request.update request ct
+      httpStringGet =
         fun request client ->
             client
             |> Web.Http.Client.Request.get ct request
             |> Web.Http.Client.Response.String.read ct
-      getCaptcha =
+      httpBytesGet =
         fun request client ->
             client
             |> Web.Http.Client.Request.get ct request
             |> Web.Http.Client.Response.Bytes.read ct
       solveCaptcha = Web.Captcha.solveToInt ct
-      postValidationPage =
+      httpStringPost =
         fun request content client ->
             client
             |> Web.Http.Client.Request.post ct request content

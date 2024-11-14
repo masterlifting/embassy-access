@@ -6,22 +6,23 @@ open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Domain
 
 let validateCredentials (request: EA.Core.Domain.Request) credentials =
-    match request.Service.Embassy.Country.City = credentials.City with
+    match request.Service.Embassy.Country.City = credentials.Country.City with
     | true -> Ok credentials
     | false ->
         Error
         <| NotSupported
-            $"Embassy city '%A{request.Service.Embassy.Country.City}' is not matched with the requested City '%A{credentials.City}'."
+            $"Embassy city '%A{request.Service.Embassy.Country.City}' is not matched with the requested City '%A{credentials.SubDomain}'."
 
 let createCredentials =
     ResultAsync.bind (fun request ->
         request.Service.Payload
-        |> createCredentials
+        |> Uri
+        |> Credentials.create
         |> Result.bind (validateCredentials request)
         |> Result.map (fun credentials -> credentials, request))
 
 let setInProcessState deps request =
-    deps.updateRequest
+    deps.storageUpdateRequest
         { request with
             ProcessState = InProcess
             Modified = DateTime.UtcNow }
@@ -49,7 +50,7 @@ let setAttempt deps =
     ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
         request
         |> setRequestAttempt deps.Configuration.TimeShift
-        |> ResultAsync.wrap deps.updateRequest
+        |> ResultAsync.wrap deps.storageUpdateRequest
         |> ResultAsync.map (fun request -> httpClient, queryParams, formData, request))
 
 let private setCompletedState deps request =
@@ -61,7 +62,7 @@ let private setCompletedState deps request =
             | [] -> $"Found appointments: %i{request.Appointments.Count}"
             | confirmations -> $"Found confirmations: %i{confirmations.Length}"
 
-    deps.updateRequest
+    deps.storageUpdateRequest
         { request with
             ProcessState = Completed message
             Modified = DateTime.UtcNow }
@@ -72,7 +73,7 @@ let private setFailedState error deps request =
         | Operation { Code = Some Web.Captcha.CaptchaErrorCode } -> request.Attempt
         | _ -> DateTime.UtcNow, snd request.Attempt + 1
 
-    deps.updateRequest
+    deps.storageUpdateRequest
         { request with
             ProcessState = Failed error
             Attempt = attempt

@@ -3,7 +3,7 @@
 open System
 open Infrastructure
 
-module Key =
+module Constants =
     [<Literal>]
     let REQUESTS_TABLE_NAME = "requests"
     
@@ -30,6 +30,7 @@ type Country =
     | Albania of City
     | Hungary of City
     | Ireland of City
+    | Italy of City
     | Switzerland of City
     | Finland of City
     | France of City
@@ -45,6 +46,7 @@ type Country =
         | Albania city -> city
         | Hungary city -> city
         | Ireland city -> city
+        | Italy city -> city
         | Switzerland city -> city
         | Finland city -> city
         | France city -> city

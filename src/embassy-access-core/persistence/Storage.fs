@@ -13,6 +13,6 @@ module FileSystem =
             |> Persistence.Storage.getConnectionString SECTION_NAME
             |> Result.bind (fun connectionString ->
                 { Directory = connectionString
-                  FileName = Key.REQUESTS_TABLE_NAME }
+                  FileName = Constants.REQUESTS_TABLE_NAME }
                 |> Storage.Context.FileSystem
                 |> Persistence.Storage.create)

@@ -9,17 +9,12 @@ open EA.Embassies.Russian.Kdmid.Domain
 
 open SkiaSharp
 
-type private Deps =
+type private InternalDependencies =
     { HttpClient: Web.Http.Domain.Client
-      getInitialPage: HttpGetStringRequest
-      getCaptcha: HttpGetBytesRequest
-      solveCaptcha: SolveCaptchaImage }
+      Core: Dependencies }
 
-let private createDeps (deps: ProcessRequestDeps) httpClient =
-    { HttpClient = httpClient
-      getInitialPage = deps.getInitialPage
-      getCaptcha = deps.getCaptcha
-      solveCaptcha = deps.solveCaptcha }
+let private createDeps (deps: Dependencies) httpClient =
+    { HttpClient = httpClient; Core = deps }
 
 let private createHttpRequest queryParams =
     { Web.Http.Domain.Request.Path = "/queue/orderinfo.aspx?" + queryParams
@@ -105,12 +100,12 @@ let private prepareHttpFormData pageData captcha =
     |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
     |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
 
-let private handlePage (deps, queryParams) =
+let private handlePage (deps: InternalDependencies, queryParams) =
 
     // define
     let getRequest =
         let request = createHttpRequest queryParams
-        deps.getInitialPage request
+        deps.Core.httpStringGet request
 
     let setCookie = ResultAsync.bind (deps.HttpClient |> Http.setRequiredCookie)
     let parseResponse = ResultAsync.bind parseHttpResponse
@@ -128,11 +123,11 @@ let private handlePage (deps, queryParams) =
             // define
             let getCaptchaRequest =
                 let request = createCaptchaRequest urlPath
-                deps.getCaptcha request
+                deps.Core.httpBytesGet request
 
             let setCookie = ResultAsync.bind (deps.HttpClient |> Http.setSessionCookie)
             let prepareResponse = ResultAsync.bind prepareCaptchaImage
-            let solveCaptcha = ResultAsync.bindAsync deps.solveCaptcha
+            let solveCaptcha = ResultAsync.bindAsync deps.Core.solveCaptcha
             let prepareFormData = ResultAsync.mapAsync (pageData |> prepareHttpFormData)
             let buildFormData = ResultAsync.mapAsync Http.buildFormData
 
@@ -148,8 +143,9 @@ let private handlePage (deps, queryParams) =
 let handle deps =
     ResultAsync.bindAsync (fun (httpClient, credentials: Credentials, request) ->
         let deps = createDeps deps httpClient
-        let _, id, cd, ems = credentials.Value
-        let queryParams = Http.createQueryParams id cd ems
+
+        let queryParams =
+            Http.createQueryParams credentials.Id credentials.Cd credentials.Ems
 
         handlePage (deps, queryParams)
         |> ResultAsync.map (fun formData -> httpClient, queryParams, formData, request))

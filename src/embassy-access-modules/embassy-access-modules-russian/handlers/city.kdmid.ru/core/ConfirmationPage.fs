@@ -8,13 +8,12 @@ open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Common
 open EA.Embassies.Russian.Kdmid.Domain
 
-type private Deps =
+type private InternalDependencies =
     { HttpClient: Web.Http.Domain.Client
-      postConfirmationPage: HttpPostStringRequest }
+      Core: Dependencies }
 
-let private createDeps (deps: ProcessRequestDeps) httpClient =
-    { HttpClient = httpClient
-      postConfirmationPage = deps.postConfirmationPage }
+let private createDeps (deps: Dependencies) httpClient =
+    { HttpClient = httpClient; Core = deps }
 
 let private handleRequestConfirmation (request: EA.Core.Domain.Request) =
     match request.ConfirmationState with
@@ -114,7 +113,7 @@ let private createDefaultResult request =
                | _ -> request
     }
 
-let private handlePage (deps, queryParamsId, formData, request) =
+let private handlePage (deps: InternalDependencies, queryParamsId, formData, request) =
     request
     |> handleRequestConfirmation
     |> ResultAsync.wrap (function
@@ -125,7 +124,7 @@ let private handlePage (deps, queryParamsId, formData, request) =
                     appointment.Value |> prepareHttpFormData formData |> Http.buildFormData
 
                 let request, content = createHttpRequest formData queryParamsId
-                deps.postConfirmationPage request content
+                deps.Core.httpStringPost request content
 
             let parseResponse = ResultAsync.bind parseHttpResponse
             let parseConfirmation = ResultAsync.bind createRequestConfirmation

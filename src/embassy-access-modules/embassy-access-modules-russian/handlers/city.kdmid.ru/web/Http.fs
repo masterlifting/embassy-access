@@ -6,9 +6,9 @@ open EA.Embassies.Russian.Kdmid.Domain
 open Web.Http.Domain
 open Web.Http.Client
 
-let private createKdmidClient city =
+let private createKdmidClient subDomain =
 
-    let host = $"%s{city}.kdmid.ru"
+    let host = $"%s{subDomain}.kdmid.ru"
     let baseUrl = $"https://%s{host}"
 
     let headers =
@@ -31,9 +31,7 @@ let private createKdmidClient city =
 
 let createClient =
     ResultAsync.bind (fun (credentials: Credentials, request: EA.Core.Domain.Request) ->
-        let city, _, _, _ = credentials.Value
-
-        city
+        credentials.SubDomain
         |> createKdmidClient
         |> Result.map (fun httpClient -> httpClient, credentials, request))
 

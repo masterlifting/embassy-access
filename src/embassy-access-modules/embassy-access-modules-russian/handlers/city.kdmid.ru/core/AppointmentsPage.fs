@@ -8,13 +8,12 @@ open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Common
 open EA.Embassies.Russian.Kdmid.Domain
 
-type private Deps =
+type private InternalDependencies =
     { HttpClient: Web.Http.Domain.Client
-      postAppointmentsPage: HttpPostStringRequest }
+      Core: Dependencies }
 
-let private createDeps (deps: ProcessRequestDeps) httpClient =
-    { HttpClient = httpClient
-      postAppointmentsPage = deps.postAppointmentsPage }
+let private createDeps (deps: Dependencies) httpClient =
+    { HttpClient = httpClient; Core = deps }
 
 let private createHttpRequest formData queryParams =
 
@@ -131,13 +130,13 @@ let private createResult (request: EA.Core.Domain.Request) (formData, appointmen
 
     formData, request
 
-let private handlePage (deps, queryParams, formData, request) =
+let private handlePage (deps: InternalDependencies, queryParams, formData, request) =
 
     // define
     let postRequest =
         let formData = Http.buildFormData formData
         let request, content = createHttpRequest formData queryParams
-        deps.postAppointmentsPage request content
+        deps.Core.httpStringPost request content
 
     let parseResponse = ResultAsync.bind parseHttpResponse
     let prepareFormData = ResultAsync.mapAsync prepareHttpFormData

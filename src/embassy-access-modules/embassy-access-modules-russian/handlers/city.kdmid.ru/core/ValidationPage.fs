@@ -8,14 +8,12 @@ open Infrastructure.Parser
 open EA.Embassies.Russian.Kdmid.Common
 open EA.Embassies.Russian.Kdmid.Domain
 
-
-type private Deps =
+type private InternalDependencies =
     { HttpClient: Web.Http.Domain.Client
-      postValidationPage: HttpPostStringRequest }
+      Core: Dependencies }
 
-let private createDeps (deps: ProcessRequestDeps) httpClient =
-    { HttpClient = httpClient
-      postValidationPage = deps.postValidationPage }
+let private createDeps (deps: Dependencies) httpClient =
+    { HttpClient = httpClient; Core = deps }
 
 let private createHttpRequest formData queryParams =
 
@@ -50,17 +48,17 @@ let private httpResponseHasInconsistentState page =
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some ErrorCodes.CONFIRMATIONS_EXISTS }
+                          Code = Some Constants.ErrorCodes.CONFIRMATIONS_EXISTS }
                 | text when text |> has "Ваша заявка требует подтверждения" ->
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some ErrorCodes.NOT_CONFIRMED }
+                          Code = Some Constants.ErrorCodes.NOT_CONFIRMED }
                 | text when text |> has "Заявка удалена" ->
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some ErrorCodes.REQUEST_DELETED }
+                          Code = Some Constants.ErrorCodes.REQUEST_DELETED }
                 | _ -> Ok page
             | _ -> Ok page)
 
@@ -101,12 +99,12 @@ let private prepareHttpFormData data =
     |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
     |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
 
-let private handlePage (deps, queryParams, formData) =
+let private handlePage (deps: InternalDependencies, queryParams, formData) =
 
     // define
     let postRequest =
         let request, content = createHttpRequest formData queryParams
-        deps.postValidationPage request content
+        deps.Core.httpStringPost request content
 
     let parseResponse = ResultAsync.bind parseHttpResponse
     let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
