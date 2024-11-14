@@ -7,10 +7,10 @@ type Request =
     { Country: Country
       StatementNumber: string }
 
-    member internal this.Create name : EA.Core.Domain.Request =
+    member internal this.Create serviceName =
         { Id = RequestId.New
           Service =
-            { Name = name
+            { Name = serviceName
               Payload = this.StatementNumber
               Embassy = Russian this.Country
               Description = None }

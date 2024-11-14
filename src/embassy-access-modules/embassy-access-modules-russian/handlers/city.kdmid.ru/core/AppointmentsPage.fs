@@ -5,15 +5,8 @@ open Infrastructure
 open Infrastructure.Parser
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
-open EA.Embassies.Russian.Kdmid.Common
+open EA.Embassies.Russian.Kdmid.Html
 open EA.Embassies.Russian.Kdmid.Domain
-
-type private InternalDependencies =
-    { HttpClient: Web.Http.Domain.Client
-      Core: Dependencies }
-
-let private createDeps (deps: Dependencies) httpClient =
-    { HttpClient = httpClient; Core = deps }
 
 let private createHttpRequest formData queryParams =
 
@@ -130,13 +123,13 @@ let private createResult (request: EA.Core.Domain.Request) (formData, appointmen
 
     formData, request
 
-let private handlePage (deps: InternalDependencies, queryParams, formData, request) =
+let private handlePage (deps, httpClient, queryParams, formData, request) =
 
     // define
     let postRequest =
         let formData = Http.buildFormData formData
         let request, content = createHttpRequest formData queryParams
-        deps.Core.httpStringPost request content
+        deps.postAppointmentsPage request content
 
     let parseResponse = ResultAsync.bind parseHttpResponse
     let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
@@ -144,7 +137,7 @@ let private handlePage (deps: InternalDependencies, queryParams, formData, reque
     let createResult = ResultAsync.map (createResult request)
 
     // pipe
-    deps.HttpClient
+    httpClient
     |> postRequest
     |> parseResponse
     |> prepareFormData
@@ -153,10 +146,8 @@ let private handlePage (deps: InternalDependencies, queryParams, formData, reque
 
 let handle deps =
     ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
-        let deps = createDeps deps httpClient
-
         queryParams
         |> Http.getQueryParamsId
         |> ResultAsync.wrap (fun queryParamsId ->
-            handlePage (deps, queryParams, formData, request)
+            handlePage (deps, httpClient, queryParams, formData, request)
             |> ResultAsync.map (fun (formData, request) -> httpClient, queryParamsId, formData, request)))

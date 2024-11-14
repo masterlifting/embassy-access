@@ -5,15 +5,8 @@ open Infrastructure
 open Infrastructure.Parser
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
-open EA.Embassies.Russian.Kdmid.Common
+open EA.Embassies.Russian.Kdmid.Html
 open EA.Embassies.Russian.Kdmid.Domain
-
-type private InternalDependencies =
-    { HttpClient: Web.Http.Domain.Client
-      Core: Dependencies }
-
-let private createDeps (deps: Dependencies) httpClient =
-    { HttpClient = httpClient; Core = deps }
 
 let private handleRequestConfirmation (request: EA.Core.Domain.Request) =
     match request.ConfirmationState with
@@ -113,7 +106,7 @@ let private createDefaultResult request =
                | _ -> request
     }
 
-let private handlePage (deps: InternalDependencies, queryParamsId, formData, request) =
+let private handlePage (deps, httpClient, queryParamsId, formData, request) =
     request
     |> handleRequestConfirmation
     |> ResultAsync.wrap (function
@@ -124,21 +117,16 @@ let private handlePage (deps: InternalDependencies, queryParamsId, formData, req
                     appointment.Value |> prepareHttpFormData formData |> Http.buildFormData
 
                 let request, content = createHttpRequest formData queryParamsId
-                deps.Core.httpStringPost request content
+                deps.postConfirmationPage request content
 
             let parseResponse = ResultAsync.bind parseHttpResponse
             let parseConfirmation = ResultAsync.bind createRequestConfirmation
             let createResult = ResultAsync.map (createResult request appointment)
 
             // pipe
-            deps.HttpClient
-            |> postRequest
-            |> parseResponse
-            |> parseConfirmation
-            |> createResult
+            httpClient |> postRequest |> parseResponse |> parseConfirmation |> createResult
         | None -> request |> createDefaultResult)
 
 let handle deps =
     ResultAsync.bindAsync (fun (httpClient, queryParamsId, formData, request) ->
-        let deps = createDeps deps httpClient
-        handlePage (deps, queryParamsId, formData, request))
+        handlePage (deps, httpClient, queryParamsId, formData, request))

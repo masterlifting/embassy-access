@@ -5,15 +5,8 @@ open System.Text.RegularExpressions
 
 open Infrastructure
 open Infrastructure.Parser
-open EA.Embassies.Russian.Kdmid.Common
+open EA.Embassies.Russian.Kdmid.Html
 open EA.Embassies.Russian.Kdmid.Domain
-
-type private InternalDependencies =
-    { HttpClient: Web.Http.Domain.Client
-      Core: Dependencies }
-
-let private createDeps (deps: Dependencies) httpClient =
-    { HttpClient = httpClient; Core = deps }
 
 let private createHttpRequest formData queryParams =
 
@@ -99,22 +92,20 @@ let private prepareHttpFormData data =
     |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
     |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
 
-let private handlePage (deps: InternalDependencies, queryParams, formData) =
+let private handlePage (deps, httpClient, queryParams, formData) =
 
     // define
     let postRequest =
         let request, content = createHttpRequest formData queryParams
-        deps.Core.httpStringPost request content
+        deps.postValidationPage request content
 
     let parseResponse = ResultAsync.bind parseHttpResponse
     let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
 
     // pipe
-    deps.HttpClient |> postRequest |> parseResponse |> prepareFormData
+    httpClient |> postRequest |> parseResponse |> prepareFormData
 
 let handle deps =
     ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
-        let deps = createDeps deps httpClient
-
-        handlePage (deps, queryParams, formData)
+        handlePage (deps, httpClient, queryParams, formData)
         |> ResultAsync.map (fun formData -> httpClient, queryParams, formData, request))

@@ -1,4 +1,4 @@
-﻿module internal EA.Embassies.Russian.Kdmid.Common
+﻿module internal EA.Embassies.Russian.Kdmid.Html
 
 open Infrastructure
 open Infrastructure.Parser

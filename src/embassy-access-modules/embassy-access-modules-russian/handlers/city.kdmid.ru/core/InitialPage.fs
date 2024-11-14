@@ -4,17 +4,10 @@ open System
 open Infrastructure
 open Infrastructure.Parser
 open EA.Embassies.Russian.Kdmid.Web
-open EA.Embassies.Russian.Kdmid.Common
+open EA.Embassies.Russian.Kdmid.Html
 open EA.Embassies.Russian.Kdmid.Domain
 
 open SkiaSharp
-
-type private InternalDependencies =
-    { HttpClient: Web.Http.Domain.Client
-      Core: Dependencies }
-
-let private createDeps (deps: Dependencies) httpClient =
-    { HttpClient = httpClient; Core = deps }
 
 let private createHttpRequest queryParams =
     { Web.Http.Domain.Request.Path = "/queue/orderinfo.aspx?" + queryParams
@@ -100,18 +93,18 @@ let private prepareHttpFormData pageData captcha =
     |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
     |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
 
-let private handlePage (deps: InternalDependencies, queryParams) =
+let private handlePage (deps, httpClient, queryParams) =
 
     // define
     let getRequest =
         let request = createHttpRequest queryParams
-        deps.Core.httpStringGet request
+        deps.getInitialPage request
 
-    let setCookie = ResultAsync.bind (deps.HttpClient |> Http.setRequiredCookie)
+    let setCookie = ResultAsync.bind (httpClient |> Http.setRequiredCookie)
     let parseResponse = ResultAsync.bind parseHttpResponse
 
     // pipe
-    deps.HttpClient
+    httpClient
     |> getRequest
     |> setCookie
     |> parseResponse
@@ -123,16 +116,16 @@ let private handlePage (deps: InternalDependencies, queryParams) =
             // define
             let getCaptchaRequest =
                 let request = createCaptchaRequest urlPath
-                deps.Core.httpBytesGet request
+                deps.getCaptcha request
 
-            let setCookie = ResultAsync.bind (deps.HttpClient |> Http.setSessionCookie)
+            let setCookie = ResultAsync.bind (httpClient |> Http.setSessionCookie)
             let prepareResponse = ResultAsync.bind prepareCaptchaImage
-            let solveCaptcha = ResultAsync.bindAsync deps.Core.solveCaptcha
+            let solveCaptcha = ResultAsync.bindAsync deps.solveCaptcha
             let prepareFormData = ResultAsync.mapAsync (pageData |> prepareHttpFormData)
             let buildFormData = ResultAsync.mapAsync Http.buildFormData
 
             // pipe
-            deps.HttpClient
+            httpClient
             |> getCaptchaRequest
             |> setCookie
             |> prepareResponse
@@ -142,10 +135,9 @@ let private handlePage (deps: InternalDependencies, queryParams) =
 
 let handle deps =
     ResultAsync.bindAsync (fun (httpClient, credentials: Credentials, request) ->
-        let deps = createDeps deps httpClient
 
         let queryParams =
             Http.createQueryParams credentials.Id credentials.Cd credentials.Ems
 
-        handlePage (deps, queryParams)
+        handlePage (deps, httpClient, queryParams)
         |> ResultAsync.map (fun formData -> httpClient, queryParams, formData, request))

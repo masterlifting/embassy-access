@@ -5,29 +5,28 @@ open Infrastructure
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Domain
 
-let validateCredentials (request: EA.Core.Domain.Request) credentials =
+let private validateCity (request: EA.Core.Domain.Request) credentials =
     match request.Service.Embassy.Country.City = credentials.Country.City with
     | true -> Ok credentials
     | false ->
         Error
-        <| NotSupported
-            $"Embassy city '%A{request.Service.Embassy.Country.City}' is not matched with the requested City '%A{credentials.SubDomain}'."
+        <| NotSupported $"Requested {request.Service.Embassy.Country.City} for the subdomain {credentials.SubDomain}"
 
 let createCredentials =
     ResultAsync.bind (fun request ->
         request.Service.Payload
         |> Uri
         |> Credentials.create
-        |> Result.bind (validateCredentials request)
+        |> Result.bind (validateCity request)
         |> Result.map (fun credentials -> credentials, request))
 
 let setInProcessState deps request =
-    deps.storageUpdateRequest
+    deps.updateRequest
         { request with
             ProcessState = InProcess
             Modified = DateTime.UtcNow }
 
-let private setRequestAttempt timeShift request =
+let private setAttemptCore timeShift request =
     let timeShift = timeShift |> int
     let modified, attempt = request.Attempt
     let modified = modified.AddHours timeShift
@@ -49,8 +48,8 @@ let private setRequestAttempt timeShift request =
 let setAttempt deps =
     ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
         request
-        |> setRequestAttempt deps.Configuration.TimeShift
-        |> ResultAsync.wrap deps.storageUpdateRequest
+        |> setAttemptCore deps.Configuration.TimeShift
+        |> ResultAsync.wrap deps.updateRequest
         |> ResultAsync.map (fun request -> httpClient, queryParams, formData, request))
 
 let private setCompletedState deps request =
@@ -62,7 +61,7 @@ let private setCompletedState deps request =
             | [] -> $"Found appointments: %i{request.Appointments.Count}"
             | confirmations -> $"Found confirmations: %i{confirmations.Length}"
 
-    deps.storageUpdateRequest
+    deps.updateRequest
         { request with
             ProcessState = Completed message
             Modified = DateTime.UtcNow }
@@ -73,14 +72,14 @@ let private setFailedState error deps request =
         | Operation { Code = Some Web.Captcha.CaptchaErrorCode } -> request.Attempt
         | _ -> DateTime.UtcNow, snd request.Attempt + 1
 
-    deps.storageUpdateRequest
+    deps.updateRequest
         { request with
             ProcessState = Failed error
             Attempt = attempt
             Modified = DateTime.UtcNow }
     |> ResultAsync.bind (fun _ -> Error <| error.add $"Payload: %s{request.Service.Payload}")
 
-let completeConfirmation deps request confirmation =
+let setProcessedState deps request confirmation =
     async {
         match! confirmation with
         | Error error -> return! request |> setFailedState error deps

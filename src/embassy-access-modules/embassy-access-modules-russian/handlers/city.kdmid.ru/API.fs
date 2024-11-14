@@ -1,16 +1,9 @@
 ﻿module EA.Embassies.Russian.Kdmid.API
 
-open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Domain
 open EA.Embassies.Russian.Kdmid
 
-let validateRequest (request: EA.Core.Domain.Request) =
-    request.Service.Payload
-    |> createCredentials
-    |> Result.bind (Request.validateCredentials request)
-    |> Result.map (fun _ -> ())
-
-let processRequest request deps =
+let processRequest deps request =
 
     // define
     let setRequestInProcessState = Request.setInProcessState deps
@@ -21,7 +14,7 @@ let processRequest request deps =
     let processValidationPage = ValidationPage.handle deps
     let processAppointmentsPage = AppointmentsPage.handle deps
     let processConfirmationPage = ConfirmationPage.handle deps
-    let setRequestFinalState = Request.completeConfirmation deps request
+    let setRequestProcessedState = Request.setProcessedState deps request
 
     // pipe
     let start =
@@ -33,8 +26,9 @@ let processRequest request deps =
         >> processValidationPage
         >> processAppointmentsPage
         >> processConfirmationPage
-        >> setRequestFinalState
+        >> setRequestProcessedState
 
     request |> start
 
-let getCountries () = Constants.SUPPORTED_DOMAINS.Values |> set
+let getCountries () =
+    Constants.SUPPORTED__SUB_DOMAINS.Values |> set

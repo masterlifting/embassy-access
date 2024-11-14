@@ -6,7 +6,7 @@ open EA.Core.Domain
 
 [<RequireQualifiedAccess>]
 module Constants =
-    let internal SUPPORTED_DOMAINS =
+    let internal SUPPORTED__SUB_DOMAINS =
         Map
             [ "belgrad", Belgrade |> Serbia
               "budapest", Budapest |> Hungary
@@ -37,14 +37,14 @@ module Constants =
         let REQUEST_DELETED = "RequestDeleted"
 
 type Request =
-    { Country: Country
-      Url: Uri
+    { Url: Uri
+      Country: Country
       Confirmation: ConfirmationState }
 
-    member internal this.Create name : EA.Core.Domain.Request =
+    member internal this.Create serviceName =
         { Id = RequestId.New
           Service =
-            { Name = name
+            { Name = serviceName
               Payload = this.Url.ToString()
               Embassy = Russian this.Country
               Description = None }
@@ -58,19 +58,29 @@ type Configuration = { TimeShift: int8 }
 
 type Dependencies =
     { Configuration: Configuration
-      storageUpdateRequest: EA.Core.Domain.Request -> Async<Result<EA.Core.Domain.Request, Error'>>
-      httpStringGet:
+      updateRequest: EA.Core.Domain.Request -> Async<Result<EA.Core.Domain.Request, Error'>>
+      getInitialPage:
           Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<string>, Error'>>
-      httpBytesGet:
+      getCaptcha:
           Web.Http.Domain.Request
               -> Web.Http.Domain.Client
               -> Async<Result<Web.Http.Domain.Response<byte array>, Error'>>
-      httpStringPost:
+      solveCaptcha: byte array -> Async<Result<int, Error'>>
+      postValidationPage:
           Web.Http.Domain.Request
               -> Web.Http.Domain.RequestContent
               -> Web.Http.Domain.Client
               -> Async<Result<string, Error'>>
-      solveCaptcha: byte array -> Async<Result<int, Error'>> }
+      postAppointmentsPage:
+          Web.Http.Domain.Request
+              -> Web.Http.Domain.RequestContent
+              -> Web.Http.Domain.Client
+              -> Async<Result<string, Error'>>
+      postConfirmationPage:
+          Web.Http.Domain.Request
+              -> Web.Http.Domain.RequestContent
+              -> Web.Http.Domain.Client
+              -> Async<Result<string, Error'>> }
 
 type internal Credentials =
     { Country: Country
@@ -89,7 +99,7 @@ type internal Credentials =
                 let subDomain = hostParts[0]
 
                 let! country =
-                    match Constants.SUPPORTED_DOMAINS |> Map.tryFind subDomain with
+                    match Constants.SUPPORTED__SUB_DOMAINS |> Map.tryFind subDomain with
                     | Some country -> Ok country
                     | None -> subDomain |> NotSupported |> Error
 
