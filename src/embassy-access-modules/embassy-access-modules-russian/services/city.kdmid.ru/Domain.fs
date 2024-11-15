@@ -1,6 +1,7 @@
 ﻿module EA.Embassies.Russian.Kdmid.Domain
 
 open System
+open EA.Persistence
 open Infrastructure
 open EA.Core.Domain
 
@@ -31,13 +32,13 @@ module Constants =
         let NOT_CONFIRMED = "NotConfirmed"
 
         [<Literal>]
-        let CONFIRMATIONS_EXISTS = "ConfirmationExists"
+        let CONFIRMATION_EXISTS = "ConfirmationExists"
 
         [<Literal>]
         let REQUEST_DELETED = "RequestDeleted"
 
 type Request =
-    { Url: Uri
+    { Uri: Uri
       Country: Country
       Confirmation: ConfirmationState }
 
@@ -45,7 +46,7 @@ type Request =
         { Id = RequestId.New
           Service =
             { Name = serviceName
-              Payload = this.Url.ToString()
+              Payload = this.Uri.ToString()
               Embassy = Russian this.Country
               Description = None }
           Attempt = (DateTime.UtcNow, 0)
@@ -81,6 +82,37 @@ type Dependencies =
               -> Web.Http.Domain.RequestContent
               -> Web.Http.Domain.Client
               -> Async<Result<string, Error'>> }
+
+    static member create ct config storage =
+        { Configuration = config
+          updateRequest = fun request -> storage |> Repository.Command.Request.update request ct
+          getInitialPage =
+            fun request client ->
+                client
+                |> Web.Http.Client.Request.get ct request
+                |> Web.Http.Client.Response.String.read ct
+          getCaptcha =
+            fun request client ->
+                client
+                |> Web.Http.Client.Request.get ct request
+                |> Web.Http.Client.Response.Bytes.read ct
+          solveCaptcha = Web.Captcha.solveToInt ct
+          postValidationPage =
+            fun request content client ->
+                client
+                |> Web.Http.Client.Request.post ct request content
+                |> Web.Http.Client.Response.String.readContent ct
+          postAppointmentsPage =
+            fun request content client ->
+                client
+                |> Web.Http.Client.Request.post ct request content
+                |> Web.Http.Client.Response.String.readContent ct
+          postConfirmationPage =
+            fun request content client ->
+                client
+                |> Web.Http.Client.Request.post ct request content
+                |> Web.Http.Client.Response.String.readContent ct }
+
 
 type internal Credentials =
     { Country: Country

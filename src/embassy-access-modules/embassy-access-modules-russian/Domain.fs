@@ -3,7 +3,7 @@
 open EA.Embassies.Russian
 
 type PassportServices =
-    | IssueForeign of Kdmid.Domain.Request
+    | IssueForeign of (Kdmid.Domain.Dependencies * Kdmid.Domain.Request)
     | CheckReadiness of Midpass.Domain.Request
 
     member this.Name =
@@ -12,14 +12,14 @@ type PassportServices =
         | CheckReadiness _ -> "Проверка готовности"
 
 type NotaryServices =
-    | PowerOfAttorney of Kdmid.Domain.Request
+    | PowerOfAttorney of (Kdmid.Domain.Dependencies * Kdmid.Domain.Request)
 
     member this.Name =
         match this with
         | PowerOfAttorney _ -> "Доверенность.Проверка записи на прием"
 
 type CitizenshipServices =
-    | CitizenshipRenunciation of Kdmid.Domain.Request
+    | CitizenshipRenunciation of (Kdmid.Domain.Dependencies * Kdmid.Domain.Request)
 
     member this.Name =
         match this with
@@ -40,11 +40,11 @@ type Services =
         match this with
         | Passport service ->
             match service with
-            | IssueForeign request -> request.Create this.Name
+            | IssueForeign (_, request) -> request.Create this.Name
             | CheckReadiness request -> request.Create this.Name
         | Notary service ->
             match service with
-            | PowerOfAttorney request -> request.Create this.Name
+            | PowerOfAttorney (_, request) -> request.Create this.Name
         | Citizenship service ->
             match service with
-            | CitizenshipRenunciation request -> request.Create this.Name
+            | CitizenshipRenunciation (_, request) -> request.Create this.Name

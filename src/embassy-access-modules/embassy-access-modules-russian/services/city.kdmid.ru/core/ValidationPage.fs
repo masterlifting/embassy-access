@@ -41,7 +41,7 @@ let private httpResponseHasInconsistentState page =
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some Constants.ErrorCodes.CONFIRMATIONS_EXISTS }
+                          Code = Some Constants.ErrorCodes.CONFIRMATION_EXISTS }
                 | text when text |> has "Ваша заявка требует подтверждения" ->
                     Error
                     <| Operation

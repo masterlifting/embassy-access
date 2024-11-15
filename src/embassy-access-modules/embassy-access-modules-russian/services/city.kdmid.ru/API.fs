@@ -1,4 +1,4 @@
-﻿module EA.Embassies.Russian.Kdmid.API
+﻿module internal EA.Embassies.Russian.Kdmid.API
 
 open EA.Embassies.Russian.Kdmid.Domain
 open EA.Embassies.Russian.Kdmid
@@ -17,7 +17,7 @@ let processRequest deps request =
     let setRequestProcessedState = Request.setProcessedState deps request
 
     // pipe
-    let start =
+    let startProcess =
         setRequestInProcessState
         >> createRequestCredentials
         >> createHttpClient
@@ -28,7 +28,6 @@ let processRequest deps request =
         >> processConfirmationPage
         >> setRequestProcessedState
 
-    request |> start
+    request |> startProcess
 
-let getCountries () =
-    Constants.SUPPORTED__SUB_DOMAINS.Values |> set
+let SupportedCountries = Constants.SUPPORTED__SUB_DOMAINS.Values |> set

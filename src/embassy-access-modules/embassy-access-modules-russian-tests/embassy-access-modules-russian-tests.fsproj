@@ -3,10 +3,11 @@
   <PropertyGroup>
       <TargetFramework>net8.0</TargetFramework>
       <OutputType>Exe</OutputType>
+      <RootNamespace>embassy-access-tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="embassies\russian\Test.fs" />
+    <Compile Include="Kdmid.Tests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -15,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\embassy-access-core\embassy-access-core.fsproj" />
+    <ProjectReference Include="..\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
   </ItemGroup>
 
 </Project>
