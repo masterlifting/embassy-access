@@ -1,4 +1,5 @@
-﻿module internal EA.Embassies.Russian.Kdmid.Request
+﻿[<RequireQualifiedAccess>]
+module EA.Embassies.Russian.Kdmid.Request
 
 open System
 open Infrastructure
@@ -12,25 +13,24 @@ let private validateCity (request: EA.Core.Domain.Request) credentials =
         Error
         <| NotSupported $"Requested {request.Service.Embassy.Country.City} for the subdomain {credentials.SubDomain}"
 
-let createCredentials =
+let private parsePayload =
     ResultAsync.bind (fun request ->
         request.Service.Payload
         |> Uri
-        |> Credentials.create
+        |> Payload.create
         |> Result.bind (validateCity request)
         |> Result.map (fun credentials -> credentials, request))
 
-let setInProcessState deps request =
+let private setInProcessState deps request =
     deps.updateRequest
         { request with
             ProcessState = InProcess
             Modified = DateTime.UtcNow }
 
-let private setAttemptCore timeShift request =
-    let timeShift = timeShift |> int
+let private setAttemptCore timeZone request =
     let modified, attempt = request.Attempt
-    let modified = modified.AddHours timeShift
-    let today = DateTime.UtcNow.AddHours timeShift
+    let modified = modified.AddHours timeZone
+    let today = DateTime.UtcNow.AddHours timeZone
 
     match modified.DayOfYear = today.DayOfYear, attempt > 20 with
     | true, true ->
@@ -45,10 +45,10 @@ let private setAttemptCore timeShift request =
         <| { request with
                Attempt = DateTime.UtcNow, 1 }
 
-let setAttempt deps =
+let private setAttempt timeZone deps =
     ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
         request
-        |> setAttemptCore deps.Configuration.TimeShift
+        |> setAttemptCore timeZone
         |> ResultAsync.wrap deps.updateRequest
         |> ResultAsync.map (fun request -> httpClient, queryParams, formData, request))
 
@@ -79,9 +79,64 @@ let private setFailedState error deps request =
             Modified = DateTime.UtcNow }
     |> ResultAsync.bind (fun _ -> Error <| error.add $"Payload: %s{request.Service.Payload}")
 
-let setProcessedState deps request confirmation =
+let private setProcessedState deps request confirmation =
     async {
         match! confirmation with
         | Error error -> return! request |> setFailedState error deps
         | Ok request -> return! request |> setCompletedState deps
     }
+
+let start deps timeZone request =
+
+    // define
+    let setInProcessState = setInProcessState deps
+    let parsePayload = parsePayload
+    let createHttpClient = Web.Http.createClient
+    let processInitialPage = InitialPage.handle deps
+    let setAttempt = setAttempt timeZone deps
+    let processValidationPage = ValidationPage.handle deps
+    let processAppointmentsPage = AppointmentsPage.handle deps
+    let processConfirmationPage = ConfirmationPage.handle deps
+    let setProcessedState = setProcessedState deps request
+
+    // pipe
+    let run =
+        setInProcessState
+        >> parsePayload
+        >> createHttpClient
+        >> processInitialPage
+        >> setAttempt
+        >> processValidationPage
+        >> processAppointmentsPage
+        >> processConfirmationPage
+        >> setProcessedState
+
+    request |> run
+
+let pick deps data =
+
+    let rec innerLoop (errors: Error' list) (data: (float * EA.Core.Domain.Request) list) =
+        async {
+            match data with
+            | [] ->
+                return
+                    match errors.Length with
+                    | 0 -> Error [ "Requests to handle" |> NotFound ]
+                    | _ -> Error errors
+            | (timeZone, request) :: dataTail ->
+                match! request |> start deps timeZone with
+                | Error error -> return! dataTail |> innerLoop (errors @ [ error ])
+                | Ok result -> return result |> Ok
+        }
+
+    data |> List.ofSeq |> innerLoop []
+
+let errorFilter error =
+    match error with
+    | Operation reason ->
+        match reason.Code with
+        | Some Constants.ErrorCodes.CONFIRMATION_EXISTS
+        | Some Constants.ErrorCodes.NOT_CONFIRMED
+        | Some Constants.ErrorCodes.REQUEST_DELETED -> true
+        | _ -> false
+    | _ -> false

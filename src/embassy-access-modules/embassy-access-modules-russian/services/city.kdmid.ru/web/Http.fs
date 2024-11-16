@@ -30,7 +30,7 @@ let private createKdmidClient subDomain =
     create baseUrl headers
 
 let createClient =
-    ResultAsync.bind (fun (credentials: Credentials, request: EA.Core.Domain.Request) ->
+    ResultAsync.bind (fun (credentials: Payload, request: EA.Core.Domain.Request) ->
         credentials.SubDomain
         |> createKdmidClient
         |> Result.map (fun httpClient -> httpClient, credentials, request))

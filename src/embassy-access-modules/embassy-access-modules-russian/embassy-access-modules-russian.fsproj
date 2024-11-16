@@ -15,15 +15,12 @@
         <Compile Include="services\city.kdmid.ru\core\AppointmentsPage.fs" />
         <Compile Include="services\city.kdmid.ru\core\ConfirmationPage.fs" />
         <Compile Include="services\city.kdmid.ru\core\Request.fs" />
-        <Compile Include="services\city.kdmid.ru\core\Background.fs" />
-        <Compile Include="services\city.kdmid.ru\API.fs" />
         <Compile Include="services\info.midpass.ru\Domain.fs" />
         <Compile Include="Domain.fs" />
         <Compile Include="API.fs" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
       <ProjectReference Include="..\..\embassy-access-core\embassy-access-core.fsproj" />
     </ItemGroup>
 

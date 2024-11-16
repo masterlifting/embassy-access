@@ -134,7 +134,7 @@ let private handlePage (deps, httpClient, queryParams) =
             |> buildFormData)
 
 let handle deps =
-    ResultAsync.bindAsync (fun (httpClient, credentials: Credentials, request) ->
+    ResultAsync.bindAsync (fun (httpClient, credentials: Payload, request) ->
 
         let queryParams =
             Http.createQueryParams credentials.Id credentials.Cd credentials.Ems

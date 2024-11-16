@@ -40,6 +40,7 @@ module Constants =
 type Request =
     { Uri: Uri
       Country: Country
+      TimeZone: float
       Confirmation: ConfirmationState }
 
     member internal this.Create serviceName =
@@ -55,11 +56,8 @@ type Request =
           Appointments = Set.empty
           Modified = DateTime.UtcNow }
 
-type Configuration = { TimeShift: int8 }
-
 type Dependencies =
-    { Configuration: Configuration
-      updateRequest: EA.Core.Domain.Request -> Async<Result<EA.Core.Domain.Request, Error'>>
+    { updateRequest: EA.Core.Domain.Request -> Async<Result<EA.Core.Domain.Request, Error'>>
       getInitialPage:
           Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<string>, Error'>>
       getCaptcha:
@@ -83,9 +81,8 @@ type Dependencies =
               -> Web.Http.Domain.Client
               -> Async<Result<string, Error'>> }
 
-    static member create ct config storage =
-        { Configuration = config
-          updateRequest = fun request -> storage |> Repository.Command.Request.update request ct
+    static member create ct storage =
+        { updateRequest = fun request -> storage |> Repository.Command.Request.update request ct
           getInitialPage =
             fun request client ->
                 client
@@ -113,8 +110,7 @@ type Dependencies =
                 |> Web.Http.Client.Request.post ct request content
                 |> Web.Http.Client.Response.String.readContent ct }
 
-
-type internal Credentials =
+type internal Payload =
     { Country: Country
       SubDomain: string
       Id: int

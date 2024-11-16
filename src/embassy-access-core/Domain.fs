@@ -6,7 +6,7 @@ open Infrastructure
 module Constants =
     [<Literal>]
     let REQUESTS_TABLE_NAME = "requests"
-    
+
 type City =
     | Belgrade
     | Berlin
@@ -124,12 +124,12 @@ type ProcessState =
     | InProcess
     | Completed of string
     | Failed of Error'
-    
+
 type Service =
-    { Name : string
-      Payload : string
-      Embassy : Embassy
-      Description : string option }
+    { Name: string
+      Payload: string
+      Embassy: Embassy
+      Description: string option }
 
 type Request =
     { Id: RequestId
@@ -146,6 +146,23 @@ type Notification =
     | Appointments of (Embassy * Set<Appointment>)
     | Confirmations of (RequestId * Embassy * Set<Confirmation>)
     | Fail of (RequestId * Error')
+
+    static member tryCreateFail requestId allow error =
+        match error |> allow with
+        | true -> Fail(requestId, error) |> Some
+        | false -> None
+
+    static member tryCreate allowError request =
+        match request.ProcessState with
+        | Completed _ ->
+            match request.Appointments.IsEmpty with
+            | true -> None
+            | false ->
+                match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
+                | [] -> Appointments(request.Service.Embassy, request.Appointments) |> Some
+                | confirmations -> Confirmations(request.Id, request.Service.Embassy, confirmations |> set) |> Some
+        | Failed error -> error |> Notification.tryCreateFail request.Id allowError
+        | _ -> None
 
 module External =
 
