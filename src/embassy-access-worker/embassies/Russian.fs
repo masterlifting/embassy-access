@@ -9,16 +9,16 @@ open EA.Core.Domain
 open EA.Worker
 open EA.Embassies.Russian.Kdmid
 
-type private Deps =
-    { Storage: Storage.Type
-      processRequest: Request -> Async<Result<Request, Error'>>
+type private Dependencies =
+    { processRequest: Request -> Async<Result<Request, Error'>>
       pickRequest: Request seq -> Async<Result<Request, Error' list>>
-      RequestDeps: Domain.Dependencies
-      notify: Notification -> Async<Result<unit, Error'>>
-      ct: CancellationToken }
+      getRequests: unit -> Async<Result<Request list, Error'>>
+      notify: Notification -> Async<Result<unit, Error'>> }
 
 let private createDeps ct configuration country =
     let deps = ResultBuilder()
+
+    let query = Russian country |> EA.Persistence.Query.Request.SearchAppointments
 
     let country = country |> EA.Core.Mapper.Country.toExternal
     let scheduleTaskName = $"{Settings.AppName}.{country.Name}.{country.City.Name}"
@@ -29,22 +29,20 @@ let private createDeps ct configuration country =
         let! storage = configuration |> EA.Persistence.Storage.FileSystem.Request.create
         let notify = EA.Telegram.Producer.Produce.notification configuration ct
 
-        let requestDeps = Domain.Dependencies.create ct storage
+        let kdmidDeps = Domain.Dependencies.create ct storage
         let timeZone = timeZone |> float
 
         let pickRequest =
-            fun requests ->
-                requests
-                |> Seq.map (fun request -> timeZone, request)
-                |> Request.pick requestDeps
+            fun requests -> requests |> Seq.map (fun request -> timeZone, request) |> Request.pick kdmidDeps
+
+        let getRequests () =
+            storage |> EA.Persistence.Repository.Query.Request.getMany query ct
 
         return
-            { Storage = storage
-              processRequest = Request.start requestDeps timeZone
+            { processRequest = Request.start kdmidDeps timeZone
               pickRequest = pickRequest
-              RequestDeps = Domain.Dependencies.create ct storage
-              notify = notify
-              ct = ct }
+              getRequests = getRequests
+              notify = notify }
     }
 
 let private processRequest deps (request: Request) =
@@ -107,37 +105,23 @@ let private toTaskResult (results: Result<string, Error'> array) =
 
 module private SearchAppointments =
 
-    let private getRequests deps country =
-        let query = Russian country |> EA.Persistence.Query.Request.SearchAppointments
-        deps.Storage |> EA.Persistence.Repository.Query.Request.getMany query deps.ct
-
     let private processRequests deps requests =
 
-        let groupedRequests =
+        let requestsGroups =
             requests
-            |> Seq.groupBy (fun request -> (request.Service.Embassy.Country.City, request.Service.Name))
+            |> Seq.groupBy (fun request -> $"{request.Service.Embassy.Country.City} - {request.Service.Name}")
             |> Map
             |> Map.map (fun _ requests -> requests |> Seq.truncate 5)
 
-        let processGroupedRequests groups =
+        let processGroup key requests =
+            requests
+            |> deps.pickRequest
+            |> ResultAsync.mapError (fun errors ->
+                Operation
+                    { Message = key + Environment.NewLine + (errors |> List.map _.MessageEx |> String.concat Environment.NewLine)
+                      Code = None })
 
-            let processGroup key requests =
-                requests
-                |> deps.pickRequest
-                |> Async.map (function
-                    | Ok request -> request.ProcessState |> string |> Ok
-                    | Error errors ->
-                        Operation
-                            { Message = errors |> List.map _.MessageEx |> String.concat Environment.NewLine
-                              Code = None }
-                        |> Error)
-
-            groups |> Map.map processGroup |> Map.values |> Async.Parallel
-
-        async {
-            let! results = groupedRequests |> processGroupedRequests
-            return results |> toTaskResult
-        }
+        requestsGroups |> Map.map processGroup |> Map.values |> Async.Parallel
 
     let run = run getRequests processRequests
 
