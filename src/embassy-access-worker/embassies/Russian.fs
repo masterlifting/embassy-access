@@ -15,11 +15,10 @@ type private Dependencies =
       getRequests: unit -> Async<Result<Request list, Error'>>
       notify: Notification -> Async<Result<unit, Error'>> }
 
-let private createDeps ct configuration country =
+let private createDependencies ct configuration country =
     let deps = ResultBuilder()
 
-    let query = Russian country |> EA.Persistence.Query.Request.SearchAppointments
-
+    let requestsQuery = Russian country |> EA.Persistence.Query.Request.SearchAppointments
     let country = country |> EA.Core.Mapper.Country.toExternal
     let scheduleTaskName = $"{Settings.AppName}.{country.Name}.{country.City.Name}"
 
@@ -36,7 +35,7 @@ let private createDeps ct configuration country =
             fun requests -> requests |> Seq.map (fun request -> timeZone, request) |> Request.pick kdmidDeps
 
         let getRequests () =
-            storage |> EA.Persistence.Repository.Query.Request.getMany query ct
+            storage |> EA.Persistence.Repository.Query.Request.getMany requestsQuery ct
 
         return
             { processRequest = Request.start kdmidDeps timeZone
@@ -76,7 +75,7 @@ let private run getRequests processRequests country =
 
         // run
 
-        country |> createDeps ct cfg |> run
+        country |> createDependencies ct cfg |> run
 
 let private toTaskResult (results: Result<string, Error'> array) =
     let messages, errors = results |> Result.unzip
