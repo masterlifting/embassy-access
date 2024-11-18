@@ -15,27 +15,24 @@ type private Dependencies =
       getRequests: unit -> Async<Result<Request list, Error'>>
       notify: Notification -> Async<Result<unit, Error'>> }
 
-let private createDependencies ct configuration country =
+let private createDependencies configuration schedule ct query  country =
     let deps = ResultBuilder()
 
-    let requestsQuery = Russian country |> EA.Persistence.Query.Request.SearchAppointments
     let country = country |> EA.Core.Mapper.Country.toExternal
-    let scheduleTaskName = $"{Settings.AppName}.{country.Name}.{country.City.Name}"
 
     deps {
 
-        let! timeZone = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeZone
+        let timeZone = schedule.TimeZone |> float
         let! storage = configuration |> EA.Persistence.Storage.FileSystem.Request.create
         let notify = EA.Telegram.Producer.Produce.notification configuration ct
 
         let kdmidDeps = Domain.Dependencies.create ct storage
-        let timeZone = timeZone |> float
 
         let pickRequest =
             fun requests -> requests |> Seq.map (fun request -> timeZone, request) |> Request.pick kdmidDeps
 
         let getRequests () =
-            storage |> EA.Persistence.Repository.Query.Request.getMany requestsQuery ct
+            storage |> EA.Persistence.Repository.Query.Request.getMany query ct
 
         return
             { processRequest = Request.start kdmidDeps timeZone
@@ -62,8 +59,8 @@ let private processRequest deps (request: Request) =
     |> ResultAsync.map (fun request -> request.ProcessState |> string)
     |> ResultAsync.mapErrorAsync sendError
 
-let private run getRequests processRequests country =
-    fun (cfg, ct) ->
+let private run getRequests query country =
+    fun (cfg, schedule, ct) ->
 
         // define
         let getRequests deps = getRequests deps country
@@ -75,7 +72,7 @@ let private run getRequests processRequests country =
 
         // run
 
-        country |> createDependencies ct cfg |> run
+        country |> createDependencies cfg schedule, ct |> run
 
 let private toTaskResult (results: Result<string, Error'> array) =
     let messages, errors = results |> Result.unzip
@@ -117,12 +114,19 @@ module private SearchAppointments =
             |> deps.pickRequest
             |> ResultAsync.mapError (fun errors ->
                 Operation
-                    { Message = key + Environment.NewLine + (errors |> List.map _.MessageEx |> String.concat Environment.NewLine)
+                    { Message =
+                        key
+                        + Environment.NewLine
+                        + (errors |> List.map _.MessageEx |> String.concat Environment.NewLine)
                       Code = None })
 
         requestsGroups |> Map.map processGroup |> Map.values |> Async.Parallel
 
-    let run = run getRequests processRequests
+    let run country =
+        fun (cfg, schedule, ct) ->
+            let query = Russian country |> EA.Persistence.Query.Request.SearchAppointments
+            createDependencies cfg schedule ct query country
+            |> ResultAsync.bind(fun deps -> deps.
 
 module private MakeAppointments =
 
