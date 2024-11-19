@@ -4,9 +4,8 @@ open System
 open Infrastructure
 open EA.Embassies.Russian.Kdmid.Domain
 open Web.Http.Domain
-open Web.Http.Client
 
-let private createKdmidClient subDomain =
+let createKdmidClient subDomain =
 
     let host = $"%s{subDomain}.kdmid.ru"
     let baseUrl = $"https://%s{host}"
@@ -27,7 +26,7 @@ let private createKdmidClient subDomain =
               "User-Agent", [ "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0" ] ]
         |> Some
 
-    create baseUrl headers
+    Web.Http.Client.create baseUrl headers
 
 let createClient =
     ResultAsync.bind (fun (credentials: Payload, request: EA.Core.Domain.Request) ->
@@ -42,7 +41,7 @@ let createQueryParams id cd ems =
 
 let getQueryParamsId queryParams =
     queryParams
-    |> Route.fromQueryParams
+    |> Web.Http.Client.Route.fromQueryParams
     |> Result.map (Map.tryFind "id")
     |> Result.bind (function
         | Some id -> Ok id
@@ -50,17 +49,17 @@ let getQueryParamsId queryParams =
 
 let private setCookie cookie httpClient =
     let headers = Map [ "Cookie", cookie ] |> Some
-    httpClient |> Headers.set headers
+    httpClient |> Web.Http.Client.Headers.set headers
 
 let setRequiredCookie httpClient (response: Response<string>) =
     response.Headers
-    |> Headers.tryFind "Set-Cookie" [ "AlteonP"; "__ddg1_" ]
+    |> Web.Http.Client.Headers.tryFind "Set-Cookie" [ "AlteonP"; "__ddg1_" ]
     |> Option.map (fun cookie -> httpClient |> setCookie cookie |> Result.map (fun _ -> response.Content))
     |> Option.defaultValue (Ok response.Content)
 
 let setSessionCookie httpClient (response: Response<byte array>) =
     response.Headers
-    |> Headers.tryFind "Set-Cookie" [ "ASP.NET_SessionId" ]
+    |> Web.Http.Client.Headers.tryFind "Set-Cookie" [ "ASP.NET_SessionId" ]
     |> Option.map (fun cookie -> httpClient |> setCookie cookie |> Result.map (fun _ -> response.Content))
     |> Option.defaultValue (Ok response.Content)
 

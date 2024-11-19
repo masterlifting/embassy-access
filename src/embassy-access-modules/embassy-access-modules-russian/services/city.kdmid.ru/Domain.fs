@@ -1,7 +1,6 @@
 ﻿module EA.Embassies.Russian.Kdmid.Domain
 
 open System
-open EA.Persistence
 open Infrastructure
 open EA.Core.Domain
 
@@ -58,6 +57,7 @@ type Request =
 
 type Dependencies =
     { updateRequest: EA.Core.Domain.Request -> Async<Result<EA.Core.Domain.Request, Error'>>
+      createHttpClient: string -> Result<Web.Http.Domain.Client, Error'>
       getInitialPage:
           Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<string>, Error'>>
       getCaptcha:
@@ -81,86 +81,9 @@ type Dependencies =
               -> Web.Http.Domain.Client
               -> Async<Result<string, Error'>> }
 
-    static member create ct storage =
-        { updateRequest = fun request -> storage |> Repository.Command.Request.update request ct
-          getInitialPage =
-            fun request client ->
-                client
-                |> Web.Http.Client.Request.get ct request
-                |> Web.Http.Client.Response.String.read ct
-          getCaptcha =
-            fun request client ->
-                client
-                |> Web.Http.Client.Request.get ct request
-                |> Web.Http.Client.Response.Bytes.read ct
-          solveCaptcha = Web.Captcha.solveToInt ct
-          postValidationPage =
-            fun request content client ->
-                client
-                |> Web.Http.Client.Request.post ct request content
-                |> Web.Http.Client.Response.String.readContent ct
-          postAppointmentsPage =
-            fun request content client ->
-                client
-                |> Web.Http.Client.Request.post ct request content
-                |> Web.Http.Client.Response.String.readContent ct
-          postConfirmationPage =
-            fun request content client ->
-                client
-                |> Web.Http.Client.Request.post ct request content
-                |> Web.Http.Client.Response.String.readContent ct }
-
 type internal Payload =
     { Country: Country
       SubDomain: string
       Id: int
       Cd: string
       Ems: string option }
-
-    static member create(uri: Uri) =
-        match uri.Host.Split '.' with
-        | hostParts when hostParts.Length < 3 -> uri.Host |> NotSupported |> Error
-        | hostParts ->
-            let credentials = ResultBuilder()
-
-            credentials {
-                let subDomain = hostParts[0]
-
-                let! country =
-                    match Constants.SUPPORTED__SUB_DOMAINS |> Map.tryFind subDomain with
-                    | Some country -> Ok country
-                    | None -> subDomain |> NotSupported |> Error
-
-                let! queryParams = uri |> Web.Http.Client.Route.toQueryParams
-
-                let! id =
-                    queryParams
-                    |> Map.tryFind "id"
-                    |> Option.map (function
-                        | AP.IsInt id when id > 1000 -> id |> Ok
-                        | _ -> "id query parameter" |> NotSupported |> Error)
-                    |> Option.defaultValue ("id query parameter" |> NotFound |> Error)
-
-                let! cd =
-                    queryParams
-                    |> Map.tryFind "cd"
-                    |> Option.map (function
-                        | AP.IsLettersOrNumbers cd -> cd |> Ok
-                        | _ -> "cd query parameter" |> NotSupported |> Error)
-                    |> Option.defaultValue ("cd query parameter" |> NotFound |> Error)
-
-                let! ems =
-                    queryParams
-                    |> Map.tryFind "ems"
-                    |> Option.map (function
-                        | AP.IsLettersOrNumbers ems -> ems |> Some |> Ok
-                        | _ -> "ems query parameter" |> NotSupported |> Error)
-                    |> Option.defaultValue (None |> Ok)
-
-                return
-                    { Country = country
-                      SubDomain = subDomain
-                      Id = id
-                      Cd = cd
-                      Ems = ems }
-            }

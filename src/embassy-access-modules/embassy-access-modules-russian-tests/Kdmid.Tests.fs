@@ -14,6 +14,7 @@ module private Fixture =
     let request =
         { Uri = Uri("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F")
           Country = Germany Berlin
+          TimeZone = 1.0
           Confirmation = Auto FirstAvailable }
 
     let httpRequestHeaders =
@@ -47,8 +48,8 @@ module private Fixture =
         |> ResultAsync.map (Option.defaultValue "")
 
     let dependencies =
-        { Configuration = { TimeShift = 0y }
-          updateRequest = fun request -> async { return Ok request }
+        { updateRequest = fun request -> async { return Ok request }
+          createHttpClient = fun _ -> "HttpClient" |> NotImplemented |> Error
           getInitialPage = fun _ _ -> httpGetStringRequest "initial_page_response"
           getCaptcha = fun _ _ -> httpGetBytesRequest "captcha.png"
           solveCaptcha = fun _ -> async { return Ok 42 }

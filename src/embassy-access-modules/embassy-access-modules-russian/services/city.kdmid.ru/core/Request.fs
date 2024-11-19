@@ -2,9 +2,41 @@
 module EA.Embassies.Russian.Kdmid.Request
 
 open System
+open EA.Embassies.Russian.Kdmid.Web
+open EA.Persistence
 open Infrastructure
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Domain
+
+let createDependencies ct storage =
+    { updateRequest = fun request -> storage |> Repository.Command.Request.update request ct
+      createHttpClient = Http.createKdmidClient
+      getInitialPage =
+        fun request client ->
+            client
+            |> Web.Http.Client.Request.get ct request
+            |> Web.Http.Client.Response.String.read ct
+      getCaptcha =
+        fun request client ->
+            client
+            |> Web.Http.Client.Request.get ct request
+            |> Web.Http.Client.Response.Bytes.read ct
+      solveCaptcha = Web.Captcha.solveToInt ct
+      postValidationPage =
+        fun request content client ->
+            client
+            |> Web.Http.Client.Request.post ct request content
+            |> Web.Http.Client.Response.String.readContent ct
+      postAppointmentsPage =
+        fun request content client ->
+            client
+            |> Web.Http.Client.Request.post ct request content
+            |> Web.Http.Client.Response.String.readContent ct
+      postConfirmationPage =
+        fun request content client ->
+            client
+            |> Web.Http.Client.Request.post ct request content
+            |> Web.Http.Client.Response.String.readContent ct }
 
 let private validateCity (request: EA.Core.Domain.Request) credentials =
     match request.Service.Embassy.Country.City = credentials.Country.City with
@@ -13,11 +45,59 @@ let private validateCity (request: EA.Core.Domain.Request) credentials =
         Error
         <| NotSupported $"Requested {request.Service.Embassy.Country.City} for the subdomain {credentials.SubDomain}"
 
+let private createPayload (uri: Uri) =
+    match uri.Host.Split '.' with
+    | hostParts when hostParts.Length < 3 -> uri.Host |> NotSupported |> Error
+    | hostParts ->
+        let credentials = ResultBuilder()
+
+        credentials {
+            let subDomain = hostParts[0]
+
+            let! country =
+                match Constants.SUPPORTED__SUB_DOMAINS |> Map.tryFind subDomain with
+                | Some country -> Ok country
+                | None -> subDomain |> NotSupported |> Error
+
+            let! queryParams = uri |> Web.Http.Client.Route.toQueryParams
+
+            let! id =
+                queryParams
+                |> Map.tryFind "id"
+                |> Option.map (function
+                    | AP.IsInt id when id > 1000 -> id |> Ok
+                    | _ -> "id query parameter" |> NotSupported |> Error)
+                |> Option.defaultValue ("id query parameter" |> NotFound |> Error)
+
+            let! cd =
+                queryParams
+                |> Map.tryFind "cd"
+                |> Option.map (function
+                    | AP.IsLettersOrNumbers cd -> cd |> Ok
+                    | _ -> "cd query parameter" |> NotSupported |> Error)
+                |> Option.defaultValue ("cd query parameter" |> NotFound |> Error)
+
+            let! ems =
+                queryParams
+                |> Map.tryFind "ems"
+                |> Option.map (function
+                    | AP.IsLettersOrNumbers ems -> ems |> Some |> Ok
+                    | _ -> "ems query parameter" |> NotSupported |> Error)
+                |> Option.defaultValue (None |> Ok)
+
+            return
+                { Country = country
+                  SubDomain = subDomain
+                  Id = id
+                  Cd = cd
+                  Ems = ems }
+        }
+
 let private parsePayload =
     ResultAsync.bind (fun request ->
         request.Service.Payload
         |> Uri
-        |> Payload.create
+        |> createPayload
         |> Result.bind (validateCity request)
         |> Result.map (fun credentials -> credentials, request))
 
@@ -91,7 +171,7 @@ let start deps timeZone request =
     // define
     let setInProcessState = setInProcessState deps
     let parsePayload = parsePayload
-    let createHttpClient = Web.Http.createClient
+    let createHttpClient = Http.createClient
     let processInitialPage = InitialPage.handle deps
     let setAttempt = setAttempt timeZone deps
     let processValidationPage = ValidationPage.handle deps
@@ -113,7 +193,18 @@ let start deps timeZone request =
 
     request |> run
 
-let pick deps data =
+let errorFilter error =
+    match error with
+    | Operation reason ->
+        match reason.Code with
+        | Some Constants.ErrorCodes.CONFIRMATION_EXISTS
+        | Some Constants.ErrorCodes.NOT_CONFIRMED
+        | Some Constants.ErrorCodes.REQUEST_DELETED -> true
+        | _ -> false
+    | _ -> false
+
+
+let pick deps notify data =
 
     let rec innerLoop (errors: Error' list) (data: (float * EA.Core.Domain.Request) list) =
         async {
@@ -125,18 +216,23 @@ let pick deps data =
                     | _ -> Error errors
             | (timeZone, request) :: dataTail ->
                 match! request |> start deps timeZone with
-                | Error error -> return! dataTail |> innerLoop (errors @ [ error ])
-                | Ok result -> return result |> Ok
+                | Error error ->
+
+                    do!
+                        match error |> Notification.tryCreateFail request.Id errorFilter with
+                        | None -> () |> async.Return
+                        | Some notification -> notification |> notify
+
+                    return! dataTail |> innerLoop (errors @ [ error ])
+
+                | Ok result ->
+                    do!
+
+                        match result |> Notification.tryCreate errorFilter with
+                        | None -> () |> async.Return
+                        | Some notification -> notification |> notify
+
+                    return result |> Ok
         }
 
     data |> List.ofSeq |> innerLoop []
-
-let errorFilter error =
-    match error with
-    | Operation reason ->
-        match reason.Code with
-        | Some Constants.ErrorCodes.CONFIRMATION_EXISTS
-        | Some Constants.ErrorCodes.NOT_CONFIRMED
-        | Some Constants.ErrorCodes.REQUEST_DELETED -> true
-        | _ -> false
-    | _ -> false
