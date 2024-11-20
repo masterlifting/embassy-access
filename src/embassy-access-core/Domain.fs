@@ -5,7 +5,7 @@ open Infrastructure
 
 module Constants =
     [<Literal>]
-    let REQUESTS_TABLE_NAME = "requests"
+    let REQUESTS_STORAGE_NAME = "requests"
 
 type City =
     | Belgrade
@@ -140,8 +140,6 @@ type Request =
       Appointments: Set<Appointment>
       Modified: DateTime }
 
-type Validation = Request -> Result<unit, Error'>
-
 type Notification =
     | Appointments of (Embassy * Set<Appointment>)
     | Confirmations of (RequestId * Embassy * Set<Confirmation>)
@@ -209,36 +207,27 @@ module External =
     type ConfirmationState() =
 
         member val Type: string = String.Empty with get, set
-        member val Option: ConfirmationOption option = None with get, set
+        member val ConfirmationOption: ConfirmationOption option = None with get, set
         member val AppointmentId: Guid option = None with get, set
 
-    type RequestState() =
+    type ProcessState() =
 
         member val Type: string = String.Empty with get, set
         member val Error: External.Error option = None with get, set
         member val Message: string option = None with get, set
 
-
-    type Request() =
-        member val Id: Guid = Guid.Empty with get, set
+    type Service() =
         member val Name: string = String.Empty with get, set
         member val Payload: string = String.Empty with get, set
         member val Embassy: Embassy = Embassy() with get, set
+        member val Description: string option = None with get, set
 
-        member val State: RequestState =
-            let state = RequestState()
-            state.Type <- nameof Created
-            state with get, set
-
+    type Request() =
+        member val Id: Guid = Guid.Empty with get, set
+        member val Service: Service = Service() with get, set
         member val Attempt: int = 0 with get, set
         member val AttemptModified: DateTime = DateTime.UtcNow with get, set
-
-        member val ConfirmationState: ConfirmationState =
-            let state = ConfirmationState()
-            state.Type <- nameof Disabled
-            state with get, set
-
+        member val ProcessState: ProcessState = ProcessState() with get, set
+        member val ConfirmationState: ConfirmationState = ConfirmationState() with get, set
         member val Appointments: Appointment array = [||] with get, set
-        member val Description: string option = None with get, set
-        member val GroupBy: string option = None with get, set
         member val Modified: DateTime = DateTime.UtcNow with get, set

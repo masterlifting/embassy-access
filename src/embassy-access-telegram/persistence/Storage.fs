@@ -2,6 +2,7 @@
 module EA.Telegram.Persistence.Storage
 
 open Persistence.Domain
+open EA.Telegram.Domain
 
 module FileSystem =
     open Persistence.Domain.FileSystem
@@ -10,8 +11,8 @@ module FileSystem =
         let create configuration =
             configuration
             |> Persistence.Storage.getConnectionString SECTION_NAME
-            |> Result.bind (fun connectionString ->
-                { Directory = connectionString
-                  FileName = EA.Telegram.Domain.Key.CHATS_TABLE_NAME }
-                |> Storage.Context.FileSystem
+            |> Result.bind (fun filePath ->
+                { FIlePath = filePath
+                  FileName = Key.CHATS_STORAGE_NAME }
+                |> Connection.FileSystem
                 |> Persistence.Storage.create)

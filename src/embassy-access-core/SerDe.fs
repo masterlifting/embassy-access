@@ -124,20 +124,24 @@ module Country =
         [<Literal>]
         let SLOVENIA = "SLO"
 
+        [<Literal>]
+        let ITALY = "ITA"
+
     let serialize country =
         match country with
-        | Serbia(city) -> (Code.SERBIA, city)
-        | Germany(city) -> (Code.GERMANY, city)
-        | Bosnia(city) -> (Code.BOSNIA, city)
-        | Montenegro(city) -> (Code.MONTENEGRO, city)
-        | Albania(city) -> (Code.ALBANIA, city)
-        | Hungary(city) -> (Code.HUNGARY, city)
-        | Ireland(city) -> (Code.IRELAND, city)
-        | Switzerland(city) -> (Code.SWITZERLAND, city)
-        | Finland(city) -> (Code.FINLAND, city)
-        | France(city) -> (Code.FRANCE, city)
-        | Netherlands(city) -> (Code.NETHERLANDS, city)
-        | Slovenia(city) -> (Code.SLOVENIA, city)
+        | Serbia city -> (Code.SERBIA, city)
+        | Germany city -> (Code.GERMANY, city)
+        | Bosnia city -> (Code.BOSNIA, city)
+        | Montenegro city -> (Code.MONTENEGRO, city)
+        | Albania city -> (Code.ALBANIA, city)
+        | Hungary city -> (Code.HUNGARY, city)
+        | Ireland city -> (Code.IRELAND, city)
+        | Switzerland city -> (Code.SWITZERLAND, city)
+        | Finland city -> (Code.FINLAND, city)
+        | France city -> (Code.FRANCE, city)
+        | Netherlands city -> (Code.NETHERLANDS, city)
+        | Slovenia city -> (Code.SLOVENIA, city)
+        | Italy city -> (Code.ITALY, city)
         |> fun (country, city) -> country + DELIMITER + City.serialize city
 
     let deserialize (value: string) =
@@ -199,12 +203,12 @@ module Embassy =
 
     let serialize embassy =
         match embassy with
-        | Russian(country) -> (Code.RUSSIAN, country)
-        | Spanish(country) -> (Code.SPANISH, country)
-        | Italian(country) -> (Code.ITALIAN, country)
-        | French(country) -> (Code.FRENCH, country)
-        | German(country) -> (Code.GERMAN, country)
-        | British(country) -> (Code.BRITISH, country)
+        | Russian country -> (Code.RUSSIAN, country)
+        | Spanish country -> (Code.SPANISH, country)
+        | Italian country -> (Code.ITALIAN, country)
+        | French country -> (Code.FRENCH, country)
+        | German country -> (Code.GERMAN, country)
+        | British country -> (Code.BRITISH, country)
         |> fun (embassy, country) -> embassy + DELIMITER + Country.serialize country
 
     let deserialize (value: string) =

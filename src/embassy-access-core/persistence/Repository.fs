@@ -8,32 +8,29 @@ open Infrastructure.Logging
 
 module Query =
     module Request =
-        let getOne query ct storageType =
+        let getOne query ct client =
             Log.trace $"InMemory query request {query}"
 
-            match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Query.Request.getOne query ct
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Request.getOne query ct
-            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
+            match client with
+            | Storage.InMemory client -> client |> InMemoryRepository.Query.Request.getOne query ct
+            | Storage.FileSystem client -> client |> FileSystemRepository.Query.Request.getOne query ct
+            | _ -> $"Storage {client}" |> NotSupported |> Error |> async.Return
 
-        let getMany query ct storageType =
+        let getMany query ct storage =
             Log.trace $"InMemory query request {query}"
 
-            match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Query.Request.getMany query ct
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Request.getMany query ct
-            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
+            match storage with
+            | Storage.InMemory client -> client |> InMemoryRepository.Query.Request.getMany query ct
+            | Storage.FileSystem client -> client |> FileSystemRepository.Query.Request.getMany query ct
+            | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
 module Command =
     module Request =
-        let execute command ct storageType =
-            match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Request.execute command ct
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Request.execute command ct
-            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
+        let execute storage ct command =
+            match storage with
+            | Storage.InMemory client -> client |> InMemoryRepository.Command.Request.execute command ct
+            | Storage.FileSystem client -> client |> FileSystemRepository.Command.Request.execute command ct
+            | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
         let update request ct storage =
-            let command =
-                request |> Command.Definitions.Request.Update.Request |> Command.Request.Update
-
-            storage |> execute command ct
+            request |> Command.Request.Update |> execute storage ct

@@ -8,64 +8,64 @@ let private Delimiter = "|"
 
 module private Code =
     [<Literal>]
-    let Start = "/start"
+    let START = "/start"
 
     [<Literal>]
-    let Mine = "/mine"
+    let MINE = "/mine"
 
     [<Literal>]
-    let Countries = "/001"
+    let COUNTRIES = "/001"
 
     [<Literal>]
-    let Cities = "/002"
+    let CITIES = "/002"
 
     [<Literal>]
-    let UserCountries = "/003"
+    let USER_COUNTRIES = "/003"
 
     [<Literal>]
-    let UserCities = "/004"
+    let USER_CITIES = "/004"
 
     [<Literal>]
-    let SubscriptionRequest = "/005"
+    let SUBSCRIPTION_REQUEST = "/005"
 
     [<Literal>]
-    let UserSubscriptions = "/007"
+    let USER_SUBSCRIPTIONS = "/007"
 
     [<Literal>]
-    let ChooseAppointmentRequest = "/008"
+    let CHOOSE_APPOINTMENT_REQUEST = "/008"
 
     [<Literal>]
-    let ConfirmAppointment = "/009"
+    let CONFIRM_APPOINTMENT = "/009"
 
     [<Literal>]
-    let RemoveSubscription = "/010"
+    let REMOVE_SUBSCRIPTION = "/010"
 
     [<Literal>]
-    let SubscribeSearchAppointments = "/006"
+    let SUBSCRIBE_SEARCH_APPOINTMENTS = "/006"
 
     [<Literal>]
-    let SubscribeSearchOthers = "/011"
+    let SUBSCRIBE_SEARCH_OTHERS = "/011"
 
     [<Literal>]
-    let SubscribeSearchPassportResult = "/012"
+    let SUBSCRIBE_SEARCH_PASSPORT_RESULT = "/012"
 
     [<Literal>]
-    let ChooseSubscriptionRequest = "/013"
+    let CHOOSE_SUBSCRIPTION_REQUEST = "/013"
 
     [<Literal>]
-    let ChooseSubscriptionRequestWay = "/014"
-
+    let CHOOSE_SUBSCRIPTION_REQUEST_WAY = "/014"
 
 type Name =
-    | Start
-    | Mine
+    | Embassies
     | Countries of embassyName: string
-    | UserCountries of embassyName: string
     | Cities of embassyName: string * countryName: string
+    | UserEmbassies
+    | UserCountries of embassyName: string
     | UserCities of embassyName: string * countryName: string
     | ChoseSubscriptionRequest of Embassy * command: string * way: string
     | ChoseSubscriptionRequestWay of Embassy * command: string
     | SubscriptionRequest of Embassy
+    | Services of Embassy
     | SubscribeSearchAppointments of Embassy * payload: string
     | SubscribeSearchOthers of Embassy * payload: string
     | SubscribeSearchPassportResult of Embassy * payload: string
@@ -83,52 +83,52 @@ let private printSize (value: string) =
 
 let set command =
     match command with
-    | Start -> Code.Start
-    | Mine -> Code.Mine
-    | Countries embassyName -> [ Code.Countries; embassyName ] |> build
-    | Cities(embassyName, countryName) -> [ Code.Cities; embassyName; countryName ] |> build
-    | UserCountries embassyName -> [ Code.UserCountries; embassyName ] |> build
-    | UserCities(embassyName, countryName) -> [ Code.UserCities; embassyName; countryName ] |> build
+    | Embassies -> Code.START
+    | UserEmbassies -> Code.MINE
+    | Countries embassyName -> [ Code.COUNTRIES; embassyName ] |> build
+    | Cities(embassyName, countryName) -> [ Code.CITIES; embassyName; countryName ] |> build
+    | UserCountries embassyName -> [ Code.USER_COUNTRIES; embassyName ] |> build
+    | UserCities(embassyName, countryName) -> [ Code.USER_CITIES; embassyName; countryName ] |> build
     | UserSubscriptions embassy ->
         embassy
         |> EA.Core.SerDe.Embassy.serialize
-        |> fun embassy -> [ Code.UserSubscriptions; embassy ] |> build
+        |> fun embassy -> [ Code.USER_SUBSCRIPTIONS; embassy ] |> build
     | ChoseSubscriptionRequestWay(embassy, command) ->
         embassy
         |> EA.Core.SerDe.Embassy.serialize
-        |> fun embassy -> [ Code.ChooseSubscriptionRequestWay; embassy; command ] |> build
+        |> fun embassy -> [ Code.CHOOSE_SUBSCRIPTION_REQUEST_WAY; embassy; command ] |> build
     | ChoseSubscriptionRequest(embassy, command, way) ->
         embassy
         |> EA.Core.SerDe.Embassy.serialize
-        |> fun embassy -> [ Code.ChooseSubscriptionRequest; embassy; command; way ] |> build
+        |> fun embassy -> [ Code.CHOOSE_SUBSCRIPTION_REQUEST; embassy; command; way ] |> build
     | SubscriptionRequest embassy ->
         embassy
         |> EA.Core.SerDe.Embassy.serialize
-        |> fun embassy -> [ Code.SubscriptionRequest; embassy ] |> build
+        |> fun embassy -> [ Code.SUBSCRIPTION_REQUEST; embassy ] |> build
     | SubscribeSearchAppointments(embassy, payload) ->
         embassy
         |> EA.Core.SerDe.Embassy.serialize
-        |> fun embassy -> [ Code.SubscribeSearchAppointments; embassy; payload ] |> build
+        |> fun embassy -> [ Code.SUBSCRIBE_SEARCH_APPOINTMENTS; embassy; payload ] |> build
     | SubscribeSearchOthers(embassy, payload) ->
         embassy
         |> EA.Core.SerDe.Embassy.serialize
-        |> fun embassy -> [ Code.SubscribeSearchOthers; embassy; payload ] |> build
+        |> fun embassy -> [ Code.SUBSCRIBE_SEARCH_OTHERS; embassy; payload ] |> build
     | SubscribeSearchPassportResult(embassy, payload) ->
         embassy
         |> EA.Core.SerDe.Embassy.serialize
-        |> fun embassy -> [ Code.SubscribeSearchPassportResult; embassy; payload ] |> build
+        |> fun embassy -> [ Code.SUBSCRIBE_SEARCH_PASSPORT_RESULT; embassy; payload ] |> build
     | ChooseAppointmentRequest(embassy, appointmentId) ->
         embassy
         |> EA.Core.SerDe.Embassy.serialize
         |> fun embassy ->
-            [ Code.ChooseAppointmentRequest; embassy; appointmentId.Value |> string ]
+            [ Code.CHOOSE_APPOINTMENT_REQUEST; embassy; appointmentId.Value |> string ]
             |> build
     | ConfirmAppointment(requestId, appointmentId) ->
-        [ Code.ConfirmAppointment
+        [ Code.CONFIRM_APPOINTMENT
           requestId.Value |> string
           appointmentId.Value |> string ]
         |> build
-    | RemoveSubscription requestId -> [ Code.RemoveSubscription; requestId.Value |> string ] |> build
+    | RemoveSubscription requestId -> [ Code.REMOVE_SUBSCRIPTION; requestId.Value |> string ] |> build
 
 let get (value: string) =
     let parts = value.Split Delimiter
@@ -139,25 +139,25 @@ let get (value: string) =
         let argsLength = parts.Length - 1
 
         match parts[0] with
-        | Code.Start -> Ok <| Some Start
-        | Code.Mine -> Ok <| Some Mine
-        | Code.Countries ->
+        | Code.START -> Ok <| Some Embassies
+        | Code.MINE -> Ok <| Some UserEmbassies
+        | Code.COUNTRIES ->
             match argsLength with
             | 1 -> Ok <| Some(Countries(parts[1]))
             | _ -> Ok <| None
-        | Code.Cities ->
+        | Code.CITIES ->
             match argsLength with
             | 2 -> Ok <| Some(Cities(parts[1], parts[2]))
             | _ -> Ok <| None
-        | Code.UserCountries ->
+        | Code.USER_COUNTRIES ->
             match argsLength with
             | 1 -> Ok <| Some(UserCountries(parts[1]))
             | _ -> Ok <| None
-        | Code.UserCities ->
+        | Code.USER_CITIES ->
             match argsLength with
             | 2 -> Ok <| Some(UserCities(parts[1], parts[2]))
             | _ -> Ok <| None
-        | Code.ChooseSubscriptionRequestWay ->
+        | Code.CHOOSE_SUBSCRIPTION_REQUEST_WAY ->
             match argsLength with
             | 2 ->
                 parts[1]
@@ -166,7 +166,7 @@ let get (value: string) =
                     let command = parts[2]
                     Some(ChoseSubscriptionRequestWay(embassy, command)))
             | _ -> Ok <| None
-        | Code.ChooseSubscriptionRequest ->
+        | Code.CHOOSE_SUBSCRIPTION_REQUEST ->
             match argsLength with
             | 3 ->
                 parts[1]
@@ -176,14 +176,14 @@ let get (value: string) =
                     let way = parts[3]
                     Some(ChoseSubscriptionRequest(embassy, command, way)))
             | _ -> Ok <| None
-        | Code.SubscriptionRequest ->
+        | Code.SUBSCRIPTION_REQUEST ->
             match argsLength with
             | 1 ->
                 parts[1]
                 |> EA.Core.SerDe.Embassy.deserialize
                 |> Result.map (Some << SubscriptionRequest)
             | _ -> Ok <| None
-        | Code.SubscribeSearchAppointments ->
+        | Code.SUBSCRIBE_SEARCH_APPOINTMENTS ->
             match argsLength with
             | 2 ->
                 parts[1]
@@ -192,7 +192,7 @@ let get (value: string) =
                     let payload = parts[2]
                     Some(SubscribeSearchAppointments(embassy, payload)))
             | _ -> Ok <| None
-        | Code.SubscribeSearchOthers ->
+        | Code.SUBSCRIBE_SEARCH_OTHERS ->
             match argsLength with
             | 2 ->
                 parts[1]
@@ -201,7 +201,7 @@ let get (value: string) =
                     let payload = parts[2]
                     Some(SubscribeSearchOthers(embassy, payload)))
             | _ -> Ok <| None
-        | Code.SubscribeSearchPassportResult ->
+        | Code.SUBSCRIBE_SEARCH_PASSPORT_RESULT ->
             match argsLength with
             | 2 ->
                 parts[1]
@@ -210,14 +210,14 @@ let get (value: string) =
                     let payload = parts[2]
                     Some(SubscribeSearchPassportResult(embassy, payload)))
             | _ -> Ok <| None
-        | Code.UserSubscriptions ->
+        | Code.USER_SUBSCRIPTIONS ->
             match argsLength with
             | 1 ->
                 parts[1]
                 |> EA.Core.SerDe.Embassy.deserialize
                 |> Result.map (Some << UserSubscriptions)
             | _ -> Ok <| None
-        | Code.ChooseAppointmentRequest ->
+        | Code.CHOOSE_APPOINTMENT_REQUEST ->
             match argsLength with
             | 2 ->
                 parts[1]
@@ -227,7 +227,7 @@ let get (value: string) =
                     |> AppointmentId.create
                     |> Result.map (fun appointmentId -> Some(ChooseAppointmentRequest(embassy, appointmentId))))
             | _ -> Ok <| None
-        | Code.ConfirmAppointment ->
+        | Code.CONFIRM_APPOINTMENT ->
             match argsLength with
             | 2 ->
                 parts[1]
@@ -237,7 +237,7 @@ let get (value: string) =
                     |> AppointmentId.create
                     |> Result.map (fun appointmentId -> Some(ConfirmAppointment(requestId, appointmentId))))
             | _ -> Ok <| None
-        | Code.RemoveSubscription ->
+        | Code.REMOVE_SUBSCRIPTION ->
             match argsLength with
             | 1 -> parts[1] |> RequestId.create |> Result.map (Some << RemoveSubscription)
             | _ -> Ok <| None

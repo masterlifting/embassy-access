@@ -34,8 +34,8 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
-		<ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
 		<ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj" />
+		<ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
 	</ItemGroup>
 
 </Project>

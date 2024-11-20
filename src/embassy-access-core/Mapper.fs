@@ -7,117 +7,120 @@ open EA.Core.Domain
 
 module City =
     [<Literal>]
-    let Belgrade = nameof City.Belgrade
+    let BELGRADE = nameof City.Belgrade
 
     [<Literal>]
-    let Berlin = nameof City.Berlin
+    let BERLIN = nameof City.Berlin
 
     [<Literal>]
-    let Budapest = nameof City.Budapest
+    let BUDAPEST = nameof City.Budapest
 
     [<Literal>]
-    let Sarajevo = nameof City.Sarajevo
+    let SARAJEVO = nameof City.Sarajevo
 
     [<Literal>]
-    let Podgorica = nameof City.Podgorica
+    let PODGORICA = nameof City.Podgorica
 
     [<Literal>]
-    let Tirana = nameof City.Tirana
+    let TIRANA = nameof City.Tirana
 
     [<Literal>]
-    let Paris = nameof City.Paris
+    let PARIS = nameof City.Paris
 
     [<Literal>]
-    let Rome = nameof City.Rome
+    let ROME = nameof City.Rome
 
     [<Literal>]
-    let Dublin = nameof City.Dublin
+    let DUBLIN = nameof City.Dublin
 
     [<Literal>]
-    let Bern = nameof City.Bern
+    let BERN = nameof City.Bern
 
     [<Literal>]
-    let Helsinki = nameof City.Helsinki
+    let HELSINKI = nameof City.Helsinki
 
     [<Literal>]
-    let Hague = nameof City.Hague
+    let HAGUE = nameof City.Hague
 
     [<Literal>]
-    let Ljubljana = nameof City.Ljubljana
+    let LJUBLJANA = nameof City.Ljubljana
 
     let toExternal city =
         let result = External.City()
 
         match city with
-        | City.Belgrade -> result.Name <- Belgrade
-        | City.Berlin -> result.Name <- Berlin
-        | City.Budapest -> result.Name <- Budapest
-        | City.Sarajevo -> result.Name <- Sarajevo
-        | City.Podgorica -> result.Name <- Podgorica
-        | City.Tirana -> result.Name <- Tirana
-        | City.Paris -> result.Name <- Paris
-        | City.Rome -> result.Name <- Rome
-        | City.Dublin -> result.Name <- Dublin
-        | City.Bern -> result.Name <- Bern
-        | City.Helsinki -> result.Name <- Helsinki
-        | City.Hague -> result.Name <- Hague
-        | City.Ljubljana -> result.Name <- Ljubljana
+        | City.Belgrade -> result.Name <- BELGRADE
+        | City.Berlin -> result.Name <- BERLIN
+        | City.Budapest -> result.Name <- BUDAPEST
+        | City.Sarajevo -> result.Name <- SARAJEVO
+        | City.Podgorica -> result.Name <- PODGORICA
+        | City.Tirana -> result.Name <- TIRANA
+        | City.Paris -> result.Name <- PARIS
+        | City.Rome -> result.Name <- ROME
+        | City.Dublin -> result.Name <- DUBLIN
+        | City.Bern -> result.Name <- BERN
+        | City.Helsinki -> result.Name <- HELSINKI
+        | City.Hague -> result.Name <- HAGUE
+        | City.Ljubljana -> result.Name <- LJUBLJANA
 
         result
 
     let toInternal (city: External.City) =
         match city.Name with
-        | Belgrade -> City.Belgrade |> Ok
-        | Berlin -> City.Berlin |> Ok
-        | Budapest -> City.Budapest |> Ok
-        | Sarajevo -> City.Sarajevo |> Ok
-        | Podgorica -> City.Podgorica |> Ok
-        | Tirana -> City.Tirana |> Ok
-        | Paris -> City.Paris |> Ok
-        | Rome -> City.Rome |> Ok
-        | Dublin -> City.Dublin |> Ok
-        | Bern -> City.Bern |> Ok
-        | Helsinki -> City.Helsinki |> Ok
-        | Hague -> City.Hague |> Ok
-        | Ljubljana -> City.Ljubljana |> Ok
+        | BELGRADE -> City.Belgrade |> Ok
+        | BERLIN -> City.Berlin |> Ok
+        | BUDAPEST -> City.Budapest |> Ok
+        | SARAJEVO -> City.Sarajevo |> Ok
+        | PODGORICA -> City.Podgorica |> Ok
+        | TIRANA -> City.Tirana |> Ok
+        | PARIS -> City.Paris |> Ok
+        | ROME -> City.Rome |> Ok
+        | DUBLIN -> City.Dublin |> Ok
+        | BERN -> City.Bern |> Ok
+        | HELSINKI -> City.Helsinki |> Ok
+        | HAGUE -> City.Hague |> Ok
+        | LJUBLJANA -> City.Ljubljana |> Ok
         | _ -> Error <| NotSupported $"City %s{city.Name}."
 
 module Country =
     [<Literal>]
-    let Serbia = nameof Country.Serbia
+    let SERBIA = nameof Country.Serbia
 
     [<Literal>]
-    let Germany = nameof Country.Germany
+    let GERMANY = nameof Country.Germany
 
     [<Literal>]
-    let Bosnia = nameof Country.Bosnia
+    let BOSNIA = nameof Country.Bosnia
 
     [<Literal>]
-    let Montenegro = nameof Country.Montenegro
+    let MONTENEGRO = nameof Country.Montenegro
 
     [<Literal>]
-    let Albania = nameof Country.Albania
+    let ALBANIA = nameof Country.Albania
 
     [<Literal>]
-    let Hungary = nameof Country.Hungary
+    let HUNGARY = nameof Country.Hungary
 
     [<Literal>]
-    let Ireland = nameof Country.Ireland
+    let IRELAND = nameof Country.Ireland
 
     [<Literal>]
-    let Switzerland = nameof Country.Switzerland
+    let SWITZERLAND = nameof Country.Switzerland
 
     [<Literal>]
-    let Finland = nameof Country.Finland
+    let FINLAND = nameof Country.Finland
 
     [<Literal>]
-    let France = nameof Country.France
+    let FRANCE = nameof Country.France
 
     [<Literal>]
-    let Netherlands = nameof Country.Netherlands
+    let NETHERLANDS = nameof Country.Netherlands
 
     [<Literal>]
-    let Slovenia = nameof Country.Slovenia
+    let SLOVENIA = nameof Country.Slovenia
+
+    [<Literal>]
+    let ITALY = nameof Country.Italy
 
     let toExternal country =
         let result = External.Country()
@@ -125,40 +128,43 @@ module Country =
         let city =
             match country with
             | Country.Serbia city ->
-                result.Name <- Serbia
+                result.Name <- SERBIA
                 city
             | Country.Germany city ->
-                result.Name <- Germany
+                result.Name <- GERMANY
                 city
             | Country.Bosnia city ->
-                result.Name <- Bosnia
+                result.Name <- BOSNIA
                 city
             | Country.Montenegro city ->
-                result.Name <- Montenegro
+                result.Name <- MONTENEGRO
                 city
             | Country.Albania city ->
-                result.Name <- Albania
+                result.Name <- ALBANIA
                 city
             | Country.Hungary city ->
-                result.Name <- Hungary
+                result.Name <- HUNGARY
                 city
             | Country.Ireland city ->
-                result.Name <- Ireland
+                result.Name <- IRELAND
                 city
             | Country.Switzerland city ->
-                result.Name <- Switzerland
+                result.Name <- SWITZERLAND
                 city
             | Country.Finland city ->
-                result.Name <- Finland
+                result.Name <- FINLAND
                 city
             | Country.France city ->
-                result.Name <- France
+                result.Name <- FRANCE
                 city
             | Country.Netherlands city ->
-                result.Name <- Netherlands
+                result.Name <- NETHERLANDS
                 city
             | Country.Slovenia city ->
-                result.Name <- Slovenia
+                result.Name <- SLOVENIA
+                city
+            | Country.Italy city ->
+                result.Name <- ITALY
                 city
 
         result.City <- city |> City.toExternal
@@ -170,38 +176,38 @@ module Country =
         |> City.toInternal
         |> Result.bind (fun city ->
             match country.Name with
-            | Serbia -> Country.Serbia city |> Ok
-            | Germany -> Country.Germany city |> Ok
-            | Bosnia -> Country.Bosnia city |> Ok
-            | Montenegro -> Country.Montenegro city |> Ok
-            | Albania -> Country.Albania city |> Ok
-            | Hungary -> Country.Hungary city |> Ok
-            | Ireland -> Country.Ireland city |> Ok
-            | Switzerland -> Country.Switzerland city |> Ok
-            | Finland -> Country.Finland city |> Ok
-            | France -> Country.France city |> Ok
-            | Netherlands -> Country.Netherlands city |> Ok
-            | Slovenia -> Country.Slovenia city |> Ok
+            | SERBIA -> Country.Serbia city |> Ok
+            | GERMANY -> Country.Germany city |> Ok
+            | BOSNIA -> Country.Bosnia city |> Ok
+            | MONTENEGRO -> Country.Montenegro city |> Ok
+            | ALBANIA -> Country.Albania city |> Ok
+            | HUNGARY -> Country.Hungary city |> Ok
+            | IRELAND -> Country.Ireland city |> Ok
+            | SWITZERLAND -> Country.Switzerland city |> Ok
+            | FINLAND -> Country.Finland city |> Ok
+            | FRANCE -> Country.France city |> Ok
+            | NETHERLANDS -> Country.Netherlands city |> Ok
+            | SLOVENIA -> Country.Slovenia city |> Ok
             | _ -> Error <| NotSupported $"Country %s{country.Name}.")
 
 module Embassy =
     [<Literal>]
-    let Russian = nameof Embassy.Russian
+    let RUSSIAN = nameof Embassy.Russian
 
     [<Literal>]
-    let Spanish = nameof Embassy.Spanish
+    let SPANISH = nameof Embassy.Spanish
 
     [<Literal>]
-    let Italian = nameof Embassy.Italian
+    let ITALIAN = nameof Embassy.Italian
 
     [<Literal>]
-    let French = nameof Embassy.French
+    let FRENCH = nameof Embassy.French
 
     [<Literal>]
-    let German = nameof Embassy.German
+    let GERMAN = nameof Embassy.German
 
     [<Literal>]
-    let British = nameof Embassy.British
+    let BRITISH = nameof Embassy.British
 
     let toExternal embassy =
         let result = External.Embassy()
@@ -209,22 +215,22 @@ module Embassy =
         let country =
             match embassy with
             | Embassy.Russian country ->
-                result.Name <- Russian
+                result.Name <- RUSSIAN
                 country
             | Embassy.Spanish country ->
-                result.Name <- Spanish
+                result.Name <- SPANISH
                 country
             | Embassy.Italian country ->
-                result.Name <- Italian
+                result.Name <- ITALIAN
                 country
             | Embassy.French country ->
-                result.Name <- French
+                result.Name <- FRENCH
                 country
             | Embassy.German country ->
-                result.Name <- German
+                result.Name <- GERMAN
                 country
             | Embassy.British country ->
-                result.Name <- British
+                result.Name <- BRITISH
                 country
 
         result.Country <- country |> Country.toExternal
@@ -235,12 +241,12 @@ module Embassy =
         |> Country.toInternal
         |> Result.bind (fun country ->
             match embassy.Name with
-            | Russian -> Embassy.Russian country |> Ok
-            | Spanish -> Embassy.Spanish country |> Ok
-            | Italian -> Embassy.Italian country |> Ok
-            | French -> Embassy.French country |> Ok
-            | German -> Embassy.German country |> Ok
-            | British -> Embassy.British country |> Ok
+            | RUSSIAN -> Embassy.Russian country |> Ok
+            | SPANISH -> Embassy.Spanish country |> Ok
+            | ITALIAN -> Embassy.Italian country |> Ok
+            | FRENCH -> Embassy.French country |> Ok
+            | GERMAN -> Embassy.German country |> Ok
+            | BRITISH -> Embassy.British country |> Ok
             | _ -> Error <| NotSupported $"Embassy %s{embassy.Name}.")
 
 module Confirmation =
@@ -276,22 +282,22 @@ module Appointment =
 
 module ConfirmationOption =
     [<Literal>]
-    let FirstAvailable = nameof ConfirmationOption.FirstAvailable
+    let FIRST_AVAILABLE = nameof ConfirmationOption.FirstAvailable
 
     [<Literal>]
-    let LastAvailable = nameof ConfirmationOption.LastAvailable
+    let LAST_AVAILABLE = nameof ConfirmationOption.LastAvailable
 
     [<Literal>]
-    let DateTimeRange = nameof ConfirmationOption.DateTimeRange
+    let DATE_TIME_RANGE = nameof ConfirmationOption.DateTimeRange
 
     let toExternal option =
         let result = External.ConfirmationOption()
 
         match option with
-        | ConfirmationOption.FirstAvailable -> result.Type <- FirstAvailable
-        | ConfirmationOption.LastAvailable -> result.Type <- LastAvailable
+        | ConfirmationOption.FirstAvailable -> result.Type <- FIRST_AVAILABLE
+        | ConfirmationOption.LastAvailable -> result.Type <- LAST_AVAILABLE
         | ConfirmationOption.DateTimeRange(min, max) ->
-            result.Type <- DateTimeRange
+            result.Type <- DATE_TIME_RANGE
             result.DateStart <- Nullable min
             result.DateEnd <- Nullable max
 
@@ -299,9 +305,9 @@ module ConfirmationOption =
 
     let toInternal (option: External.ConfirmationOption) =
         match option.Type with
-        | FirstAvailable -> ConfirmationOption.FirstAvailable |> Ok
-        | LastAvailable -> ConfirmationOption.LastAvailable |> Ok
-        | DateTimeRange ->
+        | FIRST_AVAILABLE -> ConfirmationOption.FirstAvailable |> Ok
+        | LAST_AVAILABLE -> ConfirmationOption.LastAvailable |> Ok
+        | DATE_TIME_RANGE ->
             match option.DateStart |> Option.ofNullable, option.DateEnd |> Option.ofNullable with
             | Some min, Some max -> ConfirmationOption.DateTimeRange(min, max) |> Ok
             | _ -> Error <| NotFound "DateStart or DateEnd."
@@ -310,126 +316,139 @@ module ConfirmationOption =
 module ConfirmationState =
 
     [<Literal>]
-    let Disabled = nameof ConfirmationState.Disabled
+    let DISABLED = nameof ConfirmationState.Disabled
 
     [<Literal>]
-    let Manual = nameof ConfirmationState.Manual
+    let MANUAL = nameof ConfirmationState.Manual
 
     [<Literal>]
-    let Auto = nameof ConfirmationState.Auto
+    let AUTO = nameof ConfirmationState.Auto
 
     let toExternal (state: ConfirmationState) =
         let result = External.ConfirmationState()
 
         match state with
-        | ConfirmationState.Disabled -> result.Type <- Disabled
+        | ConfirmationState.Disabled -> result.Type <- DISABLED
         | ConfirmationState.Manual appointmentId ->
-            result.Type <- Manual
+            result.Type <- MANUAL
             result.AppointmentId <- Some appointmentId.Value
         | ConfirmationState.Auto option ->
-            result.Type <- Auto
-            result.Option <- Some option |> Option.map ConfirmationOption.toExternal
+            result.Type <- AUTO
+            result.ConfirmationOption <- Some option |> Option.map ConfirmationOption.toExternal
 
         result
 
     let toInternal (state: External.ConfirmationState) =
         match state.Type with
-        | Disabled -> ConfirmationState.Disabled |> Ok
-        | Manual ->
+        | DISABLED -> ConfirmationState.Disabled |> Ok
+        | MANUAL ->
             match state.AppointmentId with
             | Some id -> id |> AppointmentId |> ConfirmationState.Manual |> Ok
             | None -> Error <| NotFound "Appointment."
-        | Auto ->
-            match state.Option with
+        | AUTO ->
+            match state.ConfirmationOption with
             | Some option -> option |> ConfirmationOption.toInternal |> Result.map ConfirmationState.Auto
             | None -> Error <| NotFound "ConfirmationOption."
         | _ -> Error <| NotSupported $"ConfirmationType %s{state.Type}."
 
-module RequestState =
+module ProcessState =
     [<Literal>]
-    let Created = nameof ProcessState.Created
+    let CREATED = nameof ProcessState.Created
 
     [<Literal>]
-    let InProcess = nameof ProcessState.InProcess
+    let IN_PROCESS = nameof ProcessState.InProcess
 
     [<Literal>]
-    let Completed = nameof ProcessState.Completed
+    let COMPLETED = nameof ProcessState.Completed
 
     [<Literal>]
-    let Failed = nameof ProcessState.Failed
+    let FAILED = nameof ProcessState.Failed
 
     let toExternal state =
-        let result = External.RequestState()
+        let result = External.ProcessState()
 
         match state with
-        | ProcessState.Created -> result.Type <- Created
-        | ProcessState.InProcess -> result.Type <- InProcess
+        | ProcessState.Created -> result.Type <- CREATED
+        | ProcessState.InProcess -> result.Type <- IN_PROCESS
         | ProcessState.Completed msg ->
-            result.Type <- Completed
+            result.Type <- COMPLETED
             result.Message <- Some msg
         | ProcessState.Failed error ->
-            result.Type <- Failed
+            result.Type <- FAILED
             result.Error <- error |> Mapper.Error.toExternal |> Some
 
         result
 
-    let toInternal (state: External.RequestState) =
+    let toInternal (state: External.ProcessState) =
         match state.Type with
-        | Created -> ProcessState.Created |> Ok
-        | InProcess -> ProcessState.InProcess |> Ok
-        | Completed ->
+        | CREATED -> ProcessState.Created |> Ok
+        | IN_PROCESS -> ProcessState.InProcess |> Ok
+        | COMPLETED ->
             let msg =
                 match state.Message with
                 | Some(AP.IsString value) -> value
                 | _ -> "Message not found."
 
             ProcessState.Completed msg |> Ok
-        | Failed ->
+        | FAILED ->
             match state.Error with
             | Some error -> error |> Mapper.Error.toInternal |> Result.map ProcessState.Failed
             | None -> Error <| NotSupported "Failed state without error"
         | _ -> Error <| NotSupported $"Request state %s{state.Type}."
+
+module Service =
+    let toExternal service =
+        let result = External.Service()
+
+        result.Name <- service.Name
+        result.Payload <- service.Payload
+        result.Embassy <- service.Embassy |> Embassy.toExternal
+        result.Description <- service.Description
+
+        result
+
+    let toInternal (service: External.Service) =
+        service.Embassy
+        |> Embassy.toInternal
+        |> Result.map (fun embassy ->
+            { Name = service.Name
+              Payload = service.Payload
+              Embassy = embassy
+              Description = service.Description })
 
 module Request =
     let toExternal request =
         let result = External.Request()
 
         result.Id <- request.Id.Value
-        result.Payload <- request.Payload
-        result.Embassy <- request.Embassy |> Embassy.toExternal
-        result.State <- request.ProcessState |> RequestState.toExternal
+        result.Service <- request.Service |> Service.toExternal
         result.Attempt <- request.Attempt |> snd
         result.AttemptModified <- request.Attempt |> fst
+        result.ProcessState <- request.ProcessState |> ProcessState.toExternal
         result.ConfirmationState <- request.ConfirmationState |> ConfirmationState.toExternal
         result.Appointments <- request.Appointments |> Seq.map Appointment.toExternal |> Seq.toArray
-        result.Description <- request.Description
-        result.GroupBy <- request.GroupBy
         result.Modified <- request.Modified
 
         result
 
     let toInternal (request: External.Request) =
-        let embassyRes = request.Embassy |> Embassy.toInternal
-        let stateRes = request.State |> RequestState.toInternal
-        let confirmationStateRes = request.ConfirmationState |> ConfirmationState.toInternal
+        let requestResult = ResultBuilder()
 
-        let appointments =
-            request.Appointments |> Seq.map Appointment.toInternal |> Set.ofSeq
+        requestResult {
 
-        stateRes
-        |> Result.bind (fun state ->
-            confirmationStateRes
-            |> Result.bind (fun confirmationState ->
-                embassyRes
-                |> Result.map (fun embassy ->
-                    { Id = RequestId(request.Id)
-                      Name = request.Name 
-                      Payload = request.Payload
-                      Embassy = embassy
-                      ProcessState = state
-                      Attempt = (request.AttemptModified,request.Attempt)
-                      ConfirmationState = confirmationState
-                      Appointments = appointments
-                      Description = request.Description
-                      GroupBy = request.GroupBy
-                      Modified = request.Modified })))
+            let! service = request.Service |> Service.toInternal
+            let! processState = request.ProcessState |> ProcessState.toInternal
+            let! confirmationState = request.ConfirmationState |> ConfirmationState.toInternal
+
+            let appointments =
+                request.Appointments |> Seq.map Appointment.toInternal |> Set.ofSeq
+
+            return
+                { Id = request.Id |> RequestId
+                  Service = service
+                  Attempt = request.AttemptModified, request.Attempt
+                  ProcessState = processState
+                  ConfirmationState = confirmationState
+                  Appointments = appointments
+                  Modified = request.Modified }
+        }

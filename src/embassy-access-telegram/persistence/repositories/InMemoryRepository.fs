@@ -24,7 +24,7 @@ module Query =
                             | ById id -> data |> List.tryFind (fun x -> x.Id = id)
 
                         storage
-                        |> Query.Json.get Key.CHATS_TABLE_NAME
+                        |> Query.Json.get Key.CHATS_STORAGE_NAME
                         |> Result.bind (Seq.map Mapper.Chat.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -44,7 +44,7 @@ module Query =
                             | BySubscriptions subIds -> data |> List.filter (InMemory.hasSubscriptions subIds)
 
                         storage
-                        |> Query.Json.get Key.CHATS_TABLE_NAME
+                        |> Query.Json.get Key.CHATS_STORAGE_NAME
                         |> Result.bind (Seq.map Mapper.Chat.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -56,112 +56,26 @@ module Query =
 module Command =
     module Chat =
         open EA.Telegram.Persistence.Command.Chat
-        open EA.Telegram.Persistence.Command.Definitions.Chat
+        open EA.Telegram.Persistence.Command.Chat.InMemory
 
-        let private create definition (chats: External.Chat array) =
-            match definition with
-            | Create.ChatSubscription(chatId, subId) ->
-                match
-                    chats
-                    |> Array.tryFindIndex (fun x ->
-                        x.Id = chatId.Value && (x.Subscriptions |> Seq.contains (subId.Value |> string)))
-                with
-                | Some _ ->
-                    Error
-                    <| Operation
-                        { Message = $" Subscription {subId.Value} already exists in {chatId}."
-                          Code = Some ErrorCodes.AlreadyExists }
-                | None ->
-                    let chat =
-                        { Id = chatId
-                          Subscriptions = Set.singleton subId }
-
-                    let data = chats |> Array.append [| Mapper.Chat.toExternal chat |]
-                    Ok(data, chat)
-
-        let private createOrUpdate definition (chats: External.Chat array) =
-            match definition with
-            | CreateOrUpdate.ChatSubscription(chatId, subId) ->
-                match chats |> Seq.tryFind (fun x -> x.Id = chatId.Value) with
-                | Some chat ->
-                    chat.Subscriptions <- chat.Subscriptions |> set |> Set.add (subId.Value |> string) |> Seq.toList
-                    let data = chats |> Array.mapi (fun i x -> if x.Id = chat.Id then chat else x)
-                    chat |> Mapper.Chat.toInternal |> Result.map (fun chat -> (data, chat))
-                | None ->
-                    let chat =
-                        { Id = chatId
-                          Subscriptions = Set.singleton subId }
-
-                    let data = chats |> Array.append [| Mapper.Chat.toExternal chat |]
-                    Ok(data, chat)
-
-        let private update definition (chats: External.Chat array) =
-            match definition with
-            | Command.Definitions.Chat.Chat chat ->
-                match chats |> Array.tryFindIndex (fun x -> x.Id = chat.Id.Value) with
-                | None ->
-                    Error
-                    <| Operation
-                        { Message = $"{chat.Id} not found to update."
-                          Code = Some ErrorCodes.NotFound }
-                | Some index ->
-                    let data =
-                        chats
-                        |> Array.mapi (fun i x -> if i = index then Mapper.Chat.toExternal chat else x)
-
-                    Ok(data, chat)
-
-        let private delete definition (chats: External.Chat array) =
-            match definition with
-            | Chat chatId ->
-                match chats |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
-                | None ->
-                    Error
-                    <| Operation
-                        { Message = $"{chatId} not found to delete."
-                          Code = Some ErrorCodes.NotFound }
-                | Some index ->
-                    chats[index]
-                    |> Mapper.Chat.toInternal
-                    |> Result.map (fun chat ->
-                        let data = chats |> Array.removeAt index
-                        (data, chat))
-            | Subscription (chatId, subId) ->
-                match chats |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
-                | None ->
-                    Error
-                    <| Operation
-                        { Message = $"{chatId} not found to delete subscription."
-                          Code = Some ErrorCodes.NotFound }
-                | Some index ->
-                    let chat = chats[index]
-                    match chat.Subscriptions |> Seq.tryFindIndex (fun x -> x = (subId.Value |> string)) with
-                    | None ->
-                        Error
-                        <| Operation
-                            { Message = $"Subscription {subId.Value} not found in {chatId}."
-                              Code = Some ErrorCodes.NotFound }
-                    | Some subIndex ->
-                        chat.Subscriptions <- chat.Subscriptions |> Seq.removeAt subIndex |> Seq.toList
-                        let data = chats |> Array.mapi (fun i x -> if i = index then chat else x)
-                        chat |> Mapper.Chat.toInternal |> Result.map (fun chat -> (data, chat))
-
-        let execute command ct storage =
+        let execute operation ct client =
             async {
                 return
                     match ct |> notCanceled with
                     | true ->
 
-                        storage
-                        |> Query.Json.get Key.CHATS_TABLE_NAME
+                        client
+                        |> Query.Json.get Key.CHATS_STORAGE_NAME
                         |> Result.bind (fun data ->
-                            match command with
-                            | Create definition -> data |> create definition |> Result.map id
-                            | CreateOrUpdate definition -> data |> createOrUpdate definition |> Result.map id
-                            | Update definition -> data |> update definition |> Result.map id
-                            | Delete definition -> data |> delete definition |> Result.map id)
+                            match operation with
+                            | Create chat -> data |> create chat |> Result.map id
+                            | CreateOrUpdate chat -> data |> createOrUpdate chat |> Result.map id
+                            | Update chat -> data |> update chat |> Result.map id
+                            | Delete chatId -> data |> delete chatId |> Result.map id)
                         |> Result.bind (fun (data, item) ->
-                            storage |> Command.Json.save Key.CHATS_TABLE_NAME data |> Result.map (fun _ -> item))
+                            client
+                            |> Command.Json.save Key.CHATS_STORAGE_NAME data
+                            |> Result.map (fun _ -> item))
                     | false ->
                         Error
                         <| (Canceled

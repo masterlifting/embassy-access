@@ -12,7 +12,7 @@ module Key =
     let internal EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
 
     [<Literal>]
-    let CHATS_TABLE_NAME = "chats"
+    let CHATS_STORAGE_NAME = "chats"
 
 type Chat =
     { Id: ChatId

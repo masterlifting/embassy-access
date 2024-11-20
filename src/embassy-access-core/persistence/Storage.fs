@@ -12,7 +12,7 @@ module FileSystem =
             configuration
             |> Persistence.Storage.getConnectionString SECTION_NAME
             |> Result.bind (fun connectionString ->
-                { Directory = connectionString
-                  FileName = Constants.REQUESTS_TABLE_NAME }
-                |> Storage.Context.FileSystem
+                { FIlePath = connectionString
+                  FileName = Constants.REQUESTS_STORAGE_NAME }
+                |> Connection.FileSystem
                 |> Persistence.Storage.create)

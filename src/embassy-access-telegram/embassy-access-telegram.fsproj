@@ -15,12 +15,14 @@
         <Compile Include="persistence\Storage.fs"/>
         <Compile Include="Command.fs"/>
         <Compile Include="CommandHandler.fs"/>
+        <Compile Include="command_handlers\Russian.fs" />
+        <Compile Include="command_handlers\Common.fs" />
         <Compile Include="Consumer.fs"/>
         <Compile Include="Producer.fs"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\embassy-access-core\embassy-access-core.fsproj"/>
+        <ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
     </ItemGroup>
 
 </Project>

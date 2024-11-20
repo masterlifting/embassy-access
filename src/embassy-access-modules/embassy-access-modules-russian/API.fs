@@ -4,6 +4,8 @@ module EA.Embassies.Russian.API
 open Infrastructure
 open EA.Embassies.Russian.Domain
 
+let SUPPORTED_CITIES = Kdmid.Domain.Constants.SUPPORTED_SUB_DOMAINS.Values
+
 module Service =
     let get service =
         match service with
@@ -29,7 +31,7 @@ module Service =
                 |> request.CreateRequest
                 |> Kdmid.Domain.StartOrder.create request.TimeZone
                 |> Kdmid.Order.start deps
-
+                
 module Order =
     module Kdmid =
         let start deps order = order |> Kdmid.Order.start deps

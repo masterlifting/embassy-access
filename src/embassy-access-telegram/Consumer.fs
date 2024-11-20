@@ -15,8 +15,10 @@ module private Consume =
             | None -> msg.Value |> NotSupported |> Error |> async.Return
             | Some cmd ->
                 match cmd with
-                | Command.Start -> CommandHandler.start msg.ChatId |> produceOk client ct
-                | Command.Mine -> CommandHandler.mine msg.ChatId cfg ct |> produceResult msg.ChatId client ct
+                | Command.Embassies -> CommandHandler.Common.embassies msg.ChatId |> produceOk client ct
+                | Command.UserEmbassies ->
+                    CommandHandler.Common.userEmbassies msg.ChatId cfg ct
+                    |> produceResult msg.ChatId client ct
                 | Command.SubscribeSearchAppointments(embassy, payload) ->
                     CommandHandler.subscribe (embassy, payload, "searchappointments") msg.ChatId cfg ct
                     |> produceResult msg.ChatId client ct
@@ -37,15 +39,16 @@ module private Consume =
             | Some cmd ->
                 match cmd with
                 | Command.Countries embassy ->
-                    CommandHandler.countries embassy (msg.ChatId, msg.Id) |> produceOk client ct
+                    CommandHandler.Common.countries embassy (msg.ChatId, msg.Id)
+                    |> produceOk client ct
                 | Command.Cities(embassy, country) ->
-                    CommandHandler.cities (embassy, country) (msg.ChatId, msg.Id)
+                    CommandHandler.Common.cities (embassy, country) (msg.ChatId, msg.Id)
                     |> produceOk client ct
                 | Command.UserCountries embassy ->
-                    CommandHandler.userCountries embassy (msg.ChatId, msg.Id) cfg ct
+                    CommandHandler.Common.userCountries embassy (msg.ChatId, msg.Id) cfg ct
                     |> produceResult msg.ChatId client ct
                 | Command.UserCities(embassy, country) ->
-                    CommandHandler.userCities (embassy, country) (msg.ChatId, msg.Id) cfg ct
+                    CommandHandler.Common.userCities (embassy, country) (msg.ChatId, msg.Id) cfg ct
                     |> produceResult msg.ChatId client ct
                 | Command.SubscriptionRequest embassy ->
                     CommandHandler.subscriptionRequest embassy (msg.ChatId, msg.Id)

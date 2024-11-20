@@ -6,7 +6,7 @@ open EA.Core.Domain
 
 [<RequireQualifiedAccess>]
 module Constants =
-    let internal SUPPORTED__SUB_DOMAINS =
+    let internal SUPPORTED_SUB_DOMAINS =
         Map
             [ "belgrad", Belgrade |> Serbia
               "budapest", Budapest |> Hungary
@@ -140,7 +140,7 @@ type internal Payload =
                 let subDomain = hostParts[0]
 
                 let! country =
-                    match Constants.SUPPORTED__SUB_DOMAINS |> Map.tryFind subDomain with
+                    match Constants.SUPPORTED_SUB_DOMAINS |> Map.tryFind subDomain with
                     | Some country -> Ok country
                     | None -> subDomain |> NotSupported |> Error
 

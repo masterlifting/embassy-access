@@ -9,19 +9,19 @@ module Query =
     module Chat =
         Log.trace $"InMemory query request {query}"
 
-        let getOne query ct storageType =
-            match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Query.Chat.getOne ct query
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Chat.getOne ct query
-            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
+        let getOne query ct storage =
+            match storage with
+            | Storage.InMemory client -> client |> InMemoryRepository.Query.Chat.getOne ct query
+            | Storage.FileSystem client -> client |> FileSystemRepository.Query.Chat.getOne ct query
+            | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
-        let getMany query ct storageType =
+        let getMany query ct storage =
             Log.trace $"InMemory query request {query}"
 
-            match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Query.Chat.getMany ct query
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Query.Chat.getMany ct query
-            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
+            match storage with
+            | Storage.InMemory client -> client |> InMemoryRepository.Query.Chat.getMany ct query
+            | Storage.FileSystem client -> client |> FileSystemRepository.Query.Chat.getMany ct query
+            | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
         let tryGetOne chatId ct storage =
             let query = Query.Chat.GetOne.ById chatId
@@ -44,7 +44,7 @@ module Query =
 
             storage
             |> EA.Persistence.Repository.Query.Request.getMany query ct
-            |> ResultAsync.map (Seq.map _.Embassy)
+            |> ResultAsync.map (Seq.map _.Service.Embassy)
 
         let getEmbassyRequests embassy ct storage =
             let query = EA.Persistence.Query.Request.GetMany.ByEmbassy embassy
@@ -58,16 +58,16 @@ module Query =
                 | Some chat ->
                     storage
                     |> getChatRequests chat ct
-                    |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy)))
+                    |> ResultAsync.map (Seq.filter (fun request -> request.Service.Embassy = embassy)))
             |> ResultAsync.map List.ofSeq
 
 module Command =
     module Chat =
-        let execute command ct storageType =
-            match storageType with
-            | Storage.Type.InMemory storage -> storage |> InMemoryRepository.Command.Chat.execute command ct
-            | Storage.Type.FileSystem storage -> storage |> FileSystemRepository.Command.Chat.execute command ct
-            | _ -> $"Storage {storageType}" |> NotSupported |> Error |> async.Return
+        let execute command ct storage =
+            match storage with
+            | Storage.InMemory client -> client |> InMemoryRepository.Command.Chat.execute command ct
+            | Storage.FileSystem client -> client |> FileSystemRepository.Command.Chat.execute command ct
+            | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
         let createOrUpdateSubscription (chatId, requestId) ct storage =
             let command =
@@ -79,7 +79,6 @@ module Command =
 
     module Request =
         open EA.Core.Domain
-        open EA.Persistence.Command.Definitions.Request
 
         let createOrUpdatePassportSearch (embassy, payload) ct storage =
             let commandDefinition: PassportsGroup =
@@ -87,7 +86,7 @@ module Command =
                   Embassy = embassy
                   Payload = payload
                   ConfirmationState = Disabled
-                  Validation = Some EA.Api.validateRequest }
+                  Validation = Some EA.API.validateRequest }
 
             let command =
                 commandDefinition
@@ -102,7 +101,7 @@ module Command =
                   Embassy = embassy
                   Payload = payload
                   ConfirmationState = Disabled
-                  Validation = Some EA.Api.validateRequest }
+                  Validation = Some EA.API.validateRequest }
 
             let command =
                 commandDefinition
@@ -116,7 +115,7 @@ module Command =
                 { Name = None
                   Embassy = embassy
                   Payload = payload
-                  Validation = Some EA.Api.validateRequest }
+                  Validation = Some EA.API.validateRequest }
 
             let command =
                 commandDefinition

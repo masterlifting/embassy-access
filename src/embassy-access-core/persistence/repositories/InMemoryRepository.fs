@@ -2,7 +2,6 @@
 module internal EA.Persistence.InMemoryRepository
 
 open Infrastructure
-open Persistence.Domain
 open Persistence.InMemory
 open EA.Core.Domain
 
@@ -26,7 +25,7 @@ module Query =
                                 | _ -> None
 
                         storage
-                        |> Query.Json.get Constants.REQUESTS_TABLE_NAME
+                        |> Query.Json.get Constants.REQUESTS_STORAGE_NAME
                         |> Result.bind (Seq.map EA.Core.Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -55,11 +54,11 @@ module Query =
                                 |> List.filter (InMemory.makeAppointment query)
                                 |> Query.paginate query.Pagination
                             | ByIds requestIds -> data |> List.filter (fun x -> requestIds.Contains x.Id)
-                            | ByEmbassy embassy -> data |> List.filter (fun x -> x.Embassy = embassy)
+                            | ByEmbassy embassy -> data |> List.filter (fun x -> x.Service.Embassy = embassy)
 
 
                         storage
-                        |> Query.Json.get Constants.REQUESTS_TABLE_NAME
+                        |> Query.Json.get Constants.REQUESTS_STORAGE_NAME
                         |> Result.bind (Seq.map EA.Core.Mapper.Request.toInternal >> Result.choose)
                         |> Result.map filter
                     | false ->
@@ -71,113 +70,26 @@ module Query =
 module Command =
     module Request =
         open EA.Persistence.Command.Request
-        open EA.Persistence.Command.Definitions.Request
+        open EA.Persistence.Command.Request.InMemory
 
-        let private create definition (requests: External.Request array) =
-            match definition with
-            | Create.PassportsGroup passportsGroup ->
-                let embassy = passportsGroup.Embassy |> EA.Core.Mapper.Embassy.toExternal
-
-                match
-                    requests
-                    |> Seq.exists (fun x -> x.Embassy = embassy && x.Payload = passportsGroup.Payload)
-                with
-                | true ->
-                    Error
-                    <| Operation
-                        { Message =
-                            $"Request for {passportsGroup.Embassy} with {passportsGroup.Payload} already exists."
-                          Code = Some ErrorCodes.AlreadyExists }
-                | _ ->
-                    let request = passportsGroup.createRequest ()
-
-                    match passportsGroup.Validation with
-                    | Some validate -> request |> validate
-                    | _ -> Ok()
-                    |> Result.map (fun _ ->
-                        let data = requests |> Array.append [| EA.Core.Mapper.Request.toExternal request |]
-
-                        (data, request))
-
-        let private createOrUpdate definition (requests: External.Request array) =
-            match definition with
-            | CreateOrUpdate.PassportsGroup passportsGroup ->
-                let embassy = passportsGroup.Embassy |> EA.Core.Mapper.Embassy.toExternal
-
-                match
-                    requests
-                    |> Seq.tryFind (fun x -> x.Embassy = embassy && x.Payload = passportsGroup.Payload)
-                with
-                | Some request ->
-                    let data =
-                        requests |> Array.mapi (fun i x -> if x.Id = request.Id then request else x)
-
-                    request
-                    |> EA.Core.Mapper.Request.toInternal
-                    |> Result.map (fun request -> (data, request))
-                | None ->
-                    let request = passportsGroup.createRequest ()
-
-                    match passportsGroup.Validation with
-                    | Some validate -> request |> validate
-                    | _ -> Ok()
-                    |> Result.map (fun _ ->
-                        let data = requests |> Array.append [| EA.Core.Mapper.Request.toExternal request |]
-
-                        (data, request))
-
-        let private update definition (requests: External.Request array) =
-            match definition with
-            | Request request ->
-                match requests |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
-                | None ->
-                    Error
-                    <| Operation
-                        { Message = $"{request.Id} not found to update."
-                          Code = Some ErrorCodes.NotFound }
-                | Some index ->
-                    let data =
-                        requests
-                        |> Array.mapi (fun i x ->
-                            if i = index then
-                                EA.Core.Mapper.Request.toExternal request
-                            else
-                                x)
-
-                    Ok(data, request)
-
-        let private delete definition (requests: External.Request array) =
-            match definition with
-            | RequestId requestId ->
-                match requests |> Array.tryFindIndex (fun x -> x.Id = requestId.Value) with
-                | None ->
-                    Error
-                    <| Operation
-                        { Message = $"{requestId} not found to delete."
-                          Code = Some ErrorCodes.NotFound }
-                | Some index ->
-                    requests[index]
-                    |> EA.Core.Mapper.Request.toInternal
-                    |> Result.map (fun request ->
-                        let data = requests |> Array.removeAt index
-                        (data, request))
-
-        let execute command ct storage =
+        let execute operation ct client =
             async {
                 return
                     match ct |> notCanceled with
                     | true ->
 
-                        storage
-                        |> Query.Json.get Constants.REQUESTS_TABLE_NAME
+                        client
+                        |> Query.Json.get Constants.REQUESTS_STORAGE_NAME
                         |> Result.bind (fun data ->
-                            match command with
-                            | Create definition -> data |> create definition |> Result.map id
-                            | CreateOrUpdate definition -> data |> createOrUpdate definition |> Result.map id
-                            | Update definition -> data |> update definition |> Result.map id
-                            | Delete definition -> data |> delete definition |> Result.map id)
+                            match operation with
+                            | Create request -> data |> create request |> Result.map id
+                            | CreateOrUpdate request -> data |> createOrUpdate request |> Result.map id
+                            | Update request -> data |> update request |> Result.map id
+                            | Delete requestId -> data |> delete requestId |> Result.map id)
                         |> Result.bind (fun (data, item) ->
-                            storage |> Command.Json.save Constants.REQUESTS_TABLE_NAME data |> Result.map (fun _ -> item))
+                            client
+                            |> Command.Json.save Constants.REQUESTS_STORAGE_NAME data
+                            |> Result.map (fun _ -> item))
                     | false ->
                         Error
                         <| (Canceled

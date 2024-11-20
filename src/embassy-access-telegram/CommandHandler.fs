@@ -1,6 +1,8 @@
 ﻿module EA.Telegram.CommandHandler
 
 open System
+
+open EA.Embassies.Russian.Kdmid.Domain
 open Infrastructure
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
@@ -25,138 +27,6 @@ let confirmation (embassy, confirmations: Set<Confirmation>) =
         |> Seq.map (fun confirmation -> $"'{embassy}'. Confirmation: {confirmation.Description}")
         |> String.concat "\n"
         |> Text.create (chatId, New)
-
-let start chatId =
-    EA.Api.getEmbassies ()
-    |> Seq.map EA.Core.Mapper.Embassy.toExternal
-    |> Seq.groupBy _.Name
-    |> Seq.map fst
-    |> Seq.sort
-    |> Seq.map (fun embassyName -> embassyName |> Command.Countries |> Command.set, embassyName)
-    |> Map
-    |> fun data ->
-        { Buttons.Name = "Which embassy do you need?"
-          Columns = 3
-          Data = data }
-        |> Buttons.create (chatId, New)
-    |> Ok
-    |> async.Return
-
-let countries embassyName =
-    fun (chatId, msgId) ->
-        let data =
-            EA.Api.getEmbassies ()
-            |> Seq.map EA.Core.Mapper.Embassy.toExternal
-            |> Seq.filter (fun embassy -> embassy.Name = embassyName)
-            |> Seq.groupBy _.Country.Name
-            |> Seq.map fst
-            |> Seq.sort
-            |> Seq.map (fun countryName -> (embassyName, countryName) |> Command.Cities |> Command.set, countryName)
-            |> Map
-
-        { Buttons.Name = $"Where is {embassyName} embassy located?"
-          Columns = 3
-          Data = data }
-        |> Buttons.create (chatId, msgId |> Replace)
-        |> Ok
-        |> async.Return
-
-let cities (embassyName, countryName) =
-    fun (chatId, msgId) ->
-        EA.Api.getEmbassies ()
-        |> Seq.map EA.Core.Mapper.Embassy.toExternal
-        |> Seq.filter (fun embassy -> embassy.Name = embassyName && embassy.Country.Name = countryName)
-        |> Seq.groupBy _.Country.City.Name
-        |> Seq.sortBy fst
-        |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
-        |> Seq.map (fun embassy ->
-            embassy
-            |> EA.Core.Mapper.Embassy.toInternal
-            |> Result.map (fun x -> x |> Command.SubscriptionRequest |> Command.set, embassy.Country.City.Name))
-        |> Result.choose
-        |> Result.map Map
-        |> Result.map (fun data ->
-            { Buttons.Name = $"Which city in {countryName}?"
-              Columns = 3
-              Data = data }
-            |> Buttons.create (chatId, msgId |> Replace))
-        |> async.Return
-
-let mine chatId =
-    fun cfg ct ->
-        Storage.FileSystem.Chat.create cfg
-        |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
-        |> ResultAsync.bindAsync (function
-            | None -> "Subscriptions" |> NotFound |> Error |> async.Return
-            | Some chat ->
-                EA.Persistence.Storage.FileSystem.Request.create cfg
-                |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-        |> ResultAsync.map (fun embassies ->
-            embassies
-            |> Seq.map EA.Core.Mapper.Embassy.toExternal
-            |> Seq.groupBy _.Name
-            |> Seq.map fst
-            |> Seq.sort
-            |> Seq.map (fun embassyName -> embassyName |> Command.UserCountries |> Command.set, embassyName)
-            |> Map)
-        |> ResultAsync.map (fun data ->
-            { Buttons.Name = "Choose embassy you are following"
-              Columns = 3
-              Data = data }
-            |> Buttons.create (chatId, New))
-
-let userCountries embassyName =
-    fun (chatId, msgId) cfg ct ->
-        Storage.FileSystem.Chat.create cfg
-        |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
-        |> ResultAsync.bindAsync (function
-            | None -> "Subscriptions" |> NotFound |> Error |> async.Return
-            | Some chat ->
-                EA.Persistence.Storage.FileSystem.Request.create cfg
-                |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-        |> ResultAsync.map (Seq.map EA.Core.Mapper.Embassy.toExternal)
-        |> ResultAsync.map (fun embassies ->
-            embassies
-            |> Seq.filter (fun embassy -> embassy.Name = embassyName)
-            |> Seq.groupBy _.Country.Name
-            |> Seq.map fst
-            |> Seq.sort
-            |> Seq.map (fun countryName ->
-                (embassyName, countryName) |> Command.UserCities |> Command.set, countryName)
-            |> Map)
-        |> ResultAsync.map (fun data ->
-            { Buttons.Name = $"Where is {embassyName} embassy located?"
-              Columns = 3
-              Data = data }
-            |> Buttons.create (chatId, msgId |> Replace))
-
-let userCities (embassyName, countryName) =
-    fun (chatId, msgId) cfg ct ->
-        Storage.FileSystem.Chat.create cfg
-        |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
-        |> ResultAsync.bindAsync (function
-            | None -> "Subscriptions" |> NotFound |> Error |> async.Return
-            | Some chat ->
-                EA.Persistence.Storage.FileSystem.Request.create cfg
-                |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-        |> ResultAsync.bind (fun embassies ->
-            embassies
-            |> Seq.map EA.Core.Mapper.Embassy.toExternal
-            |> Seq.filter (fun embassy -> embassy.Name = embassyName && embassy.Country.Name = countryName)
-            |> Seq.groupBy _.Country.City.Name
-            |> Seq.sortBy fst
-            |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
-            |> Seq.map (fun embassy ->
-                embassy
-                |> EA.Core.Mapper.Embassy.toInternal
-                |> Result.map (fun x -> x |> Command.UserSubscriptions |> Command.set, embassy.Country.City.Name))
-            |> Result.choose
-            |> Result.map Map)
-        |> ResultAsync.map (fun data ->
-            { Buttons.Name = $"Which city in {countryName}?"
-              Columns = 3
-              Data = data }
-            |> Buttons.create (chatId, msgId |> Replace))
 
 let subscriptionRequest embassy =
     fun (chatId, msgId) ->
@@ -224,10 +94,11 @@ let userSubscriptions embassy =
             | Some chat ->
                 EA.Persistence.Storage.FileSystem.Request.create cfg
                 |> ResultAsync.wrap (Repository.Query.Chat.getChatRequests chat ct))
-        |> ResultAsync.map (Seq.filter (fun request -> request.Embassy = embassy))
+        |> ResultAsync.map (Seq.filter (fun request -> request.Service.Embassy = embassy))
         |> ResultAsync.map (fun requests ->
             requests
-            |> Seq.map (fun request -> request.Id |> Command.RemoveSubscription |> Command.set, request.Payload)
+            |> Seq.map (fun request ->
+                request.Id |> Command.RemoveSubscription |> Command.set, request.Service.Payload)
             |> Map)
         |> ResultAsync.map (fun data ->
             { Buttons.Name =
@@ -262,16 +133,15 @@ let subscribe (embassy, payload, service) =
 
             createOrUpdatePassportSearchRequest ct
             |> createOrUpdateChatSubscription ct
-            |> ResultAsync.map (fun request -> $"Subscription has been activated for '{request.Embassy}'.")
+            |> ResultAsync.map (fun request -> $"Subscription has been activated for '{request.Service.Embassy}'.")
             |> ResultAsync.map (Text.create (chatId, New))
         | _ -> $"{embassy}" |> NotSupported |> Error |> async.Return
 
 let private confirmRussianAppointment request ct storage =
-    let config: EA.Embassies.Russian.Domain.ProcessRequestConfiguration =
-        { TimeShift = 0y }
-
-    (storage, config, ct) |> EA.Deps.Russian.processRequest |> EA.Api.processRequest
-    <| request
+    let deps = Dependencies.create ct storage
+    let timeZone = 1 |> float
+    let order = StartOrder.create timeZone request
+    order |> API.Order.Kdmid.start deps
 
 let private handleRequest storage ct (request, appointmentId) =
 
@@ -279,7 +149,7 @@ let private handleRequest storage ct (request, appointmentId) =
         { request with
             ConfirmationState = Manual appointmentId }
 
-    match request.Embassy with
+    match request.Service.Embassy with
     | Russian _ -> storage |> confirmRussianAppointment request ct
     | _ -> "Embassy" |> NotSupported |> Error |> async.Return
     |> ResultAsync.map (fun request ->
@@ -291,7 +161,7 @@ let private handleRequest storage ct (request, appointmentId) =
                 |> Option.map _.Description
                 |> Option.defaultValue "Not found")
 
-        $"'{request.Embassy}'. Confirmation: {confirmation}")
+        $"'{request.Service.Embassy}'. Confirmation: {confirmation}")
 
 let confirmAppointment (requestId, appointmentId) =
     fun chatId cfg ct ->
@@ -321,7 +191,8 @@ let chooseAppointmentRequest (embassy, appointmentId) =
                 | _ ->
                     requests
                     |> Seq.map (fun request ->
-                        (request.Id, appointmentId) |> Command.ConfirmAppointment |> Command.set, request.Payload)
+                        (request.Id, appointmentId) |> Command.ConfirmAppointment |> Command.set,
+                        request.Service.Payload)
                     |> Map
                     |> (fun data ->
                         { Buttons.Name = $"Which subscription do you want to confirm?"
@@ -335,13 +206,10 @@ let removeSubscription subscriptionId =
     fun chatId cfg ct ->
         EA.Persistence.Storage.FileSystem.Request.create cfg
         |> ResultAsync.wrap (fun storage ->
-            let command =
-                subscriptionId
-                |> EA.Persistence.Command.Definitions.Request.Delete.RequestId
-                |> EA.Persistence.Command.Request.Delete
+            let command = subscriptionId |> EA.Persistence.Command.Request.Delete
 
-            storage
-            |> EA.Persistence.Repository.Command.Request.execute command ct
+            command
+            |> EA.Persistence.Repository.Command.Request.execute storage ct
             |> ResultAsync.bindAsync (fun _ ->
                 Storage.FileSystem.Chat.create cfg
                 |> ResultAsync.wrap (fun storage ->
