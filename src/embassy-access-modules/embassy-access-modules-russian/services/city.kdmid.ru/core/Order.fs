@@ -1,105 +1,26 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Embassies.Russian.Kdmid.Request
+module internal EA.Embassies.Russian.Kdmid.Order
 
 open System
-open EA.Embassies.Russian.Kdmid.Web
-open EA.Persistence
 open Infrastructure
 open EA.Core.Domain
+open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Domain
 
-let createDependencies ct storage =
-    { updateRequest = fun request -> storage |> Repository.Command.Request.update request ct
-      createHttpClient = Http.createKdmidClient
-      getInitialPage =
-        fun request client ->
-            client
-            |> Web.Http.Client.Request.get ct request
-            |> Web.Http.Client.Response.String.read ct
-      getCaptcha =
-        fun request client ->
-            client
-            |> Web.Http.Client.Request.get ct request
-            |> Web.Http.Client.Response.Bytes.read ct
-      solveCaptcha = Web.Captcha.solveToInt ct
-      postValidationPage =
-        fun request content client ->
-            client
-            |> Web.Http.Client.Request.post ct request content
-            |> Web.Http.Client.Response.String.readContent ct
-      postAppointmentsPage =
-        fun request content client ->
-            client
-            |> Web.Http.Client.Request.post ct request content
-            |> Web.Http.Client.Response.String.readContent ct
-      postConfirmationPage =
-        fun request content client ->
-            client
-            |> Web.Http.Client.Request.post ct request content
-            |> Web.Http.Client.Response.String.readContent ct }
-
-let private validateCity (request: EA.Core.Domain.Request) credentials =
+let private validateCity (request: Request) credentials =
     match request.Service.Embassy.Country.City = credentials.Country.City with
     | true -> Ok credentials
     | false ->
         Error
         <| NotSupported $"Requested {request.Service.Embassy.Country.City} for the subdomain {credentials.SubDomain}"
 
-let private createPayload (uri: Uri) =
-    match uri.Host.Split '.' with
-    | hostParts when hostParts.Length < 3 -> uri.Host |> NotSupported |> Error
-    | hostParts ->
-        let credentials = ResultBuilder()
-
-        credentials {
-            let subDomain = hostParts[0]
-
-            let! country =
-                match Constants.SUPPORTED__SUB_DOMAINS |> Map.tryFind subDomain with
-                | Some country -> Ok country
-                | None -> subDomain |> NotSupported |> Error
-
-            let! queryParams = uri |> Web.Http.Client.Route.toQueryParams
-
-            let! id =
-                queryParams
-                |> Map.tryFind "id"
-                |> Option.map (function
-                    | AP.IsInt id when id > 1000 -> id |> Ok
-                    | _ -> "id query parameter" |> NotSupported |> Error)
-                |> Option.defaultValue ("id query parameter" |> NotFound |> Error)
-
-            let! cd =
-                queryParams
-                |> Map.tryFind "cd"
-                |> Option.map (function
-                    | AP.IsLettersOrNumbers cd -> cd |> Ok
-                    | _ -> "cd query parameter" |> NotSupported |> Error)
-                |> Option.defaultValue ("cd query parameter" |> NotFound |> Error)
-
-            let! ems =
-                queryParams
-                |> Map.tryFind "ems"
-                |> Option.map (function
-                    | AP.IsLettersOrNumbers ems -> ems |> Some |> Ok
-                    | _ -> "ems query parameter" |> NotSupported |> Error)
-                |> Option.defaultValue (None |> Ok)
-
-            return
-                { Country = country
-                  SubDomain = subDomain
-                  Id = id
-                  Cd = cd
-                  Ems = ems }
-        }
-
 let private parsePayload =
     ResultAsync.bind (fun request ->
         request.Service.Payload
         |> Uri
-        |> createPayload
+        |> Payload.create
         |> Result.bind (validateCity request)
-        |> Result.map (fun credentials -> credentials, request))
+        |> Result.map (fun payload -> payload, request))
 
 let private setInProcessState deps request =
     deps.updateRequest
@@ -166,18 +87,18 @@ let private setProcessedState deps request confirmation =
         | Ok request -> return! request |> setCompletedState deps
     }
 
-let start deps timeZone request =
+let start deps order =
 
     // define
     let setInProcessState = setInProcessState deps
     let parsePayload = parsePayload
     let createHttpClient = Http.createClient
     let processInitialPage = InitialPage.handle deps
-    let setAttempt = setAttempt timeZone deps
+    let setAttempt = setAttempt order.TimeZone deps
     let processValidationPage = ValidationPage.handle deps
     let processAppointmentsPage = AppointmentsPage.handle deps
     let processConfirmationPage = ConfirmationPage.handle deps
-    let setProcessedState = setProcessedState deps request
+    let setProcessedState = setProcessedState deps order.Request
 
     // pipe
     let run =
@@ -191,7 +112,7 @@ let start deps timeZone request =
         >> processConfirmationPage
         >> setProcessedState
 
-    request |> run
+    order.Request |> run
 
 let errorFilter error =
     match error with
@@ -204,35 +125,35 @@ let errorFilter error =
     | _ -> false
 
 
-let pick deps notify data =
+let pick deps order =
 
-    let rec innerLoop (errors: Error' list) (data: (float * EA.Core.Domain.Request) list) =
+    let rec innerLoop (errors: Error' list) startOrders =
         async {
-            match data with
+            match startOrders with
             | [] ->
                 return
                     match errors.Length with
                     | 0 -> Error [ "Requests to handle" |> NotFound ]
                     | _ -> Error errors
-            | (timeZone, request) :: dataTail ->
-                match! request |> start deps timeZone with
+            | startOrder :: startOrdersTail ->
+                match! startOrder |> start deps with
                 | Error error ->
 
                     do!
-                        match error |> Notification.tryCreateFail request.Id errorFilter with
+                        match error |> Notification.tryCreateFail startOrder.Request.Id errorFilter with
                         | None -> () |> async.Return
-                        | Some notification -> notification |> notify
+                        | Some notification -> notification |> order.notify
 
-                    return! dataTail |> innerLoop (errors @ [ error ])
+                    return! startOrdersTail |> innerLoop (errors @ [ error ])
 
                 | Ok result ->
-                    do!
 
+                    do!
                         match result |> Notification.tryCreate errorFilter with
                         | None -> () |> async.Return
-                        | Some notification -> notification |> notify
+                        | Some notification -> notification |> order.notify
 
                     return result |> Ok
         }
 
-    data |> List.ofSeq |> innerLoop []
+    order.StartOrders |> List.ofSeq |> innerLoop []

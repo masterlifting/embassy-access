@@ -1,4 +1,4 @@
-﻿module internal EA.Embassies.Russian.Kdmid.ConfirmationPage
+﻿module internal EA.Embassies.Russian.Kdmid.Web.ConfirmationPage
 
 open System
 open Infrastructure
@@ -8,7 +8,7 @@ open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Html
 open EA.Embassies.Russian.Kdmid.Domain
 
-let private handleRequestConfirmation (request: EA.Core.Domain.Request) =
+let private handleRequestConfirmation (request: Request) =
     match request.ConfirmationState with
     | Disabled -> Ok <| None
     | Manual appointmentId ->

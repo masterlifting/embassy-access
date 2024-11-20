@@ -1,4 +1,4 @@
-﻿module internal EA.Embassies.Russian.Kdmid.ValidationPage
+﻿module internal EA.Embassies.Russian.Kdmid.Web.ValidationPage
 
 open System
 open System.Text.RegularExpressions

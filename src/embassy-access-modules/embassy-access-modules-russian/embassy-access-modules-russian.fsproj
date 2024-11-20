@@ -10,11 +10,11 @@
         <Compile Include="services\city.kdmid.ru\Domain.fs" />
         <Compile Include="services\city.kdmid.ru\web\Http.fs" />
         <Compile Include="services\city.kdmid.ru\web\Html.fs" />
-        <Compile Include="services\city.kdmid.ru\core\InitialPage.fs" />
-        <Compile Include="services\city.kdmid.ru\core\ValidationPage.fs" />
-        <Compile Include="services\city.kdmid.ru\core\AppointmentsPage.fs" />
-        <Compile Include="services\city.kdmid.ru\core\ConfirmationPage.fs" />
-        <Compile Include="services\city.kdmid.ru\core\Request.fs" />
+        <Compile Include="services\city.kdmid.ru\web\pages\InitialPage.fs" />
+        <Compile Include="services\city.kdmid.ru\web\pages\ValidationPage.fs" />
+        <Compile Include="services\city.kdmid.ru\web\pages\AppointmentsPage.fs" />
+        <Compile Include="services\city.kdmid.ru\web\pages\ConfirmationPage.fs" />
+        <Compile Include="services\city.kdmid.ru\core\Order.fs" />
         <Compile Include="services\info.midpass.ru\Domain.fs" />
         <Compile Include="Domain.fs" />
         <Compile Include="API.fs" />

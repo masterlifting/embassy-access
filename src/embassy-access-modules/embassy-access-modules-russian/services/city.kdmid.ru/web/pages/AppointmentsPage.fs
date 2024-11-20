@@ -1,4 +1,4 @@
-﻿module internal EA.Embassies.Russian.Kdmid.AppointmentsPage
+﻿module internal EA.Embassies.Russian.Kdmid.Web.AppointmentsPage
 
 open System
 open Infrastructure
@@ -116,7 +116,7 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
         |> Result.map Set.ofList
         |> Result.map (fun appointments -> formData, appointments)
 
-let private createResult (request: EA.Core.Domain.Request) (formData, appointments) =
+let private createResult (request: Request) (formData, appointments) =
     let request =
         { request with
             Appointments = appointments }

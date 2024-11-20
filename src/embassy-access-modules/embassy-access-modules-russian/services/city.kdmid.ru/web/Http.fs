@@ -5,7 +5,7 @@ open Infrastructure
 open EA.Embassies.Russian.Kdmid.Domain
 open Web.Http.Domain
 
-let createKdmidClient subDomain =
+let private createKdmidClient subDomain =
 
     let host = $"%s{subDomain}.kdmid.ru"
     let baseUrl = $"https://%s{host}"
@@ -29,10 +29,10 @@ let createKdmidClient subDomain =
     Web.Http.Client.create baseUrl headers
 
 let createClient =
-    ResultAsync.bind (fun (credentials: Payload, request: EA.Core.Domain.Request) ->
-        credentials.SubDomain
+    ResultAsync.bind (fun (payload, request: EA.Core.Domain.Request) ->
+        payload.SubDomain
         |> createKdmidClient
-        |> Result.map (fun httpClient -> httpClient, credentials, request))
+        |> Result.map (fun httpClient -> httpClient, payload, request))
 
 let createQueryParams id cd ems =
     match ems with

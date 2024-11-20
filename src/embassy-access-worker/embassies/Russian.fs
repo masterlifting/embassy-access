@@ -1,17 +1,15 @@
 ﻿module internal EA.Worker.Embassies.Russian
 
+open EA.Embassies.Russian
 open Infrastructure
 open Worker.Domain
 open EA.Core.Domain
-open EA.Embassies.Russian.Kdmid
+open EA.Embassies.Russian.Kdmid.Domain
 
-type private Dependencies =
-    { searchAppointments: EA.Persistence.Query.Request.GetMany -> Async<Result<WorkerTaskResult, Error'>> }
+let private createPickOrder configuration (schedule: WorkerSchedule) ct =
+    let start = ResultBuilder()
 
-let private createDependencies configuration schedule ct =
-    let deps = ResultBuilder()
-
-    deps {
+    start {
         let! storage = configuration |> EA.Persistence.Storage.FileSystem.Request.create
 
         let notify notification =
@@ -19,35 +17,37 @@ let private createDependencies configuration schedule ct =
             |> EA.Telegram.Producer.Produce.notification configuration ct
             |> Async.map ignore
 
-        let pickRequest requests =
-            let deps = Request.createDependencies ct storage
+        let pickOrder requests =
+            let deps = Dependencies.create ct storage
             let timeZone = schedule.TimeZone |> float
 
-            requests
-            |> Seq.map (fun request -> timeZone, request)
-            |> Request.pick deps notify
+            let order =
+                { StartOrders = requests |> List.map (StartOrder.create timeZone)
+                  notify = notify }
 
-        let processData query =
+            order |> API.Order.Kdmid.pick deps
+
+        let start query =
             storage
             |> EA.Persistence.Repository.Query.Request.getMany query ct
             |> ResultAsync.mapError (fun error -> [ error ])
-            |> ResultAsync.bindAsync pickRequest
+            |> ResultAsync.bindAsync pickOrder
             |> ResultAsync.mapError List.head
             |> ResultAsync.map (fun request -> request.ProcessState |> string |> Info)
 
-        return { searchAppointments = processData }
+        return start
     }
 
 module private SearchAppointments =
 
     let run country =
         fun (cfg, schedule, ct) ->
-            createDependencies cfg schedule ct
-            |> ResultAsync.wrap (fun deps ->
+            createPickOrder cfg schedule ct
+            |> ResultAsync.wrap (fun startOrder ->
                 country
                 |> Russian
                 |> EA.Persistence.Query.Request.SearchAppointments
-                |> deps.searchAppointments)
+                |> startOrder)
 
 let addTasks country =
     Graph.Node(

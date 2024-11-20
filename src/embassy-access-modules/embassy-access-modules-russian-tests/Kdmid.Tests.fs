@@ -49,7 +49,6 @@ module private Fixture =
 
     let dependencies =
         { updateRequest = fun request -> async { return Ok request }
-          createHttpClient = fun _ -> "HttpClient" |> NotImplemented |> Error
           getInitialPage = fun _ _ -> httpGetStringRequest "initial_page_response"
           getCaptcha = fun _ _ -> httpGetBytesRequest "captcha.png"
           solveCaptcha = fun _ -> async { return Ok 42 }
@@ -66,7 +65,7 @@ let private ``validation page should have an error`` =
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_has_error" }
 
         let service = Passport <| IssueForeign(dependencies, request)
-        let! serviceResult = EA.Embassies.Russian.API.get service
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -82,7 +81,7 @@ let private ``validation page should have a confirmed request`` =
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_requires_confirmation" }
 
         let service = Passport <| IssueForeign(dependencies, request)
-        let! serviceResult = EA.Embassies.Russian.API.get service
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -98,7 +97,7 @@ let private ``validation page should have a confirmation`` =
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_has_confirmation" }
 
         let service = Passport <| IssueForeign(dependencies, request)
-        let! serviceResult = EA.Embassies.Russian.API.get service
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -114,7 +113,7 @@ let private ``validation page should have a deleted request`` =
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_request_deleted" }
 
         let service = Passport <| IssueForeign(dependencies, request)
-        let! serviceResult = EA.Embassies.Russian.API.get service
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -132,7 +131,7 @@ let private ``appointments page should not have data`` =
                     postAppointmentsPage = fun _ _ _ -> httpPostStringRequest $"appointments_page_empty_result_{i}" }
 
             let service = Passport <| IssueForeign(dependencies, request)
-            let! serviceResult = EA.Embassies.Russian.API.get service
+            let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
             Expect.isEmpty result.Appointments "Appointments should not be not empty"
@@ -147,7 +146,7 @@ let private ``appointments page should have data`` =
                     postAppointmentsPage = fun _ _ _ -> httpPostStringRequest $"appointments_page_has_result_{i}" }
 
             let service = Passport <| IssueForeign(dependencies, request)
-            let! serviceResult = EA.Embassies.Russian.API.get service
+            let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
             Expect.isTrue (not result.Appointments.IsEmpty) "Appointments should be not empty"
@@ -162,7 +161,7 @@ let private ``confirmation page should have a valid result`` =
                     postConfirmationPage = fun _ _ _ -> httpPostStringRequest $"confirmation_page_has_result_{i}" }
 
             let service = Passport <| IssueForeign(dependencies, request)
-            let! serviceResult = EA.Embassies.Russian.API.get service
+            let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
 
@@ -170,7 +169,7 @@ let private ``confirmation page should have a valid result`` =
             | ProcessState.Failed error ->
                 Expect.isTrue false $"Service request should have a valid state, but was Failed. Error: {error.Message}"
             | ProcessState.Completed _ ->
-                let confirmation = result.Appointments |> Seq.tryPick (_.Confirmation)
+                let confirmation = result.Appointments |> Seq.tryPick _.Confirmation
 
                 Expect.wantSome confirmation "Confirmation should be Some" |> ignore
             | _ ->

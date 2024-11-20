@@ -1,4 +1,4 @@
-﻿module internal EA.Embassies.Russian.Kdmid.InitialPage
+﻿module internal EA.Embassies.Russian.Kdmid.Web.InitialPage
 
 open System
 open Infrastructure
@@ -134,10 +134,9 @@ let private handlePage (deps, httpClient, queryParams) =
             |> buildFormData)
 
 let handle deps =
-    ResultAsync.bindAsync (fun (httpClient, credentials: Payload, request) ->
+    ResultAsync.bindAsync (fun (httpClient, payload, request) ->
 
-        let queryParams =
-            Http.createQueryParams credentials.Id credentials.Cd credentials.Ems
+        let queryParams = Http.createQueryParams payload.Id payload.Cd payload.Ems
 
         handlePage (deps, httpClient, queryParams)
         |> ResultAsync.map (fun formData -> httpClient, queryParams, formData, request))
