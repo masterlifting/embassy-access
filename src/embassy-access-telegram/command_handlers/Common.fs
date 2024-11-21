@@ -1,5 +1,6 @@
 ﻿module EA.Telegram.CommandHandler.Common
 
+open System
 open Infrastructure
 open EA.Telegram
 open EA.Core.Domain
@@ -57,7 +58,7 @@ let cities (embassyName, countryName) =
         |> Seq.map (fun embassy ->
             embassy
             |> EA.Core.Mapper.Embassy.toInternal
-            |> Result.map (fun x -> x |> Command.Services |> Command.set, embassy.Country.City.Name))
+            |> Result.map (fun x -> x |> Command.Service |> Command.set, embassy.Country.City.Name))
         |> Result.choose
         |> Result.map Map
         |> Result.map (fun data ->
@@ -145,7 +146,19 @@ let userCities (embassyName, countryName) =
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
 
-let services embassy =
-    match embassy with
-    | Russian _ -> EA.Telegram.CommandHandler.Russian.services () |> Ok |> async.Return
-    | _ -> $"{embassy}" |> NotSupported |> Error |> async.Return
+let service embassy =
+    fun (chatId, msgId) ->
+        match embassy with
+        | Russian _ ->
+            EA.Telegram.CommandHandler.Russian.services ()
+            |> Seq.map (fun service -> (embassy, service, 0uy) |> Command.RussianService |> Command.set, service)
+            |> Map
+            |> fun data ->
+                { Buttons.Name = "What do you need?"
+                  Columns = 3
+                  Data = data }
+                |> Buttons.create (chatId, msgId |> Replace)
+                |> Ok
+                |> async.Return
+        | _ -> $"Service for {embassy}" |> NotSupported |> Error |> async.Return
+        

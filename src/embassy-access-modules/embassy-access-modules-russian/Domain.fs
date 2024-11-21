@@ -16,6 +16,10 @@ type PassportServices =
 
     static member LIST = [ PassportServices.ISSUE_FOREIGN; PassportServices.CHECK_READINESS ]
 
+    static member MAP =
+        [ PassportServices.ISSUE_FOREIGN, [] |> Map; PassportServices.CHECK_READINESS, [] |> Map ]
+        |> Map
+
 type NotaryServices =
     | PowerOfAttorney of (Kdmid.Domain.Dependencies * Kdmid.Domain.ServiceRequest)
 
@@ -26,6 +30,7 @@ type NotaryServices =
         | PowerOfAttorney _ -> NotaryServices.POWER_OF_ATTORNEY
 
     static member LIST = [ NotaryServices.POWER_OF_ATTORNEY ]
+    static member MAP = [ NotaryServices.POWER_OF_ATTORNEY, [] |> Map ] |> Map
 
 type CitizenshipServices =
     | CitizenshipRenunciation of (Kdmid.Domain.Dependencies * Kdmid.Domain.ServiceRequest)
@@ -37,6 +42,7 @@ type CitizenshipServices =
         | CitizenshipRenunciation _ -> CitizenshipServices.RENUNCIATION
 
     static member LIST = [ CitizenshipServices.RENUNCIATION ]
+    static member MAP = [ CitizenshipServices.RENUNCIATION, [] |> Map ] |> Map
 
 type Service =
     | Passport of PassportServices
@@ -47,13 +53,25 @@ type Service =
     static member private NOTARY = "Нотариат"
     static member private CITIZENSHIP = "Гражданство"
 
+    static member LIST = [ Service.PASSPORT; Service.NOTARY; Service.CITIZENSHIP ]
+
+    static member MAP =
+        [ Service.PASSPORT, PassportServices.MAP
+          Service.NOTARY, NotaryServices.MAP
+          Service.CITIZENSHIP, CitizenshipServices.MAP ]
+        |> Map
+
     member this.Name =
+        match this with
+        | Passport _ -> Service.PASSPORT
+        | Notary _ -> Service.NOTARY
+        | Citizenship _ -> Service.CITIZENSHIP
+
+    member this.FullName =
         match this with
         | Passport service -> Service.PASSPORT + "." + service.Name
         | Notary service -> Service.NOTARY + "." + service.Name
         | Citizenship service -> Service.CITIZENSHIP + "." + service.Name
-
-    static member LIST = [ Service.PASSPORT; Service.NOTARY; Service.CITIZENSHIP ]
 
     member this.createRequest() =
         match this with
