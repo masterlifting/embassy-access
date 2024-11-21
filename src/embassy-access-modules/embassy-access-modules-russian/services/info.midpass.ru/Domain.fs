@@ -7,7 +7,7 @@ type Request =
     { Country: Country
       StatementNumber: string }
 
-    member internal this.Create serviceName =
+    member internal this.CreateRequest serviceName =
         { Id = RequestId.New
           Service =
             { Name = serviceName

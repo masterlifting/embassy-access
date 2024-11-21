@@ -20,14 +20,14 @@ module Service =
         | Notary service ->
             match service with
             | PowerOfAttorney(deps, request) ->
-                service.Name
+                service.Info
                 |> request.CreateRequest
                 |> Kdmid.Domain.StartOrder.create request.TimeZone
                 |> Kdmid.Order.start deps
         | Citizenship service ->
             match service with
             | CitizenshipRenunciation(deps, request) ->
-                service.Name
+                service.Info
                 |> request.CreateRequest
                 |> Kdmid.Domain.StartOrder.create request.TimeZone
                 |> Kdmid.Order.start deps

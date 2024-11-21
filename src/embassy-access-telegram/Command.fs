@@ -66,7 +66,8 @@ type Name =
     | ChoseSubscriptionRequestWay of Embassy * command: string
     | SubscriptionRequest of Embassy
     | Service of Embassy
-    | RussianService of (Embassy * string * uint8)
+    | ServiceGet of Embassy * string
+    | RussianService of Embassy * string * int32
     | SubscribeSearchAppointments of Embassy * payload: string
     | SubscribeSearchOthers of Embassy * payload: string
     | SubscribeSearchPassportResult of Embassy * payload: string

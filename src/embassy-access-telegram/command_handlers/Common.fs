@@ -149,16 +149,5 @@ let userCities (embassyName, countryName) =
 let service embassy =
     fun (chatId, msgId) ->
         match embassy with
-        | Russian _ ->
-            EA.Telegram.CommandHandler.Russian.services ()
-            |> Seq.map (fun service -> (embassy, service, 0uy) |> Command.RussianService |> Command.set, service)
-            |> Map
-            |> fun data ->
-                { Buttons.Name = "What do you need?"
-                  Columns = 3
-                  Data = data }
-                |> Buttons.create (chatId, msgId |> Replace)
-                |> Ok
-                |> async.Return
+        | Russian _ -> EA.Telegram.CommandHandler.Russian.service (embassy, None, 0) (chatId, msgId)
         | _ -> $"Service for {embassy}" |> NotSupported |> Error |> async.Return
-        
