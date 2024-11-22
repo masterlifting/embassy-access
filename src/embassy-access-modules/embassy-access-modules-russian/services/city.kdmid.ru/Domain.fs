@@ -42,7 +42,7 @@ type ServiceRequest =
       TimeZone: float
       Confirmation: ConfirmationState }
 
-    member internal this.CreateRequest serviceName =
+    member internal this.Create serviceName =
         { Id = RequestId.New
           Service =
             { Name = serviceName

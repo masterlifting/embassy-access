@@ -6,6 +6,13 @@ open Infrastructure
 module Constants =
     [<Literal>]
     let REQUESTS_STORAGE_NAME = "requests"
+    
+type Info =
+    { Name: string
+      Description: string option }
+    
+    interface Graph.INodeName with
+        member this.Name = this.Name
 
 type City =
     | Belgrade

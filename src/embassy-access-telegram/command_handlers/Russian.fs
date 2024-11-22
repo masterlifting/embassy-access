@@ -20,8 +20,20 @@ let service (embassy, nameOpt, index) =
                 |> Buttons.create (chatId, msgId |> Replace)
 
         match nameOpt with
-        | None -> Service.LIST |> createButtons index
+        | None ->
+            Service.GRAPH
+            |> Graph.getGeneration 0
+            |> Seq.map _.Value.Name
+            |> createButtons index
+            |> Ok
+            |> async.Return
         | Some service ->
+            let names =
+                Service.GRAPH
+                |> Graph.findNode service
+                |> Graph.getGeneration index
+                |> Seq.map _.Value.Name
+                
             match service |> Service.getNext index with
             | [] ->
                 let command = (embassy, service) |> Command.ServiceGet |> Command.set

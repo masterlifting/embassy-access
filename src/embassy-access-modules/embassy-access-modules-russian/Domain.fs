@@ -3,13 +3,16 @@
 open EA.Embassies.Russian
 open Infrastructure
 
+module Constants =
+    [<Literal>]
+    let internal EMBASSY_NAME = "Посольство РФ"
+
 type ServiceInfo =
     { Name: string
-      Instruction: string option }
+      Description: string option }
 
     interface Graph.INodeName with
         member this.Name = this.Name
-
 
 module Midpass =
     type CheckReadiness =
@@ -17,7 +20,7 @@ module Midpass =
 
         static member INFO =
             { Name = "Проверка готовности паспорта"
-              Instruction =
+              Description =
                 Some
                     @"Что бы воспользоваться услугой, пожалуйста,
                   добавьте к указанной комманде номер справки" }
@@ -36,16 +39,17 @@ module Kdmid =
 
         static member INFO =
             { Name = "Выпуск заграничного паспорта"
-              Instruction = Some INSTRUCTION }
+              Description = Some INSTRUCTION }
 
         member this.Info = IssueForeign.INFO
 
     type PowerOfAttorney =
-        { Request: Midpass.Domain.Request }
+        { Request: Kdmid.Domain.ServiceRequest
+          Dependencies: Kdmid.Domain.Dependencies }
 
         static member INFO =
             { Name = "Доверенность"
-              Instruction = Some INSTRUCTION }
+              Description = Some INSTRUCTION }
 
         member this.Info = PowerOfAttorney.INFO
 
@@ -55,7 +59,7 @@ module Kdmid =
 
         static member INFO =
             { Name = "Отказ от гражданства"
-              Instruction = Some INSTRUCTION }
+              Description = Some INSTRUCTION }
 
         member this.Info = CitizenshipRenunciation.INFO
 
@@ -68,15 +72,13 @@ type PassportService =
         | IssueForeign service -> service.Info
         | CheckReadiness service -> service.Info
 
-    static member LIST = [ Kdmid.IssueForeign.INFO; Midpass.CheckReadiness.INFO ]
-
-    static member internal MAP =
-        [ Kdmid.IssueForeign.INFO.Name, Map.empty<string, ServiceInfo>
-          Midpass.CheckReadiness.INFO.Name, Map.empty<string, ServiceInfo> ]
-        |> Map
-
-    static member internal GRAPH = Graph.Node(Kdmid.IssueForeign.INFO, [])
-
+    static member GRAPH =
+        Graph.Node(
+            { Name = "Пасспорт"
+              Description = None },
+            [ Graph.Node(Kdmid.IssueForeign.INFO, [])
+              Graph.Node(Midpass.CheckReadiness.INFO, []) ]
+        )
 
 type NotaryService =
     | PowerOfAttorney of Kdmid.PowerOfAttorney
@@ -85,10 +87,12 @@ type NotaryService =
         match this with
         | PowerOfAttorney service -> service.Info
 
-    static member LIST = [ Kdmid.PowerOfAttorney.INFO ]
-
-    static member internal MAP =
-        [ Kdmid.PowerOfAttorney.INFO.Name, Map.empty<string, ServiceInfo> ] |> Map
+    static member GRAPH =
+        Graph.Node(
+            { Name = "Нотариат"
+              Description = None },
+            [ Graph.Node(Kdmid.PowerOfAttorney.INFO, []) ]
+        )
 
 type CitizenshipService =
     | CitizenshipRenunciation of Kdmid.CitizenshipRenunciation
@@ -97,65 +101,27 @@ type CitizenshipService =
         match this with
         | CitizenshipRenunciation service -> service.Info
 
-    static member LIST = [ Kdmid.CitizenshipRenunciation.INFO ]
-
-    static member internal MAP =
-        [ Kdmid.CitizenshipRenunciation.INFO.Name, Map.empty<string, ServiceInfo> ]
-        |> Map
+    static member GRAPH =
+        Graph.Node(
+            { Name = "Гражданство"
+              Description = None },
+            [ Graph.Node(Kdmid.CitizenshipRenunciation.INFO, []) ]
+        )
 
 type Service =
     | Passport of PassportService
     | Notary of NotaryService
     | Citizenship of CitizenshipService
 
-    static member private PASSPORT_INFO = { Name = "Паспорт"; Instruction = None }
-
-    static member private NOTARY_INFO =
-        { Name = "Нотариат"
-          Instruction = None }
-
-    static member private CITIZENSHIP_INFO =
-        { Name = "Гражданство"
-          Instruction = None }
-
     member this.Info =
         match this with
-        | Passport _ -> Service.PASSPORT_INFO
-        | Notary _ -> Service.NOTARY_INFO
-        | Citizenship _ -> Service.CITIZENSHIP_INFO
+        | Passport service -> service.Info
+        | Notary service -> service.Info
+        | Citizenship service -> service.Info
 
-    static member LIST = [ Service.PASSPORT_INFO; Service.NOTARY_INFO; Service.CITIZENSHIP_INFO ]
-
-    static member internal MAP =
-        [ Service.PASSPORT_INFO.Name, PassportService.MAP
-          Service.NOTARY_INFO.Name, NotaryService.MAP
-          Service.CITIZENSHIP_INFO.Name, CitizenshipService.MAP ]
-        |> Map
-
-    static member internal GRAPH =
+    static member GRAPH =
         Graph.Node(
-            Service.PASSPORT_INFO, [ PassportService.GRAPH ]
-            )
-
-    static member getNext depth service =
-
-        let rec innerLoop d items =
-            if d = depth then
-                items |> Map.tryFind service
-            else
-                items |> Map.tryFind service
-
-        Service.MAP |> innerLoop 0
-
-    member this.CreateRequest() =
-        match this with
-        | Passport service ->
-            match service with
-            | IssueForeign service -> service.Request.CreateRequest service.Info.Name
-            | CheckReadiness service -> service.Request.CreateRequest service.Info.Name
-        | Notary service ->
-            match service with
-            | PowerOfAttorney service -> service.Request.CreateRequest service.Info.Name
-        | Citizenship service ->
-            match service with
-            | CitizenshipRenunciation service -> service.Request.CreateRequest service.Info.Name
+            { Name = Constants.EMBASSY_NAME
+              Description = None },
+            [ PassportService.GRAPH; NotaryService.GRAPH; CitizenshipService.GRAPH ]
+        )

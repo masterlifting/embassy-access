@@ -11,12 +11,6 @@ module private Fixture =
     open Web.Http.Domain
     open Persistence.FileSystem
 
-    let request =
-        { Uri = Uri("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F")
-          Country = Germany Berlin
-          TimeZone = 1.0
-          Confirmation = Auto FirstAvailable }
-
     let httpRequestHeaders =
         Some
         <| Map [ "Set-Cookie", [ "ASP.NET_SessionId=1"; " AlteonP=1"; " __ddg1_=1" ] ]
@@ -47,7 +41,7 @@ module private Fixture =
         |> ResultAsync.wrap Storage.Read.string
         |> ResultAsync.map (Option.defaultValue "")
 
-    let dependencies =
+    let Dependencies =
         { updateRequest = fun request -> async { return Ok request }
           getInitialPage = fun _ _ -> httpGetStringRequest "initial_page_response"
           getCaptcha = fun _ _ -> httpGetBytesRequest "captcha.png"
@@ -56,15 +50,30 @@ module private Fixture =
           postAppointmentsPage = fun _ _ _ -> httpPostStringRequest "appointments_page_has_result_1"
           postConfirmationPage = fun _ _ _ -> httpPostStringRequest "confirmation_page_has_result_1" }
 
+    let private Request =
+        { Uri = Uri("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F")
+          Country = Germany Berlin
+          TimeZone = 1.0
+          Confirmation = Auto FirstAvailable }
+
+    let IssueForeign =
+        { Kdmid.IssueForeign.Request = Request
+          Kdmid.IssueForeign.Dependencies = Dependencies }
+
 open Fixture
 
 let private ``validation page should have an error`` =
     testAsync "Validation page should have an error" {
         let dependencies =
-            { dependencies with
+            { Dependencies with
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_has_error" }
 
-        let service = Passport <| IssueForeign(dependencies, request)
+        let service =
+            { IssueForeign with
+                Kdmid.IssueForeign.Dependencies = dependencies }
+            |> PassportService.IssueForeign
+            |> Passport
+
         let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
@@ -77,10 +86,15 @@ let private ``validation page should have an error`` =
 let private ``validation page should have a confirmed request`` =
     testAsync "Validation page should have a confirmed request" {
         let dependencies =
-            { dependencies with
+            { Dependencies with
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_requires_confirmation" }
 
-        let service = Passport <| IssueForeign(dependencies, request)
+        let service =
+            { IssueForeign with
+                Kdmid.IssueForeign.Dependencies = dependencies }
+            |> PassportService.IssueForeign
+            |> Passport
+
         let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
@@ -93,10 +107,15 @@ let private ``validation page should have a confirmed request`` =
 let private ``validation page should have a confirmation`` =
     testAsync "Validation page should have a confirmation" {
         let dependencies =
-            { dependencies with
+            { Dependencies with
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_has_confirmation" }
 
-        let service = Passport <| IssueForeign(dependencies, request)
+        let service =
+            { IssueForeign with
+                Kdmid.IssueForeign.Dependencies = dependencies }
+            |> PassportService.IssueForeign
+            |> Passport
+
         let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
@@ -109,10 +128,15 @@ let private ``validation page should have a confirmation`` =
 let private ``validation page should have a deleted request`` =
     testAsync "Validation page should have a deleted request" {
         let dependencies =
-            { dependencies with
+            { Dependencies with
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_request_deleted" }
 
-        let service = Passport <| IssueForeign(dependencies, request)
+        let service =
+            { IssueForeign with
+                Kdmid.IssueForeign.Dependencies = dependencies }
+            |> PassportService.IssueForeign
+            |> Passport
+
         let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
@@ -127,10 +151,15 @@ let private ``appointments page should not have data`` =
     <| fun i ->
         async {
             let dependencies =
-                { dependencies with
+                { Dependencies with
                     postAppointmentsPage = fun _ _ _ -> httpPostStringRequest $"appointments_page_empty_result_{i}" }
 
-            let service = Passport <| IssueForeign(dependencies, request)
+            let service =
+                { IssueForeign with
+                    Kdmid.IssueForeign.Dependencies = dependencies }
+                |> PassportService.IssueForeign
+                |> Passport
+
             let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
@@ -142,10 +171,15 @@ let private ``appointments page should have data`` =
     <| fun i ->
         async {
             let dependencies =
-                { dependencies with
+                { Dependencies with
                     postAppointmentsPage = fun _ _ _ -> httpPostStringRequest $"appointments_page_has_result_{i}" }
 
-            let service = Passport <| IssueForeign(dependencies, request)
+            let service =
+                { IssueForeign with
+                    Kdmid.IssueForeign.Dependencies = dependencies }
+                |> PassportService.IssueForeign
+                |> Passport
+
             let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
@@ -157,10 +191,15 @@ let private ``confirmation page should have a valid result`` =
     <| fun i ->
         async {
             let dependencies =
-                { dependencies with
+                { Dependencies with
                     postConfirmationPage = fun _ _ _ -> httpPostStringRequest $"confirmation_page_has_result_{i}" }
 
-            let service = Passport <| IssueForeign(dependencies, request)
+            let service =
+                { IssueForeign with
+                    Kdmid.IssueForeign.Dependencies = dependencies }
+                |> PassportService.IssueForeign
+                |> Passport
+
             let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
