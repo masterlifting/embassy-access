@@ -19,15 +19,15 @@ module private Consume =
                 | Command.UserEmbassies ->
                     CommandHandler.Common.userEmbassies msg.ChatId cfg ct
                     |> produceResult msg.ChatId client ct
-                | Command.SubscribeSearchAppointments(embassy, payload) ->
-                    CommandHandler.subscribe (embassy, payload, "searchappointments") msg.ChatId cfg ct
-                    |> produceResult msg.ChatId client ct
-                | Command.SubscribeSearchOthers(embassy, payload) ->
-                    CommandHandler.subscribe (embassy, payload, "searchothers") msg.ChatId cfg ct
-                    |> produceResult msg.ChatId client ct
-                | Command.SubscribeSearchPassportResult(embassy, payload) ->
-                    CommandHandler.subscribe (embassy, payload, "searchpassportresult") msg.ChatId cfg ct
-                    |> produceResult msg.ChatId client ct
+                // | Command.SubscribeSearchAppointments(embassy, payload) ->
+                //     CommandHandler.subscribe (embassy, payload, "searchappointments") msg.ChatId cfg ct
+                //     |> produceResult msg.ChatId client ct
+                // | Command.SubscribeSearchOthers(embassy, payload) ->
+                //     CommandHandler.subscribe (embassy, payload, "searchothers") msg.ChatId cfg ct
+                //     |> produceResult msg.ChatId client ct
+                // | Command.SubscribeSearchPassportResult(embassy, payload) ->
+                //     CommandHandler.subscribe (embassy, payload, "searchpassportresult") msg.ChatId cfg ct
+                //     |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
     let callback (msg: Dto<string>) cfg ct client =
@@ -51,25 +51,31 @@ module private Consume =
                     CommandHandler.Common.userCities (embassy, country) (msg.ChatId, msg.Id) cfg ct
                     |> produceResult msg.ChatId client ct
                 | Command.SubscriptionRequest embassy ->
-                    CommandHandler.subscriptionRequest embassy (msg.ChatId, msg.Id)
+                    CommandHandler_Old.subscriptionRequest embassy (msg.ChatId, msg.Id)
                     |> produceResult msg.ChatId client ct
                 | Command.UserSubscriptions embassy ->
-                    CommandHandler.userSubscriptions embassy (msg.ChatId, msg.Id) cfg ct
+                    CommandHandler_Old.userSubscriptions embassy (msg.ChatId, msg.Id) cfg ct
                     |> produceResult msg.ChatId client ct
                 | Command.ChooseAppointmentRequest(embassy, appointmentId) ->
-                    CommandHandler.chooseAppointmentRequest (embassy, appointmentId) msg.ChatId cfg ct
+                    CommandHandler_Old.chooseAppointmentRequest (embassy, appointmentId) msg.ChatId cfg ct
                     |> produceResult msg.ChatId client ct
                 | Command.ConfirmAppointment(requestId, appointmentId) ->
-                    CommandHandler.confirmAppointment (requestId, appointmentId) msg.ChatId cfg ct
+                    CommandHandler_Old.confirmAppointment (requestId, appointmentId) msg.ChatId cfg ct
                     |> produceResult msg.ChatId client ct
                 | Command.RemoveSubscription subscriptionId ->
-                    CommandHandler.removeSubscription subscriptionId msg.ChatId cfg ct
+                    CommandHandler_Old.removeSubscription subscriptionId msg.ChatId cfg ct
                     |> produceResult msg.ChatId client ct
                 | Command.ChoseSubscriptionRequestWay(embassy, command) ->
-                    CommandHandler.chooseSubscriptionRequestWay (embassy, command) (msg.ChatId, msg.Id)
+                    CommandHandler_Old.chooseSubscriptionRequestWay (embassy, command) (msg.ChatId, msg.Id)
                     |> produceResult msg.ChatId client ct
                 | Command.ChoseSubscriptionRequest(embassy, command, way) ->
-                    CommandHandler.choseSubscriptionRequest (embassy, command, way) (msg.ChatId, msg.Id)
+                    CommandHandler_Old.choseSubscriptionRequest (embassy, command, way) (msg.ChatId, msg.Id)
+                    |> produceResult msg.ChatId client ct
+                | Command.Service embassy ->
+                    CommandHandler.Common.service embassy (msg.ChatId, msg.Id)
+                    |> produceOk client ct
+                | Command.RussianService(country, serviceName) ->
+                    CommandHandler.Russian.service (country, Some serviceName) (msg.ChatId, msg.Id)
                     |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 

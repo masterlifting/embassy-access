@@ -14,7 +14,7 @@
         <Compile Include="persistence\Repository.fs"/>
         <Compile Include="persistence\Storage.fs"/>
         <Compile Include="Command.fs"/>
-        <Compile Include="CommandHandler.fs"/>
+        <Compile Include="CommandHandler_Old.fs" />
         <Compile Include="command_handlers\Russian.fs" />
         <Compile Include="command_handlers\Common.fs" />
         <Compile Include="Consumer.fs"/>

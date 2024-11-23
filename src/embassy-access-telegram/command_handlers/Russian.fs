@@ -6,12 +6,14 @@ open Web.Telegram.Domain.Producer
 open EA.Telegram
 open EA.Embassies.Russian.Domain
 
-let service (embassy, nameOpt, index) =
+let service (country, serviceNameOpt) =
     fun (chatId, msgId) ->
 
-        let inline createButtons index items =
-            items
-            |> Seq.map (fun item -> (embassy, item, index) |> Command.RussianService |> Command.set, item)
+        let inline createButtons services =
+            services
+            |> Seq.map (fun service ->
+                let buttonName = service.Name |> Graph.splitNodeName |> Seq.last
+                (country, service.Name) |> Command.RussianService |> Command.set, buttonName)
             |> Map
             |> fun data ->
                 { Buttons.Name = "Какую услугу вы хотите получить?"
@@ -19,25 +21,26 @@ let service (embassy, nameOpt, index) =
                   Data = data }
                 |> Buttons.create (chatId, msgId |> Replace)
 
-        match nameOpt with
-        | None ->
+        match serviceNameOpt with
+        | None -> Service.GRAPH.Children |> Seq.map _.Value |> createButtons |> Ok |> async.Return
+        | Some serviceName ->
             Service.GRAPH
-            |> Graph.getGeneration 0
-            |> Seq.map _.Value.Name
-            |> createButtons index
-            |> Ok
+            |> Graph.findNode serviceName
+            |> Option.map Ok
+            |> Option.defaultValue (serviceName |> NotFound |> Error)
+            |> Result.map (fun node ->
+                let services = node.ChildrenWithFullName |> Seq.map _.Value |> Seq.toList
+
+                match services with
+                | [] ->
+                    let instruction =
+                        node.Value.Description
+                        |> Option.defaultValue "Дополнительная Информация отсутствует"
+
+                    let command =
+                        (EA.Core.Domain.Russian country, serviceName) |> Command.ServiceGet |> Command.set
+
+                    $"Используйте '%s{command}' для получения услуги. Инструкция: %s{instruction}"
+                    |> Text.create (chatId, msgId |> Replace)
+                | _ -> services |> createButtons)
             |> async.Return
-        | Some service ->
-            let names =
-                Service.GRAPH
-                |> Graph.findNode service
-                |> Graph.getGeneration index
-                |> Seq.map _.Value.Name
-                
-            match service |> Service.getNext index with
-            | [] ->
-                let command = (embassy, service) |> Command.ServiceGet |> Command.set
-                $"Use '{command}' to get the service" |> Text.create (chatId, msgId |> Replace)
-            | items -> items |> createButtons (index + 1)
-        |> Ok
-        |> async.Return

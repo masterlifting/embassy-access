@@ -149,5 +149,5 @@ let userCities (embassyName, countryName) =
 let service embassy =
     fun (chatId, msgId) ->
         match embassy with
-        | Russian _ -> EA.Telegram.CommandHandler.Russian.service (embassy, None, 0) (chatId, msgId)
+        | Russian country -> EA.Telegram.CommandHandler.Russian.service (country, None) (chatId, msgId)
         | _ -> $"Service for {embassy}" |> NotSupported |> Error |> async.Return

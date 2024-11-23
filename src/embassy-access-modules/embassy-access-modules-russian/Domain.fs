@@ -13,6 +13,7 @@ type ServiceInfo =
 
     interface Graph.INodeName with
         member this.Name = this.Name
+        member this.setName name = { this with Name = name }
 
 module Midpass =
     type CheckReadiness =

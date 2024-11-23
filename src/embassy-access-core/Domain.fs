@@ -13,6 +13,7 @@ type Info =
     
     interface Graph.INodeName with
         member this.Name = this.Name
+        member this.setName name = { this with Name = name }
 
 type City =
     | Belgrade

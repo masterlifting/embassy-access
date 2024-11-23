@@ -41,11 +41,11 @@ module Produce =
         | Appointments(embassy, appointments) ->
             getEmbassyChats embassy cfg ct
             |> ResultAsync.bindAsync (fun chats ->
-                (embassy, appointments) |> CommandHandler.appointments |> spread chats ct)
+                (embassy, appointments) |> CommandHandler_Old.appointments |> spread chats ct)
         | Confirmations(requestId, embassy, confirmations) ->
             getSubscriptionChats requestId cfg ct
             |> ResultAsync.bindAsync (fun chats ->
-                (embassy, confirmations) |> CommandHandler.confirmation |> spread chats ct)
+                (embassy, confirmations) |> CommandHandler_Old.confirmation |> spread chats ct)
         | Fail(requestId, error) ->
             getSubscriptionChats requestId cfg ct
             |> ResultAsync.bindAsync (fun chats -> error |> Web.Telegram.Producer.Text.createError |> spread chats ct)

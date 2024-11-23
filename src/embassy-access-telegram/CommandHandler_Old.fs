@@ -1,4 +1,4 @@
-﻿module EA.Telegram.CommandHandler
+﻿module EA.Telegram.CommandHandler_Old
 
 open System
 
@@ -107,41 +107,41 @@ let userSubscriptions embassy =
               Data = data }
             |> Buttons.create (chatId, msgId |> Replace))
 
-let subscribe (embassy, payload, service) =
-    fun chatId cfg ct ->
-        match embassy with
-        | Russian _ ->
-
-            let createOrUpdatePassportSearchRequest ct =
-                EA.Persistence.Storage.FileSystem.Request.create cfg
-                |> ResultAsync.wrap (fun storage ->
-                    let command =
-                        match service with
-                        | "searchappointments" ->
-                            Repository.Command.Request.createOrUpdatePassportSearch (embassy, payload) ct
-                        | "searchothers" -> Repository.Command.Request.createOrUpdateOthersSearch (embassy, payload) ct
-                        | "searchpassportresult" -> fun _ -> service |> NotSupported |> Error |> async.Return
-                        | _ -> fun _ -> service |> NotSupported |> Error |> async.Return
-
-                    storage |> command)
-
-            let createOrUpdateChatSubscription ct =
-                ResultAsync.bindAsync (fun (request: Request) ->
-                    Storage.FileSystem.Chat.create cfg
-                    |> ResultAsync.wrap (Repository.Command.Chat.createOrUpdateSubscription (chatId, request.Id) ct)
-                    |> ResultAsync.map (fun _ -> request))
-
-            createOrUpdatePassportSearchRequest ct
-            |> createOrUpdateChatSubscription ct
-            |> ResultAsync.map (fun request -> $"Subscription has been activated for '{request.Service.Embassy}'.")
-            |> ResultAsync.map (Text.create (chatId, New))
-        | _ -> $"{embassy}" |> NotSupported |> Error |> async.Return
+// let subscribe (embassy, payload, service) =
+//     fun chatId cfg ct ->
+//         match embassy with
+//         | Russian _ ->
+//
+//             let createOrUpdatePassportSearchRequest ct =
+//                 EA.Persistence.Storage.FileSystem.Request.create cfg
+//                 |> ResultAsync.wrap (fun storage ->
+//                     let command =
+//                         match service with
+//                         | "searchappointments" ->
+//                             Repository.Command.Request.createOrUpdatePassportSearch (embassy, payload) ct
+//                         | "searchothers" -> Repository.Command.Request.createOrUpdateOthersSearch (embassy, payload) ct
+//                         | "searchpassportresult" -> fun _ -> service |> NotSupported |> Error |> async.Return
+//                         | _ -> fun _ -> service |> NotSupported |> Error |> async.Return
+//
+//                     storage |> command)
+//
+//             let createOrUpdateChatSubscription ct =
+//                 ResultAsync.bindAsync (fun (request: Request) ->
+//                     Storage.FileSystem.Chat.create cfg
+//                     |> ResultAsync.wrap (Repository.Command.Chat.createOrUpdateSubscription (chatId, request.Id) ct)
+//                     |> ResultAsync.map (fun _ -> request))
+//
+//             createOrUpdatePassportSearchRequest ct
+//             |> createOrUpdateChatSubscription ct
+//             |> ResultAsync.map (fun request -> $"Subscription has been activated for '{request.Service.Embassy}'.")
+//             |> ResultAsync.map (Text.create (chatId, New))
+//         | _ -> $"{embassy}" |> NotSupported |> Error |> async.Return
 
 let private confirmRussianAppointment request ct storage =
     let deps = Dependencies.create ct storage
     let timeZone = 1 |> float
     let order = StartOrder.create timeZone request
-    order |> API.Order.Kdmid.start deps
+    order |> EA.Embassies.Russian.API.Order.Kdmid.start deps
 
 let private handleRequest storage ct (request, appointmentId) =
 
@@ -213,10 +213,7 @@ let removeSubscription subscriptionId =
             |> ResultAsync.bindAsync (fun _ ->
                 Storage.FileSystem.Chat.create cfg
                 |> ResultAsync.wrap (fun storage ->
-                    let command =
-                        (chatId, subscriptionId)
-                        |> Command.Definitions.Chat.Delete.Subscription
-                        |> Command.Chat.Delete
+                    let command = chatId |> Command.Chat.Delete
 
                     storage
                     |> Repository.Command.Chat.execute command ct
