@@ -27,6 +27,7 @@ let main _ =
               Countries.Serbia.Tasks
               Countries.Slovenia.Tasks
               Countries.Switzerland.Tasks ]
+
         )
 
     let workerConfig =

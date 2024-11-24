@@ -1,5 +1,6 @@
 ﻿module EA.Telegram.CommandHandler.Russian
 
+open System
 open Infrastructure
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
@@ -22,25 +23,34 @@ let service (country, serviceNameOpt) =
                 |> Buttons.create (chatId, msgId |> Replace)
 
         match serviceNameOpt with
-        | None -> Service.GRAPH.Children |> Seq.map _.Value |> createButtons |> Ok |> async.Return
+        | None ->
+            Service.GRAPH.Children None
+            |> Seq.map _.Value
+            |> createButtons
+            |> Ok
+            |> async.Return
         | Some serviceName ->
             Service.GRAPH
             |> Graph.findNode serviceName
             |> Option.map Ok
             |> Option.defaultValue (serviceName |> NotFound |> Error)
             |> Result.map (fun node ->
-                let services = node.ChildrenWithFullName |> Seq.map _.Value |> Seq.toList
+                let services = serviceName |> Some |> node.Children |> Seq.map _.Value |> Seq.toList
 
                 match services with
                 | [] ->
-                    let instruction =
-                        node.Value.Description
-                        |> Option.defaultValue "Дополнительная Информация отсутствует"
 
                     let command =
-                        (EA.Core.Domain.Russian country, serviceName) |> Command.ServiceGet |> Command.set
+                        (EA.Core.Domain.Russian country, serviceName)
+                        |> Command.ServiceGet
+                        |> Command.set
 
-                    $"Используйте '%s{command}' для получения услуги. Инструкция: %s{instruction}"
+                    let message =
+                        $"%s{command}{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."
+
+                    node.Value.Description
+                    |> Option.map (fun instruction -> message + $"{Environment.NewLine}Инструкция: %s{instruction}")
+                    |> Option.defaultValue message
                     |> Text.create (chatId, msgId |> Replace)
                 | _ -> services |> createButtons)
             |> async.Return

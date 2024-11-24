@@ -2,7 +2,7 @@
 
 Logging:
   LogLevel:
-    Default: Information
+    Default: Debug
 
 Persistence:
   FileSystem: "/usr/src/embassy-access-data"
@@ -14,7 +14,7 @@ Workdays: &Workdays
 
 SearchAppointments: &SearchAppointments
   Name: Search appointments
-  Enabled: true
+  Enabled: false
   Wait: false
   Duration: '00:02:00'
 
@@ -33,6 +33,8 @@ Worker:
   Name: Worker
   Enabled: true
   Wait: false
+  Schedule:
+    <<: *Workdays
   Tasks:
     - Name: Serbia
       Parallel: true
