@@ -100,10 +100,10 @@ let set command =
     | UserCountries embassyName -> [ Code.USER_COUNTRIES; embassyName ] |> build
     | UserCities(embassyName, countryName) -> [ Code.USER_CITIES; embassyName; countryName ] |> build
     | Service embassy -> [ Code.SERVICE; embassy |> EA.Core.SerDe.Embassy.serialize ] |> build
-    | RussianService(country, serviceName) ->
+    | RussianService(country, serviceId) ->
         [ Code.RUSSIAN_SERVICE
           country |> EA.Core.SerDe.Country.serialize
-          serviceName ]
+          serviceId |> string ]
         |> build
     | UserSubscriptions embassy ->
         embassy
@@ -270,6 +270,8 @@ let get (value: string) =
                 |> Result.bind (fun country ->
                     parts[2]
                     |> Ok
-                    |> Result.map (fun serviceName -> Some(RussianService(country, serviceName))))
+                    |> Result.bind (fun serviceId ->
+                        Graph.NodeId.parse serviceId
+                        |> Result.map (fun id -> Some(RussianService(country, id)))))
             | _ -> Ok <| None
         | _ -> Ok <| None

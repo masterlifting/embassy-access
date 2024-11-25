@@ -22,28 +22,24 @@ let service (country, serviceIdOpt) =
 
         match serviceIdOpt with
         | None -> Service.GRAPH.Children |> createButtons |> Ok |> async.Return
-        | Some serviceIdStr ->
-            serviceIdStr
-            |> Graph.NodeId.parse
-            |> Result.bind (fun serviceId ->
-                Service.GRAPH
-                |> Graph.BFS.tryFindById serviceId
-                |> Option.map Ok
-                |> Option.defaultValue ("Не могу найти выбранную услугу" |> NotFound |> Error)
-                |> Result.map (fun node ->
-                    match node.Children with
-                    | [] ->
+        | Some serviceId ->
+            Service.GRAPH
+            |> Graph.BFS.tryFindById serviceId
+            |> Option.map Ok
+            |> Option.defaultValue ("Не могу найти выбранную услугу" |> NotFound |> Error)
+            |> Result.map (fun node ->
+                match node.Children with
+                | [] ->
 
-                        let command =
-                            (EA.Core.Domain.Russian country, serviceId) |> Command.ServiceGet |> Command.set
+                    let command =
+                        (EA.Core.Domain.Russian country, serviceId) |> Command.ServiceGet |> Command.set
 
-                        let message =
-                            $"%s{command}{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."
+                    let message =
+                        $"%s{command}{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."
 
-                        node.Value.Description
-                        |> Option.map (fun instruction ->
-                            message + $"{Environment.NewLine}Инструкция: %s{instruction}")
-                        |> Option.defaultValue message
-                        |> Text.create (chatId, msgId |> Replace)
-                    | services -> services |> createButtons))
+                    node.Value.Description
+                    |> Option.map (fun instruction -> message + $"{Environment.NewLine}Инструкция: %s{instruction}")
+                    |> Option.defaultValue message
+                    |> Text.create (chatId, msgId |> Replace)
+                | services -> services |> createButtons)
             |> async.Return
