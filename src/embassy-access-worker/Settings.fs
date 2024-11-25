@@ -20,7 +20,7 @@ let getSchedule configuration =
         configuration
         |> get
         |> Result.bind Worker.Graph.map
-        |> Result.map (Graph.findNode taskName >> Option.bind _.Value.Schedule)
+        |> Result.map (Graph.DFS.tryFindByName taskName >> Option.bind _.Value.Schedule)
         |> Result.bind (
             Option.map Ok
             >> Option.defaultValue (Error <| NotFound $"Task schedule '%s{taskName}' in the configuration.")
@@ -32,7 +32,7 @@ let getTask taskHandlers configuration =
         |> get
         |> Result.bind (Worker.Graph.create taskHandlers)
         |> Result.bind (
-            Graph.findNode taskName
+            Graph.DFS.tryFindByName taskName
             >> Option.map Ok
             >> Option.defaultValue (Error <| NotFound $"Task '%s{taskName}' in the configuration.")
         )

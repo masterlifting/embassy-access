@@ -7,7 +7,7 @@ open EA.Core.Domain
 
 module internal Kdmid =
     open EA.Embassies.Russian.Kdmid.Domain
-    
+
     let private createPickOrder configuration (schedule: WorkerSchedule) ct =
         let startOrder = ResultBuilder()
 
@@ -53,14 +53,18 @@ module internal Kdmid =
 
 let addTasks country =
     Graph.Node(
-        { Name = "Russian"; Task = None },
+        { Id = "1631a3ab-31d8-438a-bd4f-effc58462ee2" |> Graph.NodeId.create
+          Name = "Russian"
+          Task = None },
         [ Graph.Node(
-              { Name = "Search appointments"
+              { Id = "b1a218ba-7c36-44bf-a208-99fc89aac375" |> Graph.NodeId.create
+                Name = "Search appointments"
                 Task = Some <| Kdmid.SearchAppointments.run country },
               []
           )
           Graph.Node(
-              { Name = "Make appointments"
+              { Id = "c81e9a09-54cb-4548-aeab-05dd19e4fa58" |> Graph.NodeId.create
+                Name = "Make appointments"
                 Task = None },
               []
           ) ]

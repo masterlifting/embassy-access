@@ -6,6 +6,17 @@ open EA.Core.Domain
 open EA.Worker.Embassies
 
 let private Podgorica =
-    Graph.Node({ Name = "Podgorica"; Task = None }, [ Russian.addTasks <| Montenegro Podgorica ])
+    Graph.Node(
+        { Id = Graph.NodeId.New
+          Name = "Podgorica"
+          Task = None },
+        [ Russian.addTasks <| Montenegro Podgorica ]
+    )
 
-let Tasks = Graph.Node({ Name = "Montenegro"; Task = None }, [ Podgorica ])
+let Tasks =
+    Graph.Node(
+        { Id = Graph.NodeId.New
+          Name = "Montenegro"
+          Task = None },
+        [ Podgorica ]
+    )

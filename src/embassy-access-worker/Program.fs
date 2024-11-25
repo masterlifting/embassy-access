@@ -9,7 +9,8 @@ let main _ =
     Logging.useConsole configuration
 
     let rootTask =
-        { Name = Settings.AppName
+        { Id = Graph.NodeId.New
+          Name = Settings.AppName
           Task = Some Initializer.initialize }
 
     let taskHandlers =
@@ -22,6 +23,7 @@ let main _ =
               Countries.Germany.Tasks
               Countries.Hungary.Tasks
               Countries.Ireland.Tasks
+              Countries.Italy.Tasks
               Countries.Montenegro.Tasks
               Countries.Netherlands.Tasks
               Countries.Serbia.Tasks

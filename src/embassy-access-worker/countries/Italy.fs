@@ -1,22 +1,22 @@
-﻿module internal EA.Worker.Countries.Finland
+﻿module internal EA.Worker.Countries.Italy
 
 open Infrastructure.Domain
 open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Embassies
 
-let private Helsinki =
+let private Rome =
     Graph.Node(
         { Id = Graph.NodeId.New
-          Name = "Helsinki"
+          Name = "Rome"
           Task = None },
-        [ Russian.addTasks <| Finland Helsinki ]
+        [ Russian.addTasks <| Italy Rome ]
     )
 
 let Tasks =
     Graph.Node(
         { Id = Graph.NodeId.New
-          Name = "Finland"
+          Name = "Italy"
           Task = None },
-        [ Helsinki ]
+        [ Rome ]
     )

@@ -1,6 +1,7 @@
 ﻿module EA.Telegram.Command
 
 open EA.Core.Domain
+open Infrastructure
 open Infrastructure.Logging
 
 [<Literal>]
@@ -54,10 +55,10 @@ module private Code =
 
     [<Literal>]
     let CHOOSE_SUBSCRIPTION_REQUEST_WAY = "/014"
-    
+
     [<Literal>]
     let SERVICE = "/015"
-    
+
     [<Literal>]
     let RUSSIAN_SERVICE = "/016"
 
@@ -73,8 +74,8 @@ type Name =
     | ChoseSubscriptionRequestWay of Embassy * command: string
     | SubscriptionRequest of Embassy
     | Service of Embassy
-    | ServiceGet of Embassy * string
-    | RussianService of Country * string
+    | ServiceGet of Embassy * Graph.NodeId
+    | RussianService of Country * Graph.NodeId
     | SubscribeSearchAppointments of Embassy * payload: string
     | SubscribeSearchOthers of Embassy * payload: string
     | SubscribeSearchPassportResult of Embassy * payload: string
@@ -99,7 +100,11 @@ let set command =
     | UserCountries embassyName -> [ Code.USER_COUNTRIES; embassyName ] |> build
     | UserCities(embassyName, countryName) -> [ Code.USER_CITIES; embassyName; countryName ] |> build
     | Service embassy -> [ Code.SERVICE; embassy |> EA.Core.SerDe.Embassy.serialize ] |> build
-    | RussianService(country, serviceName) -> [ Code.RUSSIAN_SERVICE; country |> EA.Core.SerDe.Country.serialize; serviceName ] |> build
+    | RussianService(country, serviceName) ->
+        [ Code.RUSSIAN_SERVICE
+          country |> EA.Core.SerDe.Country.serialize
+          serviceName ]
+        |> build
     | UserSubscriptions embassy ->
         embassy
         |> EA.Core.SerDe.Embassy.serialize
@@ -252,13 +257,10 @@ let get (value: string) =
             match argsLength with
             | 1 -> parts[1] |> RequestId.create |> Result.map (Some << RemoveSubscription)
             | _ -> Ok <| None
-            
+
         | Code.SERVICE ->
             match argsLength with
-            | 1 ->
-                parts[1]
-                |> EA.Core.SerDe.Embassy.deserialize
-                |> Result.map (Some << Service)
+            | 1 -> parts[1] |> EA.Core.SerDe.Embassy.deserialize |> Result.map (Some << Service)
             | _ -> Ok <| None
         | Code.RUSSIAN_SERVICE ->
             match argsLength with

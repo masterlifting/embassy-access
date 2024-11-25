@@ -7,14 +7,12 @@ open Web.Telegram.Domain.Producer
 open EA.Telegram
 open EA.Embassies.Russian.Domain
 
-let service (country, serviceNameOpt) =
+let service (country, serviceIdOpt) =
     fun (chatId, msgId) ->
 
-        let inline createButtons services =
-            services
-            |> Seq.map (fun service ->
-                let buttonName = service.Name |> Graph.splitNodeName |> Seq.last
-                (country, service.Name) |> Command.RussianService |> Command.set, buttonName)
+        let inline createButtons (nodes: Graph.Node<ServiceInfo> seq) =
+            nodes
+            |> Seq.map (fun node -> (country, node.Id) |> Command.RussianService |> Command.set, node.ShortName)
             |> Map
             |> fun data ->
                 { Buttons.Name = "Какую услугу вы хотите получить?"
@@ -22,35 +20,30 @@ let service (country, serviceNameOpt) =
                   Data = data }
                 |> Buttons.create (chatId, msgId |> Replace)
 
-        match serviceNameOpt with
-        | None ->
-            Service.GRAPH.Children None
-            |> Seq.map _.Value
-            |> createButtons
-            |> Ok
-            |> async.Return
-        | Some serviceName ->
-            Service.GRAPH
-            |> Graph.findNode serviceName
-            |> Option.map Ok
-            |> Option.defaultValue (serviceName |> NotFound |> Error)
-            |> Result.map (fun node ->
-                let services = serviceName |> Some |> node.Children |> Seq.map _.Value |> Seq.toList
+        match serviceIdOpt with
+        | None -> Service.GRAPH.Children |> createButtons |> Ok |> async.Return
+        | Some serviceIdStr ->
+            serviceIdStr
+            |> Graph.NodeId.parse
+            |> Result.bind (fun serviceId ->
+                Service.GRAPH
+                |> Graph.BFS.tryFindById serviceId
+                |> Option.map Ok
+                |> Option.defaultValue ("Не могу найти выбранную услугу" |> NotFound |> Error)
+                |> Result.map (fun node ->
+                    match node.Children with
+                    | [] ->
 
-                match services with
-                | [] ->
+                        let command =
+                            (EA.Core.Domain.Russian country, serviceId) |> Command.ServiceGet |> Command.set
 
-                    let command =
-                        (EA.Core.Domain.Russian country, serviceName)
-                        |> Command.ServiceGet
-                        |> Command.set
+                        let message =
+                            $"%s{command}{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."
 
-                    let message =
-                        $"%s{command}{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."
-
-                    node.Value.Description
-                    |> Option.map (fun instruction -> message + $"{Environment.NewLine}Инструкция: %s{instruction}")
-                    |> Option.defaultValue message
-                    |> Text.create (chatId, msgId |> Replace)
-                | _ -> services |> createButtons)
+                        node.Value.Description
+                        |> Option.map (fun instruction ->
+                            message + $"{Environment.NewLine}Инструкция: %s{instruction}")
+                        |> Option.defaultValue message
+                        |> Text.create (chatId, msgId |> Replace)
+                    | services -> services |> createButtons))
             |> async.Return

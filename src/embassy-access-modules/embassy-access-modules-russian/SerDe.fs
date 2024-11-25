@@ -14,8 +14,4 @@ module ServiceName =
         |> String.concat DELIMITER
 
 
-    let deserialize (value: string) =
-        value
-        |> int
-        
-        
+    let deserialize (value: string) = value |> int
