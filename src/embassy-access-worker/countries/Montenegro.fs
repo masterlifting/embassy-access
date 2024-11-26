@@ -2,7 +2,6 @@
 
 open Infrastructure.Domain
 open Worker.Domain
-open EA.Core.Domain
 open EA.Worker.Embassies
 
 let private Podgorica =
@@ -10,7 +9,7 @@ let private Podgorica =
         { Id = Graph.NodeId.New
           Name = "Podgorica"
           Task = None },
-        [ Russian.addTasks <| Montenegro Podgorica ]
+        [ Russian.register () ]
     )
 
 let Tasks =

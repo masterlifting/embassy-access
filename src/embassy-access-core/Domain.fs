@@ -7,10 +7,9 @@ module Constants =
     [<Literal>]
     let REQUESTS_STORAGE_NAME = "requests"
 
-type Info =
+type CoreItem =
     { Id: Graph.NodeId
-      Name: string
-      Description: string option }
+      Name: string }
 
     interface Graph.INodeName with
         member this.Id = this.Id

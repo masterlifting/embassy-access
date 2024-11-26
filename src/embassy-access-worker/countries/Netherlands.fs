@@ -2,7 +2,6 @@
 
 open Infrastructure.Domain
 open Worker.Domain
-open EA.Core.Domain
 open EA.Worker.Embassies
 
 let private Hague =
@@ -10,7 +9,7 @@ let private Hague =
         { Id = Graph.NodeId.New
           Name = "Hague"
           Task = None },
-        [ Russian.addTasks <| Netherlands Hague ]
+        [ Russian.register () ]
     )
 
 let Tasks =

@@ -1,4 +1,4 @@
-﻿module internal EA.Worker.Settings
+﻿module internal EA.Worker.Data
 
 open Infrastructure
 open Worker.Domain
@@ -6,7 +6,7 @@ open Worker.Domain
 [<Literal>]
 let AppName = "Worker"
 
-let getTaskGraphConfig configuration =
+let private getTaskGraphConfig configuration =
     configuration
     |> Configuration.getSection<External.TaskGraph> AppName
     |> Option.map Ok

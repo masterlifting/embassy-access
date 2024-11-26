@@ -4,7 +4,7 @@ open Infrastructure
 open Infrastructure.Logging
 open Worker.Domain
 
-let initialize (configuration, _, ct) =
+let initialize (task: WorkerTaskOut, configuration, ct) =
     async {
         configuration
         |> EA.Telegram.Consumer.start ct
@@ -12,5 +12,5 @@ let initialize (configuration, _, ct) =
         |> Async.Ignore
         |> Async.Start
 
-        return Settings.AppName + " has been initialized." |> Info |> Ok
+        return "Has been initialized." |> Info |> Ok
     }

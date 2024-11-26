@@ -42,28 +42,29 @@ module internal Kdmid =
 
     module SearchAppointments =
 
-        let run country =
-            fun (cfg, schedule, ct) ->
-                createPickOrder cfg schedule ct
+        let run () =
+            fun (task: WorkerTaskOut, cfg, ct) ->
+                createPickOrder cfg task.Schedule ct
                 |> ResultAsync.wrap (fun startOrder ->
-                    country
+                    Belgrade
+                    |> Serbia
                     |> Russian
                     |> EA.Persistence.Query.Request.SearchAppointments
                     |> startOrder)
 
-let addTasks country =
+let register () =
     Graph.Node(
-        { Id = "1631a3ab-31d8-438a-bd4f-effc58462ee2" |> Graph.NodeId.create
+        { Id = Graph.NodeId.New
           Name = "Russian"
           Task = None },
         [ Graph.Node(
-              { Id = "b1a218ba-7c36-44bf-a208-99fc89aac375" |> Graph.NodeId.create
+              { Id = Graph.NodeId.New
                 Name = "Search appointments"
-                Task = Some <| Kdmid.SearchAppointments.run country },
+                Task = Some <| Kdmid.SearchAppointments.run () },
               []
           )
           Graph.Node(
-              { Id = "c81e9a09-54cb-4548-aeab-05dd19e4fa58" |> Graph.NodeId.create
+              { Id = Graph.NodeId.New
                 Name = "Make appointments"
                 Task = None },
               []
