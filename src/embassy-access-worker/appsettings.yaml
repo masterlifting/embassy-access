@@ -5,201 +5,134 @@ Logging:
     Default: Debug
 
 Persistence:
-  FileSystem: "/usr/src/embassy-access-data"
-
-Workdays: &Workdays
-  StartTime: '09:00:00'
-  StopTime: '16:30:00'
-  Workdays: mon,tue,wed,thu,fri
+  FileSystem: "C:\\"
 
 SearchAppointments: &SearchAppointments
   Name: Search appointments
   Enabled: false
   Wait: false
-  Duration: '00:02:00'
-
-MakeAppointments: &MakeAppointments
-  Name: Make appointments
-  Enabled: false
-  Wait: false
   Duration: '00:03:00'
 
-RussianTask: &RussianTask
-  Name: Russian
-  Recursively: '00:25:00'
-  Parallel: true
-
 Worker:
-  Name: Worker
+  Name: Initializer
   Enabled: true
-  Wait: false
+  Wait: true
   Schedule:
-    <<: *Workdays
   Tasks:
-    - Name: Serbia
+    - Name: Russian
       Parallel: true
+      Enabled: true
+      Recursively: '00:01:00'
+      Schedule:
+        StartTime: '09:00:00'
+        StopTime: '16:30:00'
+        Workdays: mon,tue,wed,thu,fri
       Tasks:
-        - Name: Belgrade
+        - Name: Serbia
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Belgrade
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
-
-    - Name: Germany
-      Parallel: true
-      Tasks:
-        - Name: Berlin
+              Schedule:
+                TimeZone: 1
+        - Name: Germany
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Berlin
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
-
-    - Name: France
-      Parallel: true
-      Tasks:
-        - Name: Paris
+              Schedule:
+                TimeZone: 1
+        - Name: France
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Paris
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
-
-    - Name: Montenegro
-      Parallel: true
-      Tasks:
-        - Name: Podgorica
+              Schedule:
+                TimeZone: 1
+        - Name: Montenegro
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Podgorica
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
-
-    - Name: Ireland
-      Parallel: true
-      Tasks:
-        - Name: Dublin
+              Schedule:
+                TimeZone: 1
+        - Name: Ireland
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Dublin
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 0
-            <<: *Workdays
-
-    - Name: Switzerland
-      Parallel: true
-      Tasks:
-        - Name: Bern
+              Schedule:
+                TimeZone: 0
+        - Name: Switzerland
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Bern
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
-
-    - Name: Finland
-      Parallel: true
-      Tasks:
-        - Name: Helsinki
+              Schedule:
+                TimeZone: 1
+        - Name: Finland
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Helsinki
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 2
-            <<: *Workdays
-
-    - Name: Netherlands
-      Parallel: true
-      Tasks:
-        - Name: Hague
+              Schedule:
+                TimeZone: 2
+        - Name: Netherlands
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Hague
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
-
-    - Name: Albania
-      Parallel: true
-      Tasks:
-        - Name: Tirana
+              Schedule:
+                TimeZone: 1
+        - Name: Albania
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Tirana
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
-
-    - Name: Slovenia
-      Parallel: true
-      Tasks:
-        - Name: Ljubljana
+              Schedule:
+                TimeZone: 1
+        - Name: Slovenia
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Ljubljana
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
-
-    - Name: Bosnia
-      Parallel: true
-      Tasks:
-        - Name: Sarajevo
+              Schedule:
+                TimeZone: 1
+        - Name: Bosnia
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Sarajevo
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
-
-    - Name: Hungary
-      Parallel: true
-      Tasks:
-        - Name: Budapest
+              Schedule:
+                TimeZone: 1
+        - Name: Hungary
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Name: Budapest
+              Parallel: true
               Tasks:
                 - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeZone: 1
-            <<: *Workdays
+              Schedule:
+                TimeZone: 1
