@@ -12,7 +12,7 @@ let service (country, serviceIdOpt) =
 
         let inline createButtons (nodes: Graph.Node<ServiceInfo> seq) =
             nodes
-            |> Seq.map (fun node -> (country, node.Id) |> Command.RussianService |> Command.set, node.ShortName)
+            |> Seq.map (fun node -> (country, node.Id) |> Command.RussianService |> Command.set, node.Value.Name)
             |> Map
             |> fun data ->
                 { Buttons.Name = "Какую услугу вы хотите получить?"
