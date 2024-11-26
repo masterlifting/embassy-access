@@ -103,7 +103,7 @@ let set command =
     | RussianService(country, serviceId) ->
         [ Code.RUSSIAN_SERVICE
           country |> EA.Core.SerDe.Country.serialize
-          serviceId |> string ]
+          serviceId.Value |> string ]
         |> build
     | UserSubscriptions embassy ->
         embassy

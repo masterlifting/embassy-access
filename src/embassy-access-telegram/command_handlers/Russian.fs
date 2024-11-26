@@ -12,7 +12,7 @@ let service (country, serviceIdOpt) =
 
         let inline createButtons (nodes: Graph.Node<ServiceInfo> seq) =
             nodes
-            |> Seq.map (fun node -> (country, node.Id) |> Command.RussianService |> Command.set, node.Value.Name)
+            |> Seq.map (fun node -> (country, node.Id) |> Command.RussianService |> Command.set, node.ShortName)
             |> Map
             |> fun data ->
                 { Buttons.Name = "Какую услугу вы хотите получить?"
@@ -35,10 +35,10 @@ let service (country, serviceIdOpt) =
                         (EA.Core.Domain.Russian country, serviceId) |> Command.ServiceGet |> Command.set
 
                     let message =
-                        $"%s{command}{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."
+                        $"%s{command}%s{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."
 
                     node.Value.Description
-                    |> Option.map (fun instruction -> message + $"{Environment.NewLine}Инструкция: %s{instruction}")
+                    |> Option.map (fun instruction -> message + $"%s{Environment.NewLine}Инструкция: %s{instruction}")
                     |> Option.defaultValue message
                     |> Text.create (chatId, msgId |> Replace)
                 | services -> services |> createButtons)
