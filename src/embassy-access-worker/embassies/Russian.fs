@@ -3,38 +3,10 @@
 open EA.Embassies.Russian
 open Infrastructure
 open Worker.Domain
+open EA.Worker.Domain
 open EA.Core.Domain
 
-type WorkerRoute =
-    | Name of string
-
-    interface Graph.INodeName with
-        member this.Id = Graph.NodeId.New
-
-        member this.Name =
-            match this with
-            | Name name -> name
-
-        member this.setName name = Name name
-
-let private WORKER_ROUTER =
-    Graph.Node(
-        Name "Russian",
-        [ Graph.Node(Name "Serbia", [ Graph.Node(Name "Belgrade", []) ])
-          Graph.Node(Name "Germany", [ Graph.Node(Name "Berlin", []) ])
-          Graph.Node(Name "France", [ Graph.Node(Name "Paris", []) ])
-          Graph.Node(Name "Montenegro", [ Graph.Node(Name "Podgorica", []) ])
-          Graph.Node(Name "Ireland", [ Graph.Node(Name "Dublin", []) ])
-          Graph.Node(Name "Switzerland", [ Graph.Node(Name "Bern", []) ])
-          Graph.Node(Name "Finland", [ Graph.Node(Name "Helsinki", []) ])
-          Graph.Node(Name "Netherlands", [ Graph.Node(Name "Hague", []) ])
-          Graph.Node(Name "Albania", [ Graph.Node(Name "Tirana", []) ])
-          Graph.Node(Name "Slovenia", [ Graph.Node(Name "Ljubljana", []) ])
-          Graph.Node(Name "Bosnia", [ Graph.Node(Name "Sarajevo", []) ])
-          Graph.Node(Name "Hungary", [ Graph.Node(Name "Budapest", []) ]) ]
-    )
-
-module internal Kdmid =
+module private Kdmid =
     open EA.Embassies.Russian.Kdmid.Domain
 
     let private createPickOrder configuration (schedule: WorkerSchedule) ct =
@@ -70,40 +42,39 @@ module internal Kdmid =
         }
 
     module SearchAppointments =
+        [<Literal>]
+        let NAME = "Search appointments"
 
-        let run () =
-            fun (task: WorkerTaskOut, cfg, ct) ->
-                createPickOrder cfg task.Schedule ct
-                |> ResultAsync.wrap (fun startOrder ->
-                    Belgrade
-                    |> Serbia
-                    |> Russian
-                    |> EA.Persistence.Query.Request.SearchAppointments
-                    |> startOrder)
+        let setRoute city =
+            Graph.Node(Name city, [ Graph.Node(Name NAME, []) ])
+
+        let run (task: WorkerTaskOut, cfg, ct) =
+            createPickOrder cfg task.Schedule ct
+            |> ResultAsync.wrap (fun startOrder ->
+                Belgrade
+                |> Serbia
+                |> Russian
+                |> EA.Persistence.Query.Request.SearchAppointments
+                |> startOrder)
+
+let private ROUTER =
+    Graph.Node(
+        Name "Russian",
+        [ Graph.Node(Name "Serbia", [ "Belgrade" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Germany", [ "Berlin" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "France", [ "Paris" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Montenegro", [ "Podgorica" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Ireland", [ "Dublin" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Italy", [ "Rome" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Switzerland", [ "Bern" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Finland", [ "Helsinki" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Netherlands", [ "Hague" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Albania", [ "Tirana" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Slovenia", [ "Ljubljana" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Bosnia", [ "Sarajevo" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Hungary", [ "Budapest" |> Kdmid.SearchAppointments.setRoute ]) ]
+    )
 
 let register () =
-    Graph.Node(
-        { Id = Graph.NodeId.New
-          Name = "Russian"
-          Task = None },
-        [ Graph.Node(
-              { Id = Graph.NodeId.New
-                Name = "Search appointments"
-                Task = Some <| Kdmid.SearchAppointments.run () },
-              []
-          )
-          Graph.Node(
-              { Id = Graph.NodeId.New
-                Name = "Make appointments"
-                Task = None },
-              []
-          ) ]
-    )
-    
-let register'() =
-    let rec innerLoop (node: Graph.Node<WorkerRoute>) =
-        let handler =
-            match node.Value with
-            | Name "Search appointments" -> Kdmid.SearchAppointments.run ()
-    
-    WORKER_ROUTER |> innerLoop
+    ROUTER
+    |> WorkerRoute.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.run)

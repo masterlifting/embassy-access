@@ -4,7 +4,7 @@ open Infrastructure
 open Infrastructure.Logging
 open Worker.Domain
 
-let initialize (task: WorkerTaskOut, configuration, ct) =
+let initialize (_, configuration, ct) =
     async {
         configuration
         |> EA.Telegram.Consumer.start ct

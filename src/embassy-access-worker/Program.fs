@@ -11,25 +11,9 @@ let main _ =
     let rootTask =
         { Id = Graph.NodeId.New
           Name = Data.AppName
-          Task = Some Initializer.initialize }
+          Task = Initializer.initialize |> Some }
 
-    let workerHandlers =
-        Graph.Node(
-            rootTask,
-            [ Countries.Albania.Tasks
-              Countries.Bosnia.Tasks
-              Countries.Finland.Tasks
-              Countries.France.Tasks
-              Countries.Germany.Tasks
-              Countries.Hungary.Tasks
-              Countries.Ireland.Tasks
-              Countries.Italy.Tasks
-              Countries.Montenegro.Tasks
-              Countries.Netherlands.Tasks
-              Countries.Serbia.Tasks
-              Countries.Slovenia.Tasks
-              Countries.Switzerland.Tasks ]
-        )
+    let workerHandlers = Graph.Node(rootTask, [ Embassies.Russian.register () ])
 
     let workerConfig =
         { Name = rootTask.Name

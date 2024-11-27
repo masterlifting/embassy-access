@@ -2,7 +2,7 @@
 
 Logging:
   LogLevel:
-    Default: Debug
+    Default: Trace
 
 Persistence:
   FileSystem: "C:\\"
@@ -11,17 +11,16 @@ SearchAppointments: &SearchAppointments
   Name: Search appointments
   Enabled: false
   Wait: false
-  Duration: '00:03:00'
+  Duration: '00:01:00'
 
 Worker:
-  Name: Initializer
+  Name: Worker
   Enabled: true
   Wait: true
   Schedule:
   Tasks:
     - Name: Russian
       Parallel: true
-      Enabled: true
       Recursively: '00:01:00'
       Schedule:
         StartTime: '09:00:00'
