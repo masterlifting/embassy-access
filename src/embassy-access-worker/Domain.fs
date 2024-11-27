@@ -7,13 +7,13 @@ type WorkerRoute =
     | Name of string
 
     interface Graph.INodeName with
-        member this.Id = Graph.NodeId.New
+        member _.Id = Graph.NodeId.New
 
         member this.Name =
             match this with
             | Name name -> name
 
-        member this.setName name = Name name
+        member _.setName name = Name name
 
     static member register (name, handler) router =
 

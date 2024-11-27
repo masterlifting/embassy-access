@@ -60,13 +60,14 @@ module Filter =
                 && query.HasConfirmationStates request.ConfirmationState
 
 module Request =
+
     type GetOne =
         | Id of RequestId
         | First
         | Single
 
     type GetMany =
-        | SearchAppointments of Embassy
-        | MakeAppointments of Embassy
+        | SearchAppointments of string
+        | MakeAppointments of string
         | ByIds of Set<RequestId>
-        | ByEmbassy of Embassy
+        | ByEmbassy of string

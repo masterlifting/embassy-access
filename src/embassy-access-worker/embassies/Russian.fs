@@ -51,11 +51,14 @@ module private Kdmid =
         let run (task: WorkerTaskOut, cfg, ct) =
             createPickOrder cfg task.Schedule ct
             |> ResultAsync.wrap (fun startOrder ->
-                Belgrade
-                |> Serbia
-                |> Russian
-                |> EA.Persistence.Query.Request.SearchAppointments
-                |> startOrder)
+                let embassy =
+                    task.Name
+                    |> Graph.splitNodeName
+                    |> List.skip 1
+                    |> List.take 3
+                    |> String.concat Graph.DELIMITER
+
+                embassy |> EA.Persistence.Query.Request.SearchAppointments |> startOrder)
 
 let private ROUTER =
     Graph.Node(

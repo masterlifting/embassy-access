@@ -7,20 +7,20 @@ open EA.Core.Domain
 [<RequireQualifiedAccess>]
 module Constants =
     let internal SUPPORTED_SUB_DOMAINS =
-        Map
-            [ "belgrad", Belgrade |> Serbia
-              "budapest", Budapest |> Hungary
-              "sarajevo", Sarajevo |> Bosnia
-              "berlin", Berlin |> Germany
-              "podgorica", Podgorica |> Montenegro
-              "tirana", Tirana |> Albania
-              "paris", Paris |> France
-              "rome", Rome |> Italy
-              "dublin", Dublin |> Ireland
-              "bern", Bern |> Switzerland
-              "helsinki", Helsinki |> Finland
-              "hague", Hague |> Netherlands
-              "ljubljana", Ljubljana |> Slovenia ]
+        Set
+            [ "belgrad"
+              "budapest"
+              "sarajevo"
+              "berlin"
+              "podgorica"
+              "tirana"
+              "paris"
+              "rome"
+              "dublin"
+              "bern"
+              "helsinki"
+              "hague"
+              "ljubljana" ]
 
     module ErrorCodes =
 
@@ -140,9 +140,9 @@ type internal Payload =
                 let subDomain = hostParts[0]
 
                 let! country =
-                    match Constants.SUPPORTED_SUB_DOMAINS |> Map.tryFind subDomain with
-                    | Some country -> Ok country
-                    | None -> subDomain |> NotSupported |> Error
+                    match Constants.SUPPORTED_SUB_DOMAINS |> Set.contains subDomain with
+                    | true -> Ok subDomain
+                    | false -> subDomain |> NotSupported |> Error
 
                 let! queryParams = uri |> Web.Http.Client.Route.toQueryParams
 
