@@ -5,23 +5,29 @@ open EA.Core.Domain
 open EA.Telegram.Domain
 open Web.Telegram.Domain
 
-module Filter =
-    module Chat =
-        module InMemory =
-            let hasSubscription (subId: RequestId) (chat: Chat) =
-                chat.Subscriptions |> Set.contains subId
-
-            let hasSubscriptions (subIds: RequestId seq) (chat: Chat) =
-                let subIds = subIds |> Set.ofSeq
-
-                chat.Subscriptions
-                |> Seq.filter (fun subId -> subIds |> Seq.contains subId)
-                |> Seq.tryHead
-                |> Option.isSome
-
 module Chat =
-    type GetOne = ById of ChatId
+    type TryFindOne = ById of ChatId
 
-    type GetMany =
+    type FindMany =
         | BySubscription of RequestId
         | BySubscriptions of RequestId seq
+
+    module internal InMemory =
+
+        module FindOne =
+            let byId (id: ChatId) (chats: Chat list) =
+                chats |> Seq.tryFind (fun x -> x.Id = id) |> Ok
+
+        module FindMany =
+
+            let bySubscription (requestId: RequestId) (chats: Chat list) =
+                chats
+                |> Seq.filter (fun x -> x.Subscriptions |> Set.exists (fun id -> id = requestId))
+                |> Ok
+
+            let bySubscriptions (requestIds: RequestId seq) (chats: Chat list) =
+                let subscriptions = requestIds |> Set.ofSeq
+
+                chats
+                |> Seq.filter (fun x -> x.Subscriptions |> Set.intersect subscriptions |> Set.isEmpty |> not)
+                |> Ok

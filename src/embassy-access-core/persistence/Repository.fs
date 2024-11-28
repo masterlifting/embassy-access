@@ -8,20 +8,20 @@ open Infrastructure.Logging
 
 module Query =
     module Request =
-        let getOne query ct storage =
+        let tryFindOne storage ct query =
             Log.trace $"InMemory query request {query}"
 
             match storage with
-            | Storage.InMemory client -> client |> InMemoryRepository.Query.Request.getOne query ct
-            | Storage.FileSystem client -> client |> FileSystemRepository.Query.Request.getOne query ct
+            | Storage.InMemory client -> client |> InMemoryRepository.Query.Request.tryFindOne query ct
+            | Storage.FileSystem client -> client |> FileSystemRepository.Query.Request.trytFindOne query ct
             | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
-        let getMany query ct storage =
+        let findMany storage ct query =
             Log.trace $"InMemory query request {query}"
 
             match storage with
-            | Storage.InMemory client -> client |> InMemoryRepository.Query.Request.getMany query ct
-            | Storage.FileSystem client -> client |> FileSystemRepository.Query.Request.getMany query ct
+            | Storage.InMemory client -> client |> InMemoryRepository.Query.Request.findMany query ct
+            | Storage.FileSystem client -> client |> FileSystemRepository.Query.Request.findMany query ct
             | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
 module Command =

@@ -7,8 +7,8 @@ module Constants =
     [<Literal>]
     let REQUESTS_STORAGE_NAME = "requests"
 
-    module Embassy =
 
+    module Embassy =
         [<Literal>]
         let RUSSIAN = "Russian"
         [<Literal>]
@@ -184,7 +184,7 @@ type Notification =
 module External =
 
     type Graph() =
-        member val Id: Guid = Guid.Empty with get, set
+        member val Id: string = String.Empty with get, set
         member val Name: string = String.Empty with get, set
         member val Children: Graph[] = [||] with get, set
 
@@ -219,7 +219,7 @@ module External =
     type Service() =
         member val Name: string = String.Empty with get, set
         member val Payload: string = String.Empty with get, set
-        member val EmbassyId: Guid = Guid.Empty with get, set
+        member val EmbassyId: string = String.Empty with get, set
         member val EmbassyName: string = String.Empty with get, set
         member val Description: string option = None with get, set
 

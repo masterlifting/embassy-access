@@ -6,7 +6,7 @@ open Infrastructure
 open EA.Core.Domain
 
 module Embassy =
-    let rec toInternalGraph (graph: External.Graph) =
+    let rec toGraph (graph: External.Graph) =
 
         let embassy: Embassy =
             { Id = graph.Id |> Graph.NodeIdValue
@@ -15,7 +15,7 @@ module Embassy =
         let children =
             match graph.Children with
             | null -> Array.empty
-            | children -> children |> Seq.map toInternalGraph |> Seq.toArray
+            | children -> children |> Seq.map toGraph |> Seq.toArray
 
         Graph.Node(embassy, children |> Array.toList)
 

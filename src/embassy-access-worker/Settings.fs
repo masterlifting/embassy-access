@@ -1,21 +1,21 @@
-﻿module internal EA.Worker.Data
+﻿module internal EA.Worker.Settings
 
 open Infrastructure
 open Worker.Domain
 
 [<Literal>]
-let AppName = "Worker"
+let APP_NAME = "Worker"
 
-let private getTaskGraphConfig configuration =
+let private getConfigData configuration =
     configuration
-    |> Configuration.getSection<External.TaskGraph> AppName
+    |> Configuration.getSection<External.TaskGraph> APP_NAME
     |> Option.map Ok
-    |> Option.defaultValue (Error <| NotFound $"Section '%s{AppName}' in the configuration.")
+    |> Option.defaultValue (Error <| NotFound $"Section '%s{APP_NAME}' in the configuration.")
 
-let getTask configuration workerHandlers =
+let getWorkerTask configuration workerHandlers =
     fun taskName ->
         configuration
-        |> getTaskGraphConfig
+        |> getConfigData
         |> Result.bind (Worker.Graph.merge workerHandlers)
         |> Result.bind (
             Graph.DFS.tryFindByName taskName

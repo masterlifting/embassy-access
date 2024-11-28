@@ -7,17 +7,17 @@ open Web.Telegram.Domain.Producer
 open EA.Telegram
 open EA.Embassies.Russian.Domain
 
-let service (country, serviceIdOpt) =
+let service (embassyId, serviceIdOpt) =
     fun (chatId, msgId) ->
 
-        let inline createButtons (nodes: Graph.Node<ServiceInfo> seq) =
+        let createButtons (nodes: Graph.Node<ServiceInfo> seq) =
             nodes
-            |> Seq.map (fun node -> (country, node.Id) |> Command.RussianService |> Command.set, node.ShortName)
+            |> Seq.map (fun node -> (embassyId, node.Id) |> Command.GetService |> Command.set, node.ShortName)
             |> Map
-            |> fun data ->
+            |> fun buttons ->
                 { Buttons.Name = "Какую услугу вы хотите получить?"
                   Columns = 1
-                  Data = data }
+                  Data = buttons }
                 |> Buttons.create (chatId, msgId |> Replace)
 
         match serviceIdOpt with
@@ -31,8 +31,7 @@ let service (country, serviceIdOpt) =
                 match node.Children with
                 | [] ->
 
-                    let command =
-                        (EA.Core.Domain.Russian country, serviceId) |> Command.ServiceGet |> Command.set
+                    let command = (embassyId, serviceId) |> Command.GetService |> Command.set
 
                     let message =
                         $"%s{command}%s{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."

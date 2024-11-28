@@ -7,55 +7,41 @@ open EA.Core.Domain
 
 module Query =
     module Request =
-        open EA.Persistence.Query.Filter.Request
-        open EA.Persistence.Query.Request
+        open EA.Core.Persistence.Query.Request
 
-        let getOne query ct storage =
+        let trytFindOne query ct storage =
             match ct |> notCanceled with
             | true ->
                 let filter (data: Request list) =
                     match query with
-                    | Id id -> data |> List.tryFind (fun x -> x.Id = id)
-                    | First -> data |> List.tryHead
-                    | Single ->
-                        match data.Length with
-                        | 1 -> Some data[0]
-                        | _ -> None
+                    | ById requestId -> data |> InMemory.FindOne.byId requestId
+                    | FirstByName embassyName -> data |> InMemory.FindOne.first embassyName
+                    | SingleByName serviceName -> data |> InMemory.FindOne.single serviceName
+
 
                 storage
                 |> Query.Json.get
                 |> ResultAsync.bind (Seq.map EA.Core.Mapper.Request.toInternal >> Result.choose)
-                |> ResultAsync.map filter
+                |> ResultAsync.bind filter
             | false ->
                 Error
                 <| (Canceled
                     <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
                 |> async.Return
 
-        let getMany query ct storage =
+        let findMany query ct storage =
             match ct |> notCanceled with
             | true ->
                 let filter (data: Request list) =
                     match query with
-                    | SearchAppointments embassy ->
-                        let query = SearchAppointments.create embassy
-
-                        data
-                        |> List.filter (InMemory.searchAppointments query)
-                        |> Query.paginate query.Pagination
-                    | MakeAppointments embassy ->
-                        let query = MakeAppointment.create embassy
-
-                        data
-                        |> List.filter (InMemory.makeAppointment query)
-                        |> Query.paginate query.Pagination
-                    | ByIds requestIds -> data |> List.filter (fun x -> requestIds.Contains x.Id)
-                    | ByEmbassy embassy -> data |> List.filter (fun x -> x.Service.Embassy = embassy)
+                    | ByIds requestIds -> data |> InMemory.FindMany.byIds requestIds
+                    | ByEmbassyName embassyName -> data |> InMemory.FindMany.byEmbassyName embassyName
 
                 storage
                 |> Query.Json.get
                 |> ResultAsync.bind (Seq.map EA.Core.Mapper.Request.toInternal >> Result.choose)
-                |> ResultAsync.map filter
+                |> ResultAsync.bind filter
+                |> ResultAsync.map List.ofSeq
             | false ->
                 Error
                 <| (Canceled
@@ -64,8 +50,7 @@ module Query =
 
 module Command =
     module Request =
-        open EA.Persistence.Command.Request
-        open EA.Persistence.Command.Request.InMemory
+        open EA.Core.Persistence.Command.Request
 
         let execute operation ct client =
             match ct |> notCanceled with
@@ -75,10 +60,10 @@ module Command =
                 |> Query.Json.get
                 |> ResultAsync.bind (fun data ->
                     match operation with
-                    | Create request -> data |> create request |> Result.map id
-                    | CreateOrUpdate request -> data |> createOrUpdate request |> Result.map id
-                    | Update request -> data |> update request |> Result.map id
-                    | Delete request -> data |> delete request |> Result.map id)
+                    | Create request -> data |> InMemory.create request |> Result.map id
+                    | CreateOrUpdate request -> data |> InMemory.createOrUpdate request |> Result.map id
+                    | Update request -> data |> InMemory.update request |> Result.map id
+                    | Delete request -> data |> InMemory.delete request |> Result.map id)
                 |> ResultAsync.bindAsync (fun (data, item) ->
                     client |> Command.Json.save data |> ResultAsync.map (fun _ -> item))
             | false ->

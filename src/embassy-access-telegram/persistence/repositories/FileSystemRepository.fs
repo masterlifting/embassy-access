@@ -3,45 +3,43 @@ module internal EA.Telegram.Persistence.FileSystemRepository
 
 open Infrastructure
 open Persistence.FileSystem
-open Persistence.Domain
-open EA.Core.Domain
 open EA.Telegram
 open EA.Telegram.Domain
 
 module Query =
     module Chat =
         open EA.Telegram.Persistence.Query.Chat
-        open EA.Telegram.Persistence.Query.Filter.Chat
 
-        let getOne ct query client =
+        let tryFindOne ct query client =
             match ct |> notCanceled with
             | true ->
                 let filter (data: Chat list) =
                     match query with
-                    | ById id -> data |> List.tryFind (fun x -> x.Id = id)
+                    | ById id -> data |> InMemory.FindOne.byId id
 
                 client
                 |> Query.Json.get
                 |> ResultAsync.bind (Seq.map Mapper.Chat.toInternal >> Result.choose)
-                |> ResultAsync.map filter
+                |> ResultAsync.bind filter
             | false ->
                 Error
                 <| (Canceled
                     <| ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__))
                 |> async.Return
 
-        let getMany ct query client =
+        let findMany ct query client =
             match ct |> notCanceled with
             | true ->
                 let filter (data: Chat list) =
                     match query with
-                    | BySubscription subId -> data |> List.filter (InMemory.hasSubscription subId)
-                    | BySubscriptions subIds -> data |> List.filter (InMemory.hasSubscriptions subIds)
+                    | BySubscription subId -> data |> InMemory.FindMany.bySubscription subId
+                    | BySubscriptions subIds -> data |> InMemory.FindMany.bySubscriptions subIds
 
                 client
                 |> Query.Json.get
                 |> ResultAsync.bind (Seq.map Mapper.Chat.toInternal >> Result.choose)
-                |> ResultAsync.map filter
+                |> ResultAsync.bind filter
+                |> ResultAsync.map List.ofSeq
             | false ->
                 Error
                 <| (Canceled
@@ -51,7 +49,6 @@ module Query =
 module Command =
     module Chat =
         open EA.Telegram.Persistence.Command.Chat
-        open EA.Telegram.Persistence.Command.Chat.InMemory
 
         let execute operation ct client =
             match ct |> notCanceled with
@@ -60,10 +57,10 @@ module Command =
                 |> Query.Json.get
                 |> ResultAsync.bind (fun data ->
                     match operation with
-                    | Create chat -> data |> create chat |> Result.map id
-                    | CreateOrUpdate chat -> data |> createOrUpdate chat |> Result.map id
-                    | Update chat -> data |> update chat |> Result.map id
-                    | Delete chatId -> data |> delete chatId |> Result.map id)
+                    | Create chat -> data |> InMemory.create chat |> Result.map id
+                    | CreateOrUpdate chat -> data |> InMemory.createOrUpdate chat |> Result.map id
+                    | Update chat -> data |> InMemory.update chat |> Result.map id
+                    | Delete chatId -> data |> InMemory.delete chatId |> Result.map id)
                 |> ResultAsync.bindAsync (fun (data, item) ->
                     client |> Command.Json.save data |> ResultAsync.map (fun _ -> item))
             | false ->

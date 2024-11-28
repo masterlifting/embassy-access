@@ -6,7 +6,7 @@ open Web.Telegram.Domain
 
 let internal Admin = 379444553L |> ChatId
 
-module Key =
+module Constants =
 
     [<Literal>]
     let internal EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"

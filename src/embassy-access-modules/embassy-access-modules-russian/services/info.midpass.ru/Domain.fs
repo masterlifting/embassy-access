@@ -4,7 +4,7 @@ open System
 open EA.Core.Domain
 
 type Request =
-    { Country: Country
+    { Embassy: Embassy
       StatementNumber: string }
 
     member internal this.Create serviceName =
@@ -12,7 +12,7 @@ type Request =
           Service =
             { Name = serviceName
               Payload = this.StatementNumber
-              Embassy = Russian this.Country
+              Embassy = this.Embassy
               Description = None }
           Attempt = (DateTime.UtcNow, 0)
           ProcessState = Created

@@ -10,7 +10,7 @@ let main _ =
 
     let rootTask =
         { Id = Graph.NodeId.New
-          Name = Data.AppName
+          Name = Settings.APP_NAME
           Task = Initializer.initialize |> Some }
 
     let workerHandlers = Graph.Node(rootTask, [ Embassies.Russian.register () ])
@@ -18,7 +18,7 @@ let main _ =
     let workerConfig =
         { Name = rootTask.Name
           Configuration = configuration
-          getTask = workerHandlers |> Data.getTask configuration }
+          getTask = workerHandlers |> Settings.getWorkerTask configuration }
 
     workerConfig |> Worker.Core.start |> Async.RunSynchronously
 

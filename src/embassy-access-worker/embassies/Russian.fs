@@ -46,8 +46,8 @@ module private Kdmid =
                 order |> API.Order.Kdmid.pick deps
 
             let start query =
-                storage
-                |> Repository.Query.Request.getMany query ct
+                query
+                |> Repository.Query.Request.findMany storage ct
                 |> ResultAsync.mapError (fun error -> [ error ])
                 |> ResultAsync.bindAsync pickOrder
                 |> ResultAsync.mapError Error.ofList

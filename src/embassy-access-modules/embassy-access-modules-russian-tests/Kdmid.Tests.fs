@@ -9,6 +9,7 @@ open EA.Embassies.Russian.Kdmid.Domain
 
 module private Fixture =
     open Web.Http.Domain
+    open EA.Core.Domain.Constants
     open Persistence.FileSystem
 
     let httpRequestHeaders =
@@ -52,7 +53,9 @@ module private Fixture =
 
     let private Request =
         { Uri = Uri("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F")
-          Country = Germany Berlin
+          Embassy =
+            { Id = Graph.NodeId.New
+              Name = [ Embassy.RUSSIAN; Country.GERMANY; City.BERLIN ] |> Graph.buildNodeNameOfSeq }
           TimeZone = 1.0
           Confirmation = Auto FirstAvailable }
 
@@ -79,8 +82,8 @@ let private ``validation page should have an error`` =
         let error = Expect.wantError serviceResult "processed service should be an error"
 
         match error with
-        | Operation { Code = Some Constants.ErrorCodes.PAGE_HAS_ERROR } -> ()
-        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCodes.PAGE_HAS_ERROR}"
+        | Operation { Code = Some Constants.ErrorCode.PAGE_HAS_ERROR } -> ()
+        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.PAGE_HAS_ERROR}"
     }
 
 let private ``validation page should have a confirmed request`` =
@@ -100,8 +103,8 @@ let private ``validation page should have a confirmed request`` =
         let error = Expect.wantError serviceResult "processed service should be an error"
 
         match error with
-        | Operation { Code = Some Constants.ErrorCodes.NOT_CONFIRMED } -> ()
-        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCodes.NOT_CONFIRMED}"
+        | Operation { Code = Some Constants.ErrorCode.NOT_CONFIRMED } -> ()
+        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.NOT_CONFIRMED}"
     }
 
 let private ``validation page should have a confirmation`` =
@@ -121,8 +124,8 @@ let private ``validation page should have a confirmation`` =
         let error = Expect.wantError serviceResult "processed service should be an error"
 
         match error with
-        | Operation { Code = Some Constants.ErrorCodes.CONFIRMATION_EXISTS } -> ()
-        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCodes.CONFIRMATION_EXISTS}"
+        | Operation { Code = Some Constants.ErrorCode.CONFIRMATION_EXISTS } -> ()
+        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.CONFIRMATION_EXISTS}"
     }
 
 let private ``validation page should have a deleted request`` =
@@ -142,8 +145,8 @@ let private ``validation page should have a deleted request`` =
         let error = Expect.wantError serviceResult "processed service should be an error"
 
         match error with
-        | Operation { Code = Some Constants.ErrorCodes.REQUEST_DELETED } -> ()
-        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCodes.REQUEST_DELETED}"
+        | Operation { Code = Some Constants.ErrorCode.REQUEST_DELETED } -> ()
+        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.REQUEST_DELETED}"
     }
 
 let private ``appointments page should not have data`` =

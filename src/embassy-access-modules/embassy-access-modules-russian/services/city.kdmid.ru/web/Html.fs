@@ -15,5 +15,5 @@ let pageHasError page =
                 Error
                 <| Operation
                     { Message = text
-                      Code = Some Constants.ErrorCodes.PAGE_HAS_ERROR }
+                      Code = Some Constants.ErrorCode.PAGE_HAS_ERROR }
             | _ -> Ok page)

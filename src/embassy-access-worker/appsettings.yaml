@@ -2,54 +2,33 @@
 
 Logging:
   LogLevel:
-    Default: Trace
+    Default: Debug
 
 Persistence:
   FileSystem: "C:\\"
 
 Embassies:
-  Id: "42274f3a-31c5-4cfc-a627-1cc37af60c0a"
+  Id: "1"
   Name: "Embassies"
   Children:
-    - Node:
-        Id: "b40ac8a5-4a58-4869-80a2-680fd3fea745"
-        Name: "Russian"
-        Children:
-          - Node:
-              Id: "0f74c89d-f67b-4fd9-9e41-4c1fbe3e6851"
-              Name: "Serbia"
-              Children:
-                - Node:
-                    Id: "e1f989e4-49d3-4f5c-bd1c-8765c15a8c4a"
-                    Name: "Belgrade"
-          - Node:
-              Id: "275ddc13-6d4b-45ef-bcb3-234a5b5b74e2"
-              Name: "Bosnia"
-              Children:
-                - Node:
-                    Id: "caa2b8b6-4587-4e82-91f6-2cd8bfddba6a"
-                    Name: "Sarajevo"
-          - Node:
-              Id: "3f5b9c85-7d56-482c-8fd6-49dc75a1c847"
-              Name: "Montenegro"
-              Children:
-                - Node:
-                    Id: "d68f57a3-2be5-4d72-b4f6-7ea6d2427d9e"
-                    Name: "Podgorica"
-          - Node:
-              Id: "4673bafd-4d2e-4c83-9e68-b14b7c3d59a5"
-              Name: "Albania"
-              Children:
-                - Node:
-                    Id: "c6e3729d-274d-42a1-8f0d-e56a8d7cfb92"
-                    Name: "Tirana"
-          - Node:
-              Id: "5f78b9d1-9a35-4af6-8d23-12c5ab7f9b34"
-              Name: "Hungary"
-              Children:
-                - Node:
-                    Id: "99a7d85d-e8d1-4c82-8a2e-b3a67c674edc"
-                    Name: "Budapest"
+    - Id: "1.1"
+      Name: "Russian"
+      Children:
+        - Id: "1.1.1"
+          Name: "Serbia"
+          Children:
+            - Id: "1.1.1.1"
+              Name: "Belgrade"
+        - Id: "1.1.2"
+          Name: "Bosnia"
+          Children:
+            - Id: "1.1.2.1"
+              Name: "Sarajevo"
+        - Id: "1.1.3"
+          Name: "Montenegro"
+          Children:
+            - Id: "1.1.3.1"
+              Name: "Podgorica"
 
 SearchAppointments: &SearchAppointments
   Name: Search appointments

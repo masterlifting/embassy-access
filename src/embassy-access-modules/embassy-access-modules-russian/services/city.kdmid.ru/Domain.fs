@@ -6,23 +6,25 @@ open EA.Core.Domain
 
 [<RequireQualifiedAccess>]
 module Constants =
-    let internal SUPPORTED_SUB_DOMAINS =
-        Set
-            [ "belgrad"
-              "budapest"
-              "sarajevo"
-              "berlin"
-              "podgorica"
-              "tirana"
-              "paris"
-              "rome"
-              "dublin"
-              "bern"
-              "helsinki"
-              "hague"
-              "ljubljana" ]
+    open EA.Core.Domain.Constants
 
-    module ErrorCodes =
+    let internal SUPPORTED_SUB_DOMAINS =
+        Map
+            [ "belgrad", (Country.SERBIA, City.BELGRADE)
+              "budapest", (Country.HUNGARY, City.BUDAPEST)
+              "sarajevo", (Country.BOSNIA, City.SARAJEVO)
+              "berlin", (Country.GERMANY, City.BERLIN)
+              "podgorica", (Country.MONTENEGRO, City.PODGORICA)
+              "tirana", (Country.ALBANIA, City.TIRANA)
+              "paris", (Country.FRANCE, City.PARIS)
+              "rome", (Country.ITALY, City.ROME)
+              "dublin", (Country.IRELAND, City.DUBLIN)
+              "bern", (Country.SWITZERLAND, City.BERN)
+              "helsinki", (Country.FINLAND, City.HELSINKI)
+              "hague", (Country.NETHERLANDS, City.HAGUE)
+              "ljubljana", (Country.SLOVENIA, City.LJUBLJANA) ]
+
+    module ErrorCode =
 
         [<Literal>]
         let PAGE_HAS_ERROR = "PageHasError"
@@ -38,7 +40,7 @@ module Constants =
 
 type ServiceRequest =
     { Uri: Uri
-      Country: Country
+      Embassy: Embassy
       TimeZone: float
       Confirmation: ConfirmationState }
 
@@ -47,7 +49,7 @@ type ServiceRequest =
           Service =
             { Name = serviceName
               Payload = this.Uri.ToString()
-              Embassy = Russian this.Country
+              Embassy = this.Embassy
               Description = None }
           Attempt = (DateTime.UtcNow, 0)
           ProcessState = Created
@@ -94,7 +96,7 @@ type Dependencies =
               -> Async<Result<string, Error'>> }
 
     static member create ct storage =
-        { updateRequest = fun request -> storage |> EA.Persistence.Repository.Command.Request.update request ct
+        { updateRequest = fun request -> storage |> EA.Core.Persistence.Repository.Command.Request.update request ct
           getInitialPage =
             fun request client ->
                 client
@@ -124,7 +126,8 @@ type Dependencies =
 
 
 type internal Payload =
-    { Country: Country
+    { Country: string
+      City: string
       SubDomain: string
       Id: int
       Cd: string
@@ -139,10 +142,10 @@ type internal Payload =
             payload {
                 let subDomain = hostParts[0]
 
-                let! country =
-                    match Constants.SUPPORTED_SUB_DOMAINS |> Set.contains subDomain with
-                    | true -> Ok subDomain
-                    | false -> subDomain |> NotSupported |> Error
+                let! country, city =
+                    match Constants.SUPPORTED_SUB_DOMAINS |> Map.tryFind subDomain with
+                    | Some(country, city) -> Ok(country, city)
+                    | None -> subDomain |> NotSupported |> Error
 
                 let! queryParams = uri |> Web.Http.Client.Route.toQueryParams
 
@@ -172,6 +175,7 @@ type internal Payload =
 
                 return
                     { Country = country
+                      City = city
                       SubDomain = subDomain
                       Id = id
                       Cd = cd

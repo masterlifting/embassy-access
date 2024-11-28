@@ -22,7 +22,7 @@ module Chat =
                 Error
                 <| Operation
                     { Message = $"{chat.Id} already exists."
-                      Code = Some ErrorCodes.ALREADY_EXISTS }
+                      Code = Some ErrorCode.ALREADY_EXISTS }
             | None ->
                 let data = chats |> Array.append [| Mapper.Chat.toExternal chat |]
                 Ok(data, chat)
@@ -33,7 +33,7 @@ module Chat =
                 Error
                 <| Operation
                     { Message = $"{chat.Id} not found to update."
-                      Code = Some ErrorCodes.NOT_FOUND }
+                      Code = Some ErrorCode.NOT_FOUND }
             | Some index ->
                 let data =
                     chats
@@ -47,7 +47,7 @@ module Chat =
                 Error
                 <| Operation
                     { Message = $"{chatId} not found to delete."
-                      Code = Some ErrorCodes.NOT_FOUND }
+                      Code = Some ErrorCode.NOT_FOUND }
             | Some index ->
                 chats[index]
                 |> Mapper.Chat.toInternal

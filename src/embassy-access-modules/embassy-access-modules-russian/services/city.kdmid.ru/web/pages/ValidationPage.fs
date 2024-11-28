@@ -2,7 +2,6 @@
 
 open System
 open System.Text.RegularExpressions
-
 open Infrastructure
 open Infrastructure.Parser
 open EA.Embassies.Russian.Kdmid.Html
@@ -41,17 +40,17 @@ let private httpResponseHasInconsistentState page =
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some Constants.ErrorCodes.CONFIRMATION_EXISTS }
+                          Code = Some Constants.ErrorCode.CONFIRMATION_EXISTS }
                 | text when text |> has "Ваша заявка требует подтверждения" ->
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some Constants.ErrorCodes.NOT_CONFIRMED }
+                          Code = Some Constants.ErrorCode.NOT_CONFIRMED }
                 | text when text |> has "Заявка удалена" ->
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some Constants.ErrorCodes.REQUEST_DELETED }
+                          Code = Some Constants.ErrorCode.REQUEST_DELETED }
                 | _ -> Ok page
             | _ -> Ok page)
 

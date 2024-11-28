@@ -7,147 +7,80 @@ open EA.Core.Domain
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 
-open EA.Embassies.Russian
-
-let private getAll () =
-    API.SUPPORTED_CITIES |> Seq.map Russian |> Set.ofSeq
-
-let embassies chatId =
-    getAll ()
-    |> Seq.map EA.Core.Mapper.Embassy.toExternal
-    |> Seq.groupBy _.Name
-    |> Seq.map fst
-    |> Seq.sort
-    |> Seq.map (fun embassyName -> embassyName |> Command.Countries |> Command.set, embassyName)
-    |> Map
-    |> fun data ->
-        { Buttons.Name = "Which embassy do you need?"
-          Columns = 3
-          Data = data }
-        |> Buttons.create (chatId, New)
-    |> Ok
-    |> async.Return
-
-let countries embassyName =
+let private getService' (embassy: Embassy, serviceIdOpt) =
     fun (chatId, msgId) ->
-        let data =
-            getAll ()
-            |> Seq.map EA.Core.Mapper.Embassy.toExternal
-            |> Seq.filter (fun embassy -> embassy.Name = embassyName)
-            |> Seq.groupBy _.Country.Name
-            |> Seq.map fst
-            |> Seq.sort
-            |> Seq.map (fun countryName -> (embassyName, countryName) |> Command.Cities |> Command.set, countryName)
+        match embassy.Name |> Graph.splitNodeName |> Seq.skip 1 |> Seq.tryHead with
+        | Some embassyName ->
+            match embassyName with
+            | Constants.Embassy.RUSSIAN -> Russian.service (embassy.Id, serviceIdOpt) (chatId, msgId)
+            | _ -> $"Service for {embassy.Name}" |> NotSupported |> Error |> async.Return
+        | None -> embassy.Name |> NotFound |> Error |> async.Return
+
+let getService (embassyId, serviceIdOpt) =
+    fun (cfg, chatId, msgId) ->
+        cfg
+        |> EA.Core.Settings.Embassy.getGraph
+        |> ResultAsync.bind (fun graph ->
+            graph
+            |> Graph.BFS.tryFindById embassyId
+            |> Option.map Ok
+            |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error))
+        |> ResultAsync.bindAsync (fun node ->
+            match node.FullName |> Graph.splitNodeName |> Seq.skip 1 |> Seq.tryHead with
+            | Some embassyName ->
+                match embassyName with
+                | Constants.Embassy.RUSSIAN -> Russian.service (node.Id, serviceIdOpt) (chatId, msgId)
+                | _ -> $"Service for {node.ShortName}" |> NotSupported |> Error |> async.Return
+            | None -> node.ShortName |> NotFound |> Error |> async.Return)
+
+let embassies embassyIdOpt =
+    fun (cfg, chatId, msgId) ->
+
+        let rec inline createButtons (nodes: Graph.Node<Embassy> seq) =
+            nodes
+            |> Seq.map (fun node -> node.Id |> Command.GetEmbassy |> Command.set, node.ShortName)
             |> Map
+            |> fun buttons ->
 
-        { Buttons.Name = $"Where is {embassyName} embassy located?"
-          Columns = 3
-          Data = data }
-        |> Buttons.create (chatId, msgId |> Replace)
-        |> Ok
-        |> async.Return
+                let msgId =
+                    match embassyIdOpt with
+                    | Some _ -> Replace msgId
+                    | None -> New
 
-let cities (embassyName, countryName) =
-    fun (chatId, msgId) ->
-        getAll ()
-        |> Seq.map EA.Core.Mapper.Embassy.toExternal
-        |> Seq.filter (fun embassy -> embassy.Name = embassyName && embassy.Country.Name = countryName)
-        |> Seq.groupBy _.Country.City.Name
-        |> Seq.sortBy fst
-        |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
-        |> Seq.map (fun embassy ->
-            embassy
-            |> EA.Core.Mapper.Embassy.toInternalGraph
-            |> Result.map (fun x -> x |> Command.Service |> Command.set, embassy.Country.City.Name))
-        |> Result.choose
-        |> Result.map Map
-        |> Result.map (fun data ->
-            { Buttons.Name = $"Which city in {countryName}?"
-              Columns = 3
-              Data = data }
-            |> Buttons.create (chatId, msgId |> Replace))
-        |> async.Return
+                { Buttons.Name = "Choose what do you want to visit"
+                  Columns = 3
+                  Data = buttons }
+                |> Buttons.create (chatId, msgId)
 
-open EA.Telegram.Persistence
+        cfg
+        |> EA.Core.Settings.Embassy.getGraph
+        |> ResultAsync.bindAsync (fun graph ->
+            match embassyIdOpt with
+            | None -> graph.Children |> createButtons |> Ok |> async.Return
+            | Some embassyId ->
+                graph
+                |> Graph.BFS.tryFindById embassyId
+                |> Option.map Ok
+                |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error)
+                |> ResultAsync.wrap (fun node ->
+                    match node.Children with
+                    | [] -> getService' (node.Value, None) (chatId, msgId)
+                    | nodes -> nodes |> createButtons |> Ok |> async.Return))
 
-let userEmbassies chatId =
-    fun cfg ct ->
-        Storage.FileSystem.Chat.create cfg
-        |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
-        |> ResultAsync.bindAsync (function
-            | None -> "Subscriptions" |> NotFound |> Error |> async.Return
-            | Some chat ->
-                EA.Persistence.Storage.FileSystem.Request.create cfg
-                |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-        |> ResultAsync.map (fun embassies ->
-            embassies
-            |> Seq.map EA.Core.Mapper.Embassy.toExternal
-            |> Seq.groupBy _.Name
-            |> Seq.map fst
-            |> Seq.sort
-            |> Seq.map (fun embassyName -> embassyName |> Command.UserCountries |> Command.set, embassyName)
-            |> Map)
-        |> ResultAsync.map (fun data ->
-            { Buttons.Name = "Choose embassy you are following"
-              Columns = 3
-              Data = data }
-            |> Buttons.create (chatId, New))
+let appointments (embassy: Embassy, appointments: Set<Appointment>) =
+    fun chatId ->
+        { Buttons.Name = $"Choose the appointment for '{embassy}'"
+          Columns = 1
+          Data =
+            appointments
+            |> Seq.map (fun appointment ->
+                (embassy.Id, appointment.Id) |> Command.ChooseAppointments |> Command.set, appointment.Description)
+            |> Map }
+        |> Buttons.create (chatId, New)
 
-let userCountries embassyName =
-    fun (chatId, msgId) cfg ct ->
-        Storage.FileSystem.Chat.create cfg
-        |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
-        |> ResultAsync.bindAsync (function
-            | None -> "Subscriptions" |> NotFound |> Error |> async.Return
-            | Some chat ->
-                EA.Persistence.Storage.FileSystem.Request.create cfg
-                |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-        |> ResultAsync.map (Seq.map EA.Core.Mapper.Embassy.toExternal)
-        |> ResultAsync.map (fun embassies ->
-            embassies
-            |> Seq.filter (fun embassy -> embassy.Name = embassyName)
-            |> Seq.groupBy _.Country.Name
-            |> Seq.map fst
-            |> Seq.sort
-            |> Seq.map (fun countryName ->
-                (embassyName, countryName) |> Command.UserCities |> Command.set, countryName)
-            |> Map)
-        |> ResultAsync.map (fun data ->
-            { Buttons.Name = $"Where is {embassyName} embassy located?"
-              Columns = 3
-              Data = data }
-            |> Buttons.create (chatId, msgId |> Replace))
-
-let userCities (embassyName, countryName) =
-    fun (chatId, msgId) cfg ct ->
-        Storage.FileSystem.Chat.create cfg
-        |> ResultAsync.wrap (Repository.Query.Chat.tryGetOne chatId ct)
-        |> ResultAsync.bindAsync (function
-            | None -> "Subscriptions" |> NotFound |> Error |> async.Return
-            | Some chat ->
-                EA.Persistence.Storage.FileSystem.Request.create cfg
-                |> ResultAsync.wrap (Repository.Query.Chat.getChatEmbassies chat ct))
-        |> ResultAsync.bind (fun embassies ->
-            embassies
-            |> Seq.map EA.Core.Mapper.Embassy.toExternal
-            |> Seq.filter (fun embassy -> embassy.Name = embassyName && embassy.Country.Name = countryName)
-            |> Seq.groupBy _.Country.City.Name
-            |> Seq.sortBy fst
-            |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
-            |> Seq.map (fun embassy ->
-                embassy
-                |> EA.Core.Mapper.Embassy.toInternalGraph
-                |> Result.map (fun x -> x |> Command.UserSubscriptions |> Command.set, embassy.Country.City.Name))
-            |> Result.choose
-            |> Result.map Map)
-        |> ResultAsync.map (fun data ->
-            { Buttons.Name = $"Which city in {countryName}?"
-              Columns = 3
-              Data = data }
-            |> Buttons.create (chatId, msgId |> Replace))
-
-let service embassy =
-    fun (chatId, msgId) ->
-        match embassy with
-        | Russian country -> EA.Telegram.CommandHandler.Russian.service (country, None) (chatId, msgId)
-        | _ -> $"Service for {embassy}" |> NotSupported |> Error |> async.Return
+let confirmation (embassy, confirmations: Set<Confirmation>) =
+    fun chatId ->
+        confirmations
+        |> Seq.map (fun confirmation -> $"'{embassy}'. Confirmation: {confirmation.Description}")
+        |> String.concat "\n"
+        |> Text.create (chatId, New)

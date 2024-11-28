@@ -4,8 +4,6 @@ module EA.Embassies.Russian.API
 open Infrastructure
 open EA.Embassies.Russian.Domain
 
-let SUPPORTED_CITIES = Kdmid.Domain.Constants.SUPPORTED_SUB_DOMAINS.Values
-
 module Service =
     let get service =
         match service with
@@ -13,13 +11,13 @@ module Service =
             match passportService with
             | IssueForeign issueForeign ->
                 [ Constants.EMBASSY_NAME; passportService.Info.Name; issueForeign.Info.Name ]
-                |> Graph.buildNoneNameOfList
+                |> Graph.buildNodeNameOfSeq
                 |> issueForeign.Request.Create
                 |> Kdmid.Domain.StartOrder.create issueForeign.Request.TimeZone
                 |> Kdmid.Order.start issueForeign.Dependencies
             | CheckReadiness checkReadiness ->
                 [ Constants.EMBASSY_NAME; passportService.Info.Name; checkReadiness.Info.Name ]
-                |> Graph.buildNoneNameOfList
+                |> Graph.buildNodeNameOfSeq
                 |> NotSupported
                 |> Error
                 |> async.Return
@@ -27,7 +25,7 @@ module Service =
             match notaryService with
             | PowerOfAttorney powerOfAttorney ->
                 [ Constants.EMBASSY_NAME; notaryService.Info.Name; powerOfAttorney.Info.Name ]
-                |> Graph.buildNoneNameOfList
+                |> Graph.buildNodeNameOfSeq
                 |> powerOfAttorney.Request.Create
                 |> Kdmid.Domain.StartOrder.create powerOfAttorney.Request.TimeZone
                 |> Kdmid.Order.start powerOfAttorney.Dependencies
@@ -35,7 +33,7 @@ module Service =
             match citizenshipService with
             | CitizenshipRenunciation citizenshipRenunciation ->
                 [ Constants.EMBASSY_NAME; citizenshipService.Info.Name; service.Info.Name ]
-                |> Graph.buildNoneNameOfList
+                |> Graph.buildNodeNameOfSeq
                 |> citizenshipRenunciation.Request.Create
                 |> Kdmid.Domain.StartOrder.create citizenshipRenunciation.Request.TimeZone
                 |> Kdmid.Order.start citizenshipRenunciation.Dependencies

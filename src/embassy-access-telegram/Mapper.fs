@@ -25,7 +25,7 @@ module Chat =
         |> Seq.map (fun x ->
             match x with
             | AP.IsGuid id -> Ok <| RequestId id
-            | _ -> Error <| NotSupported $"Chat subscription {x}.")
+            | _ -> $"Chat subscription {x}" |> NotSupported |> Error)
         |> Result.choose
         |> Result.map Set.ofList
         |> Result.map (fun subscriptions ->

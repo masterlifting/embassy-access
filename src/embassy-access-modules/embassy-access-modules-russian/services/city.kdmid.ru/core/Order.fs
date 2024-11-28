@@ -7,12 +7,14 @@ open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Domain
 
-let private validateCity (request: Request) credentials =
-    match request.Service.Embassy.Country.City = credentials.Country.City with
-    | true -> Ok credentials
+let private validateCity (request: Request) (payload: Payload) =
+    let nodeSubName = [ payload.Country; payload.City ] |> Graph.buildNodeNameOfSeq
+
+    match request.Service.Embassy.Name |> Graph.containsSubName nodeSubName with
+    | true -> Ok payload
     | false ->
         Error
-        <| NotSupported $"Requested {request.Service.Embassy.Country.City} for the subdomain {credentials.SubDomain}"
+        <| NotSupported $"Requested {payload.City} for the subdomain {payload.SubDomain}"
 
 let private parsePayload =
     ResultAsync.bind (fun request ->
@@ -118,9 +120,9 @@ let errorFilter error =
     match error with
     | Operation reason ->
         match reason.Code with
-        | Some Constants.ErrorCodes.CONFIRMATION_EXISTS
-        | Some Constants.ErrorCodes.NOT_CONFIRMED
-        | Some Constants.ErrorCodes.REQUEST_DELETED -> true
+        | Some Constants.ErrorCode.CONFIRMATION_EXISTS
+        | Some Constants.ErrorCode.NOT_CONFIRMED
+        | Some Constants.ErrorCode.REQUEST_DELETED -> true
         | _ -> false
     | _ -> false
 

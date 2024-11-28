@@ -13,6 +13,6 @@ module FileSystem =
             |> Persistence.Storage.getConnectionString SECTION_NAME
             |> Result.bind (fun filePath ->
                 { FilePath = filePath
-                  FileName = Key.CHATS_STORAGE_NAME }
+                  FileName = Constants.CHATS_STORAGE_NAME }
                 |> Connection.FileSystem
                 |> Persistence.Storage.create)

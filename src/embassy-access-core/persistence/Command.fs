@@ -28,7 +28,7 @@ module Request =
                 <| Operation
                     { Message =
                         $"Request for {requestExt.Service.EmbassyName} with {requestExt.Service.Payload} already exists."
-                      Code = Some ErrorCodes.ALREADY_EXISTS }
+                      Code = Some ErrorCode.ALREADY_EXISTS }
             | _ -> (requests |> Array.append [| requestExt |], request) |> Ok
 
         let update request (requests: External.Request array) =
@@ -37,7 +37,7 @@ module Request =
                 Error
                 <| Operation
                     { Message = $"{request.Id} not found to update."
-                      Code = Some ErrorCodes.NOT_FOUND }
+                      Code = Some ErrorCode.NOT_FOUND }
             | Some index ->
                 let data =
                     requests
@@ -57,7 +57,7 @@ module Request =
                     Error
                     <| Operation
                         { Message = $"{requestId} not found to delete."
-                          Code = Some ErrorCodes.NOT_FOUND }
+                          Code = Some ErrorCode.NOT_FOUND }
                 | Some index ->
                     requests[index]
                     |> EA.Core.Mapper.Request.toInternal
