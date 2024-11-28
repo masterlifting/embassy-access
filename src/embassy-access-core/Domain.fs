@@ -7,7 +7,6 @@ module Constants =
     [<Literal>]
     let REQUESTS_STORAGE_NAME = "requests"
 
-
     module Embassy =
         [<Literal>]
         let RUSSIAN = "Russian"

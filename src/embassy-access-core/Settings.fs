@@ -17,5 +17,5 @@ module Embassy =
     let getGraph configuration =
         configuration
         |> getConfigData
-        |> Result.map EA.Core.Mapper.Embassy.toGraph
+        |> Result.bind EA.Core.Mapper.Embassy.toGraph
         |> async.Return

@@ -7,17 +7,13 @@ open EA.Core.Domain
 
 module Embassy =
     let rec toGraph (graph: External.Graph) =
-
-        let embassy: Embassy =
-            { Id = graph.Id |> Graph.NodeIdValue
-              Name = graph.Name }
-
-        let children =
+        graph.Id
+        |> Graph.NodeId.create
+        |> Result.bind (fun nodeId ->
             match graph.Children with
-            | null -> Array.empty
-            | children -> children |> Seq.map toGraph |> Seq.toArray
-
-        Graph.Node(embassy, children |> Array.toList)
+            | null -> List.empty |> Ok
+            | children -> children |> Seq.map toGraph |> Result.choose
+            |> Result.map (fun children -> Graph.Node({ Id = nodeId; Name = graph.Name }, children)))
 
 module Confirmation =
     let toExternal (confirmation: Confirmation) =

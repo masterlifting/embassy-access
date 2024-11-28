@@ -8,7 +8,7 @@ type WorkerRoute =
     | Name of string
 
     interface Graph.INodeName with
-        member _.Id = Graph.NodeId.New
+        member _.Id = Graph.NodeId.NewGuid
 
         member this.Name =
             match this with

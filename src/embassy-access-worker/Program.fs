@@ -9,7 +9,7 @@ let main _ =
     Logging.useConsole configuration
 
     let rootTask =
-        { Id = Graph.NodeId.New
+        { Id = Graph.NodeId.NewGuid
           Name = Settings.APP_NAME
           Task = Initializer.initialize |> Some }
 
