@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Persistence.Storage
+module EA.Core.Persistence.Storage
 
 open EA.Core.Domain
 open Persistence.Domain
@@ -11,8 +11,8 @@ module FileSystem =
         let create configuration =
             configuration
             |> Persistence.Storage.getConnectionString SECTION_NAME
-            |> Result.bind (fun connectionString ->
-                { FIlePath = connectionString
+            |> Result.bind (fun filePath ->
+                { FilePath = filePath
                   FileName = Constants.REQUESTS_STORAGE_NAME }
                 |> Connection.FileSystem
                 |> Persistence.Storage.create)

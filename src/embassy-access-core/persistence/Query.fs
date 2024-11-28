@@ -1,73 +1,40 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Persistence.Query
+module EA.Core.Persistence.Query
 
-open Persistence.Domain.Query
 open EA.Core.Domain
-
-module Filter =
-    module Request =
-        type SearchAppointments =
-            { Pagination: Pagination<Request>
-              Embassy: Embassy
-              HasStates: Predicate<ProcessState>
-              HasConfirmationState: Predicate<ConfirmationState> }
-
-            static member create embassy =
-                { Pagination =
-                    { Page = 1
-                      PageSize = 20
-                      SortBy = OrderBy<Request>.Date _.Modified |> Desc }
-                  Embassy = embassy
-                  HasStates =
-                    function
-                    | InProcess -> false
-                    | _ -> true
-                  HasConfirmationState =
-                    function
-                    | Auto _ -> false
-                    | _ -> true }
-
-        type MakeAppointment =
-            { Pagination: Pagination<Request>
-              Embassy: Embassy
-              HasStates: Predicate<ProcessState>
-              HasConfirmationStates: Predicate<ConfirmationState> }
-
-            static member create embassy =
-                { Pagination =
-                    { Page = 1
-                      PageSize = 20
-                      SortBy = OrderBy<Request>.Date _.Modified |> Asc }
-                  Embassy = embassy
-                  HasStates =
-                    function
-                    | InProcess -> true
-                    | _ -> false
-                  HasConfirmationStates =
-                    function
-                    | Auto _ -> true
-                    | _ -> false }
-
-        module InMemory =
-            let searchAppointments (query: SearchAppointments) (request: Request) =
-                query.Embassy = request.Service.Embassy
-                && query.HasStates request.ProcessState
-                && query.HasConfirmationState request.ConfirmationState
-
-            let makeAppointment (query: MakeAppointment) (request: Request) =
-                query.Embassy = request.Service.Embassy
-                && query.HasStates request.ProcessState
-                && query.HasConfirmationStates request.ConfirmationState
 
 module Request =
 
     type GetOne =
-        | Id of RequestId
-        | First
-        | Single
+        | ById of RequestId
+        | First of string
+        | Single of string
 
     type GetMany =
-        | SearchAppointments of string
-        | MakeAppointments of string
         | ByIds of Set<RequestId>
-        | ByEmbassy of string
+        | ByEmbassyName of string
+
+    module internal InMemory =
+        open Infrastructure
+
+        module GetOne =
+            let byId (id: RequestId) (requests: External.Request array) =
+                requests |> Seq.tryFind (fun x -> x.Id = id.Value)
+
+            let first name (requests: External.Request array) =
+                requests |> Seq.tryFind (fun x -> x.Service.EmbassyName = name)
+
+            let single name (requests: External.Request array) =
+                requests
+                |> Seq.filter (fun x -> x.Service.Name = name)
+                |> fun result ->
+                    match result |> Seq.length with
+                    | 1 -> result |> Seq.head |> Ok
+                    | _ -> $"Single request for {name} not found." |> NotSupported |> Error
+
+        module GetMany =
+            let byIds ids (requests: External.Request array) =
+                requests |> Seq.filter (fun x -> ids |> Set.exists (fun id -> x.Id = id)) |> Ok
+
+            let byEmbassyName name (requests: External.Request array) =
+                requests |> Seq.filter (fun x -> x.Service.EmbassyName = name) |> Ok

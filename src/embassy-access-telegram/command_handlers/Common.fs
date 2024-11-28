@@ -57,7 +57,7 @@ let cities (embassyName, countryName) =
         |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
         |> Seq.map (fun embassy ->
             embassy
-            |> EA.Core.Mapper.Embassy.toInternal
+            |> EA.Core.Mapper.Embassy.toInternalGraph
             |> Result.map (fun x -> x |> Command.Service |> Command.set, embassy.Country.City.Name))
         |> Result.choose
         |> Result.map Map
@@ -136,7 +136,7 @@ let userCities (embassyName, countryName) =
             |> Seq.collect (fun (_, embassies) -> embassies |> Seq.take 1)
             |> Seq.map (fun embassy ->
                 embassy
-                |> EA.Core.Mapper.Embassy.toInternal
+                |> EA.Core.Mapper.Embassy.toInternalGraph
                 |> Result.map (fun x -> x |> Command.UserSubscriptions |> Command.set, embassy.Country.City.Name))
             |> Result.choose
             |> Result.map Map)

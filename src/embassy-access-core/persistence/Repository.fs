@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Persistence.Repository
+module EA.Core.Persistence.Repository
 
 open Infrastructure
 open Persistence.Domain
@@ -8,13 +8,13 @@ open Infrastructure.Logging
 
 module Query =
     module Request =
-        let getOne query ct client =
+        let getOne query ct storage =
             Log.trace $"InMemory query request {query}"
 
-            match client with
+            match storage with
             | Storage.InMemory client -> client |> InMemoryRepository.Query.Request.getOne query ct
             | Storage.FileSystem client -> client |> FileSystemRepository.Query.Request.getOne query ct
-            | _ -> $"Storage {client}" |> NotSupported |> Error |> async.Return
+            | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
         let getMany query ct storage =
             Log.trace $"InMemory query request {query}"
@@ -26,10 +26,10 @@ module Query =
 
 module Command =
     module Request =
-        let execute storage ct command =
+        let execute storage ct operation =
             match storage with
-            | Storage.InMemory client -> client |> InMemoryRepository.Command.Request.execute command ct
-            | Storage.FileSystem client -> client |> FileSystemRepository.Command.Request.execute command ct
+            | Storage.InMemory client -> client |> InMemoryRepository.Command.Request.execute operation ct
+            | Storage.FileSystem client -> client |> FileSystemRepository.Command.Request.execute operation ct
             | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
         let update request ct storage =

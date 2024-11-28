@@ -7,11 +7,82 @@ module Constants =
     [<Literal>]
     let REQUESTS_STORAGE_NAME = "requests"
 
+    module Embassy =
+
+        [<Literal>]
+        let RUSSIAN = "Russian"
+        [<Literal>]
+        let SPANISH = "Spanish"
+        [<Literal>]
+        let ITALIAN = "Italian"
+        [<Literal>]
+        let GERMAN = "German"
+        [<Literal>]
+        let FRENCH = "French"
+        [<Literal>]
+        let BRITISH = "British"
+
+    module Country =
+
+        [<Literal>]
+        let SERBIA = "Serbia"
+        [<Literal>]
+        let BOSNIA = "Bosnia"
+        [<Literal>]
+        let MONTENEGRO = "Montenegro"
+        [<Literal>]
+        let ALBANIA = "Albania"
+        [<Literal>]
+        let HUNGARY = "Hungary"
+        [<Literal>]
+        let SLOVENIA = "Slovenia"
+        [<Literal>]
+        let SWITZERLAND = "Switzerland"
+        [<Literal>]
+        let NETHERLANDS = "Netherlands"
+        [<Literal>]
+        let ITALY = "Italy"
+        [<Literal>]
+        let FRANCE = "France"
+        [<Literal>]
+        let GERMANY = "Germany"
+        [<Literal>]
+        let IRELAND = "Ireland"
+        [<Literal>]
+        let FINLAND = "Finland"
+
+    module City =
+
+        [<Literal>]
+        let BELGRADE = "Belgrade"
+        [<Literal>]
+        let SARAJEVO = "Sarajevo"
+        [<Literal>]
+        let PODGORICA = "Podgorica"
+        [<Literal>]
+        let TIRANA = "Tirana"
+        [<Literal>]
+        let BUDAPEST = "Budapest"
+        [<Literal>]
+        let LJUBLJANA = "Ljubljana"
+        [<Literal>]
+        let BERN = "Bern"
+        [<Literal>]
+        let HAGUE = "Hague"
+        [<Literal>]
+        let ROME = "Rome"
+        [<Literal>]
+        let PARIS = "Paris"
+        [<Literal>]
+        let BERLIN = "Berlin"
+        [<Literal>]
+        let DUBLIN = "Dublin"
+        [<Literal>]
+        let HELSINKI = "Helsinki"
+
 type Embassy =
     { Id: Graph.NodeId
-      Name: string
-      Country: string option
-      City: string option }
+      Name: string }
 
     interface Graph.INodeName with
         member this.Id = this.Id
@@ -111,8 +182,6 @@ type Notification =
         | _ -> None
 
 module External =
-    open System
-    open System
 
     type Graph() =
         member val Id: Guid = Guid.Empty with get, set

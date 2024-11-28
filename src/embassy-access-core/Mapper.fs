@@ -6,7 +6,7 @@ open Infrastructure
 open EA.Core.Domain
 
 module Embassy =
-    let rec toInternal (graph: External.Graph) =
+    let rec toInternalGraph (graph: External.Graph) =
 
         let embassy: Embassy =
             { Id = graph.Id |> Graph.NodeIdValue
@@ -15,7 +15,7 @@ module Embassy =
         let children =
             match graph.Children with
             | null -> Array.empty
-            | children -> children |> Seq.map toInternal |> Seq.toArray
+            | children -> children |> Seq.map toInternalGraph |> Seq.toArray
 
         Graph.Node(embassy, children |> Array.toList)
 
@@ -52,13 +52,13 @@ module Appointment =
 
 module ConfirmationOption =
     [<Literal>]
-    let FIRST_AVAILABLE = nameof FirstAvailable
+    let private FIRST_AVAILABLE = nameof FirstAvailable
 
     [<Literal>]
-    let LAST_AVAILABLE = nameof LastAvailable
+    let private LAST_AVAILABLE = nameof LastAvailable
 
     [<Literal>]
-    let DATE_TIME_RANGE = nameof DateTimeRange
+    let private DATE_TIME_RANGE = nameof DateTimeRange
 
     let toExternal option =
         let result = External.ConfirmationOption()
@@ -86,13 +86,13 @@ module ConfirmationOption =
 module ConfirmationState =
 
     [<Literal>]
-    let DISABLED = nameof Disabled
+    let private DISABLED = nameof Disabled
 
     [<Literal>]
-    let MANUAL = nameof Manual
+    let private MANUAL = nameof Manual
 
     [<Literal>]
-    let AUTO = nameof Auto
+    let private AUTO = nameof Auto
 
     let toExternal (state: ConfirmationState) =
         let result = External.ConfirmationState()
@@ -123,16 +123,16 @@ module ConfirmationState =
 
 module ProcessState =
     [<Literal>]
-    let CREATED = nameof Created
+    let private CREATED = nameof Created
 
     [<Literal>]
-    let IN_PROCESS = nameof InProcess
+    let private IN_PROCESS = nameof InProcess
 
     [<Literal>]
-    let COMPLETED = nameof Completed
+    let private COMPLETED = nameof Completed
 
     [<Literal>]
-    let FAILED = nameof Failed
+    let private FAILED = nameof Failed
 
     let toExternal state =
         let result = External.ProcessState()
@@ -172,7 +172,8 @@ module Service =
 
         result.Name <- service.Name
         result.Payload <- service.Payload
-        result.Embassy <- service.Embassy
+        result.EmbassyId <- service.Embassy.Id.Value
+        result.EmbassyName <- service.Embassy.Name
         result.Description <- service.Description
 
         result
@@ -180,7 +181,9 @@ module Service =
     let toInternal (service: External.Service) =
         { Name = service.Name
           Payload = service.Payload
-          Embassy = service.Embassy
+          Embassy =
+            { Id = service.EmbassyId |> Graph.NodeIdValue
+              Name = service.EmbassyName }
           Description = service.Description }
 
 module Request =
@@ -199,9 +202,9 @@ module Request =
         result
 
     let toInternal (request: External.Request) =
-        let requestResult = ResultBuilder()
+        let result = ResultBuilder()
 
-        requestResult {
+        result {
 
             let service = request.Service |> Service.toInternal
             let! processState = request.ProcessState |> ProcessState.toInternal

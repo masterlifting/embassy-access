@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Persistence.Command
+module EA.Core.Persistence.Command
 
 open Infrastructure
 open Persistence.Domain
@@ -12,7 +12,7 @@ module Request =
         | Update of Request
         | Delete of RequestId
 
-    module InMemory =
+    module internal InMemory =
 
         let create request (requests: External.Request array) =
             let requestExt = request |> EA.Core.Mapper.Request.toExternal
@@ -20,14 +20,14 @@ module Request =
             match
                 requests
                 |> Seq.exists (fun x ->
-                    x.Service.Embassy = requestExt.Service.Embassy
+                    x.Service.EmbassyId = requestExt.Service.EmbassyId
                     && x.Service.Payload = requestExt.Service.Payload)
             with
             | true ->
                 Error
                 <| Operation
                     { Message =
-                        $"Request for {requestExt.Service.Embassy} with {requestExt.Service.Payload} already exists."
+                        $"Request for {requestExt.Service.EmbassyName} with {requestExt.Service.Payload} already exists."
                       Code = Some ErrorCodes.ALREADY_EXISTS }
             | _ -> (requests |> Array.append [| requestExt |], request) |> Ok
 
