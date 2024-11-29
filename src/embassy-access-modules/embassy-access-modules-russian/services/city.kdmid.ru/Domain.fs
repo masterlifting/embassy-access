@@ -59,7 +59,7 @@ type ServiceRequest =
 
 
 type StartOrder =
-    { Request: EA.Core.Domain.Request
+    { Request: Request
       TimeZone: float }
 
     static member create timeZone request =
@@ -71,7 +71,7 @@ type PickOrder =
       notify: Notification -> Async<unit> }
 
 type Dependencies =
-    { updateRequest: EA.Core.Domain.Request -> Async<Result<EA.Core.Domain.Request, Error'>>
+    { updateRequest: Request -> Async<Result<Request, Error'>>
       getInitialPage:
           Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<string>, Error'>>
       getCaptcha:

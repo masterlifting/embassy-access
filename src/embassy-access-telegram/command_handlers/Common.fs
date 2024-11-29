@@ -7,19 +7,19 @@ open EA.Core.Domain
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 
-let private tryGetService (chatId, msgId) serviceIdOpt (embassyNode: Graph.Node<Embassy>) =
+let private tryGetService (cfg, chatId, msgId) serviceIdOpt (embassyNode: Graph.Node<Embassy>) =
     match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
     | Some embassyName ->
         match embassyName with
-        | Constants.Embassy.RUSSIAN -> Russian.getService (embassyNode.FullId, serviceIdOpt) (chatId, msgId)
+        | Constants.Embassy.RUSSIAN -> Russian.getService (embassyNode.FullId, serviceIdOpt) (cfg, chatId, msgId)
         | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
     | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
-let private trySetService (chatId, msgId) serviceId payload (embassyNode: Graph.Node<Embassy>) =
+let private trySetService (cfg, chatId, msgId) serviceId payload (embassyNode: Graph.Node<Embassy>) =
     match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
     | Some embassyName ->
         match embassyName with
-        | Constants.Embassy.RUSSIAN -> Russian.setService (embassyNode.FullId, serviceId, payload) (chatId, msgId)
+        | Constants.Embassy.RUSSIAN -> Russian.setService (embassyNode.FullId, serviceId, payload) (cfg, chatId, msgId)
         | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
     | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
@@ -32,7 +32,7 @@ let getService (embassyId, serviceIdOpt) =
             |> Graph.BFS.tryFindById embassyId
             |> Option.map Ok
             |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error))
-        |> ResultAsync.bindAsync (tryGetService (chatId, msgId) serviceIdOpt)
+        |> ResultAsync.bindAsync (tryGetService (cfg, chatId, msgId) serviceIdOpt)
 
 let setService (embassyId, serviceId, payload) =
     fun (cfg, chatId, msgId) ->
@@ -43,7 +43,7 @@ let setService (embassyId, serviceId, payload) =
             |> Graph.BFS.tryFindById embassyId
             |> Option.map Ok
             |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error))
-        |> ResultAsync.bindAsync (trySetService (chatId, msgId) serviceId payload)
+        |> ResultAsync.bindAsync (trySetService (cfg, chatId, msgId) serviceId payload)
 
 
 let getEmbassies embassyIdOpt =
@@ -77,7 +77,7 @@ let getEmbassies embassyIdOpt =
                 |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error)
                 |> ResultAsync.wrap (fun node ->
                     match node.Children with
-                    | [] -> node |> tryGetService (chatId, msgId) None
+                    | [] -> node |> tryGetService (cfg, chatId, msgId) None
                     | nodes -> nodes |> createButtons |> Ok |> async.Return))
 
 let appointments (embassy: Embassy, appointments: Set<Appointment>) =

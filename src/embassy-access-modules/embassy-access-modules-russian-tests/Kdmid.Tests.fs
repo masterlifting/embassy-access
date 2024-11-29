@@ -60,8 +60,8 @@ module private Fixture =
           Confirmation = Auto FirstAvailable }
 
     let IssueForeign =
-        { Kdmid.IssueForeign.Request = Request
-          Kdmid.IssueForeign.Dependencies = Dependencies }
+        { Kdmid.Service.Request = Request
+          Kdmid.Service.Dependencies = Dependencies }
 
 open Fixture
 
@@ -73,11 +73,10 @@ let private ``validation page should have an error`` =
 
         let service =
             { IssueForeign with
-                Kdmid.IssueForeign.Dependencies = dependencies }
-            |> PassportService.IssueForeign
-            |> Passport
+                Kdmid.Service.Dependencies = dependencies }
+            |> Service.Kdmid
 
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -94,11 +93,10 @@ let private ``validation page should have a confirmed request`` =
 
         let service =
             { IssueForeign with
-                Kdmid.IssueForeign.Dependencies = dependencies }
-            |> PassportService.IssueForeign
-            |> Passport
+                Kdmid.Service.Dependencies = dependencies }
+            |> Service.Kdmid
 
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -115,11 +113,10 @@ let private ``validation page should have a confirmation`` =
 
         let service =
             { IssueForeign with
-                Kdmid.IssueForeign.Dependencies = dependencies }
-            |> PassportService.IssueForeign
-            |> Passport
+                Kdmid.Service.Dependencies = dependencies }
+            |> Service.Kdmid
 
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -136,11 +133,10 @@ let private ``validation page should have a deleted request`` =
 
         let service =
             { IssueForeign with
-                Kdmid.IssueForeign.Dependencies = dependencies }
-            |> PassportService.IssueForeign
-            |> Passport
+                Kdmid.Service.Dependencies = dependencies }
+            |> Service.Kdmid
 
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -159,11 +155,10 @@ let private ``appointments page should not have data`` =
 
             let service =
                 { IssueForeign with
-                    Kdmid.IssueForeign.Dependencies = dependencies }
-                |> PassportService.IssueForeign
-                |> Passport
+                    Kdmid.Service.Dependencies = dependencies }
+                |> Service.Kdmid
 
-            let! serviceResult = EA.Embassies.Russian.API.Service.get service
+            let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
             Expect.isEmpty result.Appointments "Appointments should not be not empty"
@@ -179,11 +174,10 @@ let private ``appointments page should have data`` =
 
             let service =
                 { IssueForeign with
-                    Kdmid.IssueForeign.Dependencies = dependencies }
-                |> PassportService.IssueForeign
-                |> Passport
+                    Kdmid.Service.Dependencies = dependencies }
+                |> Service.Kdmid
 
-            let! serviceResult = EA.Embassies.Russian.API.Service.get service
+            let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
             Expect.isTrue (not result.Appointments.IsEmpty) "Appointments should be not empty"
@@ -199,11 +193,10 @@ let private ``confirmation page should have a valid result`` =
 
             let service =
                 { IssueForeign with
-                    Kdmid.IssueForeign.Dependencies = dependencies }
-                |> PassportService.IssueForeign
-                |> Passport
+                    Kdmid.Service.Dependencies = dependencies }
+                |> Service.Kdmid
 
-            let! serviceResult = EA.Embassies.Russian.API.Service.get service
+            let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
 
