@@ -37,6 +37,29 @@ module Service =
                 |> citizenshipRenunciation.Request.Create
                 |> Kdmid.Domain.StartOrder.create citizenshipRenunciation.Request.TimeZone
                 |> Kdmid.Order.start citizenshipRenunciation.Dependencies
+                
+    let get' cfg serviceId =
+        
+        let inline createRequest (node: Graph.Node<ServiceInfo>) =
+            match node.FullName |> Graph.splitNodeName |> Seq.skip 1 |> Seq.tryHead with
+            | Some embassyName ->
+                match embassyName with
+                | Constants.Embassy.RUSSIAN -> Russian.service (node.Id, serviceIdOpt) (chatId, msgId)
+                | _ -> $"Service for {node.ShortName}" |> NotSupported |> Error |> async.Return
+            | None -> node.ShortName |> NotFound |> Error |> async.Return
+        
+        cfg
+        |> Settings.ServiceInfo.getGraph
+        |> ResultAsync.bindAsync (fun graph ->
+                graph
+                |> Graph.BFS.tryFindById serviceId
+                |> Option.map Ok
+                |> Option.defaultValue ($"ServiceId {serviceId.Value}" |> NotFound |> Error)
+                |> ResultAsync.wrap (fun node ->
+                    match node.Children with
+                    | [] ->  node|> createRequest
+                    | nodes -> nodes |> createButtons |> Ok |> async.Return))
+        
 
 module Order =
     module Kdmid =

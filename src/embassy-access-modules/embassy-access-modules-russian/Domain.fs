@@ -10,7 +10,7 @@ module Constants =
 type ServiceInfo =
     { Id: Graph.NodeId
       Name: string
-      Description: string option }
+      Instruction: string option }
 
     interface Graph.INodeName with
         member this.Id = this.Id
@@ -24,7 +24,7 @@ module Midpass =
         static member INFO =
             { Id = "34d311e0-ab72-411d-bb63-1d45fc76facc" |> Graph.NodeIdValue
               Name = "Проверка готовности паспорта"
-              Description =
+              Instruction =
                 Some
                     @"Что бы воспользоваться услугой, пожалуйста,
                   добавьте к указанной комманде номер справки" }
@@ -44,7 +44,7 @@ module Kdmid =
         static member INFO =
             { Id = "1.1.1" |> Graph.NodeIdValue
               Name = "Выпуск заграничного паспорта"
-              Description = Some INSTRUCTION }
+              Instruction = Some INSTRUCTION }
 
         member this.Info = IssueForeign.INFO
 
@@ -55,7 +55,7 @@ module Kdmid =
         static member INFO =
             { Id = "1.1.2" |> Graph.NodeIdValue
               Name = "Доверенность"
-              Description = Some INSTRUCTION }
+              Instruction = Some INSTRUCTION }
 
         member this.Info = PowerOfAttorney.INFO
 
@@ -66,7 +66,7 @@ module Kdmid =
         static member INFO =
             { Id = "7c74062a-10a4-4de2-8c51-8b72e1740932" |> Graph.NodeIdValue
               Name = "Отказ от гражданства"
-              Description = Some INSTRUCTION }
+              Instruction = Some INSTRUCTION }
 
         member this.Info = CitizenshipRenunciation.INFO
 
@@ -83,7 +83,7 @@ type PassportService =
         Graph.Node(
             { Id = "1.1" |> Graph.NodeIdValue
               Name = "Пасспорт"
-              Description = None },
+              Instruction = None },
             [ Graph.Node(Kdmid.IssueForeign.INFO, [])
               Graph.Node(Midpass.CheckReadiness.INFO, []) ]
         )
@@ -99,7 +99,7 @@ type NotaryService =
         Graph.Node(
             { Id = "1.2" |> Graph.NodeIdValue
               Name = "Нотариат"
-              Description = None },
+              Instruction = None },
             [ Graph.Node(Kdmid.PowerOfAttorney.INFO, []) ]
         )
 
@@ -114,7 +114,7 @@ type CitizenshipService =
         Graph.Node(
             { Id = "1.3" |> Graph.NodeIdValue
               Name = "Гражданство"
-              Description = None },
+              Instruction = None },
             [ Graph.Node(Kdmid.CitizenshipRenunciation.INFO, []) ]
         )
 
@@ -133,6 +133,14 @@ type Service =
         Graph.Node(
             { Id = "1" |> Graph.NodeIdValue
               Name = Constants.EMBASSY_NAME
-              Description = None },
+              Instruction = None },
             [ PassportService.GRAPH; NotaryService.GRAPH; CitizenshipService.GRAPH ]
         )
+
+module External =
+    open System
+    type ServiceInfo() =
+        member val Id: string = String.Empty with get, set
+        member val Name: string = String.Empty with get, set
+        member val Instruction: string option = None with get, set
+        member val Children: ServiceInfo[] = [||] with get, set

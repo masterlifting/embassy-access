@@ -7,29 +7,6 @@ Logging:
 Persistence:
   FileSystem: "C:\\"
 
-Embassies:
-  Id: "1"
-  Name: "Embassies"
-  Children:
-    - Id: "1.1"
-      Name: "Russian"
-      Children:
-        - Id: "1.1.1"
-          Name: "Serbia"
-          Children:
-            - Id: "1.1.1.1"
-              Name: "Belgrade"
-        - Id: "1.1.2"
-          Name: "Bosnia"
-          Children:
-            - Id: "1.1.2.1"
-              Name: "Sarajevo"
-        - Id: "1.1.3"
-          Name: "Montenegro"
-          Children:
-            - Id: "1.1.3.1"
-              Name: "Podgorica"
-
 SearchAppointments: &SearchAppointments
   Name: Search appointments
   Enabled: false
@@ -158,3 +135,211 @@ Worker:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
+
+Embassies:
+  Id: "EMB"
+  Name: "Embassies"
+  Children:
+    - Id: "RU"
+      Name: "Russian"
+      Children:
+        - Id: "RU-SRB"
+          Name: "Serbia"
+          Children:
+            - Id: "RU-SRB-BG"
+              Name: "Belgrade"
+        - Id: "RU-GER"
+          Name: "Germany"
+          Children:
+            - Id: "RU-GER-BER"
+              Name: "Berlin"
+            - Id: "RU-GER-MUN"
+              Name: "Munich"
+        - Id: "RU-FRA"
+          Name: "France"
+          Children:
+            - Id: "RU-FRA-PAR"
+              Name: "Paris"
+        - Id: "RU-ITA"
+          Name: "Italy"
+          Children:
+            - Id: "RU-ITA-ROM"
+              Name: "Rome"
+            - Id: "RU-ITA-MIL"
+              Name: "Milan"
+        - Id: "RU-ESP"
+          Name: "Spain"
+          Children:
+            - Id: "RU-ESP-MAD"
+              Name: "Madrid"
+        - Id: "RU-CZE"
+          Name: "Czechia"
+          Children:
+            - Id: "RU-CZE-PRG"
+              Name: "Prague"
+        - Id: "RU-POL"
+          Name: "Poland"
+          Children:
+            - Id: "RU-POL-WAR"
+              Name: "Warsaw"
+        - Id: "RU-SWI"
+          Name: "Switzerland"
+          Children:
+            - Id: "RU-SWI-BER"
+              Name: "Bern"
+        - Id: "RU-UK"
+          Name: "United Kingdom"
+          Children:
+            - Id: "RU-UK-LON"
+              Name: "London"
+        - Id: "RU-CHN"
+          Name: "China"
+          Children:
+            - Id: "RU-CHN-BJ"
+              Name: "Beijing"
+            - Id: "RU-CHN-SH"
+              Name: "Shanghai"
+            - Id: "RU-CHN-GZ"
+              Name: "Guangzhou"
+        - Id: "RU-USA"
+          Name: "United States"
+          Children:
+            - Id: "RU-USA-DC"
+              Name: "Washington DC"
+            - Id: "RU-USA-NY"
+              Name: "New York City"
+        - Id: "RU-IN"
+          Name: "India"
+          Children:
+            - Id: "RU-IN-DL"
+              Name: "New Delhi"
+            - Id: "RU-IN-MUM"
+              Name: "Mumbai"
+        - Id: "RU-JP"
+          Name: "Japan"
+          Children:
+            - Id: "RU-JP-TK"
+              Name: "Tokyo"
+        - Id: "RU-EG"
+          Name: "Egypt"
+          Children:
+            - Id: "RU-EG-CA"
+              Name: "Cairo"
+        - Id: "RU-BR"
+          Name: "Brazil"
+          Children:
+            - Id: "RU-BR-BSB"
+              Name: "Brasília"
+            - Id: "RU-BR-SP"
+              Name: "São Paulo"
+        - Id: "RU-AU"
+          Name: "Australia"
+          Children:
+            - Id: "RU-AU-CB"
+              Name: "Canberra"
+        - Id: "RU-KOR"
+          Name: "South Korea"
+          Children:
+            - Id: "RU-KOR-SEO"
+              Name: "Seoul"
+        - Id: "RU-THA"
+          Name: "Thailand"
+          Children:
+            - Id: "RU-THA-BKK"
+              Name: "Bangkok"
+        - Id: "RU-SGP"
+          Name: "Singapore"
+          Children:
+            - Id: "RU-SGP-SGP"
+              Name: "Singapore"
+        - Id: "RU-SA"
+          Name: "Saudi Arabia"
+          Children:
+            - Id: "RU-SA-RD"
+              Name: "Riyadh"
+        - Id: "RU-ZA"
+          Name: "South Africa"
+          Children:
+            - Id: "RU-ZA-PTA"
+              Name: "Pretoria"
+    - Id: "DE"
+      Name: "German"
+      Children:
+        - Id: "DE-ESP"
+          Name: "Spain"
+          Children:
+            - Id: "DE-ESP-MAD"
+              Name: "Madrid"
+        - Id: "DE-ITA"
+          Name: "Italy"
+          Children:
+            - Id: "DE-ITA-ROM"
+              Name: "Rome"
+    - Id: "IT"
+      Name: "Italian"
+      Children:
+        - Id: "IT-GRE"
+          Name: "Greece"
+          Children:
+            - Id: "IT-GRE-ATH"
+              Name: "Athens"
+        - Id: "IT-UKR"
+          Name: "Ukraine"
+          Children:
+            - Id: "IT-UKR-KYIV"
+              Name: "Kyiv"
+    - Id: "UK"
+      Name: "British"
+      Children:
+        - Id: "UK-POL"
+          Name: "Poland"
+          Children:
+            - Id: "UK-POL-WAR"
+              Name: "Warsaw"
+        - Id: "UK-CZE"
+          Name: "Czechia"
+          Children:
+            - Id: "UK-CZE-PRG"
+              Name: "Prague"
+    - Id: "FR"
+      Name: "French"
+      Children:
+        - Id: "FR-BEL"
+          Name: "Belgium"
+          Children:
+            - Id: "FR-BEL-BRU"
+              Name: "Brussels"
+        - Id: "FR-GER"
+          Name: "Germany"
+          Children:
+            - Id: "FR-GER-BER"
+              Name: "Berlin"
+
+RussianEmbassy:
+  Id: "RU-EMB"
+  Name: "Посольство РФ"
+  Children:
+    - Id: "PASS"
+      Name: "Паспорт"
+      Children:
+        - Id: "ISS"
+          Name: "Выпуск заграничного паспорта"
+          Instruction: "Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат."
+          Children:
+            - Id: "CHK"
+              Name: "Проверка готовности паспорта"
+              Instruction: "Что бы воспользоваться услугой, добавьте номер справки, которую вы получили после подачи документов, после символа | в вышеуказанную команду и отправьте ее в чат."
+        - Id: "RPL"
+          Name: "Нотариат"
+          Instruction: "Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат."
+          Children:
+            - Id: "PWR"
+              Name: "Доверенность"
+              Instruction: "Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат."
+        - Id: "VSA"
+          Name: "Гражданство"
+          Children:
+            - Id: "REN"
+              Name: "Отказ от гражданства"
+              Instruction: "Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат."
+

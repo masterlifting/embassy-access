@@ -1,21 +1,21 @@
-﻿module EA.Core.Settings
+﻿module EA.Embassies.Russian.Settings
 
 open Infrastructure
-open EA.Core.Domain
+open EA.Embassies.Russian.Domain
 
-module Embassy =
+module ServiceInfo =
 
     [<Literal>]
-    let SECTION_NAME = "Embassies"
+    let SECTION_NAME = "RussianEmbassy"
 
     let private getConfigData configuration =
         configuration
-        |> Configuration.getSection<External.Graph> SECTION_NAME
+        |> Configuration.getSection<External.ServiceInfo> SECTION_NAME
         |> Option.map Ok
         |> Option.defaultValue (Error <| NotFound $"Section '%s{SECTION_NAME}' in the configuration.")
 
     let getGraph configuration =
         configuration
         |> getConfigData
-        |> Result.bind Mapper.Embassy.toGraph
+        |> Result.bind Mapper.ServiceInfo.toGraph
         |> async.Return

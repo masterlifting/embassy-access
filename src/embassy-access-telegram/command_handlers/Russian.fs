@@ -36,7 +36,7 @@ let service (embassyId, serviceIdOpt) =
                     let message =
                         $"%s{command}%s{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."
 
-                    node.Value.Description
+                    node.Value.Instruction
                     |> Option.map (fun instruction -> message + $"%s{Environment.NewLine}Инструкция: %s{instruction}")
                     |> Option.defaultValue message
                     |> Text.create (chatId, msgId |> Replace)

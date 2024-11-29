@@ -15,6 +15,8 @@
         <Compile Include="services\city.kdmid.ru\core\Order.fs" />
         <Compile Include="services\info.midpass.ru\Domain.fs" />
         <Compile Include="Domain.fs" />
+        <Compile Include="Mapper.fs" />
+        <Compile Include="Settings.fs" />
         <Compile Include="API.fs" />
     </ItemGroup>
 
