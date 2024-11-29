@@ -16,8 +16,11 @@ module private Consume =
             | Some cmd ->
                 match cmd with
                 | Command.GetEmbassies ->
-                    CommandHandler.Common.embassies None (cfg, msg.ChatId, msg.Id)
-                    |> produceOk client ct
+                    CommandHandler.Common.getEmbassies None (cfg, msg.ChatId, msg.Id)
+                    |> produceResult msg.ChatId client ct
+                | Command.SetService(embassyId, serviceId, payload) ->
+                    CommandHandler.Common.setService (embassyId, serviceId, payload) (cfg, msg.ChatId, msg.Id)
+                    |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
     let callback (msg: Dto<string>) cfg ct client =
@@ -29,8 +32,8 @@ module private Consume =
             | Some cmd ->
                 match cmd with
                 | Command.GetEmbassy embassyId ->
-                    CommandHandler.Common.embassies (Some embassyId) (cfg, msg.ChatId, msg.Id)
-                    |> produceOk client ct
+                    CommandHandler.Common.getEmbassies (Some embassyId) (cfg, msg.ChatId, msg.Id)
+                    |> produceResult msg.ChatId client ct
                 | Command.GetService(embassyId, serviceId) ->
                     CommandHandler.Common.getService (embassyId, Some serviceId) (cfg, msg.ChatId, msg.Id)
                     |> produceResult msg.ChatId client ct

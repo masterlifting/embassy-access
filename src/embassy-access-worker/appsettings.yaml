@@ -5,131 +5,157 @@ Logging:
     Default: Debug
 
 Persistence:
-  FileSystem: "C:\\"
+  FileSystem: C:\
 
 SearchAppointments: &SearchAppointments
   Name: Search appointments
   Enabled: false
   Wait: false
-  Duration: '00:01:00'
+  Duration: 00:01:00
 
 Worker:
+  Id: WORKER
   Name: Worker
   Enabled: true
   Wait: true
   Schedule:
   Tasks:
-    - Name: Russian
+    - Id: RU
+      Name: Russian
       Parallel: true
-      Recursively: '00:01:00'
+      Recursively: 00:01:00
       Schedule:
-        StartTime: '09:00:00'
-        StopTime: '16:30:00'
+        StartTime: 09:00:00
+        StopTime: 16:30:00
         Workdays: mon,tue,wed,thu,fri
       Tasks:
-        - Name: Serbia
+        - Id: SRB
+          Name: Serbia
           Parallel: true
           Tasks:
-            - Name: Belgrade
+            - Id: BG
+              Name: Belgrade
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Name: Germany
+        - Id: GER
+          Name: Germany
           Parallel: true
           Tasks:
-            - Name: Berlin
+            - Id: BER
+              Name: Berlin
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Name: France
+        - Id: FRA
+          Name: France
           Parallel: true
           Tasks:
-            - Name: Paris
+            - Id: PAR
+              Name: Paris
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Name: Montenegro
+        - Id: MNE
+          Name: Montenegro
           Parallel: true
           Tasks:
-            - Name: Podgorica
+            - Id: PDG
+              Name: Podgorica
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Name: Ireland
+        - Id: IRL
+          Name: Ireland
           Parallel: true
           Tasks:
-            - Name: Dublin
+            - Id: DUB
+              Name: Dublin
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 0
-        - Name: Switzerland
+        - Id: SWI
+          Name: Switzerland
           Parallel: true
           Tasks:
-            - Name: Bern
+            - Id: BER
+              Name: Bern
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Name: Finland
+        - Id: FIN
+          Name: Finland
           Parallel: true
           Tasks:
-            - Name: Helsinki
+            - Id: HEL
+              Name: Helsinki
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 2
-        - Name: Netherlands
+        - Id: NLD
+          Name: Netherlands
           Parallel: true
           Tasks:
-            - Name: Hague
+            - Id: HAG
+              Name: Hague
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Name: Albania
+        - Id: ALB
+          Name: Albania
           Parallel: true
           Tasks:
-            - Name: Tirana
+            - Id: TIR
+              Name: Tirana
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Name: Slovenia
+        - Id: SLO
+          Name: Slovenia
           Parallel: true
           Tasks:
-            - Name: Ljubljana
+            - Id: LJU
+              Name: Ljubljana
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Name: Bosnia
+        - Id: BIH
+          Name: Bosnia
           Parallel: true
           Tasks:
-            - Name: Sarajevo
+            - Id: SAR
+              Name: Sarajevo
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Name: Hungary
+        - Id: HUN
+          Name: Hungary
           Parallel: true
           Tasks:
-            - Name: Budapest
+            - Id: BUD
+              Name: Budapest
               Parallel: true
               Tasks:
                 - <<: *SearchAppointments
@@ -137,209 +163,201 @@ Worker:
                 TimeZone: 1
 
 Embassies:
-  Id: "EMB"
-  Name: "Embassies"
+  Id: EMB
+  Name: Embassies
   Children:
-    - Id: "RU"
-      Name: "Russian"
+    - Id: RU
+      Name: Russian
       Children:
-        - Id: "RU-SRB"
-          Name: "Serbia"
+        - Id: SRB
+          Name: Serbia
           Children:
-            - Id: "RU-SRB-BG"
-              Name: "Belgrade"
-        - Id: "RU-GER"
-          Name: "Germany"
+            - Id: BG
+              Name: Belgrade
+        - Id: GER
+          Name: Germany
           Children:
-            - Id: "RU-GER-BER"
-              Name: "Berlin"
-            - Id: "RU-GER-MUN"
-              Name: "Munich"
-        - Id: "RU-FRA"
-          Name: "France"
+            - Id: BER
+              Name: Berlin
+            - Id: MUN
+              Name: Munich
+        - Id: FRA
+          Name: France
           Children:
-            - Id: "RU-FRA-PAR"
-              Name: "Paris"
-        - Id: "RU-ITA"
-          Name: "Italy"
+            - Id: PAR
+              Name: Paris
+        - Id: ITA
+          Name: Italy
           Children:
-            - Id: "RU-ITA-ROM"
-              Name: "Rome"
-            - Id: "RU-ITA-MIL"
-              Name: "Milan"
-        - Id: "RU-ESP"
-          Name: "Spain"
+            - Id: ROM
+              Name: Rome
+            - Id: MIL
+              Name: Milan
+        - Id: ESP
+          Name: Spain
           Children:
-            - Id: "RU-ESP-MAD"
-              Name: "Madrid"
-        - Id: "RU-CZE"
-          Name: "Czechia"
+            - Id: MAD
+              Name: Madrid
+        - Id: CZE
+          Name: Czechia
           Children:
-            - Id: "RU-CZE-PRG"
-              Name: "Prague"
-        - Id: "RU-POL"
-          Name: "Poland"
+            - Id: PRG
+              Name: Prague
+        - Id: POL
+          Name: Poland
           Children:
-            - Id: "RU-POL-WAR"
-              Name: "Warsaw"
-        - Id: "RU-SWI"
-          Name: "Switzerland"
+            - Id: WAR
+              Name: Warsaw
+        - Id: SWI
+          Name: Switzerland
           Children:
-            - Id: "RU-SWI-BER"
-              Name: "Bern"
-        - Id: "RU-UK"
-          Name: "United Kingdom"
+            - Id: BER
+              Name: Bern
+        - Id: UK
+          Name: United Kingdom
           Children:
-            - Id: "RU-UK-LON"
-              Name: "London"
-        - Id: "RU-CHN"
-          Name: "China"
+            - Id: LON
+              Name: London
+        - Id: CHN
+          Name: China
           Children:
-            - Id: "RU-CHN-BJ"
-              Name: "Beijing"
-            - Id: "RU-CHN-SH"
-              Name: "Shanghai"
-            - Id: "RU-CHN-GZ"
-              Name: "Guangzhou"
-        - Id: "RU-USA"
-          Name: "United States"
+            - Id: BJ
+              Name: Beijing
+            - Id: SH
+              Name: Shanghai
+            - Id: GZ
+              Name: Guangzhou
+        - Id: USA
+          Name: United States
           Children:
-            - Id: "RU-USA-DC"
-              Name: "Washington DC"
-            - Id: "RU-USA-NY"
-              Name: "New York City"
-        - Id: "RU-IN"
-          Name: "India"
+            - Id: DC
+              Name: Washington DC
+            - Id: NY
+              Name: New York City
+        - Id: IN
+          Name: India
           Children:
-            - Id: "RU-IN-DL"
-              Name: "New Delhi"
-            - Id: "RU-IN-MUM"
-              Name: "Mumbai"
-        - Id: "RU-JP"
-          Name: "Japan"
+            - Id: DL
+              Name: New Delhi
+            - Id: MUM
+              Name: Mumbai
+        - Id: JP
+          Name: Japan
           Children:
-            - Id: "RU-JP-TK"
-              Name: "Tokyo"
-        - Id: "RU-EG"
-          Name: "Egypt"
+            - Id: TK
+              Name: Tokyo
+        - Id: EG
+          Name: Egypt
           Children:
-            - Id: "RU-EG-CA"
-              Name: "Cairo"
-        - Id: "RU-BR"
-          Name: "Brazil"
+            - Id: CA
+              Name: Cairo
+        - Id: BR
+          Name: Brazil
           Children:
-            - Id: "RU-BR-BSB"
-              Name: "Brasília"
-            - Id: "RU-BR-SP"
-              Name: "São Paulo"
-        - Id: "RU-AU"
-          Name: "Australia"
+            - Id: BSB
+              Name: Brasília
+            - Id: SP
+              Name: São Paulo
+        - Id: AU
+          Name: Australia
           Children:
-            - Id: "RU-AU-CB"
-              Name: "Canberra"
-        - Id: "RU-KOR"
-          Name: "South Korea"
+            - Id: CB
+              Name: Canberra
+        - Id: KOR
+          Name: South Korea
           Children:
-            - Id: "RU-KOR-SEO"
-              Name: "Seoul"
-        - Id: "RU-THA"
-          Name: "Thailand"
+            - Id: SEO
+              Name: Seoul
+        - Id: THA
+          Name: Thailand
           Children:
-            - Id: "RU-THA-BKK"
-              Name: "Bangkok"
-        - Id: "RU-SGP"
-          Name: "Singapore"
+            - Id: BKK
+              Name: Bangkok
+        - Id: SGP
+          Name: Singapore
           Children:
-            - Id: "RU-SGP-SGP"
-              Name: "Singapore"
-        - Id: "RU-SA"
-          Name: "Saudi Arabia"
+            - Id: SGP
+              Name: Singapore
+        - Id: SA
+          Name: Saudi Arabia
           Children:
-            - Id: "RU-SA-RD"
-              Name: "Riyadh"
-        - Id: "RU-ZA"
-          Name: "South Africa"
+            - Id: RD
+              Name: Riyadh
+        - Id: ZA
+          Name: South Africa
           Children:
-            - Id: "RU-ZA-PTA"
-              Name: "Pretoria"
-    - Id: "DE"
-      Name: "German"
+            - Id: PTA
+              Name: Pretoria
+    - Id: DE
+      Name: German
       Children:
-        - Id: "DE-ESP"
-          Name: "Spain"
+        - Id: ESP
+          Name: Spain
           Children:
-            - Id: "DE-ESP-MAD"
-              Name: "Madrid"
-        - Id: "DE-ITA"
-          Name: "Italy"
+            - Id: MAD
+              Name: Madrid
+        - Id: ITA
+          Name: Italy
           Children:
-            - Id: "DE-ITA-ROM"
-              Name: "Rome"
-    - Id: "IT"
-      Name: "Italian"
+            - Id: ROM
+              Name: Rome
+    - Id: IT
+      Name: Italian
       Children:
-        - Id: "IT-GRE"
-          Name: "Greece"
+        - Id: GRE
+          Name: Greece
           Children:
-            - Id: "IT-GRE-ATH"
-              Name: "Athens"
-        - Id: "IT-UKR"
-          Name: "Ukraine"
+            - Id: ATH
+              Name: Athens
+        - Id: UKR
+          Name: Ukraine
           Children:
-            - Id: "IT-UKR-KYIV"
-              Name: "Kyiv"
-    - Id: "UK"
-      Name: "British"
+            - Id: KYIV
+              Name: Kyiv
+    - Id: UK
+      Name: British
       Children:
-        - Id: "UK-POL"
-          Name: "Poland"
+        - Id: POL
+          Name: Poland
           Children:
-            - Id: "UK-POL-WAR"
-              Name: "Warsaw"
-        - Id: "UK-CZE"
-          Name: "Czechia"
+            - Id: WAR
+              Name: Warsaw
+        - Id: CZE
+          Name: Czechia
           Children:
-            - Id: "UK-CZE-PRG"
-              Name: "Prague"
-    - Id: "FR"
-      Name: "French"
+            - Id: PRG
+              Name: Prague
+    - Id: FR
+      Name: French
       Children:
-        - Id: "FR-BEL"
-          Name: "Belgium"
+        - Id: BEL
+          Name: Belgium
           Children:
-            - Id: "FR-BEL-BRU"
-              Name: "Brussels"
-        - Id: "FR-GER"
-          Name: "Germany"
+            - Id: BRU
+              Name: Brussels
+        - Id: GER
+          Name: Germany
           Children:
-            - Id: "FR-GER-BER"
-              Name: "Berlin"
+            - Id: BER
+              Name: Berlin
 
 RussianEmbassy:
-  Id: "RU-EMB"
-  Name: "Посольство РФ"
+  Id: EMB
+  Name: Посольство РФ
   Children:
-    - Id: "PASS"
-      Name: "Паспорт"
+    - Id: PASS
+      Name: Паспорт
       Children:
-        - Id: "ISS"
-          Name: "Выпуск заграничного паспорта"
-          Instruction: "Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат."
-          Children:
-            - Id: "CHK"
-              Name: "Проверка готовности паспорта"
-              Instruction: "Что бы воспользоваться услугой, добавьте номер справки, которую вы получили после подачи документов, после символа | в вышеуказанную команду и отправьте ее в чат."
-        - Id: "RPL"
-          Name: "Нотариат"
-          Instruction: "Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат."
-          Children:
-            - Id: "PWR"
-              Name: "Доверенность"
-              Instruction: "Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат."
-        - Id: "VSA"
-          Name: "Гражданство"
-          Children:
-            - Id: "REN"
-              Name: "Отказ от гражданства"
-              Instruction: "Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат."
-
+        - Id: ISS
+          Name: Выпуск заграничного паспорта
+          Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
+        - Id: CHK
+          Name: Проверка готовности паспорта
+          Instruction: Что бы воспользоваться услугой, добавьте номер справки, которую вы получили после подачи документов, после символа | в вышеуказанную команду и отправьте ее в чат.
+    - Id: RPL
+      Name: Нотариат
+      Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
+      Children:
+        - Id: PWR
+          Name: Доверенность
+          Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте

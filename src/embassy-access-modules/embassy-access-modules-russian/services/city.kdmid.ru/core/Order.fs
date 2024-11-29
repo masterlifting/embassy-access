@@ -10,7 +10,7 @@ open EA.Embassies.Russian.Kdmid.Domain
 let private validateCity (request: Request) (payload: Payload) =
     let nodeSubName = [ payload.Country; payload.City ] |> Graph.buildNodeNameOfSeq
 
-    match request.Service.Embassy.Name |> Graph.containsSubName nodeSubName with
+    match request.Service.Embassy.Name.IndexOf(nodeSubName) <> -1 with
     | true -> Ok payload
     | false ->
         Error

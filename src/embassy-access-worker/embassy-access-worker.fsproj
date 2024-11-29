@@ -19,6 +19,9 @@
 		<Content Include="..\..\.dockerignore">
 			<Link>.dockerignore</Link>
 		</Content>
+		<Content Include="appsettings.yaml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>

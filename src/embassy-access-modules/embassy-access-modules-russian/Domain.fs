@@ -15,34 +15,32 @@ type ServiceInfo =
     interface Graph.INodeName with
         member this.Id = this.Id
         member this.Name = this.Name
-        member this.setName name = { this with Name = name }
+        member this.set(id, name) = { this with Id = id; Name = name }
 
 module Midpass =
     type CheckReadiness =
         { Request: Midpass.Domain.Request }
 
         static member INFO =
-            { Id = "34d311e0-ab72-411d-bb63-1d45fc76facc" |> Graph.NodeIdValue
+            { Id = "CHK" |> Graph.NodeIdValue
               Name = "Проверка готовности паспорта"
               Instruction =
                 Some
-                    @"Что бы воспользоваться услугой, пожалуйста,
-                  добавьте к указанной комманде номер справки" }
+                    "Что бы воспользоваться услугой, добавьте номер справки, которую вы получили после подачи документов, после символа | в вышеуказанную команду и отправьте ее в чат." }
 
         member this.Info = CheckReadiness.INFO
 
 module Kdmid =
     [<Literal>]
     let private INSTRUCTION =
-        @"Что бы воспользоваться услугой, пожалуйста,
-            добавьте к указанной комманде ссылку, которую вы получили в email"
+        "Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат."
 
     type IssueForeign =
         { Request: Kdmid.Domain.ServiceRequest
           Dependencies: Kdmid.Domain.Dependencies }
 
         static member INFO =
-            { Id = "1.1.1" |> Graph.NodeIdValue
+            { Id = "ISS" |> Graph.NodeIdValue
               Name = "Выпуск заграничного паспорта"
               Instruction = Some INSTRUCTION }
 
@@ -53,7 +51,7 @@ module Kdmid =
           Dependencies: Kdmid.Domain.Dependencies }
 
         static member INFO =
-            { Id = "1.1.2" |> Graph.NodeIdValue
+            { Id = "PWR" |> Graph.NodeIdValue
               Name = "Доверенность"
               Instruction = Some INSTRUCTION }
 
@@ -64,7 +62,7 @@ module Kdmid =
           Dependencies: Kdmid.Domain.Dependencies }
 
         static member INFO =
-            { Id = "7c74062a-10a4-4de2-8c51-8b72e1740932" |> Graph.NodeIdValue
+            { Id = "REN" |> Graph.NodeIdValue
               Name = "Отказ от гражданства"
               Instruction = Some INSTRUCTION }
 
@@ -81,7 +79,7 @@ type PassportService =
 
     static member internal GRAPH =
         Graph.Node(
-            { Id = "1.1" |> Graph.NodeIdValue
+            { Id = "PASS" |> Graph.NodeIdValue
               Name = "Пасспорт"
               Instruction = None },
             [ Graph.Node(Kdmid.IssueForeign.INFO, [])
@@ -97,7 +95,7 @@ type NotaryService =
 
     static member internal GRAPH =
         Graph.Node(
-            { Id = "1.2" |> Graph.NodeIdValue
+            { Id = "RPL" |> Graph.NodeIdValue
               Name = "Нотариат"
               Instruction = None },
             [ Graph.Node(Kdmid.PowerOfAttorney.INFO, []) ]
@@ -112,7 +110,7 @@ type CitizenshipService =
 
     static member internal GRAPH =
         Graph.Node(
-            { Id = "1.3" |> Graph.NodeIdValue
+            { Id = "VSA" |> Graph.NodeIdValue
               Name = "Гражданство"
               Instruction = None },
             [ Graph.Node(Kdmid.CitizenshipRenunciation.INFO, []) ]
@@ -131,7 +129,7 @@ type Service =
 
     static member GRAPH =
         Graph.Node(
-            { Id = "1" |> Graph.NodeIdValue
+            { Id = "EMB.RU" |> Graph.NodeIdValue
               Name = Constants.EMBASSY_NAME
               Instruction = None },
             [ PassportService.GRAPH; NotaryService.GRAPH; CitizenshipService.GRAPH ]
@@ -139,6 +137,7 @@ type Service =
 
 module External =
     open System
+
     type ServiceInfo() =
         member val Id: string = String.Empty with get, set
         member val Name: string = String.Empty with get, set

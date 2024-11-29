@@ -8,19 +8,19 @@ type WorkerRoute =
     | Name of string
 
     interface Graph.INodeName with
-        member _.Id = Graph.NodeId.NewGuid
+        member _.Id = String.Empty |> Graph.NodeIdValue
 
         member this.Name =
             match this with
             | Name name -> name
 
-        member _.setName name = Name name
+        member _.set(_, name) = Name name
 
     static member register (name, handler) router =
 
         let rec innerLoop (node: Graph.Node<WorkerRoute>) =
             let handler =
-                { Id = node.Id
+                { Id = node.FullId
                   Name = node.ShortName
                   Task =
                     match node.Children.IsEmpty, node.ShortName = name with

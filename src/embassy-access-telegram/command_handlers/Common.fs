@@ -7,14 +7,21 @@ open EA.Core.Domain
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 
-let private getService' (embassy: Embassy, serviceIdOpt) =
-    fun (chatId, msgId) ->
-        match embassy.Name |> Graph.splitNodeName |> Seq.skip 1 |> Seq.tryHead with
-        | Some embassyName ->
-            match embassyName with
-            | Constants.Embassy.RUSSIAN -> Russian.service (embassy.Id, serviceIdOpt) (chatId, msgId)
-            | _ -> $"Service for {embassy.Name}" |> NotSupported |> Error |> async.Return
-        | None -> embassy.Name |> NotFound |> Error |> async.Return
+let private tryGetService (chatId, msgId) serviceIdOpt (embassyNode: Graph.Node<Embassy>) =
+    match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
+    | Some embassyName ->
+        match embassyName with
+        | Constants.Embassy.RUSSIAN -> Russian.getService (embassyNode.FullId, serviceIdOpt) (chatId, msgId)
+        | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
+    | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
+
+let private trySetService (chatId, msgId) serviceId payload (embassyNode: Graph.Node<Embassy>) =
+    match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
+    | Some embassyName ->
+        match embassyName with
+        | Constants.Embassy.RUSSIAN -> Russian.setService (embassyNode.FullId, serviceId, payload) (chatId, msgId)
+        | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
+    | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
 let getService (embassyId, serviceIdOpt) =
     fun (cfg, chatId, msgId) ->
@@ -25,20 +32,26 @@ let getService (embassyId, serviceIdOpt) =
             |> Graph.BFS.tryFindById embassyId
             |> Option.map Ok
             |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error))
-        |> ResultAsync.bindAsync (fun node ->
-            match node.FullName |> Graph.splitNodeName |> Seq.skip 1 |> Seq.tryHead with
-            | Some embassyName ->
-                match embassyName with
-                | Constants.Embassy.RUSSIAN -> Russian.service (node.Id, serviceIdOpt) (chatId, msgId)
-                | _ -> $"Service for {node.ShortName}" |> NotSupported |> Error |> async.Return
-            | None -> node.ShortName |> NotFound |> Error |> async.Return)
+        |> ResultAsync.bindAsync (tryGetService (chatId, msgId) serviceIdOpt)
 
-let embassies embassyIdOpt =
+let setService (embassyId, serviceId, payload) =
+    fun (cfg, chatId, msgId) ->
+        cfg
+        |> EA.Core.Settings.Embassy.getGraph
+        |> ResultAsync.bind (fun graph ->
+            graph
+            |> Graph.BFS.tryFindById embassyId
+            |> Option.map Ok
+            |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error))
+        |> ResultAsync.bindAsync (trySetService (chatId, msgId) serviceId payload)
+
+
+let getEmbassies embassyIdOpt =
     fun (cfg, chatId, msgId) ->
 
         let rec inline createButtons (nodes: Graph.Node<Embassy> seq) =
             nodes
-            |> Seq.map (fun node -> node.Id |> Command.GetEmbassy |> Command.set, node.ShortName)
+            |> Seq.map (fun node -> node.FullId |> Command.GetEmbassy |> Command.set, node.ShortName)
             |> Map
             |> fun buttons ->
 
@@ -64,7 +77,7 @@ let embassies embassyIdOpt =
                 |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error)
                 |> ResultAsync.wrap (fun node ->
                     match node.Children with
-                    | [] -> getService' (node.Value, None) (chatId, msgId)
+                    | [] -> node |> tryGetService (chatId, msgId) None
                     | nodes -> nodes |> createButtons |> Ok |> async.Return))
 
 let appointments (embassy: Embassy, appointments: Set<Appointment>) =

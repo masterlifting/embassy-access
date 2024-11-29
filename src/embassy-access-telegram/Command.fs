@@ -15,15 +15,19 @@ module private Code =
     let MINE = "/mine"
 
     [<Literal>]
-    let GET_EMBASSY = "/001"
+    let GET_EMBASSY = "/EMB-GET"
 
     [<Literal>]
-    let GET_SERVICE = "/002"
+    let GET_SERVICE = "/SRV-GET"
+
+    [<Literal>]
+    let SET_SERVICE = "/SRV-SET"
 
 type Name =
     | GetEmbassies
     | GetEmbassy of Graph.NodeId
     | GetService of Graph.NodeId * Graph.NodeId
+    | SetService of Graph.NodeId * Graph.NodeId * string
     | ChooseAppointments of Graph.NodeId * AppointmentId
 
 let private build args = args |> String.concat Delimiter
@@ -40,7 +44,13 @@ let set command =
     | GetService(embassyId, serviceId) ->
         [ Code.GET_SERVICE; embassyId.Value |> string; serviceId.Value |> string ]
         |> build
-    | _ -> ""
+    | SetService(embassyId, serviceId, payload) ->
+        [ Code.SET_SERVICE
+          embassyId.Value |> string
+          serviceId.Value |> string
+          payload ]
+        |> build
+    | _ -> System.String.Empty
 
 let get (value: string) =
     let parts = value.Split Delimiter
@@ -64,5 +74,16 @@ let get (value: string) =
                 let embassyId = parts[1] |> Graph.NodeIdValue
                 let serviceId = parts[2] |> Graph.NodeIdValue
                 GetService(embassyId, serviceId) |> Some |> Ok
+            | _ -> Ok <| None
+        | Code.SET_SERVICE ->
+            match argsLength with
+            | 3 ->
+                let embassyId = parts[1] |> Graph.NodeIdValue
+                let serviceId = parts[2] |> Graph.NodeIdValue
+
+                match parts[3] with
+                | AP.IsString payload -> SetService(embassyId, serviceId, payload) |> Some |> Ok
+                | _ -> parts[3] |> NotSupported |> Error
+
             | _ -> Ok <| None
         | _ -> Ok <| None

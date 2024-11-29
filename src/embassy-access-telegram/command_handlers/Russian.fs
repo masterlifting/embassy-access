@@ -7,12 +7,12 @@ open Web.Telegram.Domain.Producer
 open EA.Telegram
 open EA.Embassies.Russian.Domain
 
-let service (embassyId, serviceIdOpt) =
+let internal getService (embassyId, serviceIdOpt) =
     fun (chatId, msgId) ->
 
         let inline createButtons (nodes: Graph.Node<ServiceInfo> seq) =
             nodes
-            |> Seq.map (fun node -> (embassyId, node.Id) |> Command.GetService |> Command.set, node.ShortName)
+            |> Seq.map (fun node -> (embassyId, node.FullId) |> Command.GetService |> Command.set, node.ShortName)
             |> Map
             |> fun buttons ->
                 { Buttons.Name = "Какую услугу вы хотите получить?"
@@ -31,14 +31,28 @@ let service (embassyId, serviceIdOpt) =
                 match node.Children with
                 | [] ->
 
-                    let command = (embassyId, serviceId) |> Command.GetService |> Command.set
-
-                    let message =
-                        $"%s{command}%s{Environment.NewLine}Отправьте назад вышеуказанную комманду для получения услуги."
+                    let command = (embassyId, serviceId, "{вставить сюда}") |> Command.SetService |> Command.set
+                    let doubleLine = Environment.NewLine + Environment.NewLine
+                    let message = $"%s{command}%s{doubleLine}"
 
                     node.Value.Instruction
-                    |> Option.map (fun instruction -> message + $"%s{Environment.NewLine}Инструкция: %s{instruction}")
+                    |> Option.map (fun instruction -> message + $"Инструкция:%s{doubleLine}%s{instruction}")
                     |> Option.defaultValue message
                     |> Text.create (chatId, msgId |> Replace)
                 | services -> services |> createButtons)
             |> async.Return
+            
+let internal setService (embassyId, serviceId, payload) =
+    fun (chatId, msgId) ->
+
+        Service.GRAPH
+        |> Graph.BFS.tryFindById serviceId
+        |> Option.map Ok
+        |> Option.defaultValue ("Не могу найти выбранную услугу" |> NotFound |> Error)
+        |> Result.map (fun node ->
+            node.Children
+            |> Seq.tryFind (fun node -> node.Value.Instruction.IsSome)
+            |> Option.map (fun node -> node.Value.Instruction.Value)
+            |> Option.defaultValue "Услуга успешно выбрана"
+            |> Text.create (chatId, New))
+        |> async.Return
