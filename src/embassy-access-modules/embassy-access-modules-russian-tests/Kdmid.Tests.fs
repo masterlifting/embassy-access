@@ -54,8 +54,9 @@ module private Fixture =
     let private Request =
         { Uri = Uri("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F")
           Embassy =
-            { Id = Graph.NodeId.NewGuid
-              Name = [ Embassy.RUSSIAN; Country.GERMANY; City.BERLIN ] |> Graph.buildNodeNameOfSeq }
+            { Id = Graph.NodeId.New
+              Name = [ Embassy.RUSSIAN; Country.GERMANY; City.BERLIN ] |> Graph.buildNodeNameOfSeq
+              Description = None }
           TimeZone = 1.0
           Confirmation = Auto FirstAvailable }
 

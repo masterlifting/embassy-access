@@ -20,8 +20,7 @@ type WorkerRoute =
 
         let rec innerLoop (node: Graph.Node<WorkerRoute>) =
             let handler =
-                { Id = node.FullId
-                  Name = node.ShortName
+                { Name = node.ShortName
                   Task =
                     match node.Children.IsEmpty, node.ShortName = name with
                     | false, _ -> None

@@ -10,12 +10,12 @@ open EA.Embassies.Russian
 let internal getService (embassyId, serviceIdOpt) =
     fun (cfg, chatId, msgId) ->
 
-        let inline createButtons (nodes: Graph.Node<Domain.ServiceInfo> seq) =
+        let inline createButtons buttonName (nodes: Graph.Node<Domain.ServiceInfo> seq) =
             nodes
             |> Seq.map (fun node -> (embassyId, node.FullId) |> Command.GetService |> Command.set, node.ShortName)
             |> Map
             |> fun buttons ->
-                { Buttons.Name = "Какую услугу вы хотите получить?"
+                { Buttons.Name = buttonName |> Option.defaultValue "Какую услугу вы хотите получить?"
                   Columns = 1
                   Data = buttons }
                 |> Buttons.create (chatId, msgId |> Replace)
@@ -24,7 +24,7 @@ let internal getService (embassyId, serviceIdOpt) =
         |> Settings.ServiceInfo.getGraph
         |> ResultAsync.bind (fun graph ->
             match serviceIdOpt with
-            | None -> graph.Children |> createButtons |> Ok
+            | None -> graph.Children |> createButtons graph.Value.Description |> Ok
             | Some serviceId ->
                 graph
                 |> Graph.BFS.tryFindById serviceId
@@ -44,7 +44,7 @@ let internal getService (embassyId, serviceIdOpt) =
                         |> Option.map (fun instruction -> message + $"Инструкция:%s{doubleLine}%s{instruction}")
                         |> Option.defaultValue message
                         |> Text.create (chatId, msgId |> Replace)
-                    | services -> services |> createButtons))
+                    | services -> services |> createButtons node.Value.Description))
 
 let internal setService (embassyId, serviceId, payload) =
     fun (cfg, chatId, msgId) ->

@@ -9,8 +9,7 @@ let main _ =
     Logging.useConsole configuration
 
     let rootTask =
-        { Id = Graph.NodeId.NewGuid
-          Name = Settings.APP_NAME
+        { Name = Settings.APP_NAME
           Task = Initializer.initialize |> Some }
 
     let workerHandlers = Graph.Node(rootTask, [ Embassies.Russian.register () ])

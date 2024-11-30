@@ -13,7 +13,13 @@ module Embassy =
             match graph.Children with
             | null -> List.empty |> Ok
             | children -> children |> Seq.map toGraph |> Result.choose
-            |> Result.map (fun children -> Graph.Node({ Id = nodeId; Name = graph.Name }, children)))
+            |> Result.map (fun children ->
+                Graph.Node(
+                    { Id = nodeId
+                      Name = graph.Name
+                      Description = graph.Description },
+                    children
+                )))
 
 module Confirmation =
     let toExternal (confirmation: Confirmation) =
@@ -179,7 +185,8 @@ module Service =
           Payload = service.Payload
           Embassy =
             { Id = service.EmbassyId |> Graph.NodeIdValue
-              Name = service.EmbassyName }
+              Name = service.EmbassyName
+              Description = None }
           Description = service.Description }
 
 module Request =

@@ -49,7 +49,7 @@ let setService (embassyId, serviceId, payload) =
 let getEmbassies embassyIdOpt =
     fun (cfg, chatId, msgId) ->
 
-        let rec inline createButtons (nodes: Graph.Node<Embassy> seq) =
+        let rec inline createButtons buttonName (nodes: Graph.Node<Embassy> seq) =
             nodes
             |> Seq.map (fun node -> node.FullId |> Command.GetEmbassy |> Command.set, node.ShortName)
             |> Map
@@ -60,7 +60,7 @@ let getEmbassies embassyIdOpt =
                     | Some _ -> Replace msgId
                     | None -> New
 
-                { Buttons.Name = "Choose what do you want to visit"
+                { Buttons.Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
                   Columns = 3
                   Data = buttons }
                 |> Buttons.create (chatId, msgId)
@@ -69,7 +69,7 @@ let getEmbassies embassyIdOpt =
         |> EA.Core.Settings.Embassy.getGraph
         |> ResultAsync.bindAsync (fun graph ->
             match embassyIdOpt with
-            | None -> graph.Children |> createButtons |> Ok |> async.Return
+            | None -> graph.Children |> createButtons graph.Value.Description |> Ok |> async.Return
             | Some embassyId ->
                 graph
                 |> Graph.BFS.tryFindById embassyId
@@ -78,7 +78,7 @@ let getEmbassies embassyIdOpt =
                 |> ResultAsync.wrap (fun node ->
                     match node.Children with
                     | [] -> node |> tryGetService (cfg, chatId, msgId) None
-                    | nodes -> nodes |> createButtons |> Ok |> async.Return))
+                    | nodes -> nodes |> createButtons node.Value.Description |> Ok |> async.Return))
 
 let appointments (embassy: Embassy, appointments: Set<Appointment>) =
     fun chatId ->

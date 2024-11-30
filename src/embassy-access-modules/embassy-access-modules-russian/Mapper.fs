@@ -16,6 +16,7 @@ module ServiceInfo =
                 Graph.Node(
                     { Id = nodeId
                       Name = graph.Name
+                      Description = graph.Description
                       Instruction = graph.Instruction },
                     children
                 )))

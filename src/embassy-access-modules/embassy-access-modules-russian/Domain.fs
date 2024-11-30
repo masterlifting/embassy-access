@@ -6,7 +6,8 @@ open Infrastructure
 type ServiceInfo =
     { Id: Graph.NodeId
       Name: string
-      Instruction: string option }
+      Instruction: string option
+      Description: string option }
 
     interface Graph.INodeName with
         member this.Id = this.Id
@@ -34,4 +35,5 @@ module External =
         member val Id: string = String.Empty with get, set
         member val Name: string = String.Empty with get, set
         member val Instruction: string option = None with get, set
+        member val Description: string option = None with get, set
         member val Children: ServiceInfo[] = [||] with get, set
