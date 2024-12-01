@@ -61,8 +61,8 @@ module private Fixture =
           Confirmation = Auto FirstAvailable }
 
     let IssueForeign =
-        { Kdmid.Service.Request = Request
-          Kdmid.Service.Dependencies = Dependencies }
+        { Service.Request = Request
+          Service.Dependencies = Dependencies }
 
 open Fixture
 
@@ -74,7 +74,7 @@ let private ``validation page should have an error`` =
 
         let service =
             { IssueForeign with
-                Kdmid.Service.Dependencies = dependencies }
+                Service.Dependencies = dependencies }
             |> Service.Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -94,7 +94,7 @@ let private ``validation page should have a confirmed request`` =
 
         let service =
             { IssueForeign with
-                Kdmid.Service.Dependencies = dependencies }
+                Service.Dependencies = dependencies }
             |> Service.Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -114,7 +114,7 @@ let private ``validation page should have a confirmation`` =
 
         let service =
             { IssueForeign with
-                Kdmid.Service.Dependencies = dependencies }
+                Service.Dependencies = dependencies }
             |> Service.Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -134,7 +134,7 @@ let private ``validation page should have a deleted request`` =
 
         let service =
             { IssueForeign with
-                Kdmid.Service.Dependencies = dependencies }
+                Service.Dependencies = dependencies }
             |> Service.Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -156,7 +156,7 @@ let private ``appointments page should not have data`` =
 
             let service =
                 { IssueForeign with
-                    Kdmid.Service.Dependencies = dependencies }
+                    Service.Dependencies = dependencies }
                 |> Service.Kdmid
 
             let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -175,7 +175,7 @@ let private ``appointments page should have data`` =
 
             let service =
                 { IssueForeign with
-                    Kdmid.Service.Dependencies = dependencies }
+                    Service.Dependencies = dependencies }
                 |> Service.Kdmid
 
             let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -194,7 +194,7 @@ let private ``confirmation page should have a valid result`` =
 
             let service =
                 { IssueForeign with
-                    Kdmid.Service.Dependencies = dependencies }
+                    Service.Dependencies = dependencies }
                 |> Service.Kdmid
 
             let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"

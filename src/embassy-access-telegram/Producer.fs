@@ -24,7 +24,7 @@ let private spread chats ct createMsg =
 
 module Produce =
     let private getSubscriptionChats requestId configuration ct =
-        Storage.FileSystem.Chat.create configuration
+        Storage.FileSystem.Chat.init configuration
         |> ResultAsync.wrap (fun storage ->
             requestId
             |> Query.Chat.BySubscription
@@ -32,7 +32,7 @@ module Produce =
 
     let private getEmbassyChats (embassy: Embassy) configuration ct =
         configuration
-        |> EA.Core.Persistence.Storage.FileSystem.Request.create
+        |> EA.Core.Persistence.Storage.FileSystem.Request.init
         |> ResultAsync.wrap (fun storage ->
             embassy.Name
             |> EA.Core.Persistence.Query.Request.ByEmbassyName
@@ -40,7 +40,7 @@ module Produce =
             |> ResultAsync.map (Seq.map _.Id)
             |> ResultAsync.bindAsync (fun subscriptions ->
                 configuration
-                |> Storage.FileSystem.Chat.create
+                |> Storage.FileSystem.Chat.init
                 |> ResultAsync.wrap (fun storage ->
                     subscriptions
                     |> Query.Chat.BySubscriptions

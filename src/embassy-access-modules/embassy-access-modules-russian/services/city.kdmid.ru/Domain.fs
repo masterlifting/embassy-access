@@ -44,7 +44,7 @@ type ServiceRequest =
       TimeZone: float
       Confirmation: ConfirmationState }
 
-    member internal this.Create serviceName =
+    member this.CreateRequest serviceName =
         { Id = RequestId.New
           Service =
             { Name = serviceName
@@ -95,8 +95,12 @@ type Dependencies =
               -> Web.Http.Domain.Client
               -> Async<Result<string, Error'>> }
 
-    static member create ct storage =
-        { updateRequest = fun request -> storage |> EA.Core.Persistence.Repository.Command.Request.update request ct
+    static member create storage ct =
+        { updateRequest =
+            fun request ->
+                request
+                |> EA.Core.Persistence.Command.Request.Update
+                |> EA.Core.Persistence.Repository.Command.Request.execute storage ct
           getInitialPage =
             fun request client ->
                 client
@@ -124,6 +128,9 @@ type Dependencies =
                 |> Web.Http.Client.Request.post ct request content
                 |> Web.Http.Client.Response.String.readContent ct }
 
+type Service =
+    { Request: ServiceRequest
+      Dependencies: Dependencies }
 
 type internal Payload =
     { Country: string

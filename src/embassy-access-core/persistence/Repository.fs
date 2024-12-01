@@ -31,6 +31,3 @@ module Command =
             | Storage.InMemory client -> client |> InMemoryRepository.Command.Request.execute operation ct
             | Storage.FileSystem client -> client |> FileSystemRepository.Command.Request.execute operation ct
             | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
-
-        let update request ct storage =
-            request |> Command.Request.Update |> execute storage ct

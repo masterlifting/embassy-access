@@ -18,6 +18,9 @@ module private Code =
     let GET_EMBASSY = "/EMB-GET"
 
     [<Literal>]
+    let GET_USER_EMBASSY = "/EMB-USER-GET"
+
+    [<Literal>]
     let GET_SERVICE = "/SRV-GET"
 
     [<Literal>]
@@ -25,6 +28,8 @@ module private Code =
 
 type Name =
     | GetEmbassies
+    | GetUserEmbassies
+    | GetUserEmbassy of Graph.NodeId
     | GetEmbassy of Graph.NodeId
     | GetService of Graph.NodeId * Graph.NodeId
     | SetService of Graph.NodeId * Graph.NodeId * string
@@ -40,7 +45,9 @@ let private printSize (value: string) =
 let set command =
     match command with
     | GetEmbassies -> Code.START
+    | GetUserEmbassies -> Code.MINE
     | GetEmbassy embassyId -> [ Code.GET_EMBASSY; embassyId.Value |> string ] |> build
+    | GetUserEmbassy embassyId -> [ Code.GET_USER_EMBASSY; embassyId.Value |> string ] |> build
     | GetService(embassyId, serviceId) ->
         [ Code.GET_SERVICE; embassyId.Value |> string; serviceId.Value |> string ]
         |> build
@@ -62,11 +69,18 @@ let get (value: string) =
 
         match parts[0] with
         | Code.START -> Ok <| Some GetEmbassies
+        | Code.MINE -> Ok <| Some GetUserEmbassies
         | Code.GET_EMBASSY ->
             match argsLength with
             | 1 ->
                 let embassyId = parts[1] |> Graph.NodeIdValue
                 GetEmbassy embassyId |> Some |> Ok
+            | _ -> Ok <| None
+        | Code.GET_USER_EMBASSY ->
+            match argsLength with
+            | 1 ->
+                let embassyId = parts[1] |> Graph.NodeIdValue
+                GetUserEmbassy embassyId |> Some |> Ok
             | _ -> Ok <| None
         | Code.GET_SERVICE ->
             match argsLength with

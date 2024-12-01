@@ -20,6 +20,7 @@ let private createEmbassyName (task: WorkerTaskOut) =
         <| Operation
             { Message = ex |> Exception.toMessage
               Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
+    |> async.Return
 
 module private Kdmid =
     open EA.Embassies.Russian.Kdmid.Domain
@@ -28,7 +29,7 @@ module private Kdmid =
         let result = ResultBuilder()
 
         result {
-            let! storage = configuration |> Storage.FileSystem.Request.create
+            let! storage = configuration |> Storage.FileSystem.Request.init
 
             let notify notification =
                 notification
@@ -36,7 +37,7 @@ module private Kdmid =
                 |> Async.map ignore
 
             let pickOrder requests =
-                let deps = Dependencies.create ct storage
+                let deps = Dependencies.create storage ct
                 let timeZone = schedule.TimeZone |> float
 
                 let order =
@@ -68,8 +69,7 @@ module private Kdmid =
             |> ResultAsync.wrap (fun startOrder ->
                 task
                 |> createEmbassyName
-                |> async.Return
-                |> ResultAsync.bindAsync (Query.Request.ByEmbassyName >> startOrder))
+                |> ResultAsync.bindAsync (Query.Request.FindMany.ByEmbassyName >> startOrder))
 
 open EA.Core.Domain.Constants
 

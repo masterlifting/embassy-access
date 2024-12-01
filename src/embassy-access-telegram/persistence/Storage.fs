@@ -8,7 +8,7 @@ module FileSystem =
     open Persistence.Domain.FileSystem
 
     module Chat =
-        let create configuration =
+        let init configuration =
             configuration
             |> Persistence.Storage.getConnectionString SECTION_NAME
             |> Result.bind (fun filePath ->

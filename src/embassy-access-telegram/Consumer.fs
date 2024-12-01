@@ -16,10 +16,16 @@ module private Consume =
             | Some cmd ->
                 match cmd with
                 | Command.GetEmbassies ->
-                    CommandHandler.Common.getEmbassies None (cfg, msg.ChatId, msg.Id)
+                    CommandHandler.Common.getEmbassies None
+                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id)
+                    |> produceResult msg.ChatId client ct
+                | Command.GetUserEmbassies ->
+                    CommandHandler.Common.getUserEmbassies None
+                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id, ct)
                     |> produceResult msg.ChatId client ct
                 | Command.SetService(embassyId, serviceId, payload) ->
-                    CommandHandler.Common.setService (embassyId, serviceId, payload) (cfg, msg.ChatId, msg.Id)
+                    CommandHandler.Common.setService (embassyId, serviceId, payload)
+                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id, ct)
                     |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 
@@ -32,10 +38,16 @@ module private Consume =
             | Some cmd ->
                 match cmd with
                 | Command.GetEmbassy embassyId ->
-                    CommandHandler.Common.getEmbassies (Some embassyId) (cfg, msg.ChatId, msg.Id)
+                    CommandHandler.Common.getEmbassies (Some embassyId)
+                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id)
+                    |> produceResult msg.ChatId client ct
+                | Command.GetUserEmbassy embassyId ->
+                    CommandHandler.Common.getUserEmbassies (Some embassyId)
+                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id, ct)
                     |> produceResult msg.ChatId client ct
                 | Command.GetService(embassyId, serviceId) ->
-                    CommandHandler.Common.getService (embassyId, Some serviceId) (cfg, msg.ChatId, msg.Id)
+                    CommandHandler.Common.getService (embassyId, Some serviceId)
+                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id)
                     |> produceResult msg.ChatId client ct
                 | _ -> msg.Value |> NotSupported |> Error |> async.Return
 

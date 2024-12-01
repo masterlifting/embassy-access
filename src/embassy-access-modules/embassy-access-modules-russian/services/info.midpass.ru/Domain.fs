@@ -3,7 +3,7 @@
 open System
 open EA.Core.Domain
 
-type Request =
+type ServiceRequest =
     { Embassy: Embassy
       StatementNumber: string }
 
@@ -19,3 +19,5 @@ type Request =
           ConfirmationState = Disabled
           Appointments = Set.empty
           Modified = DateTime.UtcNow }
+
+type Service = { Request: ServiceRequest }

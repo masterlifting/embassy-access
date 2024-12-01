@@ -14,19 +14,9 @@ type ServiceInfo =
         member this.Name = this.Name
         member this.set(id, name) = { this with Id = id; Name = name }
 
-module Midpass =
-
-    type Service = { Request: Midpass.Domain.Request }
-
-module Kdmid =
-
-    type Service =
-        { Request: Kdmid.Domain.ServiceRequest
-          Dependencies: Kdmid.Domain.Dependencies }
-
 type Service =
-    | Midpass of Midpass.Service
-    | Kdmid of Kdmid.Service
+    | Midpass of Midpass.Domain.Service
+    | Kdmid of Kdmid.Domain.Service
 
 module External =
     open System

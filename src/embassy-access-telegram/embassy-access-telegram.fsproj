@@ -14,8 +14,8 @@
         <Compile Include="persistence\Repository.fs"/>
         <Compile Include="persistence\Storage.fs"/>
         <Compile Include="Command.fs"/>
-        <Compile Include="command_handlers\Russian.fs" />
-        <Compile Include="command_handlers\Common.fs" />
+        <Compile Include="embassy_handlers\Russian.fs" />
+        <Compile Include="CommandHandler.fs" />
         <Compile Include="Consumer.fs"/>
         <Compile Include="Producer.fs"/>
     </ItemGroup>
