@@ -19,6 +19,9 @@ type Chat =
     { Id: ChatId
       Subscriptions: Set<RequestId> }
 
+type MessageInfo =
+    MessageInfo of ChatId * int
+
 module External =
 
     type Chat() =
