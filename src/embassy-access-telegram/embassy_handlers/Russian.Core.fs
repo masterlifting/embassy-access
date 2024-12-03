@@ -1,7 +1,8 @@
-﻿module EA.Telegram.CommandHandler.Russian
+﻿module EA.Telegram.CommandHandler.Russian.Core
 
 open System
 open EA.Core.Domain
+open EA.Embassies.Russian.Kdmid.Domain
 open Infrastructure
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
@@ -9,7 +10,7 @@ open EA.Telegram
 open EA.Embassies.Russian
 
 let internal getService (embassyId, serviceIdOpt) =
-    fun (cfg, chatId, msgId) ->
+    fun (deps: Dependencies.GetService) ->
 
         let inline createButtons buttonName (nodes: Graph.Node<Domain.ServiceInfo> seq) =
             nodes
@@ -19,10 +20,9 @@ let internal getService (embassyId, serviceIdOpt) =
                 { Buttons.Name = buttonName |> Option.defaultValue "Какую услугу вы хотите получить?"
                   Columns = 1
                   Data = buttons }
-                |> Buttons.create (chatId, msgId |> Replace)
+                |> Buttons.create (deps.ChatId, deps.MessageId |> Replace)
 
-        cfg
-        |> Settings.ServiceInfo.getGraph
+        deps.getServiceInfoGraph ()
         |> ResultAsync.bind (fun graph ->
             match serviceIdOpt with
             | None -> graph.Children |> createButtons graph.Value.Description |> Ok
@@ -44,46 +44,27 @@ let internal getService (embassyId, serviceIdOpt) =
                         node.Value.Instruction
                         |> Option.map (fun instruction -> message + $"Инструкция:%s{doubleLine}%s{instruction}")
                         |> Option.defaultValue message
-                        |> Text.create (chatId, msgId |> Replace)
+                        |> Text.create (deps.ChatId, deps.MessageId |> Replace)
                     | services -> services |> createButtons node.Value.Description))
 
 let internal setService (serviceId, embassy, payload) =
-    fun (cfg, chatId, msgId, ct) ->
+    fun (deps: Dependencies.SetService) ->
 
-        let inline createOrUpdateChat request storage =
+        let inline createOrUpdateChat (request: Request) =
+            deps.createOrUpdateChat
+                { Id = deps.ChatId
+                  Subscriptions = [ request.Id ] |> Set }
 
-            let chat: EA.Telegram.Domain.Chat =
-                { Id = chatId
-                  Subscriptions = [request.Id] |> set }
-
-            chat
-            |> EA.Telegram.Persistence.Command.Chat.CreateOrUpdate
-            |> EA.Telegram.Persistence.Repository.Command.Chat.execute storage ct
-
-        let inline createOrUpdateRequest serviceName storage =
-            let serviceRequest: Kdmid.Domain.ServiceRequest =
+        let inline createOrUpdateRequest serviceName =
+            let serviceRequest: ServiceRequest =
                 { Uri = Uri(payload)
                   Embassy = embassy
                   TimeZone = 1.0
                   Confirmation = Disabled }
 
-            serviceName
-            |> serviceRequest.CreateRequest
-            |> EA.Core.Persistence.Command.Request.CreateOrUpdate
-            |> EA.Core.Persistence.Repository.Command.Request.execute storage ct
+            serviceName |> serviceRequest.CreateRequest |> deps.createOrUpdateRequest
 
-        let inline executeCreateOrUpdateChat cfg request =
-            cfg
-            |> EA.Telegram.Persistence.Storage.FileSystem.Chat.init
-            |> ResultAsync.wrap (createOrUpdateChat request)
-
-        let inline executeCreateOrUpdateRequest cfg name =
-            cfg
-            |> EA.Core.Persistence.Storage.FileSystem.Request.init
-            |> ResultAsync.wrap (createOrUpdateRequest name)
-
-        cfg
-        |> Settings.ServiceInfo.getGraph
+        deps.getServiceInfoGraph ()
         |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
         |> ResultAsync.bind (function
             | Some node -> Ok node
@@ -94,9 +75,8 @@ let internal setService (serviceId, embassy, payload) =
                 match node.FullId with
                 | Graph.NodeIdValue "EMB.PASS.CHK" -> node.ShortName |> NotSupported |> Error |> async.Return
                 | _ ->
-                    cfg
-                    |> executeCreateOrUpdateChat
-                    |> ResultAsync.bindAsync (fun _ -> executeCreateOrUpdateRequest cfg node.FullName)
-                    |> ResultAsync.map (fun request -> $"Заявка на услугу '{node.FullName}' успешно создана")
-                    |> ResultAsync.map (fun message -> message |> Text.create (chatId, New))
+                    createOrUpdateRequest node.FullName
+                    |> ResultAsync.bindAsync createOrUpdateChat
+                    |> ResultAsync.map (fun _ -> $"Заявка на услугу '{node.FullName}' успешно создана")
+                    |> ResultAsync.map (fun message -> message |> Text.create (deps.ChatId, New))
             | _ -> node.FullName |> NotSupported |> Error |> async.Return)

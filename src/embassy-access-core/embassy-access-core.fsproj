@@ -12,6 +12,7 @@
     <Compile Include="persistence\repositories\FileSystemRepository.fs" />
     <Compile Include="persistence\Repository.fs" />
     <Compile Include="persistence\Storage.fs" />
+    <Compile Include="data_access\DataAccess.Request.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp" Version="2.88.9" />

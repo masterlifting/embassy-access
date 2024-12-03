@@ -15,8 +15,10 @@
         <Compile Include="persistence\Storage.fs"/>
         <Compile Include="data_access\DataAccess.Chat.fs" />
         <Compile Include="Command.fs"/>
-        <Compile Include="embassy_handlers\Russian.fs" />
-        <Compile Include="CommandHandler.Domain.fs" />
+        <Compile Include="Dependencies.fs" />
+        <Compile Include="embassy_handlers\Russian.Dependencies.fs" />
+        <Compile Include="embassy_handlers\Russian.Core.fs" />
+        <Compile Include="CommandHandler.Dependencies.fs" />
         <Compile Include="CommandHandler.Core.fs" />
         <Compile Include="Consumer.fs"/>
         <Compile Include="Producer.fs"/>

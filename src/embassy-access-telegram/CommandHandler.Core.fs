@@ -2,77 +2,75 @@
 
 open System
 open Infrastructure
-open EA.Telegram
-open EA.Core.Domain
-open EA.Core.Domain.Constants
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
+open EA.Core.Domain
+open EA.Core.Domain.Constants
+open EA.Telegram.Dependencies
 
 let private tryGetService serviceIdOpt (embassyNode: Graph.Node<Embassy>) =
-    fun (cfg, chatId, msgId) ->
+    fun (deps: ConsumerDeps) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
             | Embassy.RUSSIAN ->
-                Russian.getService (embassyNode.FullId, serviceIdOpt)
-                |> fun createData -> createData (cfg, chatId, msgId)
+                Russian.Dependencies.GetService.create deps
+                |> ResultAsync.wrap (Russian.Core.getService (embassyNode.FullId, serviceIdOpt))
             | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
         | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
 let private trySetService serviceId payload (embassyNode: Graph.Node<Embassy>) =
-    fun (cfg, chatId, msgId, ct) ->
+    fun (deps: ConsumerDeps) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
             | Embassy.RUSSIAN ->
-                Russian.setService (serviceId, embassyNode.Value, payload)
-                |> fun createData -> createData (cfg, chatId, msgId, ct)
+                Russian.Dependencies.SetService.create deps
+                |> ResultAsync.wrap (Russian.Core.setService (serviceId, embassyNode.Value, payload))
             | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
         | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
 let getService (embassyId, serviceIdOpt) =
-    fun (cfg, chatId, msgId) ->
-        cfg
-        |> EA.Core.Settings.Embassy.getGraph
+    fun (deps: Dependencies.GetService) ->
+        deps.getEmbassiesGraph ()
         |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
         |> ResultAsync.bind (function
             | Some node -> Ok node
             | None -> $"EmbassyId {embassyId.Value}" |> NotFound |> Error)
         |> ResultAsync.map (tryGetService serviceIdOpt)
-        |> ResultAsync.bindAsync (fun createData -> createData (cfg, chatId, msgId))
+        |> ResultAsync.bindAsync (fun run -> run deps.ConsumerDeps)
 
 let setService (embassyId, serviceId, payload) =
-    fun (cfg, chatId, msgId, ct) ->
-        cfg
-        |> EA.Core.Settings.Embassy.getGraph
+    fun (deps: Dependencies.SetService) ->
+        deps.getEmbassiesGraph ()
         |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
         |> ResultAsync.bind (function
             | Some node -> Ok node
             | None -> $"EmbassyId {embassyId.Value}" |> NotFound |> Error)
         |> ResultAsync.map (trySetService serviceId payload)
-        |> ResultAsync.bindAsync (fun createData -> createData (cfg, chatId, msgId, ct))
+        |> ResultAsync.bindAsync (fun run -> run deps.ConsumerDeps)
 
 let getEmbassies embassyIdOpt =
-    fun (cfg, chatId, msgId) ->
+    fun (deps: Dependencies.GetEmbassies) ->
 
         let inline createButtons buttonName (nodes: Graph.Node<Embassy> seq) =
             nodes
-            |> Seq.map (fun node -> node.FullId |> Command.GetEmbassy |> Command.set, node.ShortName)
+            |> Seq.map (fun node ->
+                node.FullId |> EA.Telegram.Command.GetEmbassy |> EA.Telegram.Command.set, node.ShortName)
             |> Map
             |> fun buttons ->
 
                 let msgId =
                     match embassyIdOpt with
-                    | Some _ -> Replace msgId
+                    | Some _ -> Replace deps.ConsumerDeps.MessageId
                     | None -> New
 
                 { Buttons.Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
                   Columns = 3
                   Data = buttons }
-                |> Buttons.create (chatId, msgId)
+                |> Buttons.create (deps.ConsumerDeps.ChatId, msgId)
 
-        cfg
-        |> EA.Core.Settings.Embassy.getGraph
+        deps.getEmbassiesGraph ()
         |> ResultAsync.bindAsync (fun graph ->
             match embassyIdOpt with
             | None -> graph.Children |> createButtons graph.Value.Description |> Ok |> async.Return
@@ -83,43 +81,35 @@ let getEmbassies embassyIdOpt =
                 |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error)
                 |> ResultAsync.wrap (fun node ->
                     match node.Children with
-                    | [] ->
-                        node
-                        |> tryGetService None
-                        |> fun createData -> createData (cfg, chatId, msgId)
+                    | [] -> node |> tryGetService None |> (fun run -> run deps.ConsumerDeps)
                     | nodes -> nodes |> createButtons node.Value.Description |> Ok |> async.Return))
 
 let getUserEmbassies embassyIdOpt =
-    fun (cfg, chatId, msgId, ct, deps: CommandHandler.Domain.GetUserEmbassies) ->
+    fun (deps: Dependencies.GetUserEmbassies) ->
 
         let inline createButtons buttonName (embassies: Embassy seq) (nodes: Graph.Node<Embassy> seq) =
             let embassyIds = embassies |> Seq.map _.Id |> Set
 
             nodes
             |> Seq.filter (fun node -> embassyIds.Contains node.FullId)
-            |> Seq.map (fun node -> node.FullId |> Command.GetEmbassy |> Command.set, node.ShortName)
+            |> Seq.map (fun node ->
+                node.FullId |> EA.Telegram.Command.GetEmbassy |> EA.Telegram.Command.set, node.ShortName)
             |> Map
             |> fun buttons ->
 
                 let msgId =
                     match embassyIdOpt with
-                    | Some _ -> Replace msgId
+                    | Some _ -> Replace deps.ConsumerDeps.MessageId
                     | None -> New
 
                 { Buttons.Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
                   Columns = 3
                   Data = buttons }
-                |> Buttons.create (chatId, msgId)
+                |> Buttons.create (deps.ConsumerDeps.ChatId, msgId)
 
-        deps.initializeChatStorage()
-        |> ResultAsync.wrap(deps.getChat chatId)
-        |> ResultAsync.bind (function
-            | Some chat -> Ok chat
-            | None -> $"Data for {chatId}" |> NotFound |> Error)
-        |> ResultAsync.bindAsync deps.getChatEmbassies
+        deps.getChatEmbassies deps.ConsumerDeps.ChatId
         |> ResultAsync.bindAsync (fun embassies ->
-            cfg
-            |> EA.Core.Settings.Embassy.getGraph
+            deps.getEmbassiesGraph ()
             |> ResultAsync.bindAsync (fun graph ->
                 match embassyIdOpt with
                 | None ->
@@ -132,13 +122,14 @@ let getUserEmbassies embassyIdOpt =
                     |> Graph.BFS.tryFindById embassyId
                     |> Option.map Ok
                     |> Option.defaultValue ($"EmbassyId {embassyId.Value}" |> NotFound |> Error)
-                    |> ResultAsync.wrap (fun node ->
-                        match node.Children with
-                        | [] ->
-                            node
-                            |> tryGetService None
-                            |> fun createData -> createData (cfg, chatId, msgId)
-                        | nodes -> nodes |> createButtons node.Value.Description embassies |> Ok |> async.Return)))
+                    |> ResultAsync.wrap (fun embassyNode ->
+                        match embassyNode.Children with
+                        | [] -> embassyNode |> tryGetService None |> (fun run -> run deps.ConsumerDeps)
+                        | nodes ->
+                            nodes
+                            |> createButtons embassyNode.Value.Description embassies
+                            |> Ok
+                            |> async.Return)))
 
 let appointments (embassy: Embassy, appointments: Set<Appointment>) =
     fun chatId ->
@@ -147,7 +138,10 @@ let appointments (embassy: Embassy, appointments: Set<Appointment>) =
           Data =
             appointments
             |> Seq.map (fun appointment ->
-                (embassy.Id, appointment.Id) |> Command.ChooseAppointments |> Command.set, appointment.Description)
+                (embassy.Id, appointment.Id)
+                |> EA.Telegram.Command.ChooseAppointments
+                |> EA.Telegram.Command.set,
+                appointment.Description)
             |> Map }
         |> Buttons.create (chatId, New)
 

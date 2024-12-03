@@ -5,51 +5,57 @@ open Infrastructure
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Consumer
 open EA.Telegram.Domain
+open EA.Telegram.Dependencies
 
 module private Consume =
-    let text (msg: Dto<string>) cfg ct client =
-        match msg.Value |> Command.get with
-        | Error error -> error |> Error |> async.Return
-        | Ok cmd ->
-            match cmd with
-            | None -> msg.Value |> NotSupported |> Error |> async.Return
-            | Some cmd ->
-                match cmd with
-                | Command.GetEmbassies ->
-                    CommandHandler.Core.getEmbassies None
-                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id)
-                    |> produceResult msg.ChatId client ct
-                | Command.GetUserEmbassies ->
-                    CommandHandler.Core.getUserEmbassies None
-                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id, ct)
-                    |> produceResult msg.ChatId client ct
-                | Command.SetService(embassyId, serviceId, payload) ->
-                    CommandHandler.Core.setService (embassyId, serviceId, payload)
-                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id, ct)
-                    |> produceResult msg.ChatId client ct
-                | _ -> msg.Value |> NotSupported |> Error |> async.Return
+    open EA.Telegram.CommandHandler
+    open EA.Telegram.CommandHandler.Core
 
-    let callback (msg: Dto<string>) cfg ct client =
-        match msg.Value |> Command.get with
-        | Error error -> error |> Error |> async.Return
-        | Ok cmd ->
-            match cmd with
-            | None -> msg.Value |> NotSupported |> Error |> async.Return
-            | Some cmd ->
+    let text value client =
+        fun deps ->
+            match value |> Command.get with
+            | Error error -> error |> Error |> async.Return
+            | Ok cmd ->
                 match cmd with
-                | Command.GetEmbassy embassyId ->
-                    CommandHandler.Core.getEmbassies (Some embassyId)
-                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id)
-                    |> produceResult msg.ChatId client ct
-                | Command.GetUserEmbassy embassyId ->
-                    CommandHandler.Core.getUserEmbassies (Some embassyId)
-                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id, ct)
-                    |> produceResult msg.ChatId client ct
-                | Command.GetService(embassyId, serviceId) ->
-                    CommandHandler.Core.getService (embassyId, Some serviceId)
-                    |> fun createData -> createData (cfg, msg.ChatId, msg.Id)
-                    |> produceResult msg.ChatId client ct
-                | _ -> msg.Value |> NotSupported |> Error |> async.Return
+                | None -> value |> NotSupported |> Error |> async.Return
+                | Some cmd ->
+                    match cmd with
+                    | Command.GetEmbassies ->
+                        Dependencies.GetEmbassies.create deps
+                        |> ResultAsync.wrap (getEmbassies None)
+                        |> produceResult deps.ChatId deps.CancellationToken client
+                    | Command.GetUserEmbassies ->
+                        Dependencies.GetUserEmbassies.create deps
+                        |> ResultAsync.wrap (getUserEmbassies None)
+                        |> produceResult deps.ChatId deps.CancellationToken client
+                    | Command.SetService(embassyId, serviceId, payload) ->
+                        Dependencies.SetService.create deps
+                        |> ResultAsync.wrap (setService (embassyId, serviceId, payload))
+                        |> produceResult deps.ChatId deps.CancellationToken client
+                    | _ -> value |> NotSupported |> Error |> async.Return
+
+    let callback value client =
+        fun deps ->
+            match value |> Command.get with
+            | Error error -> error |> Error |> async.Return
+            | Ok cmd ->
+                match cmd with
+                | None -> value |> NotSupported |> Error |> async.Return
+                | Some cmd ->
+                    match cmd with
+                    | Command.GetEmbassy embassyId ->
+                        Dependencies.GetEmbassies.create deps
+                        |> ResultAsync.wrap (getEmbassies (Some embassyId))
+                        |> produceResult deps.ChatId deps.CancellationToken client
+                    | Command.GetUserEmbassy embassyId ->
+                        Dependencies.GetUserEmbassies.create deps
+                        |> ResultAsync.wrap (getUserEmbassies (Some embassyId))
+                        |> produceResult deps.ChatId deps.CancellationToken client
+                    | Command.GetService(embassyId, serviceId) ->
+                        Dependencies.GetService.create deps
+                        |> ResultAsync.wrap (getService (embassyId, Some serviceId))
+                        |> produceResult deps.ChatId deps.CancellationToken client
+                    | _ -> value |> NotSupported |> Error |> async.Return
 
 let private create ct cfg client =
     fun data ->
@@ -57,13 +63,13 @@ let private create ct cfg client =
         | Message msg ->
             match msg with
             | Text dto ->
-                client
-                |> Consume.text dto cfg ct
+                ConsumerDeps.create dto cfg ct
+                |> ResultAsync.wrap (client |> Consume.text dto.Value)
                 |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
             | _ -> $"{msg}" |> NotSupported |> Error |> async.Return
         | CallbackQuery dto ->
-            client
-            |> Consume.callback dto cfg ct
+            ConsumerDeps.create dto cfg ct
+            |> ResultAsync.wrap (client |> Consume.callback dto.Value)
             |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
         | _ -> $"{data}" |> NotSupported |> Error |> async.Return
 
