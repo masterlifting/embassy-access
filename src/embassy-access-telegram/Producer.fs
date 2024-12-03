@@ -52,13 +52,13 @@ module Produce =
             getEmbassyChats embassy cfg ct
             |> ResultAsync.bindAsync (fun chats ->
                 (embassy, appointments)
-                |> EA.Telegram.CommandHandler.Common.appointments
+                |> EA.Telegram.CommandHandler.Core.appointments
                 |> spread chats ct)
         | Confirmations(requestId, embassy, confirmations) ->
             getSubscriptionChats requestId cfg ct
             |> ResultAsync.bindAsync (fun chats ->
                 (embassy, confirmations)
-                |> EA.Telegram.CommandHandler.Common.confirmation
+                |> EA.Telegram.CommandHandler.Core.confirmation
                 |> spread chats ct)
         | Fail(requestId, error) ->
             getSubscriptionChats requestId cfg ct

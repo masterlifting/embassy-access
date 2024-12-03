@@ -3,8 +3,6 @@
 open EA.Core.Domain
 open Web.Telegram.Domain
 
-
-
 module Constants =
 
     let internal ADMIN_CHAT_ID = 379444553L |> ChatId
@@ -18,9 +16,6 @@ module Constants =
 type Chat =
     { Id: ChatId
       Subscriptions: Set<RequestId> }
-
-type MessageInfo =
-    MessageInfo of ChatId * int
 
 module External =
 

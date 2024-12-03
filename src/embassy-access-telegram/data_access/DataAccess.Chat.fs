@@ -10,6 +10,10 @@ open EA.Telegram.Domain
 [<Literal>]
 let private Name = "Chats"
 
+type StorageType =
+    | InMemory
+    | FileSystem of filepath: string
+
 type internal Chat() =
     member val Id = 0L with get, set
     member val Subscriptions = List.empty<string> with get, set
@@ -52,9 +56,15 @@ module private FileSystem =
         |> ResultAsync.bind (function
             | None -> None |> Ok
             | Some chat -> chat.ToDomain() |> Result.map Some)
-        
-let initialize connection =
-    match
+
+let initialize storageType =
+    match storageType with
+    | FileSystem filePath ->
+        { Persistence.Domain.FileSystem.FilePath = filePath
+          Persistence.Domain.FileSystem.FileName = Name }
+        |> Connection.FileSystem
+        |> Persistence.Storage.create
+    | InMemory -> Connection.InMemory |> Persistence.Storage.create
 
 let tryFindById chatId storage =
     match storage with

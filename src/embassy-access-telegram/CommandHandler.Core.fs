@@ -1,4 +1,4 @@
-﻿module EA.Telegram.CommandHandler.Common
+﻿module EA.Telegram.CommandHandler.Core
 
 open System
 open Infrastructure
@@ -90,7 +90,7 @@ let getEmbassies embassyIdOpt =
                     | nodes -> nodes |> createButtons node.Value.Description |> Ok |> async.Return))
 
 let getUserEmbassies embassyIdOpt =
-    fun (cfg, chatId, msgId, ct) ->
+    fun (cfg, chatId, msgId, ct, deps: CommandHandler.Domain.GetUserEmbassies) ->
 
         let inline createButtons buttonName (embassies: Embassy seq) (nodes: Graph.Node<Embassy> seq) =
             let embassyIds = embassies |> Seq.map _.Id |> Set
@@ -111,34 +111,12 @@ let getUserEmbassies embassyIdOpt =
                   Data = buttons }
                 |> Buttons.create (chatId, msgId)
 
-        let inline findChat storage =
-            chatId
-            |> EA.Telegram.Persistence.Query.Chat.TryFindOne.ById
-            |> EA.Telegram.Persistence.Repository.Query.Chat.tryFindOne storage ct
-            |> ResultAsync.bind (function
-                | Some chat -> Ok chat
-                | None -> $"Data for {chatId}" |> NotFound |> Error)
-
-        let inline findEmbassies requestIds storage =
-            requestIds
-            |> EA.Core.Persistence.Query.Request.FindMany.ByIds
-            |> EA.Core.Persistence.Repository.Query.Request.findMany storage ct
-            |> ResultAsync.map (Seq.map _.Service.Embassy)
-
-        let inline findUserSubscriptions cfg =
-            cfg
-            |> EA.Telegram.Persistence.Storage.FileSystem.Chat.init
-            |> ResultAsync.wrap findChat
-            |> ResultAsync.map _.Subscriptions
-
-        let inline getUserEmbassies cfg chatSubscriptions =
-            cfg
-            |> EA.Core.Persistence.Storage.FileSystem.Request.init
-            |> ResultAsync.wrap (findEmbassies chatSubscriptions)
-
-        cfg
-        |> findUserSubscriptions
-        |> ResultAsync.bindAsync (getUserEmbassies cfg)
+        deps.initializeChatStorage()
+        |> ResultAsync.wrap(deps.getChat chatId)
+        |> ResultAsync.bind (function
+            | Some chat -> Ok chat
+            | None -> $"Data for {chatId}" |> NotFound |> Error)
+        |> ResultAsync.bindAsync deps.getChatEmbassies
         |> ResultAsync.bindAsync (fun embassies ->
             cfg
             |> EA.Core.Settings.Embassy.getGraph
