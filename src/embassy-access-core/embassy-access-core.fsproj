@@ -1,20 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Domain.fs" />
-    <Compile Include="Mapper.fs" />
-    <Compile Include="Settings.fs" />
-    <Compile Include="data_access\DataAccess.Request.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="2.88.9" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.9" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\submodules\fsharp-infrastructure\src\fsharp-infrastructure.fsproj" />
-    <ProjectReference Include="..\..\submodules\fsharp-persistence\src\fsharp-persistence.fsproj" />
-    <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="domain\Domain.Embassy.fs"/>
+        <Compile Include="domain\Domain.Confirmation.fs"/>
+        <Compile Include="domain\Domain.Appointment.fs"/>
+        <Compile Include="domain\Domain.ConfirmationOption.fs"/>
+        <Compile Include="domain\Domain.ConfirmationState.fs"/>
+        <Compile Include="domain\Domain.ProcessState.fs"/>
+        <Compile Include="domain\Domain.Service.fs"/>
+        <Compile Include="domain\Domain.Request.fs"/>
+        <Compile Include="domain\Domain.Notification.fs"/>
+        <Compile Include="data_access\DataAccess.Confirmation.fs"/>
+        <Compile Include="data_access\DataAccess.Appointment.fs"/>
+        <Compile Include="data_access\DataAccess.ConfirmationOption.fs"/>
+        <Compile Include="data_access\DataAccess.ConfirmationState.fs"/>
+        <Compile Include="data_access\DataAccess.ProcessState.fs"/>
+        <Compile Include="data_access\DataAccess.Service.fs"/>
+        <Compile Include="data_access\DataAccess.Request.fs"/>
+        <Compile Include="data_access\DataAccess.Embassy.fs"/>
+    </ItemGroup>
+  
+    <ItemGroup>
+        <ProjectReference Include="..\..\submodules\fsharp-infrastructure\src\fsharp-infrastructure.fsproj"/>
+        <ProjectReference Include="..\..\submodules\fsharp-persistence\src\fsharp-persistence.fsproj"/>
+    </ItemGroup>
 </Project>
