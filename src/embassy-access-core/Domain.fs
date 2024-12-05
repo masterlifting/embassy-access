@@ -4,8 +4,6 @@ open System
 open Infrastructure
 
 module Constants =
-    [<Literal>]
-    let REQUESTS_STORAGE_NAME = "requests"
 
     module Embassy =
         [<Literal>]
@@ -217,48 +215,3 @@ module External =
         member val Name: string = String.Empty with get, set
         member val Description: string option = None with get, set
         member val Children: Graph[] = [||] with get, set
-
-    type Confirmation() =
-        member val Description: string = String.Empty with get, set
-
-    type Appointment() =
-        member val Id: Guid = Guid.Empty with get, set
-        member val Value: string = String.Empty with get, set
-        member val Confirmation: Confirmation option = None with get, set
-        member val DateTime: DateTime = DateTime.UtcNow with get, set
-        member val Description: string = String.Empty with get, set
-
-    type ConfirmationOption() =
-
-        member val Type: string = String.Empty with get, set
-        member val DateStart: Nullable<DateTime> = Nullable() with get, set
-        member val DateEnd: Nullable<DateTime> = Nullable() with get, set
-
-    type ConfirmationState() =
-
-        member val Type: string = String.Empty with get, set
-        member val ConfirmationOption: ConfirmationOption option = None with get, set
-        member val AppointmentId: Guid option = None with get, set
-
-    type ProcessState() =
-
-        member val Type: string = String.Empty with get, set
-        member val Error: External.Error option = None with get, set
-        member val Message: string option = None with get, set
-
-    type Service() =
-        member val Name: string = String.Empty with get, set
-        member val Payload: string = String.Empty with get, set
-        member val EmbassyId: string = String.Empty with get, set
-        member val EmbassyName: string = String.Empty with get, set
-        member val Description: string option = None with get, set
-
-    type Request() =
-        member val Id: Guid = Guid.Empty with get, set
-        member val Service: Service = Service() with get, set
-        member val Attempt: int = 0 with get, set
-        member val AttemptModified: DateTime = DateTime.UtcNow with get, set
-        member val ProcessState: ProcessState = ProcessState() with get, set
-        member val ConfirmationState: ConfirmationState = ConfirmationState() with get, set
-        member val Appointments: Appointment array = [||] with get, set
-        member val Modified: DateTime = DateTime.UtcNow with get, set
