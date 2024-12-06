@@ -4,7 +4,7 @@ open Infrastructure
 open Infrastructure.Logging
 open Worker.Domain
 
-let initialize (_, configuration, ct) =
+let run (_, configuration, ct) =
     async {
         configuration
         |> EA.Telegram.Consumer.start ct

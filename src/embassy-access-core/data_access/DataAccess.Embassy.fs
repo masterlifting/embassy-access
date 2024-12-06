@@ -40,8 +40,8 @@ module private Configuration =
 
     let private loadData = Query.get<EmbassyEntity>
 
-    let get client =
-        client |> loadData Name |> Result.bind _.ToDomain() |> async.Return
+    let get section client =
+        client |> loadData section |> Result.bind _.ToDomain() |> async.Return
 
 let private toPersistenceStorage storage =
     storage
@@ -51,12 +51,12 @@ let private toPersistenceStorage storage =
 let init storageType =
     match storageType with
     | Configuration configuration ->
-        configuration
+        (Name, configuration)
         |> Connection.Configuration
         |> Persistence.Storage.create
         |> Result.map EmbassyStorage
 
 let getGraph storage =
     match storage |> toPersistenceStorage with
-    | Storage.Configuration client -> client |> Configuration.get
+    | Storage.Configuration(section, client) -> client |> Configuration.get section
     | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

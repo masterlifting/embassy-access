@@ -5,9 +5,8 @@ open Infrastructure
 open Worker.Domain
 open EA.Worker.Domain
 open EA.Core.Domain
-open EA.Core.Persistence
 
-let private createEmbassyName (task: WorkerTaskOut) =
+let private createEmbassyName (task: WorkerTask) =
     try
         task.Name
         |> Graph.splitNodeName
@@ -25,7 +24,7 @@ let private createEmbassyName (task: WorkerTaskOut) =
 module private Kdmid =
     open EA.Embassies.Russian.Kdmid.Domain
 
-    let private createPickOrder configuration (schedule: WorkerSchedule) ct =
+    let private createPickOrder configuration (schedule: Schedule) ct =
         let result = ResultBuilder()
 
         result {
@@ -51,7 +50,7 @@ module private Kdmid =
                 |> Repository.Query.Request.findMany storage ct
                 |> ResultAsync.mapError (fun error -> [ error ])
                 |> ResultAsync.bindAsync pickOrder
-                |> ResultAsync.mapError Error.ofList
+                |> ResultAsync.mapError Error'.combine
                 |> ResultAsync.map (fun request -> request.ProcessState |> string |> Info)
 
             return start
@@ -64,7 +63,7 @@ module private Kdmid =
         let setRoute city =
             Graph.Node(Name city, [ Graph.Node(Name NAME, []) ])
 
-        let run (task: WorkerTaskOut, cfg, ct) =
+        let run (task: WorkerTask, cfg, ct) =
             createPickOrder cfg task.Schedule ct
             |> ResultAsync.wrap (fun startOrder ->
                 task
@@ -93,4 +92,4 @@ let private ROUTER =
 
 let register () =
     ROUTER
-    |> WorkerRoute.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.run)
+    |> Route.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.run)

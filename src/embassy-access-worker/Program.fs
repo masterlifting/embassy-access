@@ -1,6 +1,10 @@
 ﻿open Infrastructure
+
 open Worker.Domain
 open EA.Worker
+
+[<Literal>]
+let private APP_NAME = "Worker"
 
 [<EntryPoint>]
 let main _ =
@@ -9,15 +13,26 @@ let main _ =
     Logging.useConsole configuration
 
     let rootTask =
-        { Name = Settings.APP_NAME
-          Task = Initializer.initialize |> Some }
+        { Name = APP_NAME
+          Handler = Initializer.run |> Some }
 
     let workerHandlers = Graph.Node(rootTask, [ Embassies.Russian.register () ])
+
+    let getTaskNode handlers =
+        fun name ->
+            (APP_NAME, configuration)
+            |> Worker.DataAccess.TaskGraph.Configuration
+            |> Worker.DataAccess.TaskGraph.init
+            |> ResultAsync.wrap (Worker.DataAccess.TaskGraph.get handlers)
+            |> ResultAsync.map (Graph.DFS.tryFindByName name)
+            |> ResultAsync.bind (function
+                | Some node -> Ok node
+                | None -> $"'%s{name}' in the configuration" |> NotFound |> Error)
 
     let workerConfig =
         { Name = rootTask.Name
           Configuration = configuration
-          getTask = workerHandlers |> Settings.getWorkerTask configuration }
+          getTaskNode = getTaskNode workerHandlers }
 
     workerConfig |> Worker.Core.start |> Async.RunSynchronously
 
