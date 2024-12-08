@@ -51,11 +51,11 @@ type private Request with
     member private this.ToEntity() =
         let result = RequestEntity()
         result.Id <- this.Id.Value
-        result.Service <- this.Service.ToEntity ()
+        result.Service <- this.Service.ToEntity()
         result.Attempt <- this.Attempt |> snd
         result.AttemptModified <- this.Attempt |> fst
-        result.ProcessState <- this.ProcessState.ToEntity ()
-        result.ConfirmationState <- this.ConfirmationState.ToEntity ()
+        result.ProcessState <- this.ProcessState.ToEntity()
+        result.ConfirmationState <- this.ConfirmationState.ToEntity()
         result.Appointments <- this.Appointments |> Seq.map _.ToEntity() |> Seq.toArray
         result.Modified <- this.Modified
         result
@@ -68,12 +68,12 @@ module private Common =
             <| Operation
                 { Message = $"{request.Id} already exists."
                   Code = Some ErrorCode.ALREADY_EXISTS }
-        | false -> data |> Array.append [| request.ToEntity () |] |> Ok
+        | false -> data |> Array.append [| request.ToEntity() |] |> Ok
 
     let update (request: Request) (data: RequestEntity array) =
         match data |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
         | Some index ->
-            data[index] <- request.ToEntity ()
+            data[index] <- request.ToEntity()
             Ok data
         | None ->
             Error
@@ -86,40 +86,49 @@ module private InMemory =
 
     let private loadData = Query.Json.get<RequestEntity> Name
 
-    let create request client =
-        client
-        |> loadData
-        |> Result.bind (Common.create request)
-        |> Result.bind (fun data -> client |> Command.Json.save Name data)
-        |> async.Return
-
-    let update request client =
-        client
-        |> loadData
-        |> Result.bind (Common.update request)
-        |> Result.bind (fun data -> client |> Command.Json.save Name data)
-        |> async.Return
-
-    let createOrUpdate request client =
-        client
-        |> loadData
-        |> Result.bind (fun data ->
-            match data |> Seq.exists (fun x -> x.Id = request.Id.Value) with
-            | true -> data |> Common.update request
-            | false -> data |> Common.create request)
-        |> Result.bind (fun data -> client |> Command.Json.save Name data)
-        |> async.Return
-
-    module Embassy =
-        let findManyByRequestIds (ids: RequestId seq) client =
-            let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
-
+    module Query =
+        let findManyByEmbassyName name client =
             client
             |> loadData
-            |> Result.map (Seq.filter (fun x -> requestIds.Contains x.Id))
-            |> Result.map (Seq.map _.Service.ToDomain())
-            |> Result.map (Seq.map _.Embassy)
-            |> Result.map List.ofSeq
+            |> Result.map (Seq.filter (fun x -> x.Service.EmbassyName = name))
+            |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
+            |> async.Return
+
+        module Embassy =
+            let findManyByRequestIds (ids: RequestId seq) client =
+                let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
+
+                client
+                |> loadData
+                |> Result.map (Seq.filter (fun x -> requestIds.Contains x.Id))
+                |> Result.map (Seq.map _.Service.ToDomain())
+                |> Result.map (Seq.map _.Embassy)
+                |> Result.map List.ofSeq
+                |> async.Return
+
+    module Command =
+        let create request client =
+            client
+            |> loadData
+            |> Result.bind (Common.create request)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> async.Return
+
+        let update request client =
+            client
+            |> loadData
+            |> Result.bind (Common.update request)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> async.Return
+
+        let createOrUpdate request client =
+            client
+            |> loadData
+            |> Result.bind (fun data ->
+                match data |> Seq.exists (fun x -> x.Id = request.Id.Value) with
+                | true -> data |> Common.update request
+                | false -> data |> Common.create request)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
             |> async.Return
 
 module private FileSystem =
@@ -127,37 +136,48 @@ module private FileSystem =
 
     let private loadData = Query.Json.get<RequestEntity>
 
-    let create request client =
-        client
-        |> loadData
-        |> ResultAsync.bind (Common.create request)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
-
-    let update request client =
-        client
-        |> loadData
-        |> ResultAsync.bind (Common.update request)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
-
-    let createOrUpdate request client =
-        client
-        |> loadData
-        |> ResultAsync.bind (fun data ->
-            match data |> Seq.exists (fun x -> x.Id = request.Id.Value) with
-            | true -> data |> Common.update request
-            | false -> data |> Common.create request)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
-
-    module Embassy =
-        let findManyByRequestIds (ids: RequestId seq) client =
-            let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
-
+    module Query =
+        let findManyByEmbassyName name client =
             client
             |> loadData
-            |> ResultAsync.map (Seq.filter (fun x -> requestIds.Contains x.Id))
-            |> ResultAsync.map (Seq.map _.Service.ToDomain())
-            |> ResultAsync.map (Seq.map _.Embassy)
-            |> ResultAsync.map List.ofSeq
+            |> ResultAsync.map (Seq.filter (fun x -> x.Service.EmbassyName = name))
+            |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
+
+        module Embassy =
+            let findManyByRequestIds (ids: RequestId seq) client =
+                let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
+
+                client
+                |> loadData
+                |> ResultAsync.map (Seq.filter (fun x -> requestIds.Contains x.Id))
+                |> ResultAsync.map (Seq.map _.Service.ToDomain())
+                |> ResultAsync.map (Seq.map _.Embassy)
+                |> ResultAsync.map List.ofSeq
+
+    module Command =
+
+        let create request client =
+            client
+            |> loadData
+            |> ResultAsync.bind (Common.create request)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+
+        let update request client =
+            client
+            |> loadData
+            |> ResultAsync.bind (Common.update request)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+
+        let createOrUpdate request client =
+            client
+            |> loadData
+            |> ResultAsync.bind (fun data ->
+                match data |> Seq.exists (fun x -> x.Id = request.Id.Value) with
+                | true -> data |> Common.update request
+                | false -> data |> Common.create request)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+
+
 
 let private toPersistenceStorage storage =
     storage
@@ -177,26 +197,33 @@ let init storageType =
 module Command =
     let create request storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.create request
-        | Storage.FileSystem client -> client |> FileSystem.create request
+        | Storage.InMemory client -> client |> InMemory.Command.create request
+        | Storage.FileSystem client -> client |> FileSystem.Command.create request
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
     let update request storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.update request
-        | Storage.FileSystem client -> client |> FileSystem.update request
+        | Storage.InMemory client -> client |> InMemory.Command.update request
+        | Storage.FileSystem client -> client |> FileSystem.Command.update request
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
     let createOrUpdate request storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.createOrUpdate request
-        | Storage.FileSystem client -> client |> FileSystem.createOrUpdate request
+        | Storage.InMemory client -> client |> InMemory.Command.createOrUpdate request
+        | Storage.FileSystem client -> client |> FileSystem.Command.createOrUpdate request
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
 module Query =
+
+    let findManyByEmbassyName name storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyName name
+        | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyName name
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
     module Embassy =
         let findManyByRequestIds requestIds storage =
             match storage |> toPersistenceStorage with
-            | Storage.InMemory client -> client |> InMemory.Embassy.findManyByRequestIds requestIds
-            | Storage.FileSystem client -> client |> FileSystem.Embassy.findManyByRequestIds requestIds
+            | Storage.InMemory client -> client |> InMemory.Query.Embassy.findManyByRequestIds requestIds
+            | Storage.FileSystem client -> client |> FileSystem.Query.Embassy.findManyByRequestIds requestIds
             | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

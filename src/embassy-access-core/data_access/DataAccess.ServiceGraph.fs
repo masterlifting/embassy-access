@@ -1,24 +1,21 @@
-﻿[<RequireQualifiedAccess>]
-module EA.Core.DataAccess.Embassy
+﻿module EA.Core.DataAccess.ServiceGraph
 
 open System
+open Microsoft.Extensions.Configuration
 open Infrastructure
 open EA.Core.Domain
-open Microsoft.Extensions.Configuration
 open Persistence.Domain
 
-[<Literal>]
-let private Name = "Embassies"
+type ServiceGraphStorage = ServiceGraphStorage of Storage
 
-type EmbassyStorage = EmbassyStorage of Storage
+type StorageType = Configuration of sectionName: string * configuration: IConfigurationRoot
 
-type StorageType = Configuration of IConfigurationRoot
-
-type internal EmbassyEntity() =
-    member val Id = String.Empty with get, set
-    member val Name = String.Empty with get, set
+type ServiceGraphEntity() =
+    member val Id: string = String.Empty with get, set
+    member val Name: string = String.Empty with get, set
+    member val Instruction: string option = None with get, set
     member val Description: string option = None with get, set
-    member val Children = Array.empty<EmbassyEntity> with get, set
+    member val Children: ServiceGraphEntity[] = [||] with get, set
 
     member this.ToDomain() =
         this.Id
@@ -31,6 +28,7 @@ type internal EmbassyEntity() =
                 Graph.Node(
                     { Id = nodeId
                       Name = this.Name
+                      Instruction = this.Instruction
                       Description = this.Description },
                     children
                 )))
@@ -38,7 +36,7 @@ type internal EmbassyEntity() =
 module private Configuration =
     open Persistence.Configuration
 
-    let private loadData = Query.get<EmbassyEntity>
+    let private loadData = Query.get<ServiceGraphEntity>
 
     let get section client =
         client |> loadData section |> Result.bind _.ToDomain() |> async.Return
@@ -46,17 +44,17 @@ module private Configuration =
 let private toPersistenceStorage storage =
     storage
     |> function
-        | EmbassyStorage storage -> storage
+        | ServiceGraphStorage storage -> storage
 
 let init storageType =
     match storageType with
-    | Configuration configuration ->
-        (Name, configuration)
+    | Configuration(section, configuration) ->
+        (section, configuration)
         |> Connection.Configuration
         |> Persistence.Storage.create
-        |> Result.map EmbassyStorage
+        |> Result.map ServiceGraphStorage
 
-let getGraph storage =
+let get storage =
     match storage |> toPersistenceStorage with
     | Storage.Configuration(section, client) -> client |> Configuration.get section
     | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

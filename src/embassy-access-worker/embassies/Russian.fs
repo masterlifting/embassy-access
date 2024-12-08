@@ -1,10 +1,10 @@
 ﻿module internal EA.Worker.Embassies.Russian
 
-open EA.Embassies.Russian
 open Infrastructure
 open Worker.Domain
-open EA.Worker.Domain
 open EA.Core.Domain
+open EA.Worker.Domain
+open EA.Embassies.Russian
 
 let private createEmbassyName (task: WorkerTask) =
     try
@@ -17,7 +17,7 @@ let private createEmbassyName (task: WorkerTask) =
     with ex ->
         Error
         <| Operation
-            { Message = ex |> Exception.toMessage
+            { Message = $"Create embassy name failed. Error: {ex |> Exception.toMessage}"  
               Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
     |> async.Return
 
@@ -28,7 +28,12 @@ module private Kdmid =
         let result = ResultBuilder()
 
         result {
-            let! storage = configuration |> Storage.FileSystem.Request.init
+            let! filePath = configuration |> Persistence.Storage.getConnectionString "FileSystem"
+
+            let! storage =
+                filePath
+                |> EA.Core.DataAccess.Request.FileSystem
+                |> EA.Core.DataAccess.Request.init
 
             let notify notification =
                 notification
@@ -45,9 +50,9 @@ module private Kdmid =
 
                 order |> API.Order.Kdmid.pick deps
 
-            let start query =
-                query
-                |> Repository.Query.Request.findMany storage ct
+            let start dataAccessRequestQuery =
+                storage
+                |> dataAccessRequestQuery
                 |> ResultAsync.mapError (fun error -> [ error ])
                 |> ResultAsync.bindAsync pickOrder
                 |> ResultAsync.mapError Error'.combine
@@ -68,28 +73,26 @@ module private Kdmid =
             |> ResultAsync.wrap (fun startOrder ->
                 task
                 |> createEmbassyName
-                |> ResultAsync.bindAsync (Query.Request.FindMany.ByEmbassyName >> startOrder))
-
-open EA.Core.Domain.Constants
+                |> ResultAsync.bindAsync (EA.Core.DataAccess.Request.Query.findManyByEmbassyName >> startOrder))
 
 let private ROUTER =
     Graph.Node(
-        Name Embassy.RUSSIAN,
-        [ Graph.Node(Name Country.SERBIA, [ City.BELGRADE |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.GERMANY, [ City.BERLIN |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.FRANCE, [ City.PARIS |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.MONTENEGRO, [ City.PODGORICA |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.IRELAND, [ City.DUBLIN |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.ITALY, [ City.ROME |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.SWITZERLAND, [ City.BERN |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.FINLAND, [ City.HELSINKI |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.NETHERLANDS, [ City.HAGUE |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.ALBANIA, [ City.TIRANA |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.SLOVENIA, [ City.LJUBLJANA |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.BOSNIA, [ City.SARAJEVO |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name Country.HUNGARY, [ City.BUDAPEST |> Kdmid.SearchAppointments.setRoute ]) ]
+        Name "Russian",
+        [ Graph.Node(Name "Serbia", [ "Belgrade" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Germany", [ "Berlin" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "France", [ "Paris" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Montenegro", [ "Podgorica" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Ireland", [ "Dublin" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Italy", [ "Rome" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Switzerland", [ "Bern" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Finland", [ "Helsinki" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Netherlands", [ "Hague" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Albania", [ "Tirana" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Slovenia", [ "Ljubljana" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Bosnia", [ "Sarajevo" |> Kdmid.SearchAppointments.setRoute ])
+          Graph.Node(Name "Hungary", [ "Budapest" |> Kdmid.SearchAppointments.setRoute ]) ]
     )
 
 let register () =
     ROUTER
-    |> Route.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.run)
+    |> RouteGraph.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.run)

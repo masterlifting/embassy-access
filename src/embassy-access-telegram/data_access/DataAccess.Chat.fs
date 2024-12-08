@@ -16,7 +16,7 @@ type StorageType =
     | InMemory
     | FileSystem of filepath: string
 
-type internal Chat() =
+type internal ChatEntity() =
     member val Id = 0L with get, set
     member val Subscriptions = List.empty<string> with get, set
 
@@ -32,9 +32,9 @@ type internal Chat() =
             { Id = this.Id |> ChatId
               Subscriptions = subscriptions })
 
-type private EA.Telegram.Domain.Chat with
-    member private this.toEntity() =
-        let result = Chat()
+type private Chat with
+    member private this.ToEntity() =
+        let result = ChatEntity()
 
         result.Id <- this.Id.Value
 
@@ -47,19 +47,19 @@ type private EA.Telegram.Domain.Chat with
         result
 
 module private Common =
-    let create (chat: EA.Telegram.Domain.Chat) (data: Chat array) =
+    let create (chat: Chat) (data: ChatEntity array) =
         match data |> Array.exists (fun x -> x.Id = chat.Id.Value) with
         | true ->
             Error
             <| Operation
                 { Message = $"{chat.Id} already exists."
                   Code = Some ErrorCode.ALREADY_EXISTS }
-        | false -> data |> Array.append [| chat.toEntity () |] |> Ok
+        | false -> data |> Array.append [| chat.ToEntity() |] |> Ok
 
-    let update (chat: EA.Telegram.Domain.Chat) (data: Chat array) =
+    let update (chat: Chat) (data: ChatEntity array) =
         match data |> Array.tryFindIndex (fun x -> x.Id = chat.Id.Value) with
         | Some index ->
-            data[index] <- chat.toEntity ()
+            data[index] <- chat.ToEntity()
             Ok data
         | None ->
             Error
@@ -70,7 +70,7 @@ module private Common =
 module private InMemory =
     open Persistence.InMemory
 
-    let private loadData = Query.Json.get<Chat> Name
+    let private loadData = Query.Json.get<ChatEntity> Name
 
     let create chat client =
         client
@@ -108,7 +108,7 @@ module private InMemory =
 module private FileSystem =
     open Persistence.FileSystem
 
-    let private loadData = Query.Json.get<Chat>
+    let private loadData = Query.Json.get<ChatEntity>
 
     let create chat client =
         client
@@ -154,6 +154,13 @@ let init storageType =
     | InMemory -> Connection.InMemory |> Persistence.Storage.create
     |> Result.map ChatStorage
 
+module Query =
+    let tryFindById chatId storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.tryFindById chatId
+        | Storage.FileSystem client -> client |> FileSystem.tryFindById chatId
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
 module Command =
     let create chat storage =
         match storage |> toPersistenceStorage with
@@ -171,11 +178,4 @@ module Command =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.createOrUpdate chat
         | Storage.FileSystem client -> client |> FileSystem.createOrUpdate chat
-        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
-
-module Query =
-    let tryFindById chatId storage =
-        match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.tryFindById chatId
-        | Storage.FileSystem client -> client |> FileSystem.tryFindById chatId
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

@@ -1,13 +1,14 @@
-﻿module EA.Telegram.Dependencies
+﻿module EA.Telegram.Initializer
 
 open Infrastructure
 open Web.Telegram.Domain
+open EA.Core.Domain
 
 type PersistenceDeps =
     { initChatStorage: unit -> Result<EA.Telegram.DataAccess.Chat.ChatStorage, Error'>
       initRequestStorage: unit -> Result<EA.Core.DataAccess.Request.RequestStorage, Error'>
-      getEmbassiesGraph: unit -> Async<Result<Graph.Node<EA.Core.Domain.Embassy>, Error'>>
-      getServiceInfoGraph: unit -> Async<Result<Graph.Node<EA.Embassies.Russian.Domain.ServiceInfo>, Error'>> }
+      getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>>
+      getRussianServiceGraph: unit -> Async<Result<Graph.Node<ServiceGraph>, Error'>> }
 
     static member create cfg =
         let result = ResultBuilder()
@@ -26,17 +27,23 @@ type PersistenceDeps =
                 |> EA.Core.DataAccess.Request.FileSystem
                 |> EA.Core.DataAccess.Request.init
 
-            let initializeEmbassiesGraph () =
-                cfg |> EA.Core.Settings.Embassy.getGraph
-
-            let initializeServiceInfoGraph () =
-                cfg |> EA.Embassies.Russian.Settings.ServiceInfo.getGraph
+            let getEmbassyGraph () =
+                ("Embassies", cfg)
+                |> EA.Core.DataAccess.EmbassyGraph.Configuration
+                |> EA.Core.DataAccess.EmbassyGraph.init
+                |> ResultAsync.wrap(EA.Core.DataAccess.EmbassyGraph.get)
+                
+            let getRussianServiceGraph () =
+                ("RussianServices", cfg)
+                |> EA.Core.DataAccess.ServiceGraph.Configuration
+                |> EA.Core.DataAccess.ServiceGraph.init
+                |> ResultAsync.wrap(EA.Core.DataAccess.ServiceGraph.get)
 
             return
                 { initChatStorage = initializeChatStorage
                   initRequestStorage = initializeRequestStorage
-                  getEmbassiesGraph = initializeEmbassiesGraph
-                  getServiceInfoGraph = initializeServiceInfoGraph }
+                  getEmbassyGraph = getEmbassyGraph
+                  getRussianServiceGraph = getRussianServiceGraph }
         }
 
 type ConsumerDeps =

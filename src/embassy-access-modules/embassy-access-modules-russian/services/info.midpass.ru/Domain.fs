@@ -4,7 +4,7 @@ open System
 open EA.Core.Domain
 
 type ServiceRequest =
-    { Embassy: Embassy
+    { Embassy: EmbassyGraph
       StatementNumber: string }
 
     member internal this.Create serviceName =

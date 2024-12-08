@@ -12,7 +12,7 @@ open EA.Embassies.Russian
 let internal getService (embassyId, serviceIdOpt) =
     fun (deps: Dependencies.GetService) ->
 
-        let inline createButtons buttonName (nodes: Graph.Node<Domain.ServiceInfo> seq) =
+        let inline createButtons buttonName (nodes: Graph.Node<Domain.ServiceInfoGraph> seq) =
             nodes
             |> Seq.map (fun node -> (embassyId, node.FullId) |> Command.GetService |> Command.set, node.ShortName)
             |> Map

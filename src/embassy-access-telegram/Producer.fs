@@ -30,7 +30,7 @@ module Produce =
             |> Query.Chat.BySubscription
             |> Repository.Query.Chat.findMany storage ct)
 
-    let private getEmbassyChats (embassy: Embassy) configuration ct =
+    let private getEmbassyChats (embassy: EmbassyGraph) configuration ct =
         configuration
         |> EA.Core.Persistence.Storage.FileSystem.Request.init
         |> ResultAsync.wrap (fun storage ->

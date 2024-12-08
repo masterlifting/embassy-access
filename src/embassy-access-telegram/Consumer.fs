@@ -5,7 +5,7 @@ open Infrastructure
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Consumer
 open EA.Telegram.Domain
-open EA.Telegram.Dependencies
+open EA.Telegram.Initializer
 
 module private Consume =
     open EA.Telegram.CommandHandler

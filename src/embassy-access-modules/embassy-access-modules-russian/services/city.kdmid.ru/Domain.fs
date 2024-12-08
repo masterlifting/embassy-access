@@ -40,7 +40,7 @@ module Constants =
 
 type ServiceRequest =
     { Uri: Uri
-      Embassy: Embassy
+      Embassy: EmbassyGraph
       TimeZone: float
       Confirmation: ConfirmationState }
 

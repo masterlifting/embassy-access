@@ -3,13 +3,14 @@
         <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="domain\Domain.Embassy.fs"/>
+        <Compile Include="domain\Domain.EmbassyGraph.fs" />
         <Compile Include="domain\Domain.Confirmation.fs"/>
         <Compile Include="domain\Domain.Appointment.fs"/>
         <Compile Include="domain\Domain.ConfirmationOption.fs"/>
         <Compile Include="domain\Domain.ConfirmationState.fs"/>
         <Compile Include="domain\Domain.ProcessState.fs"/>
         <Compile Include="domain\Domain.Service.fs"/>
+        <Compile Include="domain\Domain.ServiceGraph.fs" />
         <Compile Include="domain\Domain.Request.fs"/>
         <Compile Include="domain\Domain.Notification.fs"/>
         <Compile Include="data_access\DataAccess.Confirmation.fs"/>
@@ -18,8 +19,9 @@
         <Compile Include="data_access\DataAccess.ConfirmationState.fs"/>
         <Compile Include="data_access\DataAccess.ProcessState.fs"/>
         <Compile Include="data_access\DataAccess.Service.fs"/>
+        <Compile Include="data_access\DataAccess.ServiceGraph.fs" />
         <Compile Include="data_access\DataAccess.Request.fs"/>
-        <Compile Include="data_access\DataAccess.Embassy.fs"/>
+        <Compile Include="data_access\DataAccess.EmbassyGraph.fs" />
     </ItemGroup>
   
     <ItemGroup>

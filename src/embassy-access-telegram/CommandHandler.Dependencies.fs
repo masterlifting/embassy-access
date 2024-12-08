@@ -5,11 +5,11 @@ open Infrastructure
 open EA.Core.Domain
 open EA.Telegram.Domain
 open Web.Telegram.Domain
-open EA.Telegram.Dependencies
+open EA.Telegram.Initializer
 
 type GetService =
     { ConsumerDeps: ConsumerDeps
-      getEmbassiesGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>> }
+      getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
 
     static member create(deps: ConsumerDeps) =
         let result = ResultBuilder()
@@ -26,7 +26,7 @@ type GetService =
 
 type SetService =
     { ConsumerDeps: ConsumerDeps
-      getEmbassiesGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>> }
+      getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
 
     static member create (deps: ConsumerDeps) =
         let result = ResultBuilder()
@@ -43,7 +43,7 @@ type SetService =
 
 type GetEmbassies =
     { ConsumerDeps: ConsumerDeps
-      getEmbassiesGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>> }
+      getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
 
     static member create (deps: ConsumerDeps) =
         let result = ResultBuilder()
@@ -60,8 +60,8 @@ type GetEmbassies =
 
 type GetUserEmbassies =
     { ConsumerDeps: ConsumerDeps
-      getChatEmbassies: ChatId -> Async<Result<Embassy list, Error'>>
-      getEmbassiesGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>> }
+      getChatEmbassies: ChatId -> Async<Result<EmbassyGraph list, Error'>>
+      getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
 
     static member create (deps: ConsumerDeps) =
         let result = ResultBuilder()
@@ -70,7 +70,7 @@ type GetUserEmbassies =
 
             let! chatStorage = deps.Persistence.initChatStorage ()
             let! requestStorage = deps.Persistence.initRequestStorage ()
-            let getEmbassiesGraph  = deps.Persistence.getEmbassiesGraph
+            let getEmbassiesGraph  = deps.Persistence.getEmbassyGraph
             
             let getChat chatId =
                 chatStorage

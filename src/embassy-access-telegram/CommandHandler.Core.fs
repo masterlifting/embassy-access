@@ -6,25 +6,25 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Core.Domain.Constants
-open EA.Telegram.Dependencies
+open EA.Telegram.Initializer
 
-let private tryGetService serviceIdOpt (embassyNode: Graph.Node<Embassy>) =
+let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyGraph>) =
     fun (deps: ConsumerDeps) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
-            | Embassy.RUSSIAN ->
+            | EmbassyGraph.RUSSIAN ->
                 Russian.Dependencies.GetService.create deps
                 |> ResultAsync.wrap (Russian.Core.getService (embassyNode.FullId, serviceIdOpt))
             | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
         | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
-let private trySetService serviceId payload (embassyNode: Graph.Node<Embassy>) =
+let private trySetService serviceId payload (embassyNode: Graph.Node<EmbassyGraph>) =
     fun (deps: ConsumerDeps) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
-            | Embassy.RUSSIAN ->
+            | EmbassyGraph.RUSSIAN ->
                 Russian.Dependencies.SetService.create deps
                 |> ResultAsync.wrap (Russian.Core.setService (serviceId, embassyNode.Value, payload))
             | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
@@ -53,7 +53,7 @@ let setService (embassyId, serviceId, payload) =
 let getEmbassies embassyIdOpt =
     fun (deps: Dependencies.GetEmbassies) ->
 
-        let inline createButtons buttonName (nodes: Graph.Node<Embassy> seq) =
+        let inline createButtons buttonName (nodes: Graph.Node<EmbassyGraph> seq) =
             nodes
             |> Seq.map (fun node ->
                 node.FullId |> EA.Telegram.Command.GetEmbassy |> EA.Telegram.Command.set, node.ShortName)
@@ -87,7 +87,7 @@ let getEmbassies embassyIdOpt =
 let getUserEmbassies embassyIdOpt =
     fun (deps: Dependencies.GetUserEmbassies) ->
 
-        let inline createButtons buttonName (embassies: Embassy seq) (nodes: Graph.Node<Embassy> seq) =
+        let inline createButtons buttonName (embassies: EmbassyGraph seq) (nodes: Graph.Node<EmbassyGraph> seq) =
             let embassyIds = embassies |> Seq.map _.Id |> Set
 
             nodes
@@ -131,7 +131,7 @@ let getUserEmbassies embassyIdOpt =
                             |> Ok
                             |> async.Return)))
 
-let appointments (embassy: Embassy, appointments: Set<Appointment>) =
+let appointments (embassy: EmbassyGraph, appointments: Set<Appointment>) =
     fun chatId ->
         { Buttons.Name = $"Choose the appointment for '{embassy}'"
           Columns = 1

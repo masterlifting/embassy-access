@@ -1,6 +1,6 @@
-﻿module EA.Telegram.Domain
+﻿[<AutoOpen>]
+module EA.Telegram.Domain.Common
 
-open EA.Core.Domain
 open Web.Telegram.Domain
 
 module Constants =
@@ -9,8 +9,3 @@ module Constants =
 
     [<Literal>]
     let internal EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN = "EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN"
-
-
-type Chat =
-    { Id: ChatId
-      Subscriptions: Set<RequestId> }

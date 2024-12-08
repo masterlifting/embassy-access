@@ -5,10 +5,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Domain.fs"/>
+        <Compile Include="domain\Domain.Common.fs" />
+        <Compile Include="domain\Domain.Chat.fs" />
         <Compile Include="data_access\DataAccess.Chat.fs" />
         <Compile Include="Command.fs"/>
-        <Compile Include="Dependencies.fs" />
+        <Compile Include="Initializer.fs" />
         <Compile Include="embassy_handlers\Russian.Dependencies.fs" />
         <Compile Include="embassy_handlers\Russian.Core.fs" />
         <Compile Include="CommandHandler.Dependencies.fs" />
@@ -18,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
         <ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
     </ItemGroup>
 

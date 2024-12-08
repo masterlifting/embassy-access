@@ -5,12 +5,12 @@ open Infrastructure
 open Web.Telegram.Domain
 open EA.Core.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Dependencies
+open EA.Telegram.Initializer
 
 type GetService =
     { ChatId: ChatId
       MessageId: int
-      getServiceInfoGraph: unit -> Async<Result<Graph.Node<EA.Embassies.Russian.Domain.ServiceInfo>, Error'>> }
+      getServiceInfoGraph: unit -> Async<Result<Graph.Node<EA.Embassies.Russian.Domain.ServiceInfoGraph>, Error'>> }
 
     static member create (deps: ConsumerDeps) =
         let result = ResultBuilder()
@@ -30,7 +30,7 @@ type SetService =
     { ChatId: ChatId
       createOrUpdateChat: Chat -> Async<Result<Chat, Error'>>
       createOrUpdateRequest: Request -> Async<Result<Request, Error'>>
-      getServiceInfoGraph: unit -> Async<Result<Graph.Node<EA.Embassies.Russian.Domain.ServiceInfo>, Error'>> }
+      getServiceInfoGraph: unit -> Async<Result<Graph.Node<EA.Embassies.Russian.Domain.ServiceInfoGraph>, Error'>> }
 
     static member create (deps: ConsumerDeps) =
         let result = ResultBuilder()
@@ -38,7 +38,7 @@ type SetService =
         result {
             let! chatStorage = deps.Persistence.initChatStorage ()
             let! requestStorage = deps.Persistence.initRequestStorage ()
-            let getServiceInfoGraph = deps.Persistence.getServiceInfoGraph
+            let getServiceInfoGraph = deps.Persistence.getRussianServiceGraph
 
             let createOrUpdateChat chat =
                 chatStorage
