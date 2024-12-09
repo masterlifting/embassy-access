@@ -20,7 +20,7 @@ let private FAILED = nameof Failed
 type internal ProcessStateEntity() =
 
     member val Type = String.Empty with get, set
-    member val Error: Error option = None with get, set
+    member val Error: ErrorEntity option = None with get, set
     member val Message: string option = None with get, set
 
     member this.ToDomain() =
