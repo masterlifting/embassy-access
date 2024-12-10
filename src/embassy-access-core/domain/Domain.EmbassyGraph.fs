@@ -1,7 +1,8 @@
 ﻿[<AutoOpen>]
 module EA.Core.Domain.EmbassyGraph
 
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 
 type EmbassyGraph =
     { Id: Graph.NodeId
