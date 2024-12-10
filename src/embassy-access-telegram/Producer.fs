@@ -11,7 +11,7 @@ open EA.Telegram.Persistence
 let private send ct message =
     Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
-    |> Client.create
+    |> Client.init
     |> ResultAsync.wrap (fun client -> message |> Web.Telegram.Producer.produce client ct)
     |> ResultAsync.map ignore
 

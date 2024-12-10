@@ -18,7 +18,7 @@ module private Fixture =
 
     let httpGetStringRequest fileName =
         $"./test_data/{fileName}.html"
-        |> Storage.create
+        |> Storage.init
         |> ResultAsync.wrap Storage.Read.string
         |> ResultAsync.map (Option.defaultValue "")
         |> ResultAsync.map (fun data ->
@@ -28,7 +28,7 @@ module private Fixture =
 
     let httpGetBytesRequest fileName =
         $"./test_data/{fileName}"
-        |> Storage.create
+        |> Storage.init
         |> ResultAsync.wrap Storage.Read.bytes
         |> ResultAsync.map (Option.defaultValue [||])
         |> ResultAsync.map (fun data ->
@@ -38,7 +38,7 @@ module private Fixture =
 
     let httpPostStringRequest fileName =
         $"./test_data/{fileName}.html"
-        |> Storage.create
+        |> Storage.init
         |> ResultAsync.wrap Storage.Read.string
         |> ResultAsync.map (Option.defaultValue "")
 

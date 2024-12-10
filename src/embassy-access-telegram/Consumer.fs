@@ -76,6 +76,6 @@ let private create ct cfg client =
 let start ct cfg =
     Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> Web.Telegram.Domain.EnvKey
-    |> Web.Telegram.Client.create
+    |> Web.Telegram.Client.init
     |> Result.map (fun client -> Web.Domain.Consumer.Telegram(client, create ct cfg client))
     |> Web.Client.consume ct

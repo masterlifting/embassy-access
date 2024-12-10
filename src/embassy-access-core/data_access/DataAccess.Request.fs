@@ -190,8 +190,8 @@ let init storageType =
         { Persistence.Domain.FileSystem.FilePath = filePath
           Persistence.Domain.FileSystem.FileName = Name }
         |> Connection.FileSystem
-        |> Persistence.Storage.create
-    | InMemory -> Connection.InMemory |> Persistence.Storage.create
+        |> Persistence.Storage.init
+    | InMemory -> Connection.InMemory |> Persistence.Storage.init
     |> Result.map RequestStorage
 
 module Command =
