@@ -1,7 +1,7 @@
 ﻿[<AutoOpen>]
 module EA.Core.Domain.Notification
 
-open Infrastructure
+open Infrastructure.Domain
 
 type Notification =
     | Appointments of (EmbassyGraph * Set<Appointment>)

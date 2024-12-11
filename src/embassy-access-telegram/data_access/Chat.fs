@@ -1,16 +1,17 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.DataAccess.Chat
 
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
-open Persistence.Domain
+open Persistence
 open Web.Telegram.Domain
 open EA.Telegram.Domain
 
 [<Literal>]
 let private Name = "Chats"
 
-type ChatStorage = ChatStorage of Storage
+type ChatStorage = ChatStorage of Storage.Type
 
 type StorageType =
     | InMemory
@@ -49,11 +50,7 @@ type private Chat with
 module private Common =
     let create (chat: Chat) (data: ChatEntity array) =
         match data |> Array.exists (fun x -> x.Id = chat.Id.Value) with
-        | true ->
-            Error
-            <| Operation
-                { Message = $"{chat.Id} already exists."
-                  Code = Some ErrorCode.ALREADY_EXISTS }
+        | true -> $"{chat.Id}" |> AlreadyExists |> Error
         | false -> data |> Array.append [| chat.ToEntity() |] |> Ok
 
     let update (chat: Chat) (data: ChatEntity array) =
@@ -61,11 +58,7 @@ module private Common =
         | Some index ->
             data[index] <- chat.ToEntity()
             Ok data
-        | None ->
-            Error
-            <| Operation
-                { Message = $"{chat.Id} not found."
-                  Code = Some ErrorCode.NOT_FOUND }
+        | None -> $"{chat.Id}" |> NotFound |> Error
 
 module private InMemory =
     open Persistence.InMemory
@@ -147,11 +140,11 @@ let private toPersistenceStorage storage =
 let init storageType =
     match storageType with
     | FileSystem filePath ->
-        { Persistence.Domain.FileSystem.FilePath = filePath
-          Persistence.Domain.FileSystem.FileName = Name }
-        |> Connection.FileSystem
-        |> Persistence.Storage.init
-    | InMemory -> Connection.InMemory |> Persistence.Storage.init
+        { Persistence.FileSystem.Domain.Source.FilePath = filePath
+          Persistence.FileSystem.Domain.Source.FileName = Name }
+        |> Storage.Connection.FileSystem
+        |> Storage.init
+    | InMemory -> Storage.Connection.InMemory |> Storage.init
     |> Result.map ChatStorage
 
 module Query =

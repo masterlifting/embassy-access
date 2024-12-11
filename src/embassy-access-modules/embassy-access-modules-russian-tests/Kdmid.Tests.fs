@@ -2,14 +2,14 @@
 
 open System
 open Expecto
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Embassies.Russian.Domain
 open EA.Embassies.Russian.Kdmid.Domain
 
 module private Fixture =
-    open Web.Http.Domain
-    open EA.Core.Domain.Constants
+    open Web.Http.Domain.Response
     open Persistence.FileSystem
 
     let httpRequestHeaders =
@@ -17,9 +17,10 @@ module private Fixture =
         <| Map [ "Set-Cookie", [ "ASP.NET_SessionId=1"; " AlteonP=1"; " __ddg1_=1" ] ]
 
     let httpGetStringRequest fileName =
-        $"./test_data/{fileName}.html"
+        { FilePath = "./test_data/"
+          FileName = $"{fileName}.html" }
         |> Storage.init
-        |> ResultAsync.wrap Storage.Read.string
+        |> ResultAsync.wrap Read.string
         |> ResultAsync.map (Option.defaultValue "")
         |> ResultAsync.map (fun data ->
             { Content = data
@@ -27,9 +28,10 @@ module private Fixture =
               StatusCode = 200 })
 
     let httpGetBytesRequest fileName =
-        $"./test_data/{fileName}"
+        { FilePath = "./test_data/"
+          FileName = fileName }
         |> Storage.init
-        |> ResultAsync.wrap Storage.Read.bytes
+        |> ResultAsync.wrap Read.bytes
         |> ResultAsync.map (Option.defaultValue [||])
         |> ResultAsync.map (fun data ->
             { Content = data
@@ -37,9 +39,10 @@ module private Fixture =
               StatusCode = 200 })
 
     let httpPostStringRequest fileName =
-        $"./test_data/{fileName}.html"
+        { FilePath = "./test_data/"
+          FileName = $"{fileName}.html" }
         |> Storage.init
-        |> ResultAsync.wrap Storage.Read.string
+        |> ResultAsync.wrap Read.string
         |> ResultAsync.map (Option.defaultValue "")
 
     let Dependencies =
@@ -55,7 +58,7 @@ module private Fixture =
         { Uri = Uri("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F")
           Embassy =
             { Id = Graph.NodeId.New
-              Name = [ Embassy.RUSSIAN; Country.GERMANY; City.BERLIN ] |> Graph.buildNodeNameOfSeq
+              Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.buildNodeNameOfSeq
               Description = None }
           TimeZone = 1.0
           Confirmation = Auto FirstAvailable }
@@ -75,14 +78,14 @@ let private ``validation page should have an error`` =
         let service =
             { IssueForeign with
                 Service.Dependencies = dependencies }
-            |> Service.Kdmid
+            |> Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
         match error with
-        | Operation { Code = Some Constants.ErrorCode.PAGE_HAS_ERROR } -> ()
+        | Operation { Code = Some(Custom Constants.ErrorCode.PAGE_HAS_ERROR) } -> ()
         | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.PAGE_HAS_ERROR}"
     }
 
@@ -95,14 +98,14 @@ let private ``validation page should have a confirmed request`` =
         let service =
             { IssueForeign with
                 Service.Dependencies = dependencies }
-            |> Service.Kdmid
+            |> Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
         match error with
-        | Operation { Code = Some Constants.ErrorCode.NOT_CONFIRMED } -> ()
+        | Operation { Code = Some(Custom Constants.ErrorCode.NOT_CONFIRMED) } -> ()
         | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.NOT_CONFIRMED}"
     }
 
@@ -115,14 +118,14 @@ let private ``validation page should have a confirmation`` =
         let service =
             { IssueForeign with
                 Service.Dependencies = dependencies }
-            |> Service.Kdmid
+            |> Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
         match error with
-        | Operation { Code = Some Constants.ErrorCode.CONFIRMATION_EXISTS } -> ()
+        | Operation { Code = Some(Custom Constants.ErrorCode.CONFIRMATION_EXISTS) } -> ()
         | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.CONFIRMATION_EXISTS}"
     }
 
@@ -135,14 +138,14 @@ let private ``validation page should have a deleted request`` =
         let service =
             { IssueForeign with
                 Service.Dependencies = dependencies }
-            |> Service.Kdmid
+            |> Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
         match error with
-        | Operation { Code = Some Constants.ErrorCode.REQUEST_DELETED } -> ()
+        | Operation { Code = Some(Custom Constants.ErrorCode.REQUEST_DELETED) } -> ()
         | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.REQUEST_DELETED}"
     }
 
@@ -157,7 +160,7 @@ let private ``appointments page should not have data`` =
             let service =
                 { IssueForeign with
                     Service.Dependencies = dependencies }
-                |> Service.Kdmid
+                |> Kdmid
 
             let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
@@ -176,7 +179,7 @@ let private ``appointments page should have data`` =
             let service =
                 { IssueForeign with
                     Service.Dependencies = dependencies }
-                |> Service.Kdmid
+                |> Kdmid
 
             let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 
@@ -195,7 +198,7 @@ let private ``confirmation page should have a valid result`` =
             let service =
                 { IssueForeign with
                     Service.Dependencies = dependencies }
-                |> Service.Kdmid
+                |> Kdmid
 
             let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
 

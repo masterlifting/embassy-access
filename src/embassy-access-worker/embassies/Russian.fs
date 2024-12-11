@@ -1,6 +1,7 @@
 ﻿module internal EA.Worker.Embassies.Russian
 
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Domain
@@ -17,8 +18,8 @@ let private createEmbassyName (task: WorkerTask) =
     with ex ->
         Error
         <| Operation
-            { Message = $"Create embassy name failed. Error: {ex |> Exception.toMessage}"  
-              Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
+            { Message = $"Create embassy name failed. Error: {ex |> Exception.toMessage}"
+              Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
     |> async.Return
 
 module private Kdmid =

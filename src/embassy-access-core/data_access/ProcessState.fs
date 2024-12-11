@@ -1,7 +1,8 @@
 ﻿module EA.Core.DataAccess.ProcessState
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Persistence.DataAccess
 open EA.Core.Domain
 
@@ -38,7 +39,10 @@ type internal ProcessStateEntity() =
             match this.Error with
             | Some error -> error.ToDomain() |> Result.map Failed
             | None -> "Failed state without error" |> NotSupported |> Result.Error
-        | _ -> $"The %s{this.Type} of {nameof ProcessStateEntity}" |> NotSupported |> Result.Error
+        | _ ->
+            $"The %s{this.Type} of {nameof ProcessStateEntity}"
+            |> NotSupported
+            |> Result.Error
 
 type internal ProcessState with
     member internal this.ToEntity() =
@@ -52,6 +56,6 @@ type internal ProcessState with
             result.Message <- Some msg
         | Failed error ->
             result.Type <- FAILED
-            result.Error <- error.toEntity() |> Some
+            result.Error <- error.ToEntity () |> Some
 
         result

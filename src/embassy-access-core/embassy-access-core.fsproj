@@ -3,25 +3,25 @@
         <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="domain\Domain.EmbassyGraph.fs" />
-        <Compile Include="domain\Domain.Confirmation.fs"/>
-        <Compile Include="domain\Domain.Appointment.fs"/>
-        <Compile Include="domain\Domain.ConfirmationOption.fs"/>
-        <Compile Include="domain\Domain.ConfirmationState.fs"/>
-        <Compile Include="domain\Domain.ProcessState.fs"/>
-        <Compile Include="domain\Domain.Service.fs"/>
-        <Compile Include="domain\Domain.ServiceGraph.fs" />
-        <Compile Include="domain\Domain.Request.fs"/>
-        <Compile Include="domain\Domain.Notification.fs"/>
-        <Compile Include="data_access\DataAccess.Confirmation.fs"/>
-        <Compile Include="data_access\DataAccess.Appointment.fs"/>
-        <Compile Include="data_access\DataAccess.ConfirmationOption.fs"/>
-        <Compile Include="data_access\DataAccess.ConfirmationState.fs"/>
-        <Compile Include="data_access\DataAccess.ProcessState.fs"/>
-        <Compile Include="data_access\DataAccess.Service.fs"/>
-        <Compile Include="data_access\DataAccess.ServiceGraph.fs" />
-        <Compile Include="data_access\DataAccess.Request.fs"/>
-        <Compile Include="data_access\DataAccess.EmbassyGraph.fs" />
+        <Compile Include="domain\EmbassyGraph.fs" />
+        <Compile Include="domain\Confirmation.fs" />
+        <Compile Include="domain\Appointment.fs" />
+        <Compile Include="domain\ConfirmationOption.fs" />
+        <Compile Include="domain\ConfirmationState.fs" />
+        <Compile Include="domain\ProcessState.fs" />
+        <Compile Include="domain\Service.fs" />
+        <Compile Include="domain\ServiceGraph.fs" />
+        <Compile Include="domain\Request.fs" />
+        <Compile Include="domain\Notification.fs" />
+        <Compile Include="data_access\Confirmation.fs" />
+        <Compile Include="data_access\Appointment.fs" />
+        <Compile Include="data_access\ConfirmationOption.fs" />
+        <Compile Include="data_access\ConfirmationState.fs" />
+        <Compile Include="data_access\ProcessState.fs" />
+        <Compile Include="data_access\Service.fs" />
+        <Compile Include="data_access\ServiceGraph.fs" />
+        <Compile Include="data_access\Request.fs" />
+        <Compile Include="data_access\EmbassyGraph.fs" />
     </ItemGroup>
   
     <ItemGroup>

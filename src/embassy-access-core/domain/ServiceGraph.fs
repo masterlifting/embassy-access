@@ -1,7 +1,7 @@
 ﻿[<AutoOpen>]
 module EA.Core.Domain.ServiceGraph
 
-open Infrastructure
+open Infrastructure.Domain
 
 type ServiceGraph =
     { Id: Graph.NodeId

@@ -1,7 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Embassies.Russian.API
 
-open Infrastructure
+open Infrastructure.Domain
 open EA.Embassies.Russian.Domain
 
 module Service =

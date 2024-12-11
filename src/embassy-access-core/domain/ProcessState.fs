@@ -1,7 +1,7 @@
 ﻿[<AutoOpen>]
 module EA.Core.Domain.ProcessState
 
-open Infrastructure
+open Infrastructure.Domain
 
 type ProcessState =
     | Created

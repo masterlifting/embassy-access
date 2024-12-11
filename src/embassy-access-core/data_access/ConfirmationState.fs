@@ -1,7 +1,7 @@
 ﻿module EA.Core.DataAccess.ConfirmationState
 
 open System
-open Infrastructure
+open Infrastructure.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess.ConfirmationOption
 

@@ -2,7 +2,7 @@
 module internal EA.Worker.Domain.RouteGraph
 
 open System
-open Infrastructure
+open Infrastructure.Domain
 open Worker.Domain
 
 type RouteGraph =

@@ -1,6 +1,6 @@
 ﻿module internal EA.Worker.Initializer
 
-open Infrastructure
+open Infrastructure.Prelude
 open Infrastructure.Logging
 open Worker.Domain
 

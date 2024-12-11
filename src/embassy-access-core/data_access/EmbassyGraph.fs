@@ -2,17 +2,17 @@
 module EA.Core.DataAccess.EmbassyGraph
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
-open Microsoft.Extensions.Configuration
-open Persistence.Domain
+open Persistence
 
 [<Literal>]
 let private Name = "Embassies"
 
-type EmbassyGraphStorage = EmbassyGraphStorage of Storage
+type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Type
 
-type StorageType = Configuration of sectionName: string * configuration: IConfigurationRoot
+type StorageType = Configuration of Configuration.Domain.Client
 
 type internal EmbassyGraphEntity() =
     member val Id = String.Empty with get, set
@@ -50,13 +50,13 @@ let private toPersistenceStorage storage =
 
 let init storageType =
     match storageType with
-    | Configuration(section, configuration) ->
-        (section, configuration)
-        |> Connection.Configuration
-        |> Persistence.Storage.init
+    | Configuration connection ->
+        connection
+        |> Storage.Connection.Configuration
+        |> Storage.init
         |> Result.map EmbassyGraphStorage
 
 let get storage =
     match storage |> toPersistenceStorage with
-    | Storage.Configuration(section, client) -> client |> Configuration.get section
+    | Storage.Configuration client -> client.Configuration |> Configuration.get client.SectionName
     | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

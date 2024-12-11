@@ -2,7 +2,8 @@
 module EA.Core.Domain.Appointment
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 
 type AppointmentId =
     | AppointmentId of Guid

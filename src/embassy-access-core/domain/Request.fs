@@ -2,7 +2,8 @@
 module EA.Core.Domain.Request
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 
 type RequestId =
     | RequestId of Guid
@@ -17,7 +18,6 @@ type RequestId =
         | _ -> $"RequestId value: {value}" |> NotSupported |> Error
 
     static member New = RequestId <| Guid.NewGuid()
-
 
 type Request =
     { Id: RequestId

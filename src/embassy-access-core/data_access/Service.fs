@@ -1,7 +1,7 @@
 ﻿module EA.Core.DataAccess.Service
 
 open System
-open Infrastructure
+open Infrastructure.Domain
 open EA.Core.Domain
 
 type internal ServiceEntity() =

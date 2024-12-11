@@ -2,9 +2,10 @@
 module EA.Core.DataAccess.Request
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
-open Persistence.Domain
+open Persistence
 open EA.Core.DataAccess.Service
 open EA.Core.DataAccess.ProcessState
 open EA.Core.DataAccess.ConfirmationState
@@ -13,7 +14,7 @@ open EA.Core.DataAccess.Appointment
 [<Literal>]
 let private Name = "Requests"
 
-type RequestStorage = RequestStorage of Storage
+type RequestStorage = RequestStorage of Storage.Type
 
 type StorageType =
     | InMemory
@@ -63,11 +64,7 @@ type private Request with
 module private Common =
     let create (request: Request) (data: RequestEntity array) =
         match data |> Array.exists (fun x -> x.Id = request.Id.Value) with
-        | true ->
-            Error
-            <| Operation
-                { Message = $"{request.Id} already exists."
-                  Code = Some ErrorCode.ALREADY_EXISTS }
+        | true -> $"{request.Id}" |> AlreadyExists |> Error
         | false -> data |> Array.append [| request.ToEntity() |] |> Ok
 
     let update (request: Request) (data: RequestEntity array) =
@@ -75,11 +72,7 @@ module private Common =
         | Some index ->
             data[index] <- request.ToEntity()
             Ok data
-        | None ->
-            Error
-            <| Operation
-                { Message = $"{request.Id} not found."
-                  Code = Some ErrorCode.NOT_FOUND }
+        | None -> $"{request.Id}" |> NotFound |> Error
 
 module private InMemory =
     open Persistence.InMemory
@@ -177,8 +170,6 @@ module private FileSystem =
                 | false -> data |> Common.create request)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
 
-
-
 let private toPersistenceStorage storage =
     storage
     |> function
@@ -187,11 +178,11 @@ let private toPersistenceStorage storage =
 let init storageType =
     match storageType with
     | FileSystem filePath ->
-        { Persistence.Domain.FileSystem.FilePath = filePath
-          Persistence.Domain.FileSystem.FileName = Name }
-        |> Connection.FileSystem
-        |> Persistence.Storage.init
-    | InMemory -> Connection.InMemory |> Persistence.Storage.init
+        { Persistence.FileSystem.Domain.FilePath = filePath
+          Persistence.FileSystem.Domain.FileName = Name }
+        |> Storage.Connection.FileSystem
+        |> Storage.init
+    | InMemory -> Storage.Connection.InMemory |> Storage.init
     |> Result.map RequestStorage
 
 module Command =

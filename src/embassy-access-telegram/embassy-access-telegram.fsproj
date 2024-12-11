@@ -5,9 +5,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="domain\Domain.Common.fs" />
-        <Compile Include="domain\Domain.Chat.fs" />
-        <Compile Include="data_access\DataAccess.Chat.fs" />
+        <Compile Include="domain\Common.fs" />
+        <Compile Include="domain\Chat.fs" />
+        <Compile Include="data_access\Chat.fs" />
         <Compile Include="Command.fs"/>
         <Compile Include="Initializer.fs" />
         <Compile Include="embassy_handlers\Russian.Dependencies.fs" />

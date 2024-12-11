@@ -1,14 +1,14 @@
 ﻿module EA.Core.DataAccess.ServiceGraph
 
 open System
-open Microsoft.Extensions.Configuration
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
-open Persistence.Domain
+open Persistence
 
-type ServiceGraphStorage = ServiceGraphStorage of Storage
+type ServiceGraphStorage = ServiceGraphStorage of Storage.Type
 
-type StorageType = Configuration of sectionName: string * configuration: IConfigurationRoot
+type StorageType = Configuration of Configuration.Domain.Client
 
 type ServiceGraphEntity() =
     member val Id: string = String.Empty with get, set
@@ -48,13 +48,13 @@ let private toPersistenceStorage storage =
 
 let init storageType =
     match storageType with
-    | Configuration(section, configuration) ->
-        (section, configuration)
-        |> Connection.Configuration
-        |> Persistence.Storage.init
+    | Configuration connection ->
+        connection
+        |> Storage.Connection.Configuration
+        |> Storage.init
         |> Result.map ServiceGraphStorage
 
 let get storage =
     match storage |> toPersistenceStorage with
-    | Storage.Configuration(section, client) -> client |> Configuration.get section
+    | Storage.Configuration client -> client.Configuration |> Configuration.get client.SectionName
     | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

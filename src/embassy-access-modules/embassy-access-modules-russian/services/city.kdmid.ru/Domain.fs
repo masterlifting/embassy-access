@@ -1,28 +1,28 @@
 ﻿module EA.Embassies.Russian.Kdmid.Domain
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
 
 [<RequireQualifiedAccess>]
 module Constants =
-    open EA.Core.Domain.Constants
 
     let internal SUPPORTED_SUB_DOMAINS =
         Map
-            [ "belgrad", (Country.SERBIA, City.BELGRADE)
-              "budapest", (Country.HUNGARY, City.BUDAPEST)
-              "sarajevo", (Country.BOSNIA, City.SARAJEVO)
-              "berlin", (Country.GERMANY, City.BERLIN)
-              "podgorica", (Country.MONTENEGRO, City.PODGORICA)
-              "tirana", (Country.ALBANIA, City.TIRANA)
-              "paris", (Country.FRANCE, City.PARIS)
-              "rome", (Country.ITALY, City.ROME)
-              "dublin", (Country.IRELAND, City.DUBLIN)
-              "bern", (Country.SWITZERLAND, City.BERN)
-              "helsinki", (Country.FINLAND, City.HELSINKI)
-              "hague", (Country.NETHERLANDS, City.HAGUE)
-              "ljubljana", (Country.SLOVENIA, City.LJUBLJANA) ]
+            [ "belgrad", ("Serbia", "Belgrade")
+              "budapest", ("Hungary", "Budapest")
+              "sarajevo", ("Bosnia", "Sarajevo")
+              "berlin", ("Germany", "Berlin")
+              "podgorica", ("Montenegro", "Podgorica")
+              "tirana", ("Albania", "Tirana")
+              "paris", ("France", "Paris")
+              "rome", ("Italy", "Rome")
+              "dublin", ("Ireland", "Dublin")
+              "bern", ("Switzerland", "Bern")
+              "helsinki", ("Finland", "Helsinki")
+              "hague", ("Netherlands", "Hague")
+              "ljubljana", ("Slovenia", "Ljubljana") ]
 
     module ErrorCode =
 
@@ -70,63 +70,40 @@ type PickOrder =
     { StartOrders: StartOrder list
       notify: Notification -> Async<unit> }
 
+open Web.Http.Domain.Request
+open Web.Http.Domain.Response
+
 type Dependencies =
-    { updateRequest: Request -> Async<Result<Request, Error'>>
-      getInitialPage:
-          Web.Http.Domain.Request -> Web.Http.Domain.Client -> Async<Result<Web.Http.Domain.Response<string>, Error'>>
-      getCaptcha:
-          Web.Http.Domain.Request
-              -> Web.Http.Domain.Client
-              -> Async<Result<Web.Http.Domain.Response<byte array>, Error'>>
+    { updateRequest: EA.Core.Domain.Request.Request -> Async<Result<unit, Error'>>
+      getInitialPage: Request -> Web.Http.Domain.Client.Client -> Async<Result<Response<string>, Error'>>
+      getCaptcha: Request -> Web.Http.Domain.Client.Client -> Async<Result<Response<byte array>, Error'>>
       solveCaptcha: byte array -> Async<Result<int, Error'>>
-      postValidationPage:
-          Web.Http.Domain.Request
-              -> Web.Http.Domain.RequestContent
-              -> Web.Http.Domain.Client
-              -> Async<Result<string, Error'>>
-      postAppointmentsPage:
-          Web.Http.Domain.Request
-              -> Web.Http.Domain.RequestContent
-              -> Web.Http.Domain.Client
-              -> Async<Result<string, Error'>>
-      postConfirmationPage:
-          Web.Http.Domain.Request
-              -> Web.Http.Domain.RequestContent
-              -> Web.Http.Domain.Client
-              -> Async<Result<string, Error'>> }
+      postValidationPage: Request -> RequestContent -> Web.Http.Domain.Client.Client -> Async<Result<string, Error'>>
+      postAppointmentsPage: Request -> RequestContent -> Web.Http.Domain.Client.Client -> Async<Result<string, Error'>>
+      postConfirmationPage: Request -> RequestContent -> Web.Http.Domain.Client.Client -> Async<Result<string, Error'>> }
 
     static member create storage ct =
-        { updateRequest =
-            fun request ->
-                request
-                |> EA.Core.Persistence.Command.Request.Update
-                |> EA.Core.Persistence.Repository.Command.Request.execute storage ct
+        { updateRequest = fun request -> storage |> EA.Core.DataAccess.Request.Command.update request
           getInitialPage =
-            fun request client ->
-                client
-                |> Web.Http.Client.Request.get ct request
-                |> Web.Http.Client.Response.String.read ct
+            fun request client -> client |> Web.Http.Request.get ct request |> Web.Http.Response.String.read ct
           getCaptcha =
-            fun request client ->
-                client
-                |> Web.Http.Client.Request.get ct request
-                |> Web.Http.Client.Response.Bytes.read ct
+            fun request client -> client |> Web.Http.Request.get ct request |> Web.Http.Response.Bytes.read ct
           solveCaptcha = Web.Captcha.solveToInt ct
           postValidationPage =
             fun request content client ->
                 client
-                |> Web.Http.Client.Request.post ct request content
-                |> Web.Http.Client.Response.String.readContent ct
+                |> Web.Http.Request.post ct request content
+                |> Web.Http.Response.String.readContent ct
           postAppointmentsPage =
             fun request content client ->
                 client
-                |> Web.Http.Client.Request.post ct request content
-                |> Web.Http.Client.Response.String.readContent ct
+                |> Web.Http.Request.post ct request content
+                |> Web.Http.Response.String.readContent ct
           postConfirmationPage =
             fun request content client ->
                 client
-                |> Web.Http.Client.Request.post ct request content
-                |> Web.Http.Client.Response.String.readContent ct }
+                |> Web.Http.Request.post ct request content
+                |> Web.Http.Response.String.readContent ct }
 
 type Service =
     { Request: ServiceRequest
@@ -154,7 +131,7 @@ type internal Payload =
                     | Some(country, city) -> Ok(country, city)
                     | None -> subDomain |> NotSupported |> Error
 
-                let! queryParams = uri |> Web.Http.Client.Route.toQueryParams
+                let! queryParams = uri |> Web.Http.Route.toQueryParams
 
                 let! id =
                     queryParams
