@@ -2,6 +2,7 @@
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Configuration
+open Worker.DataAccess
 open Worker.Domain
 open EA.Worker
 
@@ -24,9 +25,9 @@ let main _ =
         fun name ->
             { SectionName = APP_NAME
               Configuration = configuration }
-            |> Worker.DataAccess.TaskGraph.Configuration
-            |> Worker.DataAccess.TaskGraph.init
-            |> ResultAsync.wrap (Worker.DataAccess.TaskGraph.get handlers)
+            |> TaskGraph.Configuration
+            |> TaskGraph.init
+            |> ResultAsync.wrap (TaskGraph.create handlers)
             |> ResultAsync.map (Graph.DFS.tryFindByName name)
             |> ResultAsync.bind (function
                 | Some node -> Ok node

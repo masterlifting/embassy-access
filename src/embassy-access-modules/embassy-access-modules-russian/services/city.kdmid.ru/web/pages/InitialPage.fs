@@ -1,8 +1,10 @@
 ﻿module internal EA.Embassies.Russian.Kdmid.Web.InitialPage
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Infrastructure.Parser
+open Web.Http.Domain
 open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Html
 open EA.Embassies.Russian.Kdmid.Domain
@@ -10,8 +12,8 @@ open EA.Embassies.Russian.Kdmid.Domain
 open SkiaSharp
 
 let private createHttpRequest queryParams =
-    { Web.Http.Domain.Request.Path = "/queue/orderinfo.aspx?" + queryParams
-      Web.Http.Domain.Request.Headers = None }
+    { Path = "/queue/orderinfo.aspx?" + queryParams
+      Headers = None }
 
 let private parseHttpResponse page =
     Html.load page
@@ -57,8 +59,8 @@ let private parseHttpResponse page =
         | false -> Error <| NotFound "Initial Page headers.")
 
 let private createCaptchaRequest urlPath =
-    { Web.Http.Domain.Request.Path = $"/queue/%s{urlPath}"
-      Web.Http.Domain.Request.Headers = None }
+    { Path = $"/queue/%s{urlPath}"
+      Headers = None }
 
 let private prepareCaptchaImage (image: byte array) =
     try

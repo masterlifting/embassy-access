@@ -1,6 +1,7 @@
 ﻿module internal EA.Embassies.Russian.Kdmid.Html
 
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Infrastructure.Parser
 open EA.Embassies.Russian.Kdmid.Domain
 
@@ -15,5 +16,5 @@ let pageHasError page =
                 Error
                 <| Operation
                     { Message = text
-                      Code = Some Constants.ErrorCode.PAGE_HAS_ERROR }
+                      Code = Constants.ErrorCode.PAGE_HAS_ERROR |> Custom |> Some }
             | _ -> Ok page)

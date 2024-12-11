@@ -105,6 +105,7 @@ module private InMemory =
             |> loadData
             |> Result.bind (Common.create request)
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.map (fun _ -> request)
             |> async.Return
 
         let update request client =
@@ -112,6 +113,7 @@ module private InMemory =
             |> loadData
             |> Result.bind (Common.update request)
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.map (fun _ -> request)
             |> async.Return
 
         let createOrUpdate request client =
@@ -122,6 +124,7 @@ module private InMemory =
                 | true -> data |> Common.update request
                 | false -> data |> Common.create request)
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.map (fun _ -> request)
             |> async.Return
 
 module private FileSystem =
@@ -154,12 +157,14 @@ module private FileSystem =
             |> loadData
             |> ResultAsync.bind (Common.create request)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+            |> ResultAsync.map (fun _ -> request)
 
         let update request client =
             client
             |> loadData
             |> ResultAsync.bind (Common.update request)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+            |> ResultAsync.map (fun _ -> request)
 
         let createOrUpdate request client =
             client
@@ -169,6 +174,7 @@ module private FileSystem =
                 | true -> data |> Common.update request
                 | false -> data |> Common.create request)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+            |> ResultAsync.map (fun _ -> request)
 
 let private toPersistenceStorage storage =
     storage

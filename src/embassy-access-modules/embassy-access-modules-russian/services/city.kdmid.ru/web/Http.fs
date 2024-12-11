@@ -1,7 +1,8 @@
 ﻿module internal EA.Embassies.Russian.Kdmid.Web.Http
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Embassies.Russian.Kdmid.Domain
 open Web.Http.Domain
 
@@ -26,10 +27,11 @@ let private createKdmidClient subDomain =
               "User-Agent", [ "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0" ] ]
         |> Some
 
-    Web.Http.Client.create baseUrl headers
+
+    { BaseUrl = baseUrl; Headers = headers } |> Web.Http.Client.init
 
 let createClient =
-    ResultAsync.bind (fun (payload, request: EA.Core.Domain.Request) ->
+    ResultAsync.bind (fun (payload, request: EA.Core.Domain.Request.Request) ->
         payload.SubDomain
         |> createKdmidClient
         |> Result.map (fun httpClient -> httpClient, payload, request))
@@ -41,7 +43,7 @@ let createQueryParams id cd ems =
 
 let getQueryParamsId queryParams =
     queryParams
-    |> Web.Http.Client.Route.fromQueryParams
+    |> Web.Http.Route.fromQueryParams
     |> Result.map (Map.tryFind "id")
     |> Result.bind (function
         | Some id -> Ok id
@@ -49,17 +51,17 @@ let getQueryParamsId queryParams =
 
 let private setCookie cookie httpClient =
     let headers = Map [ "Cookie", cookie ] |> Some
-    httpClient |> Web.Http.Client.Headers.set headers
+    httpClient |> Web.Http.Headers.set headers
 
 let setRequiredCookie httpClient (response: Response<string>) =
     response.Headers
-    |> Web.Http.Client.Headers.tryFind "Set-Cookie" [ "AlteonP"; "__ddg1_" ]
+    |> Web.Http.Headers.tryFind "Set-Cookie" [ "AlteonP"; "__ddg1_" ]
     |> Option.map (fun cookie -> httpClient |> setCookie cookie |> Result.map (fun _ -> response.Content))
     |> Option.defaultValue (Ok response.Content)
 
 let setSessionCookie httpClient (response: Response<byte array>) =
     response.Headers
-    |> Web.Http.Client.Headers.tryFind "Set-Cookie" [ "ASP.NET_SessionId" ]
+    |> Web.Http.Headers.tryFind "Set-Cookie" [ "ASP.NET_SessionId" ]
     |> Option.map (fun cookie -> httpClient |> setCookie cookie |> Result.map (fun _ -> response.Content))
     |> Option.defaultValue (Ok response.Content)
 

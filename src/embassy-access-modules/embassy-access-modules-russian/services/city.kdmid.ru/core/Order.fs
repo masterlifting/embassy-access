@@ -2,7 +2,8 @@
 module internal EA.Embassies.Russian.Kdmid.Order
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Domain
@@ -72,7 +73,7 @@ let private setCompletedState deps request =
 let private setFailedState error deps request =
     let attempt =
         match error with
-        | Operation { Code = Some Web.Captcha.CaptchaErrorCode } -> request.Attempt
+        | Operation { Code = Some(Custom Web.Captcha.ErrorCode) } -> request.Attempt
         | _ -> DateTime.UtcNow, snd request.Attempt + 1
 
     deps.updateRequest
@@ -120,9 +121,9 @@ let errorFilter error =
     match error with
     | Operation reason ->
         match reason.Code with
-        | Some Constants.ErrorCode.CONFIRMATION_EXISTS
-        | Some Constants.ErrorCode.NOT_CONFIRMED
-        | Some Constants.ErrorCode.REQUEST_DELETED -> true
+        | Some(Custom Constants.ErrorCode.CONFIRMATION_EXISTS)
+        | Some(Custom Constants.ErrorCode.NOT_CONFIRMED)
+        | Some(Custom Constants.ErrorCode.REQUEST_DELETED) -> true
         | _ -> false
     | _ -> false
 

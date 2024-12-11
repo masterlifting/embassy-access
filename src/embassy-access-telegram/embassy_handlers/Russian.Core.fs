@@ -3,16 +3,16 @@
 open System
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Domain
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Telegram
-open EA.Embassies.Russian
 
 let internal getService (embassyId, serviceIdOpt) =
     fun (deps: Dependencies.GetService) ->
 
-        let inline createButtons buttonName (nodes: Graph.Node<Domain.ServiceInfoGraph> seq) =
+        let inline createButtons buttonName (nodes: Graph.Node<ServiceGraph> seq) =
             nodes
             |> Seq.map (fun node -> (embassyId, node.FullId) |> Command.GetService |> Command.set, node.ShortName)
             |> Map
@@ -22,7 +22,7 @@ let internal getService (embassyId, serviceIdOpt) =
                   Data = buttons }
                 |> Buttons.create (deps.ChatId, deps.MessageId |> Replace)
 
-        deps.getServiceInfoGraph ()
+        deps.getServiceGraph ()
         |> ResultAsync.bind (fun graph ->
             match serviceIdOpt with
             | None -> graph.Children |> createButtons graph.Value.Description |> Ok
@@ -56,7 +56,7 @@ let internal setService (serviceId, embassy, payload) =
                   Subscriptions = [ request.Id ] |> Set }
 
         let inline createOrUpdateRequest serviceName =
-            let serviceRequest: ServiceRequest =
+            let serviceRequest: KdmidRequest =
                 { Uri = Uri(payload)
                   Embassy = embassy
                   TimeZone = 1.0
@@ -64,7 +64,7 @@ let internal setService (serviceId, embassy, payload) =
 
             serviceName |> serviceRequest.CreateRequest |> deps.createOrUpdateRequest
 
-        deps.getServiceInfoGraph ()
+        deps.getServiceGraph ()
         |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
         |> ResultAsync.bind (function
             | Some node -> Ok node

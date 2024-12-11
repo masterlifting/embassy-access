@@ -1,10 +1,12 @@
-﻿module EA.Telegram.Initializer
+﻿[<RequireQualifiedAccess>]
+module EA.Telegram.Dependencies.Persistence
 
-open Infrastructure
-open Web.Telegram.Domain
+open Infrastructure.Domain
+open Infrastructure.Prelude
+open Persistence.Configuration
 open EA.Core.Domain
 
-type PersistenceDeps =
+type Dependencies =
     { initChatStorage: unit -> Result<EA.Telegram.DataAccess.Chat.ChatStorage, Error'>
       initRequestStorage: unit -> Result<EA.Core.DataAccess.Request.RequestStorage, Error'>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>>
@@ -28,41 +30,22 @@ type PersistenceDeps =
                 |> EA.Core.DataAccess.Request.init
 
             let getEmbassyGraph () =
-                ("Embassies", cfg)
+                { SectionName = "Embassies"
+                  Configuration = cfg }
                 |> EA.Core.DataAccess.EmbassyGraph.Configuration
                 |> EA.Core.DataAccess.EmbassyGraph.init
-                |> ResultAsync.wrap(EA.Core.DataAccess.EmbassyGraph.get)
-                
+                |> ResultAsync.wrap EA.Core.DataAccess.EmbassyGraph.get
+
             let getRussianServiceGraph () =
-                ("RussianServices", cfg)
+                { SectionName = "RussianServices"
+                  Configuration = cfg }
                 |> EA.Core.DataAccess.ServiceGraph.Configuration
                 |> EA.Core.DataAccess.ServiceGraph.init
-                |> ResultAsync.wrap(EA.Core.DataAccess.ServiceGraph.get)
+                |> ResultAsync.wrap EA.Core.DataAccess.ServiceGraph.get
 
             return
                 { initChatStorage = initializeChatStorage
                   initRequestStorage = initializeRequestStorage
                   getEmbassyGraph = getEmbassyGraph
                   getRussianServiceGraph = getRussianServiceGraph }
-        }
-
-type ConsumerDeps =
-    { ChatId: ChatId
-      MessageId: int
-      Configuration: Microsoft.Extensions.Configuration.IConfigurationRoot
-      CancellationToken: System.Threading.CancellationToken
-      Persistence: PersistenceDeps }
-
-    static member create (dto: Consumer.Dto<_>) cfg ct =
-        let result = ResultBuilder()
-
-        result {
-            let! persistence = PersistenceDeps.create cfg
-
-            return
-                { ChatId = dto.ChatId
-                  MessageId = dto.Id
-                  Configuration = cfg
-                  CancellationToken = ct
-                  Persistence = persistence }
         }

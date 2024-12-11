@@ -1,8 +1,10 @@
 ﻿module internal EA.Embassies.Russian.Kdmid.Web.AppointmentsPage
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Infrastructure.Parser
+open Web.Http.Domain
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Html
@@ -11,11 +13,11 @@ open EA.Embassies.Russian.Kdmid.Domain
 let private createHttpRequest formData queryParams =
 
     let request =
-        { Web.Http.Domain.Request.Path = $"/queue/orderinfo.aspx?%s{queryParams}"
-          Web.Http.Domain.Request.Headers = None }
+        { Path = $"/queue/orderinfo.aspx?%s{queryParams}"
+          Headers = None }
 
-    let content: Web.Http.Domain.RequestContent =
-        Web.Http.Domain.String
+    let content: RequestContent =
+        String
             {| Data = formData
                Encoding = Text.Encoding.ASCII
                MediaType = "application/x-www-form-urlencoded" |}

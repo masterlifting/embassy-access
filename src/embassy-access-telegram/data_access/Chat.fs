@@ -65,72 +65,116 @@ module private InMemory =
 
     let private loadData = Query.Json.get<ChatEntity> Name
 
-    let create chat client =
-        client
-        |> loadData
-        |> Result.bind (Common.create chat)
-        |> Result.bind (fun data -> client |> Command.Json.save Name data)
-        |> async.Return
+    module Query =
+        let tryFindById (id: ChatId) client =
+            client
+            |> loadData
+            |> Result.map (Seq.tryFind (fun x -> x.Id = id.Value))
+            |> Result.bind (function
+                | None -> None |> Ok
+                | Some chat -> chat.ToDomain() |> Result.map Some)
+            |> async.Return
 
-    let update chat client =
-        client
-        |> loadData
-        |> Result.bind (Common.update chat)
-        |> Result.bind (fun data -> client |> Command.Json.save Name data)
-        |> async.Return
+        let findManyBySubscription (subscriptionId: RequestId) client =
+            client
+            |> loadData
+            |> Result.map (
+                Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y = subscriptionId.StringValue))
+            )
+            |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
+            |> async.Return
 
-    let createOrUpdate chat client =
-        client
-        |> loadData
-        |> Result.bind (fun data ->
-            match data |> Seq.exists (fun x -> x.Id = chat.Id.Value) with
-            | true -> data |> Common.update chat
-            | false -> data |> Common.create chat)
-        |> Result.bind (fun data -> client |> Command.Json.save Name data)
-        |> async.Return
+        let findManyBySubscriptions (subscriptionIds: RequestId seq) client =
+            let subscriptionIds = subscriptionIds |> Seq.map _.StringValue |> Set.ofSeq
 
-    let tryFindById (id: ChatId) client =
-        client
-        |> loadData
-        |> Result.map (Seq.tryFind (fun x -> x.Id = id.Value))
-        |> Result.bind (function
-            | None -> None |> Ok
-            | Some chat -> chat.ToDomain() |> Result.map Some)
-        |> async.Return
+            client
+            |> loadData
+            |> Result.map (Seq.filter (fun x -> x.Subscriptions |> Seq.exists subscriptionIds.Contains))
+            |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
+            |> async.Return
+
+    module Command =
+        let create chat client =
+            client
+            |> loadData
+            |> Result.bind (Common.create chat)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.map (fun _ -> chat)
+            |> async.Return
+
+        let update chat client =
+            client
+            |> loadData
+            |> Result.bind (Common.update chat)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.map (fun _ -> chat)
+            |> async.Return
+
+        let createOrUpdate chat client =
+            client
+            |> loadData
+            |> Result.bind (fun data ->
+                match data |> Seq.exists (fun x -> x.Id = chat.Id.Value) with
+                | true -> data |> Common.update chat
+                | false -> data |> Common.create chat)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.map (fun _ -> chat)
+            |> async.Return
 
 module private FileSystem =
     open Persistence.FileSystem
 
     let private loadData = Query.Json.get<ChatEntity>
 
-    let create chat client =
-        client
-        |> loadData
-        |> ResultAsync.bind (Common.create chat)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+    module Query =
+        let tryFindById (id: ChatId) client =
+            client
+            |> loadData
+            |> ResultAsync.map (Seq.tryFind (fun x -> x.Id = id.Value))
+            |> ResultAsync.bind (function
+                | None -> None |> Ok
+                | Some chat -> chat.ToDomain() |> Result.map Some)
 
-    let update chat client =
-        client
-        |> loadData
-        |> ResultAsync.bind (Common.update chat)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+        let findManyBySubscription (subscriptionId: RequestId) client =
+            client
+            |> loadData
+            |> ResultAsync.map (
+                Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y = subscriptionId.StringValue))
+            )
+            |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
 
-    let createOrUpdate chat client =
-        client
-        |> loadData
-        |> ResultAsync.bind (fun data ->
-            match data |> Seq.exists (fun x -> x.Id = chat.Id.Value) with
-            | true -> data |> Common.update chat
-            | false -> data |> Common.create chat)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+        let findManyBySubscriptions (subscriptionIds: RequestId seq) client =
+            let subscriptionIds = subscriptionIds |> Seq.map _.StringValue |> Set.ofSeq
 
-    let tryFindById (id: ChatId) client =
-        client
-        |> loadData
-        |> ResultAsync.map (Seq.tryFind (fun x -> x.Id = id.Value))
-        |> ResultAsync.bind (function
-            | None -> None |> Ok
-            | Some chat -> chat.ToDomain() |> Result.map Some)
+            client
+            |> loadData
+            |> ResultAsync.map (Seq.filter (fun x -> x.Subscriptions |> Seq.exists subscriptionIds.Contains))
+            |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
+
+    module Command =
+        let create chat client =
+            client
+            |> loadData
+            |> ResultAsync.bind (Common.create chat)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+            |> ResultAsync.map (fun _ -> chat)
+
+        let update chat client =
+            client
+            |> loadData
+            |> ResultAsync.bind (Common.update chat)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+            |> ResultAsync.map (fun _ -> chat)
+
+        let createOrUpdate chat client =
+            client
+            |> loadData
+            |> ResultAsync.bind (fun data ->
+                match data |> Seq.exists (fun x -> x.Id = chat.Id.Value) with
+                | true -> data |> Common.update chat
+                | false -> data |> Common.create chat)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+            |> ResultAsync.map (fun _ -> chat)
 
 let private toPersistenceStorage storage =
     storage
@@ -150,25 +194,37 @@ let init storageType =
 module Query =
     let tryFindById chatId storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.tryFindById chatId
-        | Storage.FileSystem client -> client |> FileSystem.tryFindById chatId
+        | Storage.InMemory client -> client |> InMemory.Query.tryFindById chatId
+        | Storage.FileSystem client -> client |> FileSystem.Query.tryFindById chatId
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    let findManyBySubscription subscriptionId storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Query.findManyBySubscription subscriptionId
+        | Storage.FileSystem client -> client |> FileSystem.Query.findManyBySubscription subscriptionId
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    let findManyBySubscriptions subscriptionIds storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Query.findManyBySubscriptions subscriptionIds
+        | Storage.FileSystem client -> client |> FileSystem.Query.findManyBySubscriptions subscriptionIds
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
 module Command =
     let create chat storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.create chat
-        | Storage.FileSystem client -> client |> FileSystem.create chat
+        | Storage.InMemory client -> client |> InMemory.Command.create chat
+        | Storage.FileSystem client -> client |> FileSystem.Command.create chat
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
     let update chat storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.update chat
-        | Storage.FileSystem client -> client |> FileSystem.update chat
+        | Storage.InMemory client -> client |> InMemory.Command.update chat
+        | Storage.FileSystem client -> client |> FileSystem.Command.update chat
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
     let createOrUpdate chat storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.createOrUpdate chat
-        | Storage.FileSystem client -> client |> FileSystem.createOrUpdate chat
+        | Storage.InMemory client -> client |> InMemory.Command.createOrUpdate chat
+        | Storage.FileSystem client -> client |> FileSystem.Command.createOrUpdate chat
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

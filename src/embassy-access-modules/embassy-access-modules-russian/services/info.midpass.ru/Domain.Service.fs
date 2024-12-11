@@ -1,9 +1,10 @@
-﻿module EA.Embassies.Russian.Midpass.Domain
+﻿[<AutoOpen>]
+module EA.Embassies.Russian.Midpass.Domain.Service
 
 open System
 open EA.Core.Domain
 
-type ServiceRequest =
+type MidpassRequest =
     { Embassy: EmbassyGraph
       StatementNumber: string }
 
@@ -20,4 +21,4 @@ type ServiceRequest =
           Appointments = Set.empty
           Modified = DateTime.UtcNow }
 
-type Service = { Request: ServiceRequest }
+type MidpassService = { Request: MidpassRequest }

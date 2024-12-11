@@ -1,87 +1,78 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.CommandHandler.Dependencies
 
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Telegram.Domain
 open Web.Telegram.Domain
-open EA.Telegram.Initializer
+open EA.Telegram.Dependencies
 
 type GetService =
-    { ConsumerDeps: ConsumerDeps
+    { Consumer: Consumer.Dependencies
       getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
 
-    static member create(deps: ConsumerDeps) =
+    static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let getEmbassiesGraph () =
-                deps.Configuration |> EA.Core.Settings.Embassy.getGraph
-
             return
-                { ConsumerDeps = deps
-                  getEmbassiesGraph = getEmbassiesGraph }
+                { Consumer = deps
+                  getEmbassiesGraph = deps.Persistence.getEmbassyGraph }
         }
 
 type SetService =
-    { ConsumerDeps: ConsumerDeps
+    { ConsumerDeps: Consumer.Dependencies
       getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
 
-    static member create (deps: ConsumerDeps) =
+    static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let getEmbassiesGraph () =
-                deps.Configuration |> EA.Core.Settings.Embassy.getGraph
-
             return
                 { ConsumerDeps = deps
-                  getEmbassiesGraph = getEmbassiesGraph }
+                  getEmbassiesGraph = deps.Persistence.getEmbassyGraph }
         }
 
 type GetEmbassies =
-    { ConsumerDeps: ConsumerDeps
+    { ConsumerDeps: Consumer.Dependencies
       getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
 
-    static member create (deps: ConsumerDeps) =
+    static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let getEmbassiesGraph () =
-                deps.Configuration |> EA.Core.Settings.Embassy.getGraph
-
             return
                 { ConsumerDeps = deps
-                  getEmbassiesGraph = getEmbassiesGraph }
+                  getEmbassiesGraph = deps.Persistence.getEmbassyGraph }
         }
 
 type GetUserEmbassies =
-    { ConsumerDeps: ConsumerDeps
+    { ConsumerDeps: Consumer.Dependencies
       getChatEmbassies: ChatId -> Async<Result<EmbassyGraph list, Error'>>
       getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
 
-    static member create (deps: ConsumerDeps) =
+    static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
             let! chatStorage = deps.Persistence.initChatStorage ()
             let! requestStorage = deps.Persistence.initRequestStorage ()
-            let getEmbassiesGraph  = deps.Persistence.getEmbassyGraph
-            
+
             let getChat chatId =
                 chatStorage
-                |> EA.Telegram.DataAccess.Chat.tryFindById chatId
+                |> EA.Telegram.DataAccess.Chat.Query.tryFindById chatId
                 |> ResultAsync.bind (function
                     | Some chat -> Ok chat
                     | None -> $"{chatId}" |> NotFound |> Error)
 
             let getEmbassies chat =
                 requestStorage
-                |> EA.Core.DataAccess.Request.findEmbassiesByRequestIds chat.Subscriptions
+                |> EA.Core.DataAccess.Request.Query.Embassy.findManyByRequestIds chat.Subscriptions
 
             let getChatEmbassies chatId =
                 getChat chatId |> ResultAsync.bindAsync getEmbassies
@@ -89,5 +80,5 @@ type GetUserEmbassies =
             return
                 { ConsumerDeps = deps
                   getChatEmbassies = getChatEmbassies
-                  getEmbassiesGraph = getEmbassiesGraph }
+                  getEmbassiesGraph = deps.Persistence.getEmbassyGraph }
         }

@@ -2,19 +2,21 @@
 
 open System
 open System.Text.RegularExpressions
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Infrastructure.Parser
+open Web.Http.Domain
 open EA.Embassies.Russian.Kdmid.Html
 open EA.Embassies.Russian.Kdmid.Domain
 
 let private createHttpRequest formData queryParams =
 
     let request =
-        { Web.Http.Domain.Request.Path = $"/queue/orderinfo.aspx?%s{queryParams}"
-          Web.Http.Domain.Request.Headers = None }
+        { Path = $"/queue/orderinfo.aspx?%s{queryParams}"
+          Headers = None }
 
-    let content: Web.Http.Domain.RequestContent =
-        Web.Http.Domain.String
+    let content: RequestContent =
+        String
             {| Data = formData
                Encoding = Text.Encoding.ASCII
                MediaType = "application/x-www-form-urlencoded" |}
@@ -40,17 +42,17 @@ let private httpResponseHasInconsistentState page =
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some Constants.ErrorCode.CONFIRMATION_EXISTS }
+                          Code = Constants.ErrorCode.CONFIRMATION_EXISTS |> Custom |> Some }
                 | text when text |> has "Ваша заявка требует подтверждения" ->
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some Constants.ErrorCode.NOT_CONFIRMED }
+                          Code = Constants.ErrorCode.NOT_CONFIRMED |> Custom |> Some }
                 | text when text |> has "Заявка удалена" ->
                     Error
                     <| Operation
                         { Message = text
-                          Code = Some Constants.ErrorCode.REQUEST_DELETED }
+                          Code = Constants.ErrorCode.REQUEST_DELETED |> Custom |> Some }
                 | _ -> Ok page
             | _ -> Ok page)
 

@@ -1,8 +1,10 @@
 ﻿module internal EA.Embassies.Russian.Kdmid.Web.ConfirmationPage
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Infrastructure.Parser
+open Web.Http.Domain
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Html
@@ -49,11 +51,11 @@ let private handleRequestConfirmation (request: Request) =
 let private createHttpRequest formData queryParamsId =
 
     let request =
-        { Web.Http.Domain.Request.Path = $"/queue/SPCalendar.aspx?bjo=%s{queryParamsId}"
-          Web.Http.Domain.Request.Headers = None }
+        { Path = $"/queue/SPCalendar.aspx?bjo=%s{queryParamsId}"
+          Headers = None }
 
-    let content: Web.Http.Domain.RequestContent =
-        Web.Http.Domain.String
+    let content: RequestContent =
+        String
             {| Data = formData
                Encoding = Text.Encoding.ASCII
                MediaType = "application/x-www-form-urlencoded" |}

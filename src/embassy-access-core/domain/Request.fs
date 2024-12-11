@@ -12,6 +12,8 @@ type RequestId =
         match this with
         | RequestId id -> id
 
+    member this.StringValue = this.Value |> string
+
     static member create value =
         match value with
         | AP.IsGuid id -> RequestId id |> Ok

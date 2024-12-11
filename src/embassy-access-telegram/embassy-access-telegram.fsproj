@@ -5,11 +5,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="domain\Common.fs" />
+        <Compile Include="domain\Constants.fs" />
         <Compile Include="domain\Chat.fs" />
         <Compile Include="data_access\Chat.fs" />
+        <Compile Include="dependencies\Persistence.fs" />
+        <Compile Include="dependencies\Consumer.fs" />
+        <Compile Include="dependencies\Producer.fs" />
         <Compile Include="Command.fs"/>
-        <Compile Include="Initializer.fs" />
         <Compile Include="embassy_handlers\Russian.Dependencies.fs" />
         <Compile Include="embassy_handlers\Russian.Core.fs" />
         <Compile Include="CommandHandler.Dependencies.fs" />

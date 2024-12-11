@@ -1,30 +1,30 @@
 ﻿module EA.Telegram.CommandHandler.Core
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
-open EA.Core.Domain.Constants
-open EA.Telegram.Initializer
+open EA.Telegram.Dependencies
 
 let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyGraph>) =
-    fun (deps: ConsumerDeps) ->
+    fun (deps: Consumer.Dependencies) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
-            | EmbassyGraph.RUSSIAN ->
+            | "Russian" ->
                 Russian.Dependencies.GetService.create deps
                 |> ResultAsync.wrap (Russian.Core.getService (embassyNode.FullId, serviceIdOpt))
             | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
         | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
 let private trySetService serviceId payload (embassyNode: Graph.Node<EmbassyGraph>) =
-    fun (deps: ConsumerDeps) ->
+    fun (deps: Consumer.Dependencies) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
-            | EmbassyGraph.RUSSIAN ->
+            | "Russian" ->
                 Russian.Dependencies.SetService.create deps
                 |> ResultAsync.wrap (Russian.Core.setService (serviceId, embassyNode.Value, payload))
             | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
@@ -38,7 +38,7 @@ let getService (embassyId, serviceIdOpt) =
             | Some node -> Ok node
             | None -> $"EmbassyId {embassyId.Value}" |> NotFound |> Error)
         |> ResultAsync.map (tryGetService serviceIdOpt)
-        |> ResultAsync.bindAsync (fun run -> run deps.ConsumerDeps)
+        |> ResultAsync.bindAsync (fun run -> run deps.Consumer)
 
 let setService (embassyId, serviceId, payload) =
     fun (deps: Dependencies.SetService) ->

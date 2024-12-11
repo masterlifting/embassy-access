@@ -31,18 +31,29 @@ module private Kdmid =
         result {
             let! filePath = configuration |> Persistence.Storage.getConnectionString "FileSystem"
 
-            let! storage =
+            let initRequestStorage () =
                 filePath
                 |> EA.Core.DataAccess.Request.FileSystem
                 |> EA.Core.DataAccess.Request.init
 
+            let initChatStorage () =
+                filePath
+                |> EA.Telegram.DataAccess.Chat.FileSystem
+                |> EA.Telegram.DataAccess.Chat.init
+
+            let notificationDeps: EA.Telegram.Dependencies.Producer.Dependencies =
+                { initChatStorage = initChatStorage
+                  initRequestStorage = initRequestStorage }
+
             let notify notification =
                 notification
-                |> EA.Telegram.Producer.Produce.notification configuration ct
+                |> EA.Telegram.Producer.Produce.notification notificationDeps ct
                 |> Async.map ignore
 
+            let! requestStorage = initRequestStorage ()
+
             let pickOrder requests =
-                let deps = Dependencies.create storage ct
+                let deps = Dependencies.create requestStorage ct
                 let timeZone = schedule.TimeZone |> float
 
                 let order =
@@ -52,7 +63,7 @@ module private Kdmid =
                 order |> API.Order.Kdmid.pick deps
 
             let start dataAccessRequestQuery =
-                storage
+                requestStorage
                 |> dataAccessRequestQuery
                 |> ResultAsync.mapError (fun error -> [ error ])
                 |> ResultAsync.bindAsync pickOrder

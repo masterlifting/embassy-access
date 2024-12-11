@@ -1,11 +1,12 @@
 ﻿module EA.Telegram.Consumer
 
 open System
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Consumer
 open EA.Telegram.Domain
-open EA.Telegram.Initializer
+open EA.Telegram.Dependencies
 
 module private Consume =
     open EA.Telegram.CommandHandler
@@ -63,19 +64,21 @@ let private create ct cfg client =
         | Message msg ->
             match msg with
             | Text dto ->
-                ConsumerDeps.create dto cfg ct
+                Persistence.Dependencies.create cfg
+                |> Result.map (Consumer.Dependencies.create dto cfg ct)
                 |> ResultAsync.wrap (client |> Consume.text dto.Value)
                 |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
             | _ -> $"{msg}" |> NotSupported |> Error |> async.Return
         | CallbackQuery dto ->
-            ConsumerDeps.create dto cfg ct
+            Persistence.Dependencies.create cfg
+            |> Result.map (Consumer.Dependencies.create dto cfg ct)
             |> ResultAsync.wrap (client |> Consume.callback dto.Value)
             |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
         | _ -> $"{data}" |> NotSupported |> Error |> async.Return
 
 let start ct cfg =
     Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
-    |> Web.Telegram.Domain.EnvKey
+    |> Web.Telegram.Domain.Client.EnvKey
     |> Web.Telegram.Client.init
-    |> Result.map (fun client -> Web.Domain.Consumer.Telegram(client, create ct cfg client))
+    |> Result.map (fun client -> Web.Client.Consumer.Telegram(client, create ct cfg client))
     |> Web.Client.consume ct

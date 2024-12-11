@@ -1,7 +1,8 @@
 ﻿module EA.Telegram.Command
 
 open EA.Core.Domain
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Infrastructure.Logging
 
 [<Literal>]
