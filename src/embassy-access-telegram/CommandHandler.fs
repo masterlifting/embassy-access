@@ -6,10 +6,10 @@ open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
-open EA.Telegram.Dependencies
+open EA.Telegram.Dependencies.CommandHandler
 
 let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyGraph>) =
-    fun (deps: Consumer.Dependencies) ->
+    fun (deps: Core.Dependencies) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
@@ -20,7 +20,7 @@ let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyGraph>) =
         | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
 let private trySetService serviceId payload (embassyNode: Graph.Node<EmbassyGraph>) =
-    fun (deps: Consumer.Dependencies) ->
+    fun (deps: Core.Dependencies) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
@@ -31,7 +31,7 @@ let private trySetService serviceId payload (embassyNode: Graph.Node<EmbassyGrap
         | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
 let getService (embassyId, serviceIdOpt) =
-    fun (deps: Dependencies.GetService) ->
+    fun (deps: Core.Dependencies) ->
         deps.getEmbassiesGraph ()
         |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
         |> ResultAsync.bind (function
@@ -41,7 +41,7 @@ let getService (embassyId, serviceIdOpt) =
         |> ResultAsync.bindAsync (fun run -> run deps.Consumer)
 
 let setService (embassyId, serviceId, payload) =
-    fun (deps: Dependencies.SetService) ->
+    fun (deps: Core.Dependencies) ->
         deps.getEmbassiesGraph ()
         |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
         |> ResultAsync.bind (function
@@ -51,7 +51,7 @@ let setService (embassyId, serviceId, payload) =
         |> ResultAsync.bindAsync (fun run -> run deps.ConsumerDeps)
 
 let getEmbassies embassyIdOpt =
-    fun (deps: Dependencies.GetEmbassies) ->
+    fun (deps: Core.Dependencies) ->
 
         let inline createButtons buttonName (nodes: Graph.Node<EmbassyGraph> seq) =
             nodes
@@ -85,7 +85,7 @@ let getEmbassies embassyIdOpt =
                     | nodes -> nodes |> createButtons node.Value.Description |> Ok |> async.Return))
 
 let getUserEmbassies embassyIdOpt =
-    fun (deps: Dependencies.GetUserEmbassies) ->
+    fun (deps: Core.Dependencies) ->
 
         let inline createButtons buttonName (embassies: EmbassyGraph seq) (nodes: Graph.Node<EmbassyGraph> seq) =
             let embassyIds = embassies |> Seq.map _.Id |> Set

@@ -1,4 +1,4 @@
-﻿module EA.Telegram.CommandHandler.Russian.Core
+﻿module EA.Telegram.CommandHandler.Russian
 
 open System
 open EA.Core.Domain
@@ -8,9 +8,10 @@ open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Telegram
+open EA.Telegram.Dependencies.CommandHandler
 
 let internal getService (embassyId, serviceIdOpt) =
-    fun (deps: Dependencies.GetService) ->
+    fun (deps: Russian.Dependencies) ->
 
         let inline createButtons buttonName (nodes: Graph.Node<ServiceGraph> seq) =
             nodes
@@ -22,7 +23,7 @@ let internal getService (embassyId, serviceIdOpt) =
                   Data = buttons }
                 |> Buttons.create (deps.ChatId, deps.MessageId |> Replace)
 
-        deps.getServiceGraph ()
+        deps.ServiceGraph
         |> ResultAsync.bind (fun graph ->
             match serviceIdOpt with
             | None -> graph.Children |> createButtons graph.Value.Description |> Ok
@@ -48,7 +49,7 @@ let internal getService (embassyId, serviceIdOpt) =
                     | services -> services |> createButtons node.Value.Description))
 
 let internal setService (serviceId, embassy, payload) =
-    fun (deps: Dependencies.SetService) ->
+    fun (deps: Russian.Dependencies) ->
 
         let inline createOrUpdateChat (request: Request) =
             deps.createOrUpdateChat
@@ -64,7 +65,7 @@ let internal setService (serviceId, embassy, payload) =
 
             serviceName |> serviceRequest.CreateRequest |> deps.createOrUpdateRequest
 
-        deps.getServiceGraph ()
+        deps.ServiceGraph
         |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
         |> ResultAsync.bind (function
             | Some node -> Ok node

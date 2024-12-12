@@ -5,12 +5,14 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Configuration
 open EA.Core.Domain
+open EA.Telegram.DataAccess
+open EA.Core.DataAccess
 
 type Dependencies =
-    { initChatStorage: unit -> Result<EA.Telegram.DataAccess.Chat.ChatStorage, Error'>
-      initRequestStorage: unit -> Result<EA.Core.DataAccess.Request.RequestStorage, Error'>
-      getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>>
-      getRussianServiceGraph: unit -> Async<Result<Graph.Node<ServiceGraph>, Error'>> }
+    { initChatStorage: unit -> Result<Chat.ChatStorage, Error'>
+      initRequestStorage: unit -> Result<Request.RequestStorage, Error'>
+      initServiceGraphStorage: string -> Result<ServiceGraph.ServiceGraphStorage, Error'>
+      getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
 
     static member create cfg =
         let result = ResultBuilder()
@@ -20,32 +22,27 @@ type Dependencies =
             let! filePath = cfg |> Persistence.Storage.getConnectionString "FileSystem"
 
             let initializeChatStorage () =
-                filePath
-                |> EA.Telegram.DataAccess.Chat.FileSystem
-                |> EA.Telegram.DataAccess.Chat.init
+                filePath |> Chat.FileSystem |> Chat.init
 
             let initializeRequestStorage () =
-                filePath
-                |> EA.Core.DataAccess.Request.FileSystem
-                |> EA.Core.DataAccess.Request.init
+                filePath |> Request.FileSystem |> Request.init
 
             let getEmbassyGraph () =
                 { SectionName = "Embassies"
                   Configuration = cfg }
-                |> EA.Core.DataAccess.EmbassyGraph.Configuration
-                |> EA.Core.DataAccess.EmbassyGraph.init
-                |> ResultAsync.wrap EA.Core.DataAccess.EmbassyGraph.get
+                |> EmbassyGraph.Configuration
+                |> EmbassyGraph.init
+                |> ResultAsync.wrap EmbassyGraph.get
 
-            let getRussianServiceGraph () =
-                { SectionName = "RussianServices"
+            let initServiceGraphStorage sectionName =
+                { SectionName = sectionName
                   Configuration = cfg }
-                |> EA.Core.DataAccess.ServiceGraph.Configuration
-                |> EA.Core.DataAccess.ServiceGraph.init
-                |> ResultAsync.wrap EA.Core.DataAccess.ServiceGraph.get
+                |> ServiceGraph.Configuration
+                |> ServiceGraph.init
 
             return
                 { initChatStorage = initializeChatStorage
                   initRequestStorage = initializeRequestStorage
                   getEmbassyGraph = getEmbassyGraph
-                  getRussianServiceGraph = getRussianServiceGraph }
+                  initServiceGraphStorage = initServiceGraphStorage }
         }

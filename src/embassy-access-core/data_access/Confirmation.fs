@@ -3,7 +3,7 @@
 open System
 open EA.Core.Domain
 
-type internal ConfirmationEntity() =
+type ConfirmationEntity() =
     member val Description = String.Empty with get, set
 
     member this.ToDomain() = { Description = this.Description }

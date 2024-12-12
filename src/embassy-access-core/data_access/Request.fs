@@ -20,7 +20,7 @@ type StorageType =
     | InMemory
     | FileSystem of filepath: string
 
-type internal RequestEntity() =
+type RequestEntity() =
     member val Id = Guid.Empty with get, set
     member val Service = ServiceEntity() with get, set
     member val Attempt = 0 with get, set

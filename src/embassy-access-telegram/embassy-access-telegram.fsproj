@@ -11,11 +11,11 @@
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\Consumer.fs" />
         <Compile Include="dependencies\Producer.fs" />
+        <Compile Include="dependencies\CommandHandler.Core.fs" />
+        <Compile Include="dependencies\CommandHandler.Russian.fs" />
         <Compile Include="Command.fs"/>
-        <Compile Include="embassy_handlers\Russian.Dependencies.fs" />
-        <Compile Include="embassy_handlers\Russian.Core.fs" />
-        <Compile Include="CommandHandler.Dependencies.fs" />
-        <Compile Include="CommandHandler.Core.fs" />
+        <Compile Include="embassy_handlers\CommandHandler.Russian.fs" />
+        <Compile Include="CommandHandler.fs" />
         <Compile Include="Consumer.fs"/>
         <Compile Include="Producer.fs"/>
     </ItemGroup>

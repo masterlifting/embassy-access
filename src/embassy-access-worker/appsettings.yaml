@@ -377,8 +377,8 @@ Embassies:
               Name: Berlin
 
 
-RussianEmbassy:
-  Id: EMB
+RussianServices:
+  Id: SRV
   Name: Посольство РФ
   Description: Выберите услугу посольства РФ
   Children:

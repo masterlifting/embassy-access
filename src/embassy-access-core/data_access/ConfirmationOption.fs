@@ -13,7 +13,7 @@ let private LAST_AVAILABLE = nameof LastAvailable
 [<Literal>]
 let private DATE_TIME_RANGE = nameof DateTimeRange
 
-type internal ConfirmationOptionEntity() =
+type ConfirmationOptionEntity() =
 
     member val Type = String.Empty with get, set
     member val DateStart: Nullable<DateTime> = Nullable() with get, set

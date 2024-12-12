@@ -14,7 +14,7 @@ let private MANUAL = nameof Manual
 [<Literal>]
 let private AUTO = nameof Auto
 
-type internal ConfirmationStateEntity() =
+type ConfirmationStateEntity() =
 
     member val Type = String.Empty with get, set
     member val ConfirmationOption: ConfirmationOptionEntity option = None with get, set

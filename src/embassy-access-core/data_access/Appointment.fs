@@ -4,7 +4,7 @@ open System
 open EA.Core.Domain
 open EA.Core.DataAccess.Confirmation
 
-type internal AppointmentEntity() =
+type AppointmentEntity() =
     member val Id = Guid.Empty with get, set
     member val Value = String.Empty with get, set
     member val Confirmation: ConfirmationEntity option = None with get, set

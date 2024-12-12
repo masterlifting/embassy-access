@@ -17,7 +17,7 @@ type StorageType =
     | InMemory
     | FileSystem of filepath: string
 
-type internal ChatEntity() =
+type ChatEntity() =
     member val Id = 0L with get, set
     member val Subscriptions = List.empty<string> with get, set
 

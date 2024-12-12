@@ -9,7 +9,6 @@ open EA.Telegram.Domain
 open EA.Telegram.Dependencies
 
 module private Consume =
-    open EA.Telegram.CommandHandler
     open EA.Telegram.CommandHandler.Core
 
     let text value client =
@@ -22,16 +21,13 @@ module private Consume =
                 | Some cmd ->
                     match cmd with
                     | Command.GetEmbassies ->
-                        Dependencies.GetEmbassies.create deps
-                        |> ResultAsync.wrap (getEmbassies None)
+                        getEmbassies None deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | Command.GetUserEmbassies ->
-                        Dependencies.GetUserEmbassies.create deps
-                        |> ResultAsync.wrap (getUserEmbassies None)
+                        getUserEmbassies None deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | Command.SetService(embassyId, serviceId, payload) ->
-                        Dependencies.SetService.create deps
-                        |> ResultAsync.wrap (setService (embassyId, serviceId, payload))
+                        setService (embassyId, serviceId, payload) deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | _ -> value |> NotSupported |> Error |> async.Return
 
@@ -45,16 +41,13 @@ module private Consume =
                 | Some cmd ->
                     match cmd with
                     | Command.GetEmbassy embassyId ->
-                        Dependencies.GetEmbassies.create deps
-                        |> ResultAsync.wrap (getEmbassies (Some embassyId))
+                        getEmbassies (Some embassyId) deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | Command.GetUserEmbassy embassyId ->
-                        Dependencies.GetUserEmbassies.create deps
-                        |> ResultAsync.wrap (getUserEmbassies (Some embassyId))
+                        getUserEmbassies (Some embassyId) deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | Command.GetService(embassyId, serviceId) ->
-                        Dependencies.GetService.create deps
-                        |> ResultAsync.wrap (getService (embassyId, Some serviceId))
+                        getService (embassyId, Some serviceId) deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | _ -> value |> NotSupported |> Error |> async.Return
 
@@ -66,12 +59,14 @@ let private create ct cfg client =
             | Text dto ->
                 Persistence.Dependencies.create cfg
                 |> Result.map (Consumer.Dependencies.create dto cfg ct)
+                |> Result.bind CommandHandler.Core.Dependencies.create
                 |> ResultAsync.wrap (client |> Consume.text dto.Value)
                 |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
             | _ -> $"{msg}" |> NotSupported |> Error |> async.Return
         | CallbackQuery dto ->
             Persistence.Dependencies.create cfg
             |> Result.map (Consumer.Dependencies.create dto cfg ct)
+            |> Result.bind CommandHandler.Core.Dependencies.create
             |> ResultAsync.wrap (client |> Consume.callback dto.Value)
             |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
         | _ -> $"{data}" |> NotSupported |> Error |> async.Return

@@ -4,7 +4,7 @@ open System
 open Infrastructure.Domain
 open EA.Core.Domain
 
-type internal ServiceEntity() =
+type ServiceEntity() =
     member val Name = String.Empty with get, set
     member val Payload = String.Empty with get, set
     member val EmbassyId = String.Empty with get, set

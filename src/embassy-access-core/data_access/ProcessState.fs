@@ -18,7 +18,7 @@ let private COMPLETED = nameof Completed
 [<Literal>]
 let private FAILED = nameof Failed
 
-type internal ProcessStateEntity() =
+type ProcessStateEntity() =
 
     member val Type = String.Empty with get, set
     member val Error: ErrorEntity option = None with get, set

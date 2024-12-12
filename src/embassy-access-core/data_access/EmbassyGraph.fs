@@ -14,7 +14,7 @@ type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Type
 
 type StorageType = Configuration of Configuration.Domain.Client
 
-type internal EmbassyGraphEntity() =
+type EmbassyGraphEntity() =
     member val Id = String.Empty with get, set
     member val Name = String.Empty with get, set
     member val Description: string option = None with get, set
