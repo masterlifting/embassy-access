@@ -41,7 +41,7 @@ module private Kdmid =
                 |> EA.Telegram.DataAccess.Chat.FileSystem
                 |> EA.Telegram.DataAccess.Chat.init
 
-            let notificationDeps: EA.Telegram.Dependencies.Producer.Dependencies =
+            let notificationDeps: EA.Telegram.Dependencies.Producer.Core.Dependencies =
                 { initChatStorage = initChatStorage
                   initRequestStorage = initRequestStorage }
 

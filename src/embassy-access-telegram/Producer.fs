@@ -14,43 +14,23 @@ let private send ct message =
     |> ResultAsync.wrap (fun client -> message |> Web.Telegram.Producer.produce ct client)
     |> ResultAsync.map ignore
 
-let private spread chats ct createMsg =
-    chats
-    |> Seq.map (fun chat -> createMsg chat.Id |> send ct)
-    |> Async.Parallel
-    |> Async.map Result.choose
-    |> ResultAsync.map ignore
+let private spread ct =
+    ResultAsync.bindAsync (fun messages ->
+        messages
+        |> Seq.map (send ct)
+        |> Async.Parallel
+        |> Async.map Result.choose
+        |> ResultAsync.map ignore)
 
 module Produce =
-    open EA.Telegram.DataAccess
-    open EA.Core.DataAccess
+    open EA.Telegram.Handlers.Producer
 
-    let private getSubscriptionChats requestId (deps: Dependencies.Producer.Dependencies) =
-        deps.initChatStorage ()
-        |> ResultAsync.wrap (Chat.Query.findManyBySubscription requestId)
-
-    let private getEmbassyChats (embassy: EmbassyGraph) (deps: Dependencies.Producer.Dependencies) =
-        deps.initRequestStorage ()
-        |> ResultAsync.wrap (Request.Query.findManyByEmbassyName embassy.Name)
-        |> ResultAsync.map (Seq.map _.Id)
-        |> ResultAsync.bindAsync (fun subscriptions ->
-            deps.initChatStorage ()
-            |> ResultAsync.wrap (Chat.Query.findManyBySubscriptions subscriptions))
-
-    let notification deps ct =
+    let notification dependencies ct =
         function
         | Appointments(embassy, appointments) ->
-            getEmbassyChats embassy deps
-            |> ResultAsync.bindAsync (fun chats ->
-                (embassy, appointments)
-                |> EA.Telegram.CommandHandler.Core.appointments
-                |> spread chats ct)
+            dependencies |> Core.sendAppointments (embassy, appointments) |> spread ct
         | Confirmations(requestId, embassy, confirmations) ->
-            getSubscriptionChats requestId deps
-            |> ResultAsync.bindAsync (fun chats ->
-                (embassy, confirmations)
-                |> EA.Telegram.CommandHandler.Core.confirmation
-                |> spread chats ct)
-        | Fail(requestId, error) ->
-            getSubscriptionChats requestId deps
-            |> ResultAsync.bindAsync (fun chats -> error |> Web.Telegram.Producer.Text.createError |> spread chats ct)
+            dependencies
+            |> Core.sendConfirmation (requestId, embassy, confirmations)
+            |> spread ct
+        | Fail(requestId, error) -> dependencies |> Core.sendError (requestId, error) |> spread ct

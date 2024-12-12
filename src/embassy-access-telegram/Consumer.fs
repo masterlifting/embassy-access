@@ -7,9 +7,10 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Consumer
 open EA.Telegram.Domain
 open EA.Telegram.Dependencies
+open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Handlers.Consumer
 
 module private Consume =
-    open EA.Telegram.CommandHandler.Core
 
     let text value client =
         fun deps ->
@@ -21,13 +22,13 @@ module private Consume =
                 | Some cmd ->
                     match cmd with
                     | Command.GetEmbassies ->
-                        getEmbassies None deps
+                        Core.getEmbassies None deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | Command.GetUserEmbassies ->
-                        getUserEmbassies None deps
+                        Core.getUserEmbassies None deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | Command.SetService(embassyId, serviceId, payload) ->
-                        setService (embassyId, serviceId, payload) deps
+                        Core.setService (embassyId, serviceId, payload) deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | _ -> value |> NotSupported |> Error |> async.Return
 
@@ -41,13 +42,13 @@ module private Consume =
                 | Some cmd ->
                     match cmd with
                     | Command.GetEmbassy embassyId ->
-                        getEmbassies (Some embassyId) deps
+                        Core.getEmbassies (Some embassyId) deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | Command.GetUserEmbassy embassyId ->
-                        getUserEmbassies (Some embassyId) deps
+                        Core.getUserEmbassies (Some embassyId) deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | Command.GetService(embassyId, serviceId) ->
-                        getService (embassyId, Some serviceId) deps
+                        Core.getService (embassyId, Some serviceId) deps
                         |> produceResult deps.ChatId deps.CancellationToken client
                     | _ -> value |> NotSupported |> Error |> async.Return
 
@@ -58,15 +59,13 @@ let private create ct cfg client =
             match msg with
             | Text dto ->
                 Persistence.Dependencies.create cfg
-                |> Result.map (Consumer.Dependencies.create dto cfg ct)
-                |> Result.bind CommandHandler.Core.Dependencies.create
+                |> Result.bind (Core.Dependencies.create dto ct)
                 |> ResultAsync.wrap (client |> Consume.text dto.Value)
                 |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
             | _ -> $"{msg}" |> NotSupported |> Error |> async.Return
         | CallbackQuery dto ->
             Persistence.Dependencies.create cfg
-            |> Result.map (Consumer.Dependencies.create dto cfg ct)
-            |> Result.bind CommandHandler.Core.Dependencies.create
+            |> Result.bind (Core.Dependencies.create dto ct)
             |> ResultAsync.wrap (client |> Consume.callback dto.Value)
             |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
         | _ -> $"{data}" |> NotSupported |> Error |> async.Return

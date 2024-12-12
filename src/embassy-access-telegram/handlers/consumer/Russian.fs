@@ -1,4 +1,5 @@
-﻿module EA.Telegram.CommandHandler.Russian
+﻿[<RequireQualifiedAccess>]
+module EA.Telegram.Handlers.Comsumer.Russian
 
 open System
 open EA.Core.Domain
@@ -8,7 +9,7 @@ open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Telegram
-open EA.Telegram.Dependencies.CommandHandler
+open EA.Telegram.Dependencies.Consumer
 
 let internal getService (embassyId, serviceIdOpt) =
     fun (deps: Russian.Dependencies) ->
