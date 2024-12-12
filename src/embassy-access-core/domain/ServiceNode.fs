@@ -1,12 +1,12 @@
 ﻿[<AutoOpen>]
-module EA.Core.Domain.EmbassyGraph
+module EA.Core.Domain.ServiceNode
 
 open Infrastructure.Domain
-open Infrastructure.Prelude
 
-type EmbassyGraph =
+type ServiceNode =
     { Id: Graph.NodeId
       Name: string
+      Instruction: string option
       Description: string option }
 
     interface Graph.INodeName with

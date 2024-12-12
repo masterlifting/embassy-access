@@ -18,8 +18,8 @@ type Dependencies =
       chatStorage: Chat.ChatStorage
       requestStorage: Request.RequestStorage
       initServiceGraphStorage: string -> Result<ServiceGraph.ServiceGraphStorage, Error'>
-      getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>>
-      getChatEmbassies: unit -> Async<Result<EmbassyGraph list, Error'>> }
+      getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
+      getChatEmbassies: unit -> Async<Result<EmbassyNode list, Error'>> }
 
     static member create (dto: Consumer.Dto<_>) ct (persistenceDeps: Persistence.Dependencies) =
         let result = ResultBuilder()

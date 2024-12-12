@@ -6,7 +6,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
 open Persistence
-open EA.Core.DataAccess.Service
+open EA.Core.DataAccess.RequestService
 open EA.Core.DataAccess.ProcessState
 open EA.Core.DataAccess.ConfirmationState
 open EA.Core.DataAccess.Appointment
@@ -22,7 +22,7 @@ type StorageType =
 
 type RequestEntity() =
     member val Id = Guid.Empty with get, set
-    member val Service = ServiceEntity() with get, set
+    member val Service = RequestServiceEntity() with get, set
     member val Attempt = 0 with get, set
     member val AttemptModified = DateTime.UtcNow with get, set
     member val ProcessState = ProcessStateEntity() with get, set

@@ -5,7 +5,7 @@ open System
 open EA.Core.Domain
 
 type MidpassRequest =
-    { Embassy: EmbassyGraph
+    { Embassy: EmbassyNode
       StatementNumber: string }
 
     member internal this.Create serviceName =

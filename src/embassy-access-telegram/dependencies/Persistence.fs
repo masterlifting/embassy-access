@@ -12,7 +12,7 @@ type Dependencies =
     { initChatStorage: unit -> Result<Chat.ChatStorage, Error'>
       initRequestStorage: unit -> Result<Request.RequestStorage, Error'>
       initServiceGraphStorage: string -> Result<ServiceGraph.ServiceGraphStorage, Error'>
-      getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyGraph>, Error'>> }
+      getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>> }
 
     static member create cfg =
         let result = ResultBuilder()

@@ -11,6 +11,7 @@ open EA.Embassies.Russian.Kdmid.Domain
 module private Fixture =
     open Web.Http.Domain.Response
     open Persistence.FileSystem
+    open EA.Embassies.Russian.Kdmid.Dependencies
 
     let httpRequestHeaders =
         Some
@@ -45,7 +46,7 @@ module private Fixture =
         |> ResultAsync.wrap Read.string
         |> ResultAsync.map (Option.defaultValue "")
 
-    let Dependencies =
+    let Dependencies: Order.Dependencies =
         { updateRequest = fun request -> async { return Ok request }
           getInitialPage = fun _ _ -> httpGetStringRequest "initial_page_response"
           getCaptcha = fun _ _ -> httpGetBytesRequest "captcha.png"
@@ -64,8 +65,8 @@ module private Fixture =
           Confirmation = Auto FirstAvailable }
 
     let IssueForeign =
-        { Service.Request = Request
-          Service.Dependencies = Dependencies }
+        { KdmidService.Request = Request
+          KdmidService.Dependencies = Dependencies }
 
 open Fixture
 
@@ -77,7 +78,7 @@ let private ``validation page should have an error`` =
 
         let service =
             { IssueForeign with
-                Service.Dependencies = dependencies }
+                KdmidService.Dependencies = dependencies }
             |> Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -97,7 +98,7 @@ let private ``validation page should have a confirmed request`` =
 
         let service =
             { IssueForeign with
-                Service.Dependencies = dependencies }
+                KdmidService.Dependencies = dependencies }
             |> Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -117,7 +118,7 @@ let private ``validation page should have a confirmation`` =
 
         let service =
             { IssueForeign with
-                Service.Dependencies = dependencies }
+                KdmidService.Dependencies = dependencies }
             |> Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -137,7 +138,7 @@ let private ``validation page should have a deleted request`` =
 
         let service =
             { IssueForeign with
-                Service.Dependencies = dependencies }
+                KdmidService.Dependencies = dependencies }
             |> Kdmid
 
         let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -159,7 +160,7 @@ let private ``appointments page should not have data`` =
 
             let service =
                 { IssueForeign with
-                    Service.Dependencies = dependencies }
+                    KdmidService.Dependencies = dependencies }
                 |> Kdmid
 
             let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -178,7 +179,7 @@ let private ``appointments page should have data`` =
 
             let service =
                 { IssueForeign with
-                    Service.Dependencies = dependencies }
+                    KdmidService.Dependencies = dependencies }
                 |> Kdmid
 
             let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
@@ -197,7 +198,7 @@ let private ``confirmation page should have a valid result`` =
 
             let service =
                 { IssueForeign with
-                    Service.Dependencies = dependencies }
+                    KdmidService.Dependencies = dependencies }
                 |> Kdmid
 
             let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"

@@ -12,7 +12,7 @@ open EA.Telegram.DataAccess
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
-      ServiceGraph: Async<Result<Graph.Node<ServiceGraph>, Error'>>
+      ServiceGraph: Async<Result<Graph.Node<ServiceNode>, Error'>>
       createOrUpdateChat: Chat -> Async<Result<Chat, Error'>>
       createOrUpdateRequest: Request -> Async<Result<Request, Error'>> }
 

@@ -1,11 +1,11 @@
 ﻿[<AutoOpen>]
-module internal EA.Worker.Domain.RouteGraph
+module internal EA.Worker.Domain.RouteNode
 
 open System
 open Infrastructure.Domain
 open Worker.Domain
 
-type RouteGraph =
+type RouteNode =
     | Name of string
 
     interface Graph.INodeName with
@@ -19,7 +19,7 @@ type RouteGraph =
 
     static member register(name, handler) =
         fun router ->
-            let rec innerLoop (node: Graph.Node<RouteGraph>) =
+            let rec innerLoop (node: Graph.Node<RouteNode>) =
                 let handler =
                     { Name = node.ShortName
                       Handler =

@@ -14,7 +14,7 @@ open EA.Telegram.Dependencies.Consumer
 let internal getService (embassyId, serviceIdOpt) =
     fun (deps: Russian.Dependencies) ->
 
-        let inline createButtons buttonName (nodes: Graph.Node<ServiceGraph> seq) =
+        let inline createButtons buttonName (nodes: Graph.Node<ServiceNode> seq) =
             nodes
             |> Seq.map (fun node -> (embassyId, node.FullId) |> Command.GetService |> Command.set, node.ShortName)
             |> Map

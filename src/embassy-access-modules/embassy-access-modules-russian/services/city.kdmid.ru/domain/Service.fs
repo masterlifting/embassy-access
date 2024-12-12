@@ -6,7 +6,7 @@ open EA.Core.Domain
 
 type KdmidRequest =
     { Uri: Uri
-      Embassy: EmbassyGraph
+      Embassy: EmbassyNode
       TimeZone: float
       Confirmation: ConfirmationState }
 
@@ -23,6 +23,4 @@ type KdmidRequest =
           Appointments = Set.empty
           Modified = DateTime.UtcNow }
 
-type KdmidService =
-    { Request: KdmidRequest
-      Dependencies: Dependencies }
+

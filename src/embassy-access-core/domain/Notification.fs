@@ -4,8 +4,8 @@ module EA.Core.Domain.Notification
 open Infrastructure.Domain
 
 type Notification =
-    | Appointments of (EmbassyGraph * Set<Appointment>)
-    | Confirmations of (RequestId * EmbassyGraph * Set<Confirmation>)
+    | Appointments of (EmbassyNode * Set<Appointment>)
+    | Confirmations of (RequestId * EmbassyNode * Set<Confirmation>)
     | Fail of (RequestId * Error')
 
     static member tryCreateFail requestId allow error =

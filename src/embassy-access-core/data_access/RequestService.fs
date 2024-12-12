@@ -1,10 +1,10 @@
-﻿module EA.Core.DataAccess.Service
+﻿module EA.Core.DataAccess.RequestService
 
 open System
 open Infrastructure.Domain
 open EA.Core.Domain
 
-type ServiceEntity() =
+type RequestServiceEntity() =
     member val Name = String.Empty with get, set
     member val Payload = String.Empty with get, set
     member val EmbassyId = String.Empty with get, set
@@ -20,9 +20,9 @@ type ServiceEntity() =
               Description = None }
           Description = this.Description }
 
-type internal Service with
+type internal RequestService with
     member internal this.ToEntity() =
-        let result = ServiceEntity()
+        let result = RequestServiceEntity()
         result.Name <- this.Name
         result.Payload <- this.Payload
         result.EmbassyId <- this.Embassy.Id.Value

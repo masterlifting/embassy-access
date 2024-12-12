@@ -1,8 +1,8 @@
 ﻿[<AutoOpen>]
-module EA.Core.Domain.Service
+module EA.Core.Domain.RequestService
 
-type Service =
+type RequestService =
     { Name: string
       Payload: string
-      Embassy: EmbassyGraph
+      Embassy: EmbassyNode
       Description: string option }

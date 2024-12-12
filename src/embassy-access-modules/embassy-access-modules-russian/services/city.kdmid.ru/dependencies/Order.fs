@@ -1,5 +1,5 @@
-﻿[<AutoOpen>]
-module EA.Embassies.Russian.Kdmid.Domain.Dependencies
+﻿[<RequireQualifiedAccess>]
+module EA.Embassies.Russian.Kdmid.Dependencies.Order
 
 open System
 open Infrastructure.Domain

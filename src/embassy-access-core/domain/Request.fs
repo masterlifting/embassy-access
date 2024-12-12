@@ -23,7 +23,7 @@ type RequestId =
 
 type Request =
     { Id: RequestId
-      Service: Service
+      Service: RequestService
       Attempt: DateTime * int
       ProcessState: ProcessState
       ConfirmationState: ConfirmationState

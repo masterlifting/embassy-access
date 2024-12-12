@@ -107,4 +107,4 @@ let private ROUTER =
 
 let register () =
     ROUTER
-    |> RouteGraph.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.run)
+    |> RouteNode.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.run)

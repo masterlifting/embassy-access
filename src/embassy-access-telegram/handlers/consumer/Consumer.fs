@@ -10,7 +10,7 @@ open EA.Core.Domain
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Handlers.Comsumer
 
-let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyGraph>) =
+let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyNode>) =
     fun (deps: Core.Dependencies) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
@@ -21,7 +21,7 @@ let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyGraph>) =
             | _ -> $"Service for {embassyNode.ShortName}" |> NotSupported |> Error |> async.Return
         | None -> embassyNode.ShortName |> NotFound |> Error |> async.Return
 
-let private trySetService serviceId payload (embassyNode: Graph.Node<EmbassyGraph>) =
+let private trySetService serviceId payload (embassyNode: Graph.Node<EmbassyNode>) =
     fun (deps: Core.Dependencies) ->
         match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
@@ -55,7 +55,7 @@ let setService (embassyId, serviceId, payload) =
 let getEmbassies embassyIdOpt =
     fun (deps: Core.Dependencies) ->
 
-        let inline createButtons buttonName (nodes: Graph.Node<EmbassyGraph> seq) =
+        let inline createButtons buttonName (nodes: Graph.Node<EmbassyNode> seq) =
             nodes
             |> Seq.map (fun node ->
                 node.FullId |> EA.Telegram.Command.GetEmbassy |> EA.Telegram.Command.set, node.ShortName)
@@ -89,7 +89,7 @@ let getEmbassies embassyIdOpt =
 let getUserEmbassies embassyIdOpt =
     fun (deps: Core.Dependencies) ->
 
-        let inline createButtons buttonName (embassies: EmbassyGraph seq) (nodes: Graph.Node<EmbassyGraph> seq) =
+        let inline createButtons buttonName (embassies: EmbassyNode seq) (nodes: Graph.Node<EmbassyNode> seq) =
             let embassyIds = embassies |> Seq.map _.Id |> Set
 
             nodes

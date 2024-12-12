@@ -12,7 +12,7 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Producer
 
 
-let sendAppointments (embassy: EmbassyGraph, appointments: Set<Appointment>) =
+let sendAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
     fun (deps: Core.Dependencies) ->
         deps.initRequestStorage ()
         |> ResultAsync.wrap (Request.Query.findManyByEmbassyName embassy.Name)
@@ -35,7 +35,7 @@ let sendAppointments (embassy: EmbassyGraph, appointments: Set<Appointment>) =
                 |> Buttons.create (chat.Id, New))
         )
 
-let sendConfirmation (requestId: RequestId, embassy: EmbassyGraph, confirmations: Set<Confirmation>) =
+let sendConfirmation (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =
     fun (deps: Core.Dependencies) ->
         deps.initChatStorage ()
         |> ResultAsync.wrap (Chat.Query.findManyBySubscription requestId)
