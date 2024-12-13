@@ -13,11 +13,13 @@ module Service =
         | Kdmid service ->
             name
             |> service.Request.CreateRequest
-            |> StartOrder.create service.Request.TimeZone
-            |> Order.start service.Dependencies
+            |> fun request ->
+                { Request = request
+                  TimeZone = service.Request.TimeZone }
+            |> fun order -> service.Dependencies |> Order.start order
         | Midpass _ -> name |> NotSupported |> Error |> async.Return
 
 module Order =
     module Kdmid =
-        let start deps order = order |> Order.start deps
-        let pick deps order = order |> Order.pick deps
+        let start order deps = deps |> Order.start order
+        let pick order deps = deps |> Order.pick order

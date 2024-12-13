@@ -12,6 +12,8 @@ open EA.Telegram.Handlers.Consumer
 
 module private Consume =
 
+    let private produceResult chatId ct client dataRes = produceResult dataRes chatId ct client
+
     let text value client =
         fun deps ->
             match value |> Command.get with
@@ -23,13 +25,13 @@ module private Consume =
                     match cmd with
                     | Command.GetEmbassies ->
                         Core.getEmbassies None deps
-                        |> produceResult deps.ChatId deps.CancellationToken client
+                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
                     | Command.GetUserEmbassies ->
                         Core.getUserEmbassies None deps
-                        |> produceResult deps.ChatId deps.CancellationToken client
+                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
                     | Command.SetService(embassyId, serviceId, payload) ->
                         Core.setService (embassyId, serviceId, payload) deps
-                        |> produceResult deps.ChatId deps.CancellationToken client
+                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
                     | _ -> value |> NotSupported |> Error |> async.Return
 
     let callback value client =
@@ -43,13 +45,13 @@ module private Consume =
                     match cmd with
                     | Command.GetEmbassy embassyId ->
                         Core.getEmbassies (Some embassyId) deps
-                        |> produceResult deps.ChatId deps.CancellationToken client
+                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
                     | Command.GetUserEmbassy embassyId ->
                         Core.getUserEmbassies (Some embassyId) deps
-                        |> produceResult deps.ChatId deps.CancellationToken client
+                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
                     | Command.GetService(embassyId, serviceId) ->
                         Core.getService (embassyId, Some serviceId) deps
-                        |> produceResult deps.ChatId deps.CancellationToken client
+                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
                     | _ -> value |> NotSupported |> Error |> async.Return
 
 let private create ct cfg client =

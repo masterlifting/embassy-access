@@ -67,10 +67,11 @@ let getEmbassies embassyIdOpt =
                     | Some _ -> Replace deps.MessageId
                     | None -> New
 
-                { Buttons.Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
-                  Columns = 3
-                  Data = buttons }
-                |> Buttons.create (deps.ChatId, msgId)
+                (deps.ChatId, msgId)
+                |> Buttons.create
+                    { Buttons.Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
+                      Columns = 3
+                      Data = buttons }
 
         deps.getEmbassyGraph ()
         |> ResultAsync.bindAsync (fun graph ->
@@ -104,10 +105,11 @@ let getUserEmbassies embassyIdOpt =
                     | Some _ -> Replace deps.MessageId
                     | None -> New
 
-                { Buttons.Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
-                  Columns = 3
-                  Data = buttons }
-                |> Buttons.create (deps.ChatId, msgId)
+                (deps.ChatId, msgId)
+                |> Buttons.create
+                    { Buttons.Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
+                      Columns = 3
+                      Data = buttons }
 
         deps.getChatEmbassies ()
         |> ResultAsync.bindAsync (fun embassies ->

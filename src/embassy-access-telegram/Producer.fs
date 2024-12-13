@@ -11,7 +11,7 @@ let private send ct message =
     Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> EnvKey
     |> Client.init
-    |> ResultAsync.wrap (fun client -> message |> Web.Telegram.Producer.produce ct client)
+    |> ResultAsync.wrap (fun client -> client |> Web.Telegram.Producer.produce message ct)
     |> ResultAsync.map ignore
 
 let private spread ct =

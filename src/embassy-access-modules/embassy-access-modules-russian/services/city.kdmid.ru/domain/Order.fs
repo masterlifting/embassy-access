@@ -3,13 +3,7 @@ module EA.Embassies.Russian.Kdmid.Domain.Order
 
 open EA.Core.Domain
 
-type StartOrder =
-    { Request: Request
-      TimeZone: float }
-
-    static member create timeZone request =
-        { Request = request
-          TimeZone = timeZone }
+type StartOrder = { Request: Request; TimeZone: float }
 
 type PickOrder =
     { StartOrders: StartOrder list

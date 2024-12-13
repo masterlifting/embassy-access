@@ -24,6 +24,7 @@ let private createEmbassyName (task: WorkerTask) =
 
 module private Kdmid =
     open EA.Embassies.Russian.Kdmid.Domain
+    open EA.Embassies.Russian.Kdmid.Dependencies
 
     let private createPickOrder configuration (schedule: Schedule) ct =
         let result = ResultBuilder()
@@ -53,14 +54,18 @@ module private Kdmid =
             let! requestStorage = initRequestStorage ()
 
             let pickOrder requests =
-                let deps = Dependencies.create requestStorage ct
+                let deps = Order.Dependencies.create requestStorage ct
                 let timeZone = schedule.TimeZone |> float
 
                 let order =
-                    { StartOrders = requests |> List.map (StartOrder.create timeZone)
+                    { StartOrders =
+                        requests
+                        |> List.map (fun request ->
+                            { Request = request
+                              TimeZone = timeZone })
                       notify = notify }
 
-                order |> API.Order.Kdmid.pick deps
+                deps |> API.Order.Kdmid.pick order
 
             let start dataAccessRequestQuery =
                 requestStorage

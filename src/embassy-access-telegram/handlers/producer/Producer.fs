@@ -22,17 +22,18 @@ let sendAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
             |> ResultAsync.wrap (Chat.Query.findManyBySubscriptions subscriptions))
         |> ResultAsync.map (
             Seq.map (fun chat ->
-                { Buttons.Name = $"Choose the appointment for '{embassy}'"
-                  Columns = 1
-                  Data =
-                    appointments
-                    |> Seq.map (fun appointment ->
-                        (embassy.Id, appointment.Id)
-                        |> EA.Telegram.Command.ChooseAppointments
-                        |> EA.Telegram.Command.set,
-                        appointment.Description)
-                    |> Map }
-                |> Buttons.create (chat.Id, New))
+                (chat.Id, New)
+                |> Buttons.create
+                    { Buttons.Name = $"Choose the appointment for '{embassy}'"
+                      Columns = 1
+                      Data =
+                        appointments
+                        |> Seq.map (fun appointment ->
+                            (embassy.Id, appointment.Id)
+                            |> EA.Telegram.Command.ChooseAppointments
+                            |> EA.Telegram.Command.set,
+                            appointment.Description)
+                        |> Map })
         )
 
 let sendConfirmation (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =
@@ -44,7 +45,7 @@ let sendConfirmation (requestId: RequestId, embassy: EmbassyNode, confirmations:
                 confirmations
                 |> Seq.map (fun confirmation -> $"'{embassy.Name}'. Confirmation: {confirmation.Description}")
                 |> String.concat "\n"
-                |> Text.create (chat.Id, New))
+                |> fun msg -> (chat.Id, New) |> Text.create msg)
         )
 
 let sendError (requestId: RequestId, error: Error') =

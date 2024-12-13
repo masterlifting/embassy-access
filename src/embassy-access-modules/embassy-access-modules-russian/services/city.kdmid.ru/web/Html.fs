@@ -1,4 +1,4 @@
-﻿module internal EA.Embassies.Russian.Kdmid.Html
+﻿module internal EA.Embassies.Russian.Kdmid.Web.Html
 
 open Infrastructure.Domain
 open Infrastructure.Prelude

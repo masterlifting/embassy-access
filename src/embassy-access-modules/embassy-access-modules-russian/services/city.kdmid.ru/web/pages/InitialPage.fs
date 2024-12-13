@@ -1,15 +1,14 @@
 ﻿module internal EA.Embassies.Russian.Kdmid.Web.InitialPage
 
 open System
+open SkiaSharp
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
 open Web.Http.Domain
 open EA.Embassies.Russian.Kdmid.Web
-open EA.Embassies.Russian.Kdmid.Html
 open EA.Embassies.Russian.Kdmid.Domain
-
-open SkiaSharp
+open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private createHttpRequest queryParams =
     { Path = "/queue/orderinfo.aspx?" + queryParams
@@ -17,7 +16,7 @@ let private createHttpRequest queryParams =
 
 let private parseHttpResponse page =
     Html.load page
-    |> Result.bind pageHasError
+    |> Result.bind Html.pageHasError
     |> Result.bind (Html.getNodes "//input | //img")
     |> Result.bind (function
         | None -> Error <| NotFound "Nodes on the Initial Page."
@@ -95,7 +94,7 @@ let private prepareHttpFormData pageData captcha =
     |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
     |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
 
-let private handlePage (deps, httpClient, queryParams) =
+let private handlePage (deps: Order.Dependencies, httpClient, queryParams) =
 
     // define
     let getRequest =
@@ -122,7 +121,7 @@ let private handlePage (deps, httpClient, queryParams) =
 
             let setCookie = ResultAsync.bind (httpClient |> Http.setSessionCookie)
             let prepareResponse = ResultAsync.bind prepareCaptchaImage
-            let solveCaptcha = ResultAsync.bindAsync deps.solveCaptcha
+            let solveCaptcha = ResultAsync.bindAsync deps.solveIntCaptcha
             let prepareFormData = ResultAsync.mapAsync (pageData |> prepareHttpFormData)
             let buildFormData = ResultAsync.mapAsync Http.buildFormData
 

@@ -7,8 +7,7 @@ open Infrastructure.Parser
 open Web.Http.Domain
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
-open EA.Embassies.Russian.Kdmid.Html
-open EA.Embassies.Russian.Kdmid.Domain
+open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private createHttpRequest formData queryParams =
 
@@ -26,7 +25,7 @@ let private createHttpRequest formData queryParams =
 
 let private parseHttpResponse page =
     Html.load page
-    |> Result.bind pageHasError
+    |> Result.bind Html.pageHasError
     |> Result.bind (Html.getNodes "//input")
     |> Result.bind (function
         | None -> Ok Map.empty
@@ -125,7 +124,7 @@ let private createResult (request: Request) (formData, appointments) =
 
     formData, request
 
-let private handlePage (deps, httpClient, queryParams, formData, request) =
+let private handlePage (deps: Order.Dependencies, httpClient, queryParams, formData, request) =
 
     // define
     let postRequest =

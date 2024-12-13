@@ -6,8 +6,9 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
 open Web.Http.Domain
-open EA.Embassies.Russian.Kdmid.Html
+open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Domain
+open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private createHttpRequest formData queryParams =
 
@@ -58,7 +59,7 @@ let private httpResponseHasInconsistentState page =
 
 let private parseHttpResponse page =
     Html.load page
-    |> Result.bind pageHasError
+    |> Result.bind Html.pageHasError
     |> Result.bind httpResponseHasInconsistentState
     |> Result.bind (Html.getNodes "//input")
     |> Result.bind (function
@@ -93,7 +94,7 @@ let private prepareHttpFormData data =
     |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
     |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
 
-let private handlePage (deps, httpClient, queryParams, formData) =
+let private handlePage (deps: Order.Dependencies, httpClient, queryParams, formData) =
 
     // define
     let postRequest =

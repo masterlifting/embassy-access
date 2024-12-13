@@ -1,5 +1,5 @@
 ﻿[<AutoOpen>]
-module EA.Embassies.Russian.Midpass.Domain.Service
+module EA.Embassies.Russian.Midpass.Domain.MidpassRequest
 
 open System
 open EA.Core.Domain
@@ -8,7 +8,7 @@ type MidpassRequest =
     { Embassy: EmbassyNode
       StatementNumber: string }
 
-    member internal this.Create serviceName =
+    member internal this.CreateRequest serviceName =
         { Id = RequestId.New
           Service =
             { Name = serviceName
@@ -20,5 +20,3 @@ type MidpassRequest =
           ConfirmationState = Disabled
           Appointments = Set.empty
           Modified = DateTime.UtcNow }
-
-type MidpassService = { Request: MidpassRequest }

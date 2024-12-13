@@ -7,6 +7,7 @@ open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Domain
+open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private validateCity (request: Request) (payload: Payload) =
     let nodeSubName = [ payload.Country; payload.City ] |> Graph.buildNodeNameOfSeq
@@ -25,7 +26,7 @@ let private parsePayload =
         |> Result.bind (validateCity request)
         |> Result.map (fun payload -> payload, request))
 
-let private setInProcessState deps request =
+let private setInProcessState (deps: Order.Dependencies) request =
     deps.updateRequest
         { request with
             ProcessState = InProcess
@@ -49,14 +50,14 @@ let private setAttemptCore timeZone request =
         <| { request with
                Attempt = DateTime.UtcNow, 1 }
 
-let private setAttempt timeZone deps =
+let private setAttempt timeZone (deps: Order.Dependencies) =
     ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
         request
         |> setAttemptCore timeZone
         |> ResultAsync.wrap deps.updateRequest
         |> ResultAsync.map (fun request -> httpClient, queryParams, formData, request))
 
-let private setCompletedState deps request =
+let private setCompletedState (deps: Order.Dependencies) request =
     let message =
         match request.Appointments.IsEmpty with
         | true -> "No appointments found"
@@ -70,7 +71,7 @@ let private setCompletedState deps request =
             ProcessState = Completed message
             Modified = DateTime.UtcNow }
 
-let private setFailedState error deps request =
+let private setFailedState error (deps: Order.Dependencies) request =
     let attempt =
         match error with
         | Operation { Code = Some(Custom Web.Captcha.ErrorCode) } -> request.Attempt
@@ -90,73 +91,74 @@ let private setProcessedState deps request confirmation =
         | Ok request -> return! request |> setCompletedState deps
     }
 
-let start deps order =
+let start order =
+    fun (deps: Order.Dependencies) ->
 
-    // define
-    let setInProcessState = setInProcessState deps
-    let parsePayload = parsePayload
-    let createHttpClient = Http.createClient
-    let processInitialPage = InitialPage.handle deps
-    let setAttempt = setAttempt order.TimeZone deps
-    let processValidationPage = ValidationPage.handle deps
-    let processAppointmentsPage = AppointmentsPage.handle deps
-    let processConfirmationPage = ConfirmationPage.handle deps
-    let setProcessedState = setProcessedState deps order.Request
+        // define
+        let setInProcessState = setInProcessState deps
+        let parsePayload = parsePayload
+        let createHttpClient = Http.createClient
+        let processInitialPage = InitialPage.handle deps
+        let setAttempt = setAttempt order.TimeZone deps
+        let processValidationPage = ValidationPage.handle deps
+        let processAppointmentsPage = AppointmentsPage.handle deps
+        let processConfirmationPage = ConfirmationPage.handle deps
+        let setProcessedState = setProcessedState deps order.Request
 
-    // pipe
-    let run =
-        setInProcessState
-        >> parsePayload
-        >> createHttpClient
-        >> processInitialPage
-        >> setAttempt
-        >> processValidationPage
-        >> processAppointmentsPage
-        >> processConfirmationPage
-        >> setProcessedState
+        // pipe
+        let run =
+            setInProcessState
+            >> parsePayload
+            >> createHttpClient
+            >> processInitialPage
+            >> setAttempt
+            >> processValidationPage
+            >> processAppointmentsPage
+            >> processConfirmationPage
+            >> setProcessedState
 
-    order.Request |> run
+        order.Request |> run
 
-let errorFilter error =
-    match error with
-    | Operation reason ->
-        match reason.Code with
-        | Some(Custom Constants.ErrorCode.CONFIRMATION_EXISTS)
-        | Some(Custom Constants.ErrorCode.NOT_CONFIRMED)
-        | Some(Custom Constants.ErrorCode.REQUEST_DELETED) -> true
-        | _ -> false
-    | _ -> false
+let pick order =
+    fun (deps: Order.Dependencies) ->
+        
+        let inline errorFilter error =
+            match error with
+            | Operation reason ->
+                match reason.Code with
+                | Some(Custom Constants.ErrorCode.CONFIRMATION_EXISTS)
+                | Some(Custom Constants.ErrorCode.NOT_CONFIRMED)
+                | Some(Custom Constants.ErrorCode.REQUEST_DELETED) -> true
+                | _ -> false
+            | _ -> false
 
+        let rec innerLoop (errors: Error' list) startOrders =
+            async {
+                match startOrders with
+                | [] ->
+                    return
+                        match errors.Length with
+                        | 0 -> Error [ "Orders to handle" |> NotFound ]
+                        | _ -> Error errors
+                | startOrder :: startOrdersTail ->
+                    match! deps |> start startOrder with
+                    | Error error ->
 
-let pick deps order =
+                        do!
+                            match error |> Notification.tryCreateFail startOrder.Request.Id errorFilter with
+                            | None -> () |> async.Return
+                            | Some notification -> notification |> order.notify
 
-    let rec innerLoop (errors: Error' list) startOrders =
-        async {
-            match startOrders with
-            | [] ->
-                return
-                    match errors.Length with
-                    | 0 -> Error [ "Requests to handle" |> NotFound ]
-                    | _ -> Error errors
-            | startOrder :: startOrdersTail ->
-                match! startOrder |> start deps with
-                | Error error ->
+                        return! startOrdersTail |> innerLoop (errors @ [ error ])
 
-                    do!
-                        match error |> Notification.tryCreateFail startOrder.Request.Id errorFilter with
-                        | None -> () |> async.Return
-                        | Some notification -> notification |> order.notify
+                    | Ok result ->
 
-                    return! startOrdersTail |> innerLoop (errors @ [ error ])
+                        do!
+                            match result |> Notification.tryCreate errorFilter with
+                            | None -> () |> async.Return
+                            | Some notification -> notification |> order.notify
 
-                | Ok result ->
+                        return result |> Ok
+            }
 
-                    do!
-                        match result |> Notification.tryCreate errorFilter with
-                        | None -> () |> async.Return
-                        | Some notification -> notification |> order.notify
-
-                    return result |> Ok
-        }
-
-    order.StartOrders |> List.ofSeq |> innerLoop []
+        order.StartOrders |> List.ofSeq |> innerLoop []

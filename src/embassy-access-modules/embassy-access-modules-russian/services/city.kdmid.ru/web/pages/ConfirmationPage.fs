@@ -7,8 +7,7 @@ open Infrastructure.Parser
 open Web.Http.Domain
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
-open EA.Embassies.Russian.Kdmid.Html
-open EA.Embassies.Russian.Kdmid.Domain
+open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private handleRequestConfirmation (request: Request) =
     match request.ConfirmationState with
@@ -64,7 +63,7 @@ let private createHttpRequest formData queryParamsId =
 
 let private parseHttpResponse page =
     Html.load page
-    |> Result.bind pageHasError
+    |> Result.bind Html.pageHasError
     |> Result.bind (Html.getNode "//span[@id='ctl00_MainContent_Label_Message']")
     |> Result.map (function
         | None -> None
@@ -108,7 +107,7 @@ let private createDefaultResult request =
                | _ -> request
     }
 
-let private handlePage (deps, httpClient, queryParamsId, formData, request) =
+let private handlePage (deps: Order.Dependencies, httpClient, queryParamsId, formData, request) =
     request
     |> handleRequestConfirmation
     |> ResultAsync.wrap (function

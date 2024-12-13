@@ -1,5 +1,5 @@
 ﻿[<AutoOpen>]
-module EA.Embassies.Russian.Kdmid.Domain.Service
+module EA.Embassies.Russian.Kdmid.Domain.KdmidRequest
 
 open System
 open EA.Core.Domain

@@ -19,10 +19,11 @@ let internal getService (embassyId, serviceIdOpt) =
             |> Seq.map (fun node -> (embassyId, node.FullId) |> Command.GetService |> Command.set, node.ShortName)
             |> Map
             |> fun buttons ->
-                { Buttons.Name = buttonName |> Option.defaultValue "Какую услугу вы хотите получить?"
-                  Columns = 1
-                  Data = buttons }
-                |> Buttons.create (deps.ChatId, deps.MessageId |> Replace)
+                (deps.ChatId, deps.MessageId |> Replace)
+                |> Buttons.create
+                    { Buttons.Name = buttonName |> Option.defaultValue "Какую услугу вы хотите получить?"
+                      Columns = 1
+                      Data = buttons }
 
         deps.ServiceGraph
         |> ResultAsync.bind (fun graph ->
@@ -46,7 +47,7 @@ let internal getService (embassyId, serviceIdOpt) =
                         node.Value.Instruction
                         |> Option.map (fun instruction -> message + $"Инструкция:%s{doubleLine}%s{instruction}")
                         |> Option.defaultValue message
-                        |> Text.create (deps.ChatId, deps.MessageId |> Replace)
+                        |> fun msg -> ((deps.ChatId, deps.MessageId |> Replace) |> Text.create msg)
                     | services -> services |> createButtons node.Value.Description))
 
 let internal setService (serviceId, embassy, payload) =
@@ -80,5 +81,5 @@ let internal setService (serviceId, embassy, payload) =
                     createOrUpdateRequest node.FullName
                     |> ResultAsync.bindAsync createOrUpdateChat
                     |> ResultAsync.map (fun _ -> $"Заявка на услугу '{node.FullName}' успешно создана")
-                    |> ResultAsync.map (fun message -> message |> Text.create (deps.ChatId, New))
+                    |> ResultAsync.map (fun msg -> (deps.ChatId, New) |> Text.create msg)
             | _ -> node.FullName |> NotSupported |> Error |> async.Return)
