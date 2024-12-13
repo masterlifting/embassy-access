@@ -8,8 +8,8 @@ open EA.Core.Domain
 open EA.Embassies.Russian
 open EA.Core.DataAccess
 open EA.Telegram
-open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
+open EA.Worker.Dependencies
 
 module Kdmid =
     open EA.Embassies.Russian.Kdmid.Dependencies
@@ -19,19 +19,14 @@ module Kdmid =
         { RequestStorage: Request.RequestStorage
           pickOrder: Request list -> Async<Result<Request, Error' list>> }
 
-        static member create (schedule: Schedule) cfg ct =
+        static member create (schedule: Schedule) ct (persistenceDeps: Persistence.Dependencies) =
             let result = ResultBuilder()
 
             result {
-                let! filePath = cfg |> Persistence.Storage.getConnectionString "FileSystem"
-
-                let! requestStorage = filePath |> Request.FileSystem |> Request.init
-
-                let initChatStorage () =
-                    filePath |> Chat.FileSystem |> Chat.init
+                let! requestStorage = persistenceDeps.initRequestStorage ()
 
                 let notificationDeps: Producer.Core.Dependencies =
-                    { initChatStorage = initChatStorage
+                    { initChatStorage = persistenceDeps.initChatStorage
                       RequestStorage = requestStorage }
 
                 let notify notification =

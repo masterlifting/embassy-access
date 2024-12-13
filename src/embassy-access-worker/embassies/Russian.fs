@@ -42,11 +42,12 @@ module private Kdmid =
         [<Literal>]
         let NAME = "Search appointments"
 
-        let setRoute city =
+        let setRouteNode city =
             Graph.Node(Name city, [ Graph.Node(Name NAME, []) ])
 
         let run (task: WorkerTask, cfg, ct) =
-            Russian.Kdmid.Dependencies.create task.Schedule cfg ct
+            Persistence.Dependencies.create cfg
+            |> Result.bind (Russian.Kdmid.Dependencies.create task.Schedule ct)
             |> Result.map createOrder
             |> ResultAsync.wrap (fun startOrder ->
                 task
@@ -56,19 +57,19 @@ module private Kdmid =
 let private ROUTER =
     Graph.Node(
         Name "Russian",
-        [ Graph.Node(Name "Serbia", [ "Belgrade" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Germany", [ "Berlin" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "France", [ "Paris" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Montenegro", [ "Podgorica" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Ireland", [ "Dublin" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Italy", [ "Rome" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Switzerland", [ "Bern" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Finland", [ "Helsinki" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Netherlands", [ "Hague" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Albania", [ "Tirana" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Slovenia", [ "Ljubljana" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Bosnia", [ "Sarajevo" |> Kdmid.SearchAppointments.setRoute ])
-          Graph.Node(Name "Hungary", [ "Budapest" |> Kdmid.SearchAppointments.setRoute ]) ]
+        [ Graph.Node(Name "Serbia", [ "Belgrade" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Germany", [ "Berlin" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "France", [ "Paris" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Montenegro", [ "Podgorica" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Ireland", [ "Dublin" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Italy", [ "Rome" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Switzerland", [ "Bern" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Finland", [ "Helsinki" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Netherlands", [ "Hague" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Albania", [ "Tirana" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Slovenia", [ "Ljubljana" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Bosnia", [ "Sarajevo" |> Kdmid.SearchAppointments.setRouteNode ])
+          Graph.Node(Name "Hungary", [ "Budapest" |> Kdmid.SearchAppointments.setRouteNode ]) ]
     )
 
 let register () =
