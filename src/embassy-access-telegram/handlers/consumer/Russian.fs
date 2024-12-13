@@ -21,7 +21,7 @@ let internal getService (embassyId, serviceIdOpt) =
             |> fun buttons ->
                 (deps.ChatId, deps.MessageId |> Replace)
                 |> Buttons.create
-                    { Buttons.Name = buttonName |> Option.defaultValue "Какую услугу вы хотите получить?"
+                    { Name = buttonName |> Option.defaultValue "Какую услугу вы хотите получить?"
                       Columns = 1
                       Data = buttons }
 

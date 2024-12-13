@@ -5,7 +5,7 @@ open Infrastructure.Prelude
 open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Domain
-open EA.Embassies.Russian
+open EA.Worker.Dependencies
 
 let private createEmbassyName (task: WorkerTask) =
     try
@@ -23,62 +23,22 @@ let private createEmbassyName (task: WorkerTask) =
     |> async.Return
 
 module private Kdmid =
-    open EA.Embassies.Russian.Kdmid.Domain
-    open EA.Embassies.Russian.Kdmid.Dependencies
 
-    let private createPickOrder configuration (schedule: Schedule) ct =
-        let result = ResultBuilder()
-
-        result {
-            let! filePath = configuration |> Persistence.Storage.getConnectionString "FileSystem"
-
-            let initRequestStorage () =
-                filePath
-                |> EA.Core.DataAccess.Request.FileSystem
-                |> EA.Core.DataAccess.Request.init
-
-            let initChatStorage () =
-                filePath
-                |> EA.Telegram.DataAccess.Chat.FileSystem
-                |> EA.Telegram.DataAccess.Chat.init
-
-            let notificationDeps: EA.Telegram.Dependencies.Producer.Core.Dependencies =
-                { initChatStorage = initChatStorage
-                  initRequestStorage = initRequestStorage }
-
-            let notify notification =
-                notification
-                |> EA.Telegram.Producer.Produce.notification notificationDeps ct
-                |> Async.map ignore
-
-            let! requestStorage = initRequestStorage ()
-
-            let pickOrder requests =
-                let deps = Order.Dependencies.create requestStorage ct
-                let timeZone = schedule.TimeZone |> float
-
-                let order =
-                    { StartOrders =
-                        requests
-                        |> List.map (fun request ->
-                            { Request = request
-                              TimeZone = timeZone })
-                      notify = notify }
-
-                deps |> API.Order.Kdmid.pick order
-
-            let start dataAccessRequestQuery =
-                requestStorage
-                |> dataAccessRequestQuery
+    let createOrder =
+        fun (deps: Russian.Kdmid.Dependencies) ->
+            let start getRequests =
+                deps.RequestStorage
+                |> getRequests
                 |> ResultAsync.mapError (fun error -> [ error ])
-                |> ResultAsync.bindAsync pickOrder
+                |> ResultAsync.bindAsync deps.pickOrder
                 |> ResultAsync.mapError Error'.combine
                 |> ResultAsync.map (fun request -> request.ProcessState |> string |> Info)
 
-            return start
-        }
+            start
 
     module SearchAppointments =
+        open EA.Core.DataAccess
+
         [<Literal>]
         let NAME = "Search appointments"
 
@@ -86,11 +46,12 @@ module private Kdmid =
             Graph.Node(Name city, [ Graph.Node(Name NAME, []) ])
 
         let run (task: WorkerTask, cfg, ct) =
-            createPickOrder cfg task.Schedule ct
+            Russian.Kdmid.Dependencies.create task.Schedule cfg ct
+            |> Result.map createOrder
             |> ResultAsync.wrap (fun startOrder ->
                 task
                 |> createEmbassyName
-                |> ResultAsync.bindAsync (EA.Core.DataAccess.Request.Query.findManyByEmbassyName >> startOrder))
+                |> ResultAsync.bindAsync (Request.Query.findManyByEmbassyName >> startOrder))
 
 let private ROUTER =
     Graph.Node(

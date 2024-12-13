@@ -69,7 +69,7 @@ let getEmbassies embassyIdOpt =
 
                 (deps.ChatId, msgId)
                 |> Buttons.create
-                    { Buttons.Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
+                    { Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
                       Columns = 3
                       Data = buttons }
 
@@ -107,7 +107,7 @@ let getUserEmbassies embassyIdOpt =
 
                 (deps.ChatId, msgId)
                 |> Buttons.create
-                    { Buttons.Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
+                    { Name = buttonName |> Option.defaultValue "Choose what do you want to visit"
                       Columns = 3
                       Data = buttons }
 

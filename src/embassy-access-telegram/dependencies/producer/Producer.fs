@@ -9,13 +9,16 @@ open EA.Telegram.Dependencies
 
 type Dependencies =
     { initChatStorage: unit -> Result<Chat.ChatStorage, Error'>
-      initRequestStorage: unit -> Result<Request.RequestStorage, Error'> }
+      RequestStorage: Request.RequestStorage }
 
     static member create chatId (persistenceDeps: Persistence.Dependencies) =
         let result = ResultBuilder()
 
         result {
+            
+            let! requestStorage = persistenceDeps.initRequestStorage()
+            
             return
                 { initChatStorage = persistenceDeps.initChatStorage
-                  initRequestStorage = persistenceDeps.initRequestStorage }
+                  RequestStorage = requestStorage }
         }

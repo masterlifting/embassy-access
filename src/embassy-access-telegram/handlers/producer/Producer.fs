@@ -11,32 +11,33 @@ open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Producer
 
-
-let sendAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
+let createAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
     fun (deps: Core.Dependencies) ->
-        deps.initRequestStorage ()
-        |> ResultAsync.wrap (Request.Query.findManyByEmbassyName embassy.Name)
+        deps.RequestStorage
+        |> Request.Query.findManyByEmbassyName embassy.Name
         |> ResultAsync.map (Seq.map _.Id)
         |> ResultAsync.bindAsync (fun subscriptions ->
             deps.initChatStorage ()
             |> ResultAsync.wrap (Chat.Query.findManyBySubscriptions subscriptions))
         |> ResultAsync.map (
             Seq.map (fun chat ->
+                let buttons =
+                    appointments
+                    |> Seq.map (fun appointment ->
+                        (embassy.Id, appointment.Id)
+                        |> EA.Telegram.Command.ChooseAppointments
+                        |> EA.Telegram.Command.set,
+                        appointment.Description)
+                    |> Map
+
                 (chat.Id, New)
                 |> Buttons.create
-                    { Buttons.Name = $"Choose the appointment for '{embassy}'"
+                    { Name = $"Choose the appointment for '{embassy}'"
                       Columns = 1
-                      Data =
-                        appointments
-                        |> Seq.map (fun appointment ->
-                            (embassy.Id, appointment.Id)
-                            |> EA.Telegram.Command.ChooseAppointments
-                            |> EA.Telegram.Command.set,
-                            appointment.Description)
-                        |> Map })
+                      Data = buttons })
         )
 
-let sendConfirmation (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =
+let createConfirmation (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =
     fun (deps: Core.Dependencies) ->
         deps.initChatStorage ()
         |> ResultAsync.wrap (Chat.Query.findManyBySubscription requestId)
@@ -48,7 +49,7 @@ let sendConfirmation (requestId: RequestId, embassy: EmbassyNode, confirmations:
                 |> fun msg -> (chat.Id, New) |> Text.create msg)
         )
 
-let sendError (requestId: RequestId, error: Error') =
+let createError (requestId: RequestId, error: Error') =
     fun (deps: Core.Dependencies) ->
         deps.initChatStorage ()
         |> ResultAsync.wrap (Chat.Query.findManyBySubscription requestId)
