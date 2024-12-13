@@ -54,7 +54,7 @@ module private Consume =
                         |> (client |> produceResult deps.ChatId deps.CancellationToken)
                     | _ -> value |> NotSupported |> Error |> async.Return
 
-let private create ct cfg client =
+let private create cfg ct client =
     fun data ->
         match data with
         | Message msg ->
@@ -76,5 +76,5 @@ let start ct cfg =
     Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
     |> Web.Telegram.Domain.Client.EnvKey
     |> Web.Telegram.Client.init
-    |> Result.map (fun client -> Web.Client.Consumer.Telegram(client, create ct cfg client))
+    |> Result.map (fun client -> Web.Client.Consumer.Telegram(client, client |> create cfg ct))
     |> Web.Client.consume ct

@@ -4,9 +4,9 @@ open Infrastructure.Prelude
 open Infrastructure.Logging
 open Worker.Domain
 
-let run (_, configuration, ct) =
+let run (_, cfg, ct) =
     async {
-        configuration
+        cfg
         |> EA.Telegram.Consumer.start ct
         |> ResultAsync.mapError (_.Message >> Log.critical)
         |> Async.Ignore

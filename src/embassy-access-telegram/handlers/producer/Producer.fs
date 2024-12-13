@@ -13,8 +13,8 @@ open EA.Telegram.Dependencies.Producer
 
 let createAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
     fun (deps: Core.Dependencies) ->
-        deps.RequestStorage
-        |> Request.Query.findManyByEmbassyName embassy.Name
+        deps.initRequestStorage ()
+        |> ResultAsync.wrap (Request.Query.findManyByEmbassyName embassy.Name)
         |> ResultAsync.map (Seq.map _.Id)
         |> ResultAsync.bindAsync (fun subscriptions ->
             deps.initChatStorage ()

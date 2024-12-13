@@ -27,7 +27,7 @@ module Kdmid =
 
                 let notificationDeps: Producer.Core.Dependencies =
                     { initChatStorage = persistenceDeps.initChatStorage
-                      RequestStorage = requestStorage }
+                      initRequestStorage = fun () -> requestStorage |> Ok }
 
                 let notify notification =
                     notificationDeps
