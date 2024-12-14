@@ -1,6 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Consumer.Russian
 
+open System.Threading
 open EA.Telegram.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -12,6 +13,8 @@ open EA.Telegram.DataAccess
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
+      CancellationToken: CancellationToken
+      initRequestStorage: unit -> Result<Request.RequestStorage, Error'>
       ServiceGraph: Async<Result<Graph.Node<ServiceNode>, Error'>>
       createOrUpdateChat: Chat -> Async<Result<Chat, Error'>>
       createOrUpdateRequest: Request -> Async<Result<Request, Error'>> }
@@ -35,6 +38,8 @@ type Dependencies =
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
+                  CancellationToken = deps.CancellationToken
+                  initRequestStorage = fun _ -> deps.requestStorage |> Ok
                   ServiceGraph = serviceGraph
                   createOrUpdateChat = createOrUpdateChat
                   createOrUpdateRequest = createOrUpdateRequest }

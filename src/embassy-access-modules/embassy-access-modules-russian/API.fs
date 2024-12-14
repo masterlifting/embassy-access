@@ -8,7 +8,7 @@ open EA.Embassies.Russian.Kdmid
 module Service =
     open EA.Embassies.Russian.Kdmid.Domain
 
-    let get service name =
+    let get name service =
         match service with
         | Kdmid service ->
             name

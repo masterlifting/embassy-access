@@ -8,10 +8,10 @@ Persistence:
   FileSystem: C:\
 
 SearchAppointments: &SearchAppointments
-  Name: Search appointments
-  Enabled: false
-  Wait: false
-  Duration: 00:01:00
+  - Name: Search appointments
+    Enabled: false
+    Wait: false
+    Duration: 00:01:00
 
 Worker:
   Id: WORKER
@@ -37,7 +37,7 @@ Worker:
               Name: Belgrade
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
         - Id: GER
@@ -48,7 +48,7 @@ Worker:
               Name: Berlin
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
         - Id: FRA
@@ -59,7 +59,7 @@ Worker:
               Name: Paris
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
         - Id: MNE
@@ -70,7 +70,7 @@ Worker:
               Name: Podgorica
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
         - Id: IRL
@@ -81,7 +81,7 @@ Worker:
               Name: Dublin
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 0
         - Id: SWI
@@ -92,7 +92,7 @@ Worker:
               Name: Bern
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
         - Id: FIN
@@ -103,7 +103,7 @@ Worker:
               Name: Helsinki
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 2
         - Id: NLD
@@ -114,7 +114,7 @@ Worker:
               Name: Hague
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
         - Id: ALB
@@ -125,7 +125,7 @@ Worker:
               Name: Tirana
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
         - Id: SLO
@@ -136,7 +136,7 @@ Worker:
               Name: Ljubljana
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
         - Id: BIH
@@ -147,7 +147,7 @@ Worker:
               Name: Sarajevo
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
         - Id: HUN
@@ -158,7 +158,7 @@ Worker:
               Name: Budapest
               Parallel: true
               Tasks:
-                - <<: *SearchAppointments
+                <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
 
@@ -376,19 +376,41 @@ Embassies:
             - Id: BER
               Name: Berlin
 
+KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
+  Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
+
+KdmidRussianServices: &KdmidRussianServices
+  - Id: AVN
+    Name: Проверить наличие слотов сейчас
+    <<: *KdmidRussianServicesInstructions
+  - Id: AUT
+    Name: Автоматическая запись и поиск слотов
+    Description: Автоматическая запись и поиск слотов
+    Children:
+      - Id: AVL
+        Name: Присласть доступные слоты при первой возможности
+        <<: *KdmidRussianServicesInstructions
+      - Id: FST
+        Name: Автоматически записаться на первый доступный слот
+        <<: *KdmidRussianServicesInstructions
+      - Id: PRD
+        Name: Автоматически записаться на слот в указанный период
+        <<: *KdmidRussianServicesInstructions
 
 RussianServices:
-  Id: SRV
+  Id: RU
   Name: Посольство РФ
   Description: Выберите услугу посольства РФ
   Children:
-    - Id: PASS
+    - Id: PAS
       Name: Паспорт
       Description: Выберите услугу по паспорту посольства РФ
       Children:
         - Id: ISS
           Name: Выпуск заграничного паспорта
-          Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
+          Description: Выберите услугу по выпуску заграничного паспорта посольства РФ
+          Children:
+            <<: *KdmidRussianServices
         - Id: CHK
           Name: Проверка готовности паспорта
           Instruction: Что бы воспользоваться услугой, добавьте номер справки, которую вы получили после подачи документов, после символа | в вышеуказанную команду и отправьте ее в чат.
@@ -399,11 +421,15 @@ RussianServices:
       Children:
         - Id: PWR
           Name: Доверенность
-          Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте
+          Description: Выберите услугу доверенности посольства РФ
+          Children:
+            <<: *KdmidRussianServices
     - Id: VSA
       Name: Гражданство
       Description: Выберите услугу гражданства посольства РФ
       Children:
         - Id: ISS
           Name: Отказ от гражданства
-          Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
+          Description: Выберите услугу отказа от гражданства посольства РФ
+          Children:
+            <<: *KdmidRussianServices
