@@ -10,7 +10,6 @@ open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 
-
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
@@ -19,7 +18,7 @@ type Dependencies =
       requestStorage: Request.RequestStorage
       initServiceGraphStorage: string -> Result<ServiceGraph.ServiceGraphStorage, Error'>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-      getChatEmbassies: unit -> Async<Result<EmbassyNode list, Error'>> }
+      getChatRequests: unit -> Async<Result<Request list, Error'>> }
 
     static member create (dto: Consumer.Dto<_>) ct (persistenceDeps: Persistence.Dependencies) =
         let result = ResultBuilder()
@@ -29,12 +28,12 @@ type Dependencies =
             let! chatStorage = persistenceDeps.initChatStorage ()
             let! requestStorage = persistenceDeps.initRequestStorage ()
 
-            let getChatEmbassies () =
+            let getChatRequests () =
                 chatStorage
                 |> Chat.Query.tryFindById dto.ChatId
                 |> ResultAsync.bindAsync (function
                     | None -> $"{dto.ChatId}" |> NotFound |> Error |> async.Return
-                    | Some chat -> requestStorage |> Request.Query.Embassy.findManyByRequestIds chat.Subscriptions)
+                    | Some chat -> requestStorage |> Request.Query.findManyByIds chat.Subscriptions)
 
             return
                 { ChatId = dto.ChatId
@@ -44,5 +43,5 @@ type Dependencies =
                   requestStorage = requestStorage
                   initServiceGraphStorage = persistenceDeps.initServiceGraphStorage
                   getEmbassyGraph = persistenceDeps.getEmbassyGraph
-                  getChatEmbassies = getChatEmbassies }
+                  getChatRequests = getChatRequests }
         }

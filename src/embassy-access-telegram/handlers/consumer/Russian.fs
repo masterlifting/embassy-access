@@ -12,10 +12,17 @@ open EA.Telegram
 open EA.Telegram.Dependencies.Consumer
 
 module private SetService =
+    let private createMessage request =
+        let errorFilter error = true
+
+        Notification.tryCreate errorFilter request
+        |> Option.map _.Message
+        |> Option.defaultValue
+            $"Не удалось создать уведомление для запроса {request.Id} и результата {request.ProcessState}"
 
     module private MidpassService =
 
-        let pickService (node: Graph.Node<ServiceNode>) =
+        let pickService (node: Graph.Node<ServiceNode>) embassy payload =
             fun deps -> node.ShortName |> NotSupported |> Error |> async.Return
 
     module private KdmidService =
@@ -39,15 +46,12 @@ module private SetService =
                           TimeZone = 1.0
                           Confirmation = Disabled }
 
-                    let orderDepsRes =
-                        deps.initRequestStorage ()
-                        |> Result.map (fun requestStorage ->
-                            Order.Dependencies.create requestStorage deps.CancellationToken)
-
-                    orderDepsRes
-                    |> Result.map (fun orderDeps ->
+                    deps.initRequestStorage ()
+                    |> Result.map (fun requestStorage ->
+                        Order.Dependencies.create requestStorage deps.CancellationToken)
+                    |> Result.map (fun deps ->
                         { Request = request
-                          Dependencies = orderDeps }
+                          Dependencies = deps }
                         |> Kdmid)
                     |> ResultAsync.wrap (EA.Embassies.Russian.API.Service.get serviceName))
 
@@ -64,9 +68,23 @@ module private SetService =
 
                     serviceName |> serviceRequest.CreateRequest |> deps.createOrUpdateRequest)
 
-        let pickService (node: Graph.Node<ServiceNode>) = fun deps -> "" |> Ok |> async.Return
+        let pickService (node: Graph.Node<ServiceNode>) embassy payload =
+            fun (deps: Russian.Dependencies) ->
+                match node.Names |> List.last with
+                | "AVN" ->
+                    deps.getChatRequests ()
+                    |> ResultAsync.bindAsync (fun requests ->
+                        match requests with
+                        | [] ->
+                            deps
+                            |> getService node.Value.Name embassy payload
+                            |> ResultAsync.map createMessage
+                            |> ResultAsync.map Text.create
+                            |> ResultAsync.map (fun create -> create (deps.ChatId, New))
+                        | requests -> (deps.ChatId, New) |> Text.create "Test" |> Ok |> async.Return)
+                | _ -> node.ShortName |> NotSupported |> Error |> async.Return
 
-    let pickService (node: Graph.Node<ServiceNode>) =
+    let pickService (node: Graph.Node<ServiceNode>) embassy payload =
         fun deps ->
 
             let nodeId =
@@ -78,8 +96,8 @@ module private SetService =
                 match nodeId[0] with
                 | "RU" ->
                     match nodeId[1], nodeId[2] with
-                    | "PAS", "CHK" -> deps |> MidpassService.pickService node
-                    | _ -> deps |> KdmidService.pickService node
+                    | "PAS", "CHK" -> deps |> MidpassService.pickService node embassy payload
+                    | _ -> deps |> KdmidService.pickService node embassy payload
                 | _ -> node.ShortName |> NotSupported |> Error |> async.Return
             | _ -> node.ShortName |> NotSupported |> Error |> async.Return
 
@@ -122,6 +140,7 @@ let internal getService (embassyId, serviceIdOpt) =
                         |> fun msg -> ((deps.ChatId, deps.MessageId |> Replace) |> Text.create msg)
                     | services -> services |> createButtons node.Value.Description))
 
+
 let internal setService (serviceId, embassy, payload) =
     fun (deps: Russian.Dependencies) ->
         deps.ServiceGraph
@@ -131,9 +150,5 @@ let internal setService (serviceId, embassy, payload) =
             | None -> $"ServiceId {serviceId.Value}" |> NotFound |> Error)
         |> ResultAsync.bindAsync (fun node ->
             match node.Children with
-            | [] ->
-                deps
-                |> SetService.pickService node
-                |> ResultAsync.map Text.create
-                |> ResultAsync.map (fun create -> create (deps.ChatId, New))
+            | [] -> deps |> SetService.pickService node embassy payload
             | _ -> node.FullName |> NotSupported |> Error |> async.Return)

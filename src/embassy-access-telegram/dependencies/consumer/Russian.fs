@@ -16,6 +16,7 @@ type Dependencies =
       CancellationToken: CancellationToken
       initRequestStorage: unit -> Result<Request.RequestStorage, Error'>
       ServiceGraph: Async<Result<Graph.Node<ServiceNode>, Error'>>
+      getChatRequests: unit -> Async<Result<Request list, Error'>>
       createOrUpdateChat: Chat -> Async<Result<Chat, Error'>>
       createOrUpdateRequest: Request -> Async<Result<Request, Error'>> }
 
@@ -41,6 +42,7 @@ type Dependencies =
                   CancellationToken = deps.CancellationToken
                   initRequestStorage = fun _ -> deps.requestStorage |> Ok
                   ServiceGraph = serviceGraph
+                  getChatRequests = deps.getChatRequests
                   createOrUpdateChat = createOrUpdateChat
                   createOrUpdateRequest = createOrUpdateRequest }
         }

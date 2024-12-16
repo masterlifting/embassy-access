@@ -87,17 +87,15 @@ module private InMemory =
             |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
             |> async.Return
 
-        module Embassy =
-            let findManyByRequestIds (ids: RequestId seq) client =
-                let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
+        let findManyByIds (ids: RequestId seq) client =
+            let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
 
-                client
-                |> loadData
-                |> Result.map (Seq.filter (fun x -> requestIds.Contains x.Id))
-                |> Result.map (Seq.map _.Service.ToDomain())
-                |> Result.map (Seq.map _.Embassy)
-                |> Result.map List.ofSeq
-                |> async.Return
+            client
+            |> loadData
+            |> Result.map (Seq.filter (fun x -> requestIds.Contains x.Id))
+            |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
+            |> Result.map List.ofSeq
+            |> async.Return
 
     module Command =
         let create request client =
@@ -139,16 +137,14 @@ module private FileSystem =
             |> ResultAsync.map (Seq.filter (fun x -> x.Service.EmbassyName = name))
             |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
 
-        module Embassy =
-            let findManyByRequestIds (ids: RequestId seq) client =
-                let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
+        let findManyByIds (ids: RequestId seq) client =
+            let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
 
-                client
-                |> loadData
-                |> ResultAsync.map (Seq.filter (fun x -> requestIds.Contains x.Id))
-                |> ResultAsync.map (Seq.map _.Service.ToDomain())
-                |> ResultAsync.map (Seq.map _.Embassy)
-                |> ResultAsync.map List.ofSeq
+            client
+            |> loadData
+            |> ResultAsync.map (Seq.filter (fun x -> requestIds.Contains x.Id))
+            |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
+            |> ResultAsync.map List.ofSeq
 
     module Command =
 
@@ -218,9 +214,8 @@ module Query =
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyName name
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
-    module Embassy =
-        let findManyByRequestIds requestIds storage =
-            match storage |> toPersistenceStorage with
-            | Storage.InMemory client -> client |> InMemory.Query.Embassy.findManyByRequestIds requestIds
-            | Storage.FileSystem client -> client |> FileSystem.Query.Embassy.findManyByRequestIds requestIds
-            | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+    let findManyByIds ids storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Query.findManyByIds ids
+        | Storage.FileSystem client -> client |> FileSystem.Query.findManyByIds ids
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

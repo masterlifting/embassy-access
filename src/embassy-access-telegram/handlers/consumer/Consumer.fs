@@ -111,7 +111,8 @@ let getUserEmbassies embassyIdOpt =
                       Columns = 3
                       Data = buttons }
 
-        deps.getChatEmbassies ()
+        deps.getChatRequests ()
+        |> ResultAsync.map (Seq.map _.Service.Embassy)
         |> ResultAsync.bindAsync (fun embassies ->
             deps.getEmbassyGraph ()
             |> ResultAsync.bindAsync (fun graph ->
