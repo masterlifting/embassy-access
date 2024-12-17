@@ -32,7 +32,12 @@ type Dependencies =
                 chatStorage
                 |> Chat.Query.tryFindById dto.ChatId
                 |> ResultAsync.bindAsync (function
-                    | None -> $"{dto.ChatId}" |> NotFound |> Error |> async.Return
+                    | None ->
+                        let chat: EA.Telegram.Domain.Chat.Chat =
+                            { Id = dto.ChatId
+                              Subscriptions = Set [] }
+
+                        chatStorage |> Chat.Command.createOrUpdate chat |> ResultAsync.map (fun _ -> [])
                     | Some chat -> requestStorage |> Request.Query.findManyByIds chat.Subscriptions)
 
             return

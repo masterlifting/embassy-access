@@ -31,7 +31,8 @@ type Dependencies =
                 |> ResultAsync.wrap ServiceGraph.get
 
             let createOrUpdateChat chat =
-                deps.chatStorage |> Chat.Command.createOrUpdate chat
+                deps.chatStorage
+                |> Chat.Command.createOrUpdate chat
 
             let createOrUpdateRequest request =
                 deps.requestStorage |> Request.Command.createOrUpdate request

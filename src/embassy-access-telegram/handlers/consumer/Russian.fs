@@ -29,58 +29,52 @@ module private SetService =
         open EA.Embassies.Russian.Domain
         open EA.Embassies.Russian.Kdmid.Dependencies
 
-        let inline createOrUpdateChat (request: Request) =
+        let createKdmidRequest embassy payload =
+            payload
+            |> Web.Http.Route.toUri
+            |> Result.map (fun uri ->
+                { Uri = uri
+                  Embassy = embassy
+                  TimeZone = 1.0
+                  Confirmation = Disabled })
+
+        let createRecord serviceName (kdmidRequest: KdmidRequest) =
             fun (deps: Russian.Dependencies) ->
+                let request = kdmidRequest.CreateRequest serviceName
+
                 deps.createOrUpdateChat
                     { Id = deps.ChatId
                       Subscriptions = [ request.Id ] |> Set }
+                |> ResultAsync.bindAsync (fun _ -> request |> deps.createOrUpdateRequest)
 
-        let getService serviceName embassy payload =
+        let getService serviceName kdmidRequest =
             fun (deps: Russian.Dependencies) ->
-                payload
-                |> Web.Http.Route.toUri
-                |> ResultAsync.wrap (fun uri ->
-                    let request: KdmidRequest =
-                        { Uri = uri
-                          Embassy = embassy
-                          TimeZone = 1.0
-                          Confirmation = Disabled }
-
-                    deps.initRequestStorage ()
-                    |> Result.map (fun requestStorage ->
-                        Order.Dependencies.create requestStorage deps.CancellationToken)
-                    |> Result.map (fun deps ->
-                        { Request = request
-                          Dependencies = deps }
-                        |> Kdmid)
-                    |> ResultAsync.wrap (EA.Embassies.Russian.API.Service.get serviceName))
-
-        let inline createOrUpdateRequest serviceName embassy payload =
-            fun (deps: Russian.Dependencies) ->
-                payload
-                |> Web.Http.Route.toUri
-                |> ResultAsync.wrap (fun uri ->
-                    let serviceRequest: KdmidRequest =
-                        { Uri = uri
-                          Embassy = embassy
-                          TimeZone = 1.0
-                          Confirmation = Disabled }
-
-                    serviceName |> serviceRequest.CreateRequest |> deps.createOrUpdateRequest)
+                deps.initRequestStorage ()
+                |> Result.map (fun requestStorage -> Order.Dependencies.create requestStorage deps.CancellationToken)
+                |> Result.map (fun deps ->
+                    { Request = kdmidRequest
+                      Dependencies = deps }
+                    |> Kdmid)
+                |> ResultAsync.wrap (EA.Embassies.Russian.API.Service.get serviceName)
 
         let pickService (node: Graph.Node<ServiceNode>) embassy payload =
             fun (deps: Russian.Dependencies) ->
-                match node.Names |> List.last with
+                match node.Ids |> List.last with
                 | "AVN" ->
                     deps.getChatRequests ()
                     |> ResultAsync.bindAsync (fun requests ->
                         match requests with
                         | [] ->
-                            deps
-                            |> getService node.Value.Name embassy payload
-                            |> ResultAsync.map createMessage
-                            |> ResultAsync.map Text.create
-                            |> ResultAsync.map (fun create -> create (deps.ChatId, New))
+                            createKdmidRequest embassy payload
+                            |> ResultAsync.wrap (fun kdmidRequest ->
+                                deps
+                                |> createRecord node.Value.Name kdmidRequest
+                                |> ResultAsync.bindAsync (fun r ->
+                                    deps
+                                    |> getService node.Value.Name kdmidRequest
+                                    |> ResultAsync.map createMessage
+                                    |> ResultAsync.map Text.create
+                                    |> ResultAsync.map (fun create -> create (deps.ChatId, New))))
                         | requests -> (deps.ChatId, New) |> Text.create "Test" |> Ok |> async.Return)
                 | _ -> node.ShortName |> NotSupported |> Error |> async.Return
 
