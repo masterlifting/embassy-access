@@ -380,20 +380,20 @@ KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
   Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
 
 KdmidRussianServices: &KdmidRussianServices
-  - Id: AVN
+  - Id: "20"
     Name: Проверить наличие слотов сейчас
     <<: *KdmidRussianServicesInstructions
-  - Id: AUT
+  - Id: "21"
     Name: Автоматическая запись и поиск слотов
     Description: Автоматическая запись и поиск слотов
     Children:
-      - Id: AVL
+      - Id: "22"
         Name: Присласть доступные слоты при первой возможности
         <<: *KdmidRussianServicesInstructions
-      - Id: FST
+      - Id: "23"
         Name: Автоматически записаться на первый доступный слот
         <<: *KdmidRussianServicesInstructions
-      - Id: PRD
+      - Id: "24"
         Name: Автоматически записаться на слот в указанный период
         <<: *KdmidRussianServicesInstructions
 
@@ -402,33 +402,33 @@ RussianServices:
   Name: Посольство РФ
   Description: Выберите услугу посольства РФ
   Children:
-    - Id: PAS
+    - Id: "1"
       Name: Паспорт
       Description: Выберите услугу по паспорту посольства РФ
       Children:
-        - Id: ISS
+        - Id: "2"
           Name: Выпуск заграничного паспорта
           Description: Выберите услугу по выпуску заграничного паспорта посольства РФ
           Children:
             <<: *KdmidRussianServices
-        - Id: CHK
+        - Id: "3"
           Name: Проверка готовности паспорта
           Instruction: Что бы воспользоваться услугой, добавьте номер справки, которую вы получили после подачи документов, после символа | в вышеуказанную команду и отправьте ее в чат.
-    - Id: RPL
+    - Id: "4"
       Name: Нотариат
       Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
       Description: Выберите услугу нотариата посольства РФ
       Children:
-        - Id: PWR
+        - Id: "5"
           Name: Доверенность
           Description: Выберите услугу доверенности посольства РФ
           Children:
             <<: *KdmidRussianServices
-    - Id: VSA
+    - Id: "6"
       Name: Гражданство
       Description: Выберите услугу гражданства посольства РФ
       Children:
-        - Id: ISS
+        - Id: "7"
           Name: Отказ от гражданства
           Description: Выберите услугу отказа от гражданства посольства РФ
           Children:

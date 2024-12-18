@@ -25,7 +25,7 @@ module private Code =
     let GET_SERVICE = "/SRV-GET"
 
     [<Literal>]
-    let SET_SERVICE = "/SRV-SET"
+    let SET_SERVICE = "/0"
 
 type Name =
     | GetEmbassies
@@ -38,7 +38,7 @@ type Name =
 
 let private build args = args |> String.concat Delimiter
 
-let private printSize (value: string) =
+let private print (value: string) =
     let size = System.Text.Encoding.UTF8.GetByteCount(value)
     $"'{value}' -> {size}" |> Log.info
     value
@@ -47,18 +47,13 @@ let set command =
     match command with
     | GetEmbassies -> Code.START
     | GetUserEmbassies -> Code.MINE
-    | GetEmbassy embassyId -> [ Code.GET_EMBASSY; embassyId.Value |> string ] |> build
-    | GetUserEmbassy embassyId -> [ Code.GET_USER_EMBASSY; embassyId.Value |> string ] |> build
-    | GetService(embassyId, serviceId) ->
-        [ Code.GET_SERVICE; embassyId.Value |> string; serviceId.Value |> string ]
-        |> build
+    | GetEmbassy embassyId -> [ Code.GET_EMBASSY; embassyId.Value ] |> build
+    | GetUserEmbassy embassyId -> [ Code.GET_USER_EMBASSY; embassyId.Value ] |> build
+    | GetService(embassyId, serviceId) -> [ Code.GET_SERVICE; embassyId.Value; serviceId.Value ] |> build
     | SetService(embassyId, serviceId, payload) ->
-        [ Code.SET_SERVICE
-          embassyId.Value |> string
-          serviceId.Value |> string
-          payload ]
-        |> build
+        [ Code.SET_SERVICE; embassyId.Value; serviceId.Value; payload ] |> build
     | _ -> System.String.Empty
+    |> print
 
 let get (value: string) =
     let parts = value.Split Delimiter

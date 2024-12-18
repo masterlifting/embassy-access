@@ -12,7 +12,7 @@ open EA.Telegram.Handlers.Comsumer
 
 let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyNode>) =
     fun (deps: Core.Dependencies) ->
-        match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
+        match embassyNode.FullNames |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
             | "Russian" ->
@@ -23,7 +23,7 @@ let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyNode>) =
 
 let private trySetService serviceId payload (embassyNode: Graph.Node<EmbassyNode>) =
     fun (deps: Core.Dependencies) ->
-        match embassyNode.Names |> Seq.skip 1 |> Seq.tryHead with
+        match embassyNode.FullNames |> Seq.skip 1 |> Seq.tryHead with
         | Some embassyName ->
             match embassyName with
             | "Russian" ->
@@ -90,13 +90,13 @@ let getEmbassies embassyIdOpt =
 let getUserEmbassies embassyIdOpt =
     fun (deps: Core.Dependencies) ->
 
-        let inline createButtons buttonName (embassies: EmbassyNode seq) (nodes: Graph.Node<EmbassyNode> seq) =
-            let embassyIds = embassies |> Seq.map _.Id |> Set
+        let createButtons buttonName (embassies: EmbassyNode seq) (nodes: Graph.Node<EmbassyNode> seq) =
+            let embassyIds = embassies |> Seq.map _.Id
 
             nodes
-            |> Seq.filter (fun node -> embassyIds.Contains node.FullId)
+            |> Seq.filter (fun node -> embassyIds |> Seq.exists (fun id -> node |> Graph.BFS.tryFindById id |> Option.isSome))  
             |> Seq.map (fun node ->
-                node.FullId |> EA.Telegram.Command.GetEmbassy |> EA.Telegram.Command.set, node.ShortName)
+                node.FullId |> EA.Telegram.Command.GetUserEmbassy |> EA.Telegram.Command.set, node.ShortName)
             |> Map
             |> fun buttons ->
 

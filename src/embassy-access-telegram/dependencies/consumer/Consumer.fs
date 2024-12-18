@@ -37,7 +37,7 @@ type Dependencies =
                             { Id = dto.ChatId
                               Subscriptions = Set [] }
 
-                        chatStorage |> Chat.Command.createOrUpdate chat |> ResultAsync.map (fun _ -> [])
+                        chatStorage |> Chat.Command.create chat |> ResultAsync.map (fun _ -> [])
                     | Some chat -> requestStorage |> Request.Query.findManyByIds chat.Subscriptions)
 
             return

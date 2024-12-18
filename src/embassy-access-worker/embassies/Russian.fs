@@ -10,7 +10,7 @@ open EA.Worker.Dependencies
 let private createEmbassyName (task: WorkerTask) =
     try
         task.Name
-        |> Graph.splitNodeName
+        |> Graph.split
         |> List.skip 1
         |> List.take 3
         |> Graph.buildNodeNameOfSeq

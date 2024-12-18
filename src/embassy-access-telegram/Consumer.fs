@@ -52,6 +52,9 @@ module private Consume =
                     | Command.GetService(embassyId, serviceId) ->
                         Core.getService (embassyId, Some serviceId) deps
                         |> (client |> produceResult deps.ChatId deps.CancellationToken)
+                    | Command.SetService(embassyId, serviceId, payload) ->
+                        Core.setService (embassyId, serviceId, payload) deps
+                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
                     | _ -> value |> NotSupported |> Error |> async.Return
 
 let private create cfg ct client =

@@ -79,13 +79,13 @@ module private InMemory =
             client
             |> loadData
             |> Result.map (
-                Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y = subscriptionId.StringValue))
+                Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y = subscriptionId.ValueStr))
             )
             |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
             |> async.Return
 
         let findManyBySubscriptions (subscriptionIds: RequestId seq) client =
-            let subscriptionIds = subscriptionIds |> Seq.map _.StringValue |> Set.ofSeq
+            let subscriptionIds = subscriptionIds |> Seq.map _.ValueStr |> Set.ofSeq
 
             client
             |> loadData
@@ -139,12 +139,12 @@ module private FileSystem =
             client
             |> loadData
             |> ResultAsync.map (
-                Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y = subscriptionId.StringValue))
+                Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y = subscriptionId.ValueStr))
             )
             |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
 
         let findManyBySubscriptions (subscriptionIds: RequestId seq) client =
-            let subscriptionIds = subscriptionIds |> Seq.map _.StringValue |> Set.ofSeq
+            let subscriptionIds = subscriptionIds |> Seq.map _.ValueStr |> Set.ofSeq
 
             client
             |> loadData

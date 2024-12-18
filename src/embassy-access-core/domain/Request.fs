@@ -12,7 +12,7 @@ type RequestId =
         match this with
         | RequestId id -> id
 
-    member this.StringValue = this.Value |> string
+    member this.ValueStr = this.Value |> string
 
     static member create value =
         match value with

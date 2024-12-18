@@ -4,7 +4,7 @@ module EA.Embassies.Russian.Domain.Service
 open EA.Embassies.Russian
 
 type KdmidService =
-    { Request: Kdmid.Domain.KdmidRequest.KdmidRequest
+    { Order: Kdmid.Domain.Order.StartOrder 
       Dependencies: Kdmid.Dependencies.Order.Dependencies }
 
 type MidpassService =

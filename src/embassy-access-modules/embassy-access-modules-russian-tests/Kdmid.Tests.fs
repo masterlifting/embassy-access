@@ -12,6 +12,7 @@ module private Fixture =
     open Web.Http.Domain.Response
     open Persistence.FileSystem
     open EA.Embassies.Russian.Kdmid.Dependencies
+    open EA.Embassies.Russian.Kdmid.Domain.Order
 
     let httpRequestHeaders =
         Some
@@ -65,7 +66,9 @@ module private Fixture =
           Confirmation = Auto FirstAvailable }
 
     let IssueForeign =
-        { KdmidService.Request = Request
+        { KdmidService.Order =
+            { Request = Request.CreateRequest "test"
+              TimeZone = Request.TimeZone }
           KdmidService.Dependencies = Dependencies }
 
 open Fixture
@@ -81,7 +84,7 @@ let private ``validation page should have an error`` =
                 KdmidService.Dependencies = dependencies }
             |> Kdmid
 
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -101,7 +104,7 @@ let private ``validation page should have a confirmed request`` =
                 KdmidService.Dependencies = dependencies }
             |> Kdmid
 
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -121,7 +124,7 @@ let private ``validation page should have a confirmation`` =
                 KdmidService.Dependencies = dependencies }
             |> Kdmid
 
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -141,7 +144,7 @@ let private ``validation page should have a deleted request`` =
                 KdmidService.Dependencies = dependencies }
             |> Kdmid
 
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
+        let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -163,7 +166,7 @@ let private ``appointments page should not have data`` =
                     KdmidService.Dependencies = dependencies }
                 |> Kdmid
 
-            let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
+            let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
             Expect.isEmpty result.Appointments "Appointments should not be not empty"
@@ -182,7 +185,7 @@ let private ``appointments page should have data`` =
                     KdmidService.Dependencies = dependencies }
                 |> Kdmid
 
-            let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
+            let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
             Expect.isTrue (not result.Appointments.IsEmpty) "Appointments should be not empty"
@@ -201,7 +204,7 @@ let private ``confirmation page should have a valid result`` =
                     KdmidService.Dependencies = dependencies }
                 |> Kdmid
 
-            let! serviceResult = EA.Embassies.Russian.API.Service.get service "Test"
+            let! serviceResult = EA.Embassies.Russian.API.Service.get service
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
 
