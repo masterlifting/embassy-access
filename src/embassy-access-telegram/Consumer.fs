@@ -11,26 +11,27 @@ open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Handlers.Consumer
 
 module private Consume =
+    open EA.Telegram.Routes
 
     let private produceResult chatId ct client dataRes = produceResult dataRes chatId ct client
 
     let text value client =
         fun deps ->
-            match value |> EA.Telegram.Routes.Router.Request.parse with
-            | Error error -> error |> Error |> async.Return
-            | Ok request ->
+            deps
+            |> Router.Request.parse value
+            |> ResultAsync.wrap (fun request ->
                 deps
                 |> Core.consume request
-                |> produceResult deps.ChatId deps.CancellationToken client
+                |> produceResult deps.ChatId deps.CancellationToken client)
 
     let callback value client =
         fun deps ->
-            match value |> EA.Telegram.Routes.Router.Request.parse with
-            | Error error -> error |> Error |> async.Return
-            | Ok request ->
+            deps
+            |> Router.Request.parse value
+            |> ResultAsync.wrap (fun request ->
                 deps
                 |> Core.consume request
-                |> produceResult deps.ChatId deps.CancellationToken client
+                |> produceResult deps.ChatId deps.CancellationToken client)
 
 let private create cfg ct client =
     fun data ->
