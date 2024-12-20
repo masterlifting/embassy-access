@@ -16,46 +16,21 @@ module private Consume =
 
     let text value client =
         fun deps ->
-            match value |> Command.get with
+            match value |> EA.Telegram.Routes.Router.Request.parse with
             | Error error -> error |> Error |> async.Return
-            | Ok cmd ->
-                match cmd with
-                | None -> value |> NotSupported |> Error |> async.Return
-                | Some cmd ->
-                    match cmd with
-                    | Command.GetEmbassies ->
-                        Core.getEmbassies None deps
-                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
-                    | Command.GetUserEmbassies ->
-                        Core.getUserEmbassies None deps
-                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
-                    | Command.SetService(embassyId, serviceId, payload) ->
-                        Core.setService (embassyId, serviceId, payload) deps
-                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
-                    | _ -> value |> NotSupported |> Error |> async.Return
+            | Ok request ->
+                deps
+                |> Core.consume request
+                |> produceResult deps.ChatId deps.CancellationToken client
 
     let callback value client =
         fun deps ->
-            match value |> Command.get with
+            match value |> EA.Telegram.Routes.Router.Request.parse with
             | Error error -> error |> Error |> async.Return
-            | Ok cmd ->
-                match cmd with
-                | None -> value |> NotSupported |> Error |> async.Return
-                | Some cmd ->
-                    match cmd with
-                    | Command.GetEmbassy embassyId ->
-                        Core.getEmbassies (Some embassyId) deps
-                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
-                    | Command.GetUserEmbassy embassyId ->
-                        Core.getUserEmbassies (Some embassyId) deps
-                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
-                    | Command.GetService(embassyId, serviceId) ->
-                        Core.getService (embassyId, Some serviceId) deps
-                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
-                    | Command.SetService(embassyId, serviceId, payload) ->
-                        Core.setService (embassyId, serviceId, payload) deps
-                        |> (client |> produceResult deps.ChatId deps.CancellationToken)
-                    | _ -> value |> NotSupported |> Error |> async.Return
+            | Ok request ->
+                deps
+                |> Core.consume request
+                |> produceResult deps.ChatId deps.CancellationToken client
 
 let private create cfg ct client =
     fun data ->

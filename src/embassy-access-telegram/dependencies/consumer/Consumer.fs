@@ -18,6 +18,7 @@ type Dependencies =
       requestStorage: Request.RequestStorage
       initServiceGraphStorage: string -> Result<ServiceGraph.ServiceGraphStorage, Error'>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
+      getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>> }
 
     static member create (dto: Consumer.Dto<_>) ct (persistenceDeps: Persistence.Dependencies) =
@@ -39,6 +40,8 @@ type Dependencies =
 
                         chatStorage |> Chat.Command.create chat |> ResultAsync.map (fun _ -> [])
                     | Some chat -> requestStorage |> Request.Query.findManyByIds chat.Subscriptions)
+                
+            let getServiceGraph () = persistenceDeps.initServiceGraphStorage "" |> ResultAsync.wrap ServiceGraph.get
 
             return
                 { ChatId = dto.ChatId
@@ -47,6 +50,7 @@ type Dependencies =
                   chatStorage = chatStorage
                   requestStorage = requestStorage
                   initServiceGraphStorage = persistenceDeps.initServiceGraphStorage
+                  getServiceGraph = getServiceGraph
                   getEmbassyGraph = persistenceDeps.getEmbassyGraph
                   getChatRequests = getChatRequests }
         }

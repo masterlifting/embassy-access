@@ -94,7 +94,9 @@ let getUserEmbassies embassyIdOpt =
             let embassyIds = embassies |> Seq.map _.Id
 
             nodes
-            |> Seq.filter (fun node -> embassyIds |> Seq.exists (fun id -> node |> Graph.BFS.tryFindById id |> Option.isSome))  
+            |> Seq.filter (fun node ->
+                embassyIds
+                |> Seq.exists (fun id -> node |> Graph.BFS.tryFindById id |> Option.isSome))
             |> Seq.map (fun node ->
                 node.FullId |> EA.Telegram.Command.GetUserEmbassy |> EA.Telegram.Command.set, node.ShortName)
             |> Map
@@ -135,3 +137,10 @@ let getUserEmbassies embassyIdOpt =
                             |> createButtons embassyNode.Value.Description embassies
                             |> Ok
                             |> async.Return)))
+
+let consume (request: EA.Telegram.Routes.Router.Request) =
+    fun (deps: Core.Dependencies) ->
+        match request with
+        | EA.Telegram.Routes.Router.Request.Services request -> deps |> Services.consume request
+        | EA.Telegram.Routes.Router.Request.Embassies request -> deps |> Embassies.consume request
+        | EA.Telegram.Routes.Router.Request.Users request -> deps |> Users.consume request
