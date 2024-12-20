@@ -37,10 +37,10 @@ let private getEmbassy embassyId =
         |> ResultAsync.bind (function
             | Some node -> Ok node
             | None -> $"EmbassyId {embassyId.Value}" |> NotFound |> Error)
-        |> ResultAsync.map (createRequest deps.ChatId)
+        |> ResultAsync.bindAsync (createRequest deps.ChatId)
 
 let private getEmbassies =
-    fun (deps: Embassies.Dependencies) -> deps.EmbassyGraph |> ResultAsync.map (createRequest deps.ChatId)
+    fun (deps: Embassies.Dependencies) -> deps.EmbassyGraph |> ResultAsync.bindAsync (createRequest deps.ChatId)
 
 let consume request =
     fun (deps: Embassies.Dependencies) ->

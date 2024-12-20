@@ -43,10 +43,10 @@ let private getService serviceId =
         |> ResultAsync.bind (function
             | Some node -> Ok node
             | None -> $"ServiceId {serviceId.Value}" |> NotFound |> Error)
-        |> ResultAsync.map (createRequest deps.ChatId)
+        |> ResultAsync.bindAsync (createRequest deps.ChatId)
 
 let private getServices =
-    fun (deps: Services.Dependencies) -> deps.ServiceGraph |> ResultAsync.map (createRequest deps.ChatId)
+    fun (deps: Services.Dependencies) -> deps.ServiceGraph |> ResultAsync.bindAsync (createRequest deps.ChatId)
 
 let consume request =
     fun (deps: Services.Dependencies) ->
