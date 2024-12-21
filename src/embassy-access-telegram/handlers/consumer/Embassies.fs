@@ -21,9 +21,7 @@ let private createButtons chatId msgIdOpt name data =
 let private createRequest (node: Graph.Node<EmbassyNode>) =
     fun (deps: Embassies.Dependencies) ->
         match node.Children with
-        | [] ->
-            let serviceId = node.FullIds |> Seq.skip 1 |> Seq.head
-            deps.ServicesDeps |> Services.getEmbassyService  serviceId  node.Value
+        | [] -> deps.ServicesDeps |> Services.getEmbassyService node
         | children ->
             children
             |> Seq.map (fun node ->
@@ -41,13 +39,13 @@ let private getEmbassy embassyId =
             | Some node -> Ok node
             | None -> $"EmbassyId {embassyId.Value}" |> NotFound |> Error)
         |> ResultAsync.map createRequest
-        |> ResultAsync.bindAsync (fun f -> deps |> f)
+        |> ResultAsync.bindAsync (fun get -> deps |> get)
 
 let private getEmbassies =
     fun (deps: Embassies.Dependencies) ->
         deps.EmbassyGraph
         |> ResultAsync.map createRequest
-        |> ResultAsync.bindAsync (fun f -> deps |> f)
+        |> ResultAsync.bindAsync (fun get -> deps |> get)
 
 let consume request =
     fun (deps: Core.Dependencies) ->

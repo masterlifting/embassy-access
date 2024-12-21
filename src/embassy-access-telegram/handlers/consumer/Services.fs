@@ -9,6 +9,7 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Telegram.Routes
+open EA.Telegram.Handlers.Comsumer
 
 let private createButtons chatId msgIdOpt name data =
     (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New)
@@ -17,7 +18,7 @@ let private createButtons chatId msgIdOpt name data =
           Columns = 3
           Data = data |> Map.ofSeq }
 
-let private createRequest chatId msgId (node: Graph.Node<ServiceNode>) =
+let private createRequest (node: Graph.Node<ServiceNode>) =
     fun (deps: Services.Dependencies) ->
         match node.Children with
         | [] -> node.FullId.Value |> NotSupported |> Error |> async.Return
@@ -26,27 +27,28 @@ let private createRequest chatId msgId (node: Graph.Node<ServiceNode>) =
             |> Seq.map (fun node ->
                 let request = node.FullId |> GetRequest.Id |> Get |> Router.Request.Services
                 request.Route, node.ShortName)
-            |> createButtons chatId (Some msgId) node.Value.Description
+            |> createButtons deps.ChatId (Some deps.MessageId) node.Value.Description
             |> Ok
             |> async.Return
 
-let private createEmbassyRequest embassy (node: Graph.Node<ServiceNode>) =
+let private createEmbassyRequest (embassyNode: Graph.Node<EmbassyNode>) (serviceNode: Graph.Node<ServiceNode>) =
     fun (deps: Services.Dependencies) ->
-        match node.Children with
+        match serviceNode.Children with
         | [] ->
-            match node.FullIds |> Seq.map _.Value |> Seq.skip 1 |> Seq.head with
-            | "RU" ->
-                deps.RussianServicesDeps
-                |> EA.Telegram.Handlers.Comsumer.Russian.sendInstruction node.Value embassy
-                |> Ok
-                |> async.Return
-            | _ -> node.ShortName |> NotSupported |> Error |> async.Return
+            match serviceNode.FullIds |> Seq.map _.Value |> Seq.skip 1 |> Seq.tryHead with
+            | Some value ->
+                match value with
+                | "RU" ->
+                    deps.RussianServicesDeps
+                    |> Russian.getService serviceNode.Value embassyNode.Value
+                | _ -> serviceNode.ShortName |> NotSupported |> Error |> async.Return
+            | _ -> serviceNode.ShortName |> NotSupported |> Error |> async.Return
         | children ->
             children
             |> Seq.map (fun node ->
                 let request = node.FullId |> GetRequest.Id |> Get |> Router.Request.Services
                 request.Route, node.ShortName)
-            |> createButtons deps.ChatId (Some deps.MessageId) node.Value.Description
+            |> createButtons deps.ChatId (Some deps.MessageId) serviceNode.Value.Description
             |> Ok
             |> async.Return
 
@@ -57,24 +59,27 @@ let internal getService serviceId =
         |> ResultAsync.bind (function
             | Some node -> Ok node
             | None -> $"ServiceId {serviceId.Value}" |> NotFound |> Error)
-        |> ResultAsync.map (createRequest deps.ChatId deps.MessageId)
-        |> ResultAsync.bindAsync (fun f -> deps |> f)
+        |> ResultAsync.map createRequest
+        |> ResultAsync.bindAsync (fun get -> deps |> get)
 
-let internal getEmbassyService serviceId embassy =
+let internal getEmbassyService (embassyNode: Graph.Node<EmbassyNode>) =
     fun (deps: Services.Dependencies) ->
-        deps.ServiceGraph
-        |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
-        |> ResultAsync.bind (function
-            | Some node -> Ok node
-            | None -> $"ServiceId {serviceId.Value}" |> NotFound |> Error)
-        |> ResultAsync.map (createEmbassyRequest embassy)
-        |> ResultAsync.bindAsync (fun f -> deps |> f)
+        match embassyNode.FullIds |> Seq.skip 1 |> Seq.tryHead with
+        | Some serviceId ->
+            deps.ServiceGraph
+            |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
+            |> ResultAsync.bind (function
+                | Some node -> Ok node
+                | None -> $"ServiceId {serviceId.Value}" |> NotFound |> Error)
+            |> ResultAsync.map (createEmbassyRequest embassyNode)
+            |> ResultAsync.bindAsync (fun get -> deps |> get)
+        | None -> embassyNode.ShortName |> NotSupported |> Error |> async.Return
 
 let internal getServices =
     fun (deps: Services.Dependencies) ->
         deps.ServiceGraph
-        |> ResultAsync.map (createRequest deps.ChatId deps.MessageId)
-        |> ResultAsync.bindAsync (fun f -> deps |> f)
+        |> ResultAsync.map createRequest
+        |> ResultAsync.bindAsync (fun get -> deps |> get)
 
 let consume request =
     fun (deps: Core.Dependencies) ->

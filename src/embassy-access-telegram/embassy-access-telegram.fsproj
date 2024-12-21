@@ -15,6 +15,7 @@
         <Compile Include="dependencies\consumer\Embassies.fs" />
         <Compile Include="dependencies\consumer\Users.fs" />
         <Compile Include="dependencies\producer\Producer.fs" />
+        <Compile Include="routes\Russian.fs" />
         <Compile Include="routes\Services.fs" />
         <Compile Include="routes\Embassies.fs" />
         <Compile Include="routes\Users.fs" />

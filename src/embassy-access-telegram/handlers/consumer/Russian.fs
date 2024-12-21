@@ -12,6 +12,7 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Telegram
 open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Routes.Russian
 
 module private SetService =
     let private createMessage request =
@@ -30,6 +31,27 @@ module private SetService =
     module private KdmidService =
         open EA.Embassies.Russian.Domain
         open EA.Embassies.Russian.Kdmid.Dependencies
+
+        let private createInstruction (service: ServiceNode) (embassy: EmbassyNode) =
+            fun (deps: Russian.Dependencies) ->
+                let request =
+                    Router.Russian(
+                        Post(
+                            PostRequest.Kdmid(
+                                { ServiceId = service.Id
+                                  EmbassyId = embassy.Id
+                                  Payload = "{вставить сюда}" }
+                            )
+                        )
+                    )
+
+                let message = $"%s{request.Route}%s{String.addLines 2}"
+
+                service.Instruction
+                |> Option.map (fun instruction -> message + $"Инструкция:%s{String.addLines 2}%s{instruction}")
+                |> Option.defaultValue message
+                |> Text.create
+                |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
 
         let createKdmidRequest embassy payload =
             payload
@@ -122,91 +144,15 @@ module private SetService =
                 | _ -> node.ShortName |> NotSupported |> Error |> async.Return
             | _ -> node.ShortName |> NotSupported |> Error |> async.Return
 
+let private createButtons chatId msgIdOpt name data =
+    (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New)
+    |> Buttons.create
+        { Name = name |> Option.defaultValue "Выберите услугу"
+          Columns = 1
+          Data = data |> Map.ofSeq }
 
-let internal sendInstruction (service: ServiceNode) (embassy: EmbassyNode) =
+let internal getService (service: ServiceNode) (embassy: EmbassyNode) =
     fun (deps: Russian.Dependencies) ->
-        let request =
-            Router.Services(
-                Post(
-                    { ServiceId = service.Id
-                      EmbassyId = embassy.Id
-                      Payload = "{вставить сюда}" }
-                )
-            )
-
-        let doubleLine = Environment.NewLine + Environment.NewLine
-        let message = $"%s{request.Route}%s{doubleLine}"
-
-        service.Instruction
-        |> Option.map (fun instruction -> message + $"Инструкция:%s{doubleLine}%s{instruction}")
-        |> Option.defaultValue message
-        |> Text.create
-        |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
-
-let internal getService (embassyId, serviceIdOpt) =
-    fun (deps: Russian.Dependencies) ->
-
-        let inline createButtons buttonName (nodes: Graph.Node<ServiceNode> seq) =
-            nodes
-            |> Seq.map (fun node -> (embassyId, node.FullId) |> Command.GetService |> Command.set, node.ShortName)
-            |> Map
-            |> fun buttons ->
-                (deps.ChatId, deps.MessageId |> Replace)
-                |> Buttons.create
-                    { Name = buttonName |> Option.defaultValue "Какую услугу вы хотите получить?"
-                      Columns = 1
-                      Data = buttons }
-
-        deps.ServiceGraph
-        |> ResultAsync.bindAsync (fun graph ->
-            match serviceIdOpt with
-            | None -> graph.Children |> createButtons graph.Value.Description |> Ok |> async.Return
-            | Some serviceId ->
-                graph
-                |> Graph.BFS.tryFindById serviceId
-                |> Option.map Ok
-                |> Option.defaultValue ("Не могу найти выбранную услугу" |> NotFound |> Error)
-                |> ResultAsync.wrap (fun node ->
-                    match node.Children with
-                    | [] ->
-                        deps.getChatRequests ()
-                        |> ResultAsync.map (fun requests ->
-                            match
-                                requests
-                                |> List.filter (fun request ->
-                                    request.Service.Name = node.Value.Name && request.Service.Embassy.Id = embassyId)
-                            with
-                            | [] ->
-                                let command =
-                                    (embassyId, serviceId, "{вставить сюда}") |> Command.SetService |> Command.set
-
-                                let doubleLine = Environment.NewLine + Environment.NewLine
-                                let message = $"%s{command}%s{doubleLine}"
-
-                                node.Value.Instruction
-                                |> Option.map (fun instruction ->
-                                    message + $"Инструкция:%s{doubleLine}%s{instruction}")
-                                |> Option.defaultValue message
-                                |> Text.create
-                                |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
-                            | _ ->
-                                requests
-                                |> Seq.map (fun request ->
-                                    (embassyId, node.FullId, request.Id.ValueStr)
-                                    |> Command.SetService
-                                    |> Command.set,
-                                    request.Service.Payload)
-                                |> Seq.append
-                                    [ (embassyId, node.FullId, "0") |> Command.SetService |> Command.set,
-                                      "Новый запрос" ]
-                                |> Map
-                                |> fun buttons ->
-                                    (deps.ChatId, deps.MessageId |> Replace)
-                                    |> Buttons.create
-                                        { Name = node.Value.Description |> Option.defaultValue "Выберите запрос"
-                                          Columns = 1
-                                          Data = buttons })
-                    | services -> services |> createButtons node.Value.Description |> Ok |> async.Return))
 
 let internal setService (serviceId, embassy, payload) =
     fun (deps: Russian.Dependencies) ->

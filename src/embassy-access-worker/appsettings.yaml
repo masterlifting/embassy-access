@@ -380,20 +380,20 @@ KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
   Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
 
 KdmidRussianServices: &KdmidRussianServices
-  - Id: "20"
+  - Id: "0"
     Name: Проверить наличие слотов сейчас
     <<: *KdmidRussianServicesInstructions
-  - Id: "21"
+  - Id: "1"
     Name: Автоматическая запись и поиск слотов
     Description: Автоматическая запись и поиск слотов
     Children:
-      - Id: "22"
+      - Id: "0"
         Name: Присласть доступные слоты при первой возможности
         <<: *KdmidRussianServicesInstructions
-      - Id: "23"
+      - Id: "1"
         Name: Автоматически записаться на первый доступный слот
         <<: *KdmidRussianServicesInstructions
-      - Id: "24"
+      - Id: "2"
         Name: Автоматически записаться на слот в указанный период
         <<: *KdmidRussianServicesInstructions
 
@@ -406,33 +406,33 @@ Services:
       Name: Посольство РФ
       Description: Выберите услугу посольства РФ
       Children:
-        - Id: "1"
+        - Id: "0"
           Name: Паспорт
           Description: Выберите услугу по паспорту посольства РФ
           Children:
-            - Id: "2"
+            - Id: "0"
               Name: Выпуск заграничного паспорта
               Description: Выберите услугу по выпуску заграничного паспорта посольства РФ
               Children:
                 <<: *KdmidRussianServices
-            - Id: "3"
+            - Id: "1"
               Name: Проверка готовности паспорта
               Instruction: Что бы воспользоваться услугой, добавьте номер справки, которую вы получили после подачи документов, после символа | в вышеуказанную команду и отправьте ее в чат.
-        - Id: "4"
+        - Id: "1"
           Name: Нотариат
           Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
           Description: Выберите услугу нотариата посольства РФ
           Children:
-            - Id: "5"
+            - Id: "0"
               Name: Доверенность
               Description: Выберите услугу доверенности посольства РФ
               Children:
                 <<: *KdmidRussianServices
-        - Id: "6"
+        - Id: "2"
           Name: Гражданство
           Description: Выберите услугу гражданства посольства РФ
           Children:
-            - Id: "7"
+            - Id: "0"
               Name: Отказ от гражданства
               Description: Выберите услугу отказа от гражданства посольства РФ
               Children:
