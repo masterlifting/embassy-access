@@ -4,6 +4,8 @@ module EA.Telegram.Handlers.Comsumer.Russian
 open System
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Domain
+open EA.Telegram.Routes
+open EA.Telegram.Routes.Services
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Producer
@@ -119,6 +121,27 @@ module private SetService =
                     | _ -> deps |> KdmidService.pickService node embassy payload
                 | _ -> node.ShortName |> NotSupported |> Error |> async.Return
             | _ -> node.ShortName |> NotSupported |> Error |> async.Return
+
+
+let internal sendInstruction (service: ServiceNode) (embassy: EmbassyNode) =
+    fun (deps: Russian.Dependencies) ->
+        let request =
+            Router.Services(
+                Post(
+                    { ServiceId = service.Id
+                      EmbassyId = embassy.Id
+                      Payload = "{вставить сюда}" }
+                )
+            )
+
+        let doubleLine = Environment.NewLine + Environment.NewLine
+        let message = $"%s{request.Route}%s{doubleLine}"
+
+        service.Instruction
+        |> Option.map (fun instruction -> message + $"Инструкция:%s{doubleLine}%s{instruction}")
+        |> Option.defaultValue message
+        |> Text.create
+        |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
 
 let internal getService (embassyId, serviceIdOpt) =
     fun (deps: Russian.Dependencies) ->

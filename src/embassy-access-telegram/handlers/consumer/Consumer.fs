@@ -9,6 +9,7 @@ open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Handlers.Comsumer
+open EA.Telegram.Routes
 
 let private tryGetService serviceIdOpt (embassyNode: Graph.Node<EmbassyNode>) =
     fun (deps: Core.Dependencies) ->
@@ -138,9 +139,9 @@ let getUserEmbassies embassyIdOpt =
                             |> Ok
                             |> async.Return)))
 
-let consume (request: EA.Telegram.Routes.Router.Request) =
+let consume (request: Router.Request) =
     fun (deps: Core.Dependencies) ->
         match request with
-        | EA.Telegram.Routes.Router.Request.Services request -> deps |> Services.consume request
-        | EA.Telegram.Routes.Router.Request.Embassies request -> deps |> Embassies.consume request
-        | EA.Telegram.Routes.Router.Request.Users request -> deps |> Users.consume request
+        | Router.Request.Services value -> deps |> Services.consume value
+        | Router.Request.Embassies value -> deps |> Embassies.consume value
+        | Router.Request.Users value -> deps |> Users.consume value

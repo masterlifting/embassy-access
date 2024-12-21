@@ -12,7 +12,8 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       CancellationToken: CancellationToken
-      ServiceGraph: Async<Result<Graph.Node<ServiceNode>, Error'>> }
+      ServiceGraph: Async<Result<Graph.Node<ServiceNode>, Error'>>
+      RussianServicesDeps: Russian.Dependencies }
 
     static member create(deps: Core.Dependencies) =
         let result = ResultBuilder()
@@ -24,9 +25,12 @@ type Dependencies =
                 |> deps.initServiceGraphStorage
                 |> ResultAsync.wrap ServiceGraph.get
 
+            let! russianServicesDeps = Russian.Dependencies.create deps
+
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
-                  ServiceGraph = serviceGraph }
+                  ServiceGraph = serviceGraph
+                  RussianServicesDeps = russianServicesDeps }
         }

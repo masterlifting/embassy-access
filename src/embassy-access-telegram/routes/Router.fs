@@ -28,5 +28,5 @@ type Request =
             | "1" -> remaining |> Embassies.Request.parse |> Result.map Embassies
             | "2" -> remaining |> Users.Request.parse |> Result.map Users
             | "/start" -> Embassies(Embassies.Get(Embassies.All)) |> Ok
-            | "/mine" -> Users(Users.Get(Users.Embassies((deps.ChatId, Embassies.All)))) |> Ok
+            | "/mine" -> Users(Users.Get(Users.Embassies(deps.ChatId, Embassies.GetRequest.All))) |> Ok
             | _ -> $"'{parts}' route of Router" |> NotSupported |> Error
