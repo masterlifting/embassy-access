@@ -31,5 +31,5 @@ type Request =
             | "2" -> remaining |> Users.Request.parse |> Result.map Users
             | "3" -> remaining |> Russian.Request.parse |> Result.map Russian
             | "/start" -> Embassies(Embassies.Get(Embassies.All)) |> Ok
-            | "/mine" -> Users(Users.Get(Users.Embassies(deps.ChatId, Embassies.GetRequest.All))) |> Ok
+            | "/mine" -> Users(Users.Get(Users.Embassies(deps.ChatId))) |> Ok
             | _ -> $"'{parts}' route of Router" |> NotSupported |> Error

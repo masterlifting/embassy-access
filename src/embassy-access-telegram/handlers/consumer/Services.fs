@@ -38,9 +38,7 @@ let private createEmbassyRequest (embassyNode: Graph.Node<EmbassyNode>) (service
             match serviceNode.FullIds |> Seq.map _.Value |> Seq.skip 1 |> Seq.tryHead with
             | Some value ->
                 match value with
-                | "RU" ->
-                    deps.RussianServicesDeps
-                    |> Russian.getService serviceNode.Value embassyNode.Value
+                | "RU" -> deps.RussianDeps |> Russian.getService embassyNode.Value serviceNode.Value
                 | _ -> serviceNode.ShortName |> NotSupported |> Error |> async.Return
             | _ -> serviceNode.ShortName |> NotSupported |> Error |> async.Return
         | children ->

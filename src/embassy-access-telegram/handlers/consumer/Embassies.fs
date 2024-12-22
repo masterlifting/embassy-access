@@ -18,7 +18,7 @@ let private createButtons chatId msgIdOpt name data =
           Columns = 3
           Data = data |> Map.ofSeq }
 
-let private createRequest (node: Graph.Node<EmbassyNode>) =
+let createRequest (node: Graph.Node<EmbassyNode>) =
     fun (deps: Embassies.Dependencies) ->
         match node.Children with
         | [] -> deps.ServicesDeps |> Services.getEmbassyService node

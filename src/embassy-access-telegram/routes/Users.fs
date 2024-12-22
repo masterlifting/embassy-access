@@ -9,25 +9,29 @@ let private Delimiter = "|"
 type GetRequest =
     | Id of ChatId
     | All
-    | Embassies of userId: ChatId * embassies: Embassies.GetRequest
+    | Embassies of ChatId
 
     member this.Code =
         match this with
         | Id id -> "00" + Delimiter + id.ValueStr
         | All -> "01"
-        | Embassies(id, r) -> "02" + Delimiter + id.ValueStr + Delimiter + r.Code
+        | Embassies id -> "02" + Delimiter + id.ValueStr
 
     static member parse(parts: string[]) =
         match parts.Length with
         | 0 -> All |> Ok
-        | 1 -> parts[1] |> ChatId.parse |> Result.map GetRequest.Id
+        | 1 ->
+            match parts[1] with
+            | "00" -> parts[2] |> ChatId.parse |> Result.map Id
+            | "02" -> parts[2] |> ChatId.parse |> Result.map Embassies
+            | _ ->
+                $"Invalid parts length {parts.Length} for Users.GetRequest"
+                |> NotSupported
+                |> Error
         | _ ->
-            parts[1..]
-            |> Embassies.GetRequest.parse
-            |> Result.bind (fun r ->
-                parts[1]
-                |> ChatId.parse
-                |> Result.map (fun userId -> GetRequest.Embassies(userId, r)))
+            $"Invalid parts length {parts.Length} for Users.GetRequest"
+            |> NotSupported
+            |> Error
 
 type Request =
     | Get of GetRequest
@@ -36,10 +40,10 @@ type Request =
         match this with
         | Get r -> r.Code
 
-    static member parse (input: string) =
+    static member parse(input: string) =
         let parts = input.Split Delimiter
         let remaining = parts[1..]
-        
+
         match parts[0] with
         | "00" -> remaining |> GetRequest.parse |> Result.map Get
         | "01" -> remaining |> GetRequest.parse |> Result.map Get

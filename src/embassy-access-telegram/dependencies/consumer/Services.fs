@@ -13,7 +13,7 @@ type Dependencies =
       MessageId: int
       CancellationToken: CancellationToken
       ServiceGraph: Async<Result<Graph.Node<ServiceNode>, Error'>>
-      RussianServicesDeps: Russian.Dependencies }
+      RussianDeps: Russian.Dependencies }
 
     static member create(deps: Core.Dependencies) =
         let result = ResultBuilder()
@@ -32,5 +32,5 @@ type Dependencies =
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
                   ServiceGraph = serviceGraph
-                  RussianServicesDeps = russianServicesDeps }
+                  RussianDeps = russianServicesDeps }
         }
