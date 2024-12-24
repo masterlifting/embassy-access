@@ -20,11 +20,10 @@
         <Compile Include="routes\Embassies.fs" />
         <Compile Include="routes\Users.fs" />
         <Compile Include="routes\Router.fs" />
-        <Compile Include="handlers\consumer\Russian.fs" />
+        <Compile Include="handlers\consumer\services\Russian.fs" />
         <Compile Include="handlers\consumer\Services.fs" />
         <Compile Include="handlers\consumer\Embassies.fs" />
         <Compile Include="handlers\consumer\Users.fs" />
-        <Compile Include="handlers\consumer\Consumer.fs" />
         <Compile Include="handlers\producer\Producer.fs" />
         <Compile Include="Consumer.fs" />
         <Compile Include="Producer.fs" />

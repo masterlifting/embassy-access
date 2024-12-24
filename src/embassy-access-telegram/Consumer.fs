@@ -15,23 +15,29 @@ module private Consume =
 
     let private produceResult chatId ct client dataRes = produceResult dataRes chatId ct client
 
+    let private request request =
+        fun deps ->
+            match request with
+            | Router.Request.Services value -> deps |> Services.consume value
+            | Router.Request.Embassies value -> deps |> Embassies.consume value
+            | Router.Request.Users value -> deps |> Users.consume value
+            | Router.Request.Russian value -> deps |> Services.Russian.consume value
+
     let text value client =
         fun deps ->
             deps
             |> Router.Request.parse value
-            |> ResultAsync.wrap (fun request ->
-                deps
-                |> Core.consume request
-                |> produceResult deps.ChatId deps.CancellationToken client)
+            |> Result.map request
+            |> ResultAsync.wrap (fun consume ->
+                deps |> consume |> produceResult deps.ChatId deps.CancellationToken client)
 
     let callback value client =
         fun deps ->
             deps
             |> Router.Request.parse value
-            |> ResultAsync.wrap (fun request ->
-                deps
-                |> Core.consume request
-                |> produceResult deps.ChatId deps.CancellationToken client)
+            |> Result.map request
+            |> ResultAsync.wrap (fun consume ->
+                deps |> consume |> produceResult deps.ChatId deps.CancellationToken client)
 
 let private create cfg ct client =
     fun data ->

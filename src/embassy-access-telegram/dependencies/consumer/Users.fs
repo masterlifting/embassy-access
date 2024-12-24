@@ -11,7 +11,9 @@ type Dependencies =
       MessageId: int
       CancellationToken: CancellationToken
       EmbassyGraph: Async<Result<Graph.Node<EmbassyNode>, Error'>>
-      getEmbassies: ChatId -> Async<Result<Graph.Node<EmbassyNode> seq, Error'>> }
+      EmbassiesDeps: Embassies.Dependencies
+      getUserEmbassies: ChatId -> Async<Result<Graph.Node<EmbassyNode> seq, Error'>>
+      getUserEmbassy: ChatId -> Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>}
 
     static member create(deps: Core.Dependencies) =
         let result = ResultBuilder()

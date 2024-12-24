@@ -6,24 +6,29 @@ open Infrastructure.Domain
 let private Delimiter = "|"
 
 type GetRequest =
-    | Id of Graph.NodeId
-    | All
-    | Services of embassyId: Graph.NodeId * services: Services.GetRequest
+    | Embassy of Graph.NodeId
+    | EmbassyService of embassyId: Graph.NodeId * serviceId: Graph.NodeId
+    | EmbassyServices of Graph.NodeId
+    | Embassies
 
     member this.Code =
         match this with
-        | Id id -> "00" + Delimiter + id.Value
-        | All -> "01"
-        | Services(id, r) -> [ "02"; id.Value; r.Code ] |> String.concat Delimiter
+        | Embassy id -> [ "00"; id.Value ]
+        | EmbassyService(embassyId, serviceId) -> [ "01"; embassyId.Value; serviceId.Value ]
+        | EmbassyServices id -> [ "02"; id.Value ]
+        | Embassies -> [ "03" ]
+        |> String.concat Delimiter
 
     static member parse(parts: string[]) =
-        match parts.Length with
-        | 0 -> All |> Ok
-        | 1 -> parts[1] |> Graph.NodeIdValue |> GetRequest.Id |> Ok
-        | _ ->
-            parts[1..]
-            |> Services.GetRequest.parse
-            |> Result.map (fun r -> GetRequest.Services(parts[1] |> Graph.NodeIdValue, r))
+        match parts with
+        | [| "00"; id |] -> id |> Graph.NodeIdValue |> GetRequest.Embassy |> Ok
+        | [| "01"; embassyId; serviceId |] ->
+            (embassyId |> Graph.NodeIdValue, serviceId |> Graph.NodeIdValue)
+            |> GetRequest.EmbassyService
+            |> Ok
+        | [| "02"; id |] -> id |> Graph.NodeIdValue |> GetRequest.EmbassyServices |> Ok
+        | [| "03" |] -> Embassies |> Ok
+        | _ -> $"'{parts}' for Embassies.GetRequest" |> NotSupported |> Error
 
 type Request =
     | Get of GetRequest
@@ -34,9 +39,7 @@ type Request =
 
     static member parse(input: string) =
         let parts = input.Split Delimiter
-        let remaining = parts[1..]
 
-        match parts[0] with
-        | "00" -> remaining |> GetRequest.parse |> Result.map Get
-        | "01" -> remaining |> GetRequest.parse |> Result.map Get
+        match parts[0][0] with
+        | '0' -> parts |> GetRequest.parse |> Result.map Get
         | _ -> $"'{input}' route of Embassies" |> NotSupported |> Error

@@ -23,20 +23,14 @@ type PostRequest =
         |> String.concat Delimiter
 
     static member parse(parts: string[]) =
-        match parts.Length with
-        | 2 ->
-            match parts[0] with
-            | "11" -> { Number = parts[1] } |> PostRequest.Midpass |> Ok
-            | _ -> $"'{parts}' for Services.Russian.PostRequest" |> NotSupported |> Error
-        | 4 ->
-            match parts[0] with
-            | "10" ->
-                { ServiceId = parts[1] |> Graph.NodeIdValue
-                  EmbassyId = parts[2] |> Graph.NodeIdValue
-                  Payload = parts[3] }
-                |> PostRequest.Kdmid
-                |> Ok
-            | _ -> $"'{parts}' for Services.Russian.PostRequest" |> NotSupported |> Error
+        match parts with
+        | [| "11"; number |] -> { Number = number } |> PostRequest.Midpass |> Ok
+        | [| "10"; serviceId; embassyId; payload |] ->
+            { ServiceId = serviceId |> Graph.NodeIdValue
+              EmbassyId = embassyId |> Graph.NodeIdValue
+              Payload = payload }
+            |> PostRequest.Kdmid
+            |> Ok
         | _ -> $"'{parts}' for Services.Russian.PostRequest" |> NotSupported |> Error
 
 type Request =
@@ -48,8 +42,7 @@ type Request =
 
     static member parse(input: string) =
         let parts = input.Split Delimiter
-        let remaining = parts[1..]
 
-        match parts[0] with
-        | "10" -> remaining |> PostRequest.parse |> Result.map Post
+        match parts[0][0] with
+        | '1' -> parts |> PostRequest.parse |> Result.map Post
         | _ -> $"'{input}' route of Services" |> NotSupported |> Error

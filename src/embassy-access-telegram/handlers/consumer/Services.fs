@@ -25,7 +25,7 @@ let private createRequest (node: Graph.Node<ServiceNode>) =
         | children ->
             children
             |> Seq.map (fun node ->
-                let request = node.FullId |> GetRequest.Id |> Get |> Router.Request.Services
+                let request = node.FullId |> GetRequest.Service |> Get |> Router.Request.Services
                 request.Route, node.ShortName)
             |> createButtons deps.ChatId (Some deps.MessageId) node.Value.Description
             |> Ok
@@ -44,7 +44,7 @@ let private createEmbassyRequest (embassyNode: Graph.Node<EmbassyNode>) (service
         | children ->
             children
             |> Seq.map (fun node ->
-                let request = node.FullId |> GetRequest.Id |> Get |> Router.Request.Services
+                let request = node.FullId |> GetRequest.Service |> Get |> Router.Request.Services
                 request.Route, node.ShortName)
             |> createButtons deps.ChatId (Some deps.MessageId) serviceNode.Value.Description
             |> Ok
@@ -86,8 +86,8 @@ let consume request =
             match request with
             | Request.Get getRequest ->
                 match getRequest with
-                | GetRequest.Id id -> deps |> getService id
-                | GetRequest.All -> deps |> getServices
+                | GetRequest.Service id -> deps |> getService id
+                | GetRequest.Services -> deps |> getServices
             | Request.Post postRequest -> "" |> NotSupported |> Error |> async.Return
             | Request.Delete deleteRequest ->
                 match deleteRequest with

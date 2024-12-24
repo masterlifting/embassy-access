@@ -1,7 +1,6 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Handlers.Consumer.Users
 
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Routes.Users
@@ -9,7 +8,6 @@ open System
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Telegram.Routes
-open EA.Telegram.Routes.Embassies
 
 let private createButtons chatId msgIdOpt name data =
     (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New)
@@ -18,25 +16,40 @@ let private createButtons chatId msgIdOpt name data =
           Columns = 3
           Data = data |> Map.ofSeq }
 
-let getEmbassies userId =
-    fun (deps: Users.Dependencies) ->
-        deps.getEmbassies userId
-        |> ResultAsync.bindAsync (fun embassies ->
-            embassies
-            |> Seq.map (fun node ->
-                let request = node.FullId |> GetRequest.Id |> Get |> Router.Request.Embassies
-                request.Route, node.ShortName)
-            |> createButtons deps.ChatId (Some deps.MessageId) None
-            |> Ok
-            |> async.Return)
+module internal Get =
+    let userEmbassies userId =
+        fun (deps: Users.Dependencies) ->
+            deps.getUserEmbassies userId
+            |> ResultAsync.map (fun embassies ->
+                embassies
+                |> Seq.map (fun node ->
+                    let request = Router.Users(Get(UserEmbassy(userId, node.FullId)))
+                    request.Route, node.ShortName)
+                |> createButtons deps.ChatId (Some deps.MessageId) None)
+
+    let userEmbassy userId embassyId =
+        fun (deps: Users.Dependencies) ->
+            deps.getUserEmbassy userId embassyId
+            |> ResultAsync.bindAsync (fun embassyNode ->
+                match embassyNode.Children with
+                | [] ->
+                    deps.EmbassiesDeps
+                    |> EA.Telegram.Handlers.Consumer.Embassies.Get.embassyServices embassyNode.FullId
+                | children ->
+                    children
+                    |> Seq.map (fun node ->
+                        let request = Router.Users(Get(UserEmbassy(userId, node.FullId)))
+                        request.Route, node.ShortName)
+                    |> createButtons deps.ChatId (Some deps.MessageId) embassyNode.Value.Description
+                    |> Ok
+                    |> async.Return)
 
 let consume request =
     fun (deps: Core.Dependencies) ->
         Users.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             match request with
-            | Request.Get getRequest ->
-                match getRequest with
-                | GetRequest.Id id -> "" |> NotSupported |> Error |> async.Return
-                | GetRequest.All -> "" |> NotSupported |> Error |> async.Return
-                | GetRequest.Embassies userId -> deps |> getEmbassies userId)
+            | Get get ->
+                match get with
+                | UserEmbassies userId -> deps |> Get.userEmbassies userId
+                | UserEmbassy(userId, embassyId) -> deps |> Get.userEmbassy userId embassyId)

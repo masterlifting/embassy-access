@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Handlers.Comsumer.Russian
+module EA.Telegram.Handlers.Consumer.Services.Russian
 
 open System
 open EA.Core.Domain
