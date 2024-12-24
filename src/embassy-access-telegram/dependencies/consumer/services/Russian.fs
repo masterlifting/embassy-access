@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Russian
+module EA.Telegram.Dependencies.Consumer.Services.Russian
 
 open System.Threading
 open EA.Telegram.Domain
@@ -9,6 +9,7 @@ open EA.Core.Domain
 open Web.Telegram.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
+open EA.Telegram.Dependencies.Consumer
 
 type Dependencies =
     { ChatId: ChatId
@@ -31,8 +32,7 @@ type Dependencies =
                 |> ResultAsync.wrap ServiceGraph.get
 
             let createOrUpdateChat chat =
-                deps.chatStorage
-                |> Chat.Command.createOrUpdate chat
+                deps.chatStorage |> Chat.Command.createOrUpdate chat
 
             let createOrUpdateRequest request =
                 deps.requestStorage |> Request.Command.createOrUpdate request

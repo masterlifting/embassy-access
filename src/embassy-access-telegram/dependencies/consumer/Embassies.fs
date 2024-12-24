@@ -13,9 +13,9 @@ type Dependencies =
       CancellationToken: CancellationToken
       EmbassyGraph: Async<Result<Graph.Node<EmbassyNode>, Error'>>
       ServicesDeps: Services.Dependencies
-      getEmbassies: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
+      getEmbassies: unit -> Async<Result<Graph.Node<EmbassyNode> list, Error'>>
       getEmbassy: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-      getEmbassyServices: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode> seq, Error'>>
+      getEmbassyServices: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode> list, Error'>>
       getEmbassyService: Graph.NodeId -> Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
 
     static member create(deps: Core.Dependencies) =

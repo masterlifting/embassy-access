@@ -10,12 +10,12 @@
         <Compile Include="data_access\Chat.fs" />
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\consumer\Consumer.fs" />
-        <Compile Include="dependencies\consumer\Russian.fs" />
+        <Compile Include="dependencies\consumer\services\Russian.fs" />
         <Compile Include="dependencies\consumer\Services.fs" />
         <Compile Include="dependencies\consumer\Embassies.fs" />
         <Compile Include="dependencies\consumer\Users.fs" />
         <Compile Include="dependencies\producer\Producer.fs" />
-        <Compile Include="routes\Russian.fs" />
+        <Compile Include="routes\services\Russian.fs" />
         <Compile Include="routes\Services.fs" />
         <Compile Include="routes\Embassies.fs" />
         <Compile Include="routes\Users.fs" />

@@ -11,7 +11,7 @@ type Request =
     | Services of Services.Request
     | Embassies of Embassies.Request
     | Users of Users.Request
-    | Russian of Russian.Request
+    | Russian of Services.Russian.Request
 
     member this.Route =
         match this with
@@ -30,7 +30,7 @@ type Request =
             | "0" -> remaining |> Services.Request.parse |> Result.map Services
             | "1" -> remaining |> Embassies.Request.parse |> Result.map Embassies
             | "2" -> remaining |> Users.Request.parse |> Result.map Users
-            | "3" -> remaining |> Russian.Request.parse |> Result.map Russian
+            | "3" -> remaining |> Services.Russian.Request.parse |> Result.map Russian
             | "/start" -> Embassies(Embassies.Get(Embassies.Embassies)) |> Ok
             | "/mine" -> Users(Users.Get(Users.UserEmbassies(deps.ChatId))) |> Ok
             | _ -> $"'{parts}' route of Router" |> NotSupported |> Error

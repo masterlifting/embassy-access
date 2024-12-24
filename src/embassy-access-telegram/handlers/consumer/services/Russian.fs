@@ -12,7 +12,7 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Telegram
 open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Routes.Russian
+open EA.Telegram.Routes.Services.Russian
 
 let private createMessage request =
     let errorFilter error = true
@@ -28,14 +28,14 @@ module private Midpass =
         fun deps -> node.ShortName |> NotSupported |> Error |> async.Return
 
     let post (model: MidpassPostModel) =
-        fun (deps: Russian.Dependencies) -> model.Number |> NotSupported |> Error |> async.Return
+        fun (deps: Services.Russian.Dependencies) -> model.Number |> NotSupported |> Error |> async.Return
 
 module private Kdmid =
     open EA.Embassies.Russian.Domain
     open EA.Embassies.Russian.Kdmid.Dependencies
 
     let createInstruction (embassy: EmbassyNode) (service: ServiceNode) =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: Services.Russian.Dependencies) ->
             let request =
                 Router.Russian(
                     Post(
@@ -56,7 +56,7 @@ module private Kdmid =
             |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
 
     let post (model: KdmidPostModel) =
-        fun (deps: Russian.Dependencies) -> model.ServiceId.Value |> NotSupported |> Error |> async.Return
+        fun (deps: Services.Russian.Dependencies) -> model.ServiceId.Value |> NotSupported |> Error |> async.Return
 
     let createKdmidRequest embassy payload =
         payload
@@ -68,7 +68,7 @@ module private Kdmid =
               Confirmation = Disabled })
 
     let createRequest serviceName (kdmidRequest: KdmidRequest) =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: Services.Russian.Dependencies) ->
             let request = kdmidRequest.CreateRequest serviceName
 
             deps.createOrUpdateChat
@@ -77,7 +77,7 @@ module private Kdmid =
             |> ResultAsync.bindAsync (fun _ -> request |> deps.createOrUpdateRequest)
 
     let getService timeZone request =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: Services.Russian.Dependencies) ->
             deps.initRequestStorage ()
             |> Result.map (fun requestStorage -> Order.Dependencies.create requestStorage deps.CancellationToken)
             |> Result.map (fun deps ->
@@ -89,7 +89,7 @@ module private Kdmid =
             |> ResultAsync.wrap EA.Embassies.Russian.API.Service.get
 
     let pickService (node: Graph.Node<ServiceNode>) embassy payload =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: Services.Russian.Dependencies) ->
             match node.FullIds |> Seq.map _.Value |> Seq.last with
             | "20" ->
                 deps.getChatRequests ()
@@ -155,13 +155,13 @@ let private createButtons chatId msgIdOpt name data =
           Data = data |> Map.ofSeq }
 
 let internal getService (embassy: EmbassyNode) (service: ServiceNode) =
-    fun (deps: Russian.Dependencies) ->
+    fun (deps: Services.Russian.Dependencies) ->
         match service.Id.Value with
         | "SRV.RU.0.1" -> service.Name |> NotSupported |> Error |> async.Return
         | _ -> deps |> Kdmid.createInstruction embassy service |> Ok |> async.Return
 
 let internal setService (serviceId, embassy, payload) =
-    fun (deps: Russian.Dependencies) ->
+    fun (deps: Services.Russian.Dependencies) ->
         deps.ServiceGraph
         |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
         |> ResultAsync.bind (function
@@ -174,7 +174,7 @@ let internal setService (serviceId, embassy, payload) =
 
 let consume request =
     fun (deps: Core.Dependencies) ->
-        Russian.Dependencies.create deps
+        Services.Russian.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Request.Post postRequest ->

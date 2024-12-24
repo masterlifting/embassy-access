@@ -15,7 +15,7 @@ module private Consume =
 
     let private produceResult chatId ct client dataRes = produceResult dataRes chatId ct client
 
-    let private request request =
+    let private toConsume request =
         fun deps ->
             match request with
             | Router.Request.Services value -> deps |> Services.consume value
@@ -27,7 +27,7 @@ module private Consume =
         fun deps ->
             deps
             |> Router.Request.parse value
-            |> Result.map request
+            |> Result.map toConsume
             |> ResultAsync.wrap (fun consume ->
                 deps |> consume |> produceResult deps.ChatId deps.CancellationToken client)
 
@@ -35,7 +35,7 @@ module private Consume =
         fun deps ->
             deps
             |> Router.Request.parse value
-            |> Result.map request
+            |> Result.map toConsume
             |> ResultAsync.wrap (fun consume ->
                 deps |> consume |> produceResult deps.ChatId deps.CancellationToken client)
 
