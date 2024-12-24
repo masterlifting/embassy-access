@@ -14,8 +14,8 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       CancellationToken: CancellationToken
-      chatStorage: Chat.ChatStorage
-      requestStorage: Request.RequestStorage
+      ChatStorage: Chat.ChatStorage
+      RequestStorage: Request.RequestStorage
       initServiceGraphStorage: string -> Result<ServiceGraph.ServiceGraphStorage, Error'>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
@@ -47,8 +47,8 @@ type Dependencies =
                 { ChatId = dto.ChatId
                   MessageId = dto.Id
                   CancellationToken = ct
-                  chatStorage = chatStorage
-                  requestStorage = requestStorage
+                  ChatStorage = chatStorage
+                  RequestStorage = requestStorage
                   initServiceGraphStorage = persistenceDeps.initServiceGraphStorage
                   getServiceGraph = getServiceGraph
                   getEmbassyGraph = persistenceDeps.getEmbassyGraph

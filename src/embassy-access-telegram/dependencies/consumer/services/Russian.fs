@@ -32,16 +32,16 @@ type Dependencies =
                 |> ResultAsync.wrap ServiceGraph.get
 
             let createOrUpdateChat chat =
-                deps.chatStorage |> Chat.Command.createOrUpdate chat
+                deps.ChatStorage |> Chat.Command.createOrUpdate chat
 
             let createOrUpdateRequest request =
-                deps.requestStorage |> Request.Command.createOrUpdate request
+                deps.RequestStorage |> Request.Command.createOrUpdate request
 
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
-                  initRequestStorage = fun _ -> deps.requestStorage |> Ok
+                  initRequestStorage = fun _ -> deps.RequestStorage |> Ok
                   ServiceGraph = serviceGraph
                   getChatRequests = deps.getChatRequests
                   createOrUpdateChat = createOrUpdateChat

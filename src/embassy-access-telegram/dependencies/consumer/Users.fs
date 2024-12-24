@@ -25,12 +25,12 @@ type Dependencies =
             let! embassiesDeps = Embassies.Dependencies.create deps
 
             let getUserEmbassies chatId =
-                deps.chatStorage
+                deps.ChatStorage
                 |> Chat.Query.tryFindById chatId
                 |> ResultAsync.bindAsync (function
                     | None -> $"Telegram chat {chatId.ValueStr}" |> NotFound |> Error |> async.Return
                     | Some chat ->
-                        deps.requestStorage
+                        deps.RequestStorage
                         |> Request.Query.findManyByIds chat.Subscriptions
                         |> ResultAsync.map (List.map _.Service.Embassy))
 
