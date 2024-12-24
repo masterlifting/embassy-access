@@ -19,15 +19,14 @@ let private createButtons chatId msgIdOpt name data =
 
 let private toEmbassyResponse chatId messageId name (embassies: Graph.Node<EmbassyNode> seq) =
     embassies
-    |> Seq.map (fun embassy ->
-        EA.Telegram.Routes.Router.Embassies(Get(Embassy(embassy.FullId))).Route, embassy.ShortName)
+    |> Seq.map (fun embassy -> EA.Telegram.Routes.Router.Embassies(Get(Embassy(embassy.Id))).Route, embassy.ShortName)
     |> createButtons chatId (Some messageId) name
 
 let private toEmbassyServiceResponse chatId messageId embassyId name (services: Graph.Node<ServiceNode> seq) =
     services
     |> Seq.map (fun service ->
         EA.Telegram.Routes.Router
-            .Embassies(Get(EmbassyService(embassyId, service.FullId)))
+            .Embassies(Get(EmbassyService(embassyId, service.Id)))
             .Route,
         service.ShortName)
     |> createButtons chatId (Some messageId) name
@@ -45,9 +44,9 @@ module internal Get =
 
     let embassyNodeServices (embassyNode: Graph.Node<EmbassyNode>) =
         fun (deps: Embassies.Dependencies) ->
-            deps.getEmbassyServices embassyNode.FullId
+            deps.getEmbassyServices embassyNode.Id
             |> ResultAsync.map (
-                toEmbassyServiceResponse deps.ChatId deps.MessageId embassyNode.FullId embassyNode.Value.Description
+                toEmbassyServiceResponse deps.ChatId deps.MessageId embassyNode.Id embassyNode.Value.Description
             )
 
     let embassy embassyId =
@@ -67,7 +66,12 @@ module internal Get =
             deps.getEmbassyService embassyId serviceId
             |> ResultAsync.bindAsync (fun serviceNode ->
                 match serviceNode.Children with
-                | [] -> deps.ServicesDeps |> Services.getEmbassyService embassyId serviceNode
+                | [] ->
+                    match serviceNode.IdParts |> List.map _.Value with
+                    | [ "SRV"; "RU"; _ ] ->
+                        deps.RussianServiceDeps
+                        |> EA.Telegram.Handlers.Consumer.Services.Russian.getService embassyId serviceNode.Value
+                    | _ -> serviceNode.ShortName |> NotSupported |> Error |> async.Return
                 | children ->
                     children
                     |> toEmbassyServiceResponse deps.ChatId deps.MessageId embassyId serviceNode.Value.Description

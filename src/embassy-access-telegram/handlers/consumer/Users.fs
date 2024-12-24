@@ -2,13 +2,12 @@
 module EA.Telegram.Handlers.Consumer.Users
 
 open System
-open EA.Core.Domain
-open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Routes.Users
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
+open EA.Core.Domain
+open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Routes.Users
 
 let private createButtons chatId msgIdOpt name data =
     (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New)
@@ -17,13 +16,10 @@ let private createButtons chatId msgIdOpt name data =
           Columns = 3
           Data = data |> Map.ofSeq }
 
-let private toUserEmbassyResponse chatId messageId userId name (embassyNodes: Graph.Node<EmbassyNode> seq) =
-    embassyNodes
-    |> Seq.map (fun embassyNode ->
-        EA.Telegram.Routes.Router
-            .Users(Get(UserEmbassy(userId, embassyNode.FullId)))
-            .Route,
-        embassyNode.ShortName)
+let private toUserEmbassyResponse chatId messageId userId name (embassies: EmbassyNode seq) =
+    embassies
+    |> Seq.map (fun embassy ->
+        EA.Telegram.Routes.Router.Users(Get(UserEmbassy(userId, embassy.Id))).Route, embassy.Name)
     |> createButtons chatId (Some messageId) name
 
 module internal Get =

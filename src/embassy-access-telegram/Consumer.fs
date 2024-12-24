@@ -18,7 +18,6 @@ module private Consume =
     let private toConsume request =
         fun deps ->
             match request with
-            | Router.Request.Services value -> deps |> Services.consume value
             | Router.Request.Embassies value -> deps |> Embassies.consume value
             | Router.Request.Users value -> deps |> Users.consume value
             | Router.Request.Russian value -> deps |> Services.Russian.consume value
