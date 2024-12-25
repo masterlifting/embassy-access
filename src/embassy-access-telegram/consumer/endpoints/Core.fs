@@ -29,4 +29,4 @@ type Request =
             | "2" -> remaining |> RussianEmbassy.Request.parse |> Result.map RussianEmbassy
             | "/start" -> Embassies(Embassies.Get(Embassies.Embassies)) |> Ok
             | "/mine" -> Users(Users.Get(Users.UserEmbassies(deps.ChatId))) |> Ok
-            | _ -> $"'{parts}' route of Router" |> NotSupported |> Error
+            | _ -> $"'{input}' of Endpoints" |> NotSupported |> Error

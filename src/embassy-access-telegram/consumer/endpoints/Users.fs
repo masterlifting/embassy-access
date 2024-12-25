@@ -7,24 +7,24 @@ open Web.Telegram.Domain
 let private Delimiter = "|"
 
 type GetRequest =
-    | UserEmbassies of ChatId
     | UserEmbassy of userId: ChatId * embassyId: Graph.NodeId
+    | UserEmbassies of ChatId
 
     member this.Code =
         match this with
-        | UserEmbassies id -> [ "00"; id.ValueStr ]
-        | UserEmbassy(userId, embassyId) -> [ "01"; userId.ValueStr; embassyId.Value ]
+        | UserEmbassy(userId, embassyId) -> [ "00"; userId.ValueStr; embassyId.Value ]
+        | UserEmbassies id -> [ "01"; id.ValueStr ]
         |> String.concat Delimiter
 
     static member parse(parts: string[]) =
         match parts with
-        | [| "00"; id |] -> id |> ChatId.parse |> Result.map GetRequest.UserEmbassies
-        | [| "01"; userId; embassyId |] ->
+        | [| "00"; userId; embassyId |] ->
             userId
             |> ChatId.parse
             |> Result.map (fun userId -> (userId, embassyId |> Graph.NodeIdValue))
             |> Result.map GetRequest.UserEmbassy
-        | _ -> $"'{parts}' for Users.GetRequest" |> NotSupported |> Error
+        | [| "01"; id |] -> id |> ChatId.parse |> Result.map GetRequest.UserEmbassies
+        | _ -> $"'{parts}' of Users.GetRequest endpoint" |> NotSupported |> Error
 
 type Request =
     | Get of GetRequest
@@ -38,4 +38,4 @@ type Request =
 
         match parts[0][0] with
         | '0' -> parts |> GetRequest.parse |> Result.map Get
-        | _ -> $"'{input}' route of Users" |> NotSupported |> Error
+        | _ -> $"'{input}' of Users endpoint" |> NotSupported |> Error

@@ -7,28 +7,28 @@ let private Delimiter = "|"
 
 type GetRequest =
     | Embassy of Graph.NodeId
+    | Embassies
     | EmbassyService of embassyId: Graph.NodeId * serviceId: Graph.NodeId
     | EmbassyServices of Graph.NodeId
-    | Embassies
 
     member this.Code =
         match this with
         | Embassy id -> [ "00"; id.Value ]
-        | EmbassyService(embassyId, serviceId) -> [ "01"; embassyId.Value; serviceId.Value ]
-        | EmbassyServices id -> [ "02"; id.Value ]
-        | Embassies -> [ "03" ]
+        | Embassies -> [ "01" ]
+        | EmbassyService(embassyId, serviceId) -> [ "02"; embassyId.Value; serviceId.Value ]
+        | EmbassyServices id -> [ "03"; id.Value ]
         |> String.concat Delimiter
 
     static member parse(parts: string[]) =
         match parts with
         | [| "00"; id |] -> id |> Graph.NodeIdValue |> GetRequest.Embassy |> Ok
-        | [| "01"; embassyId; serviceId |] ->
+        | [| "02" |] -> Embassies |> Ok
+        | [| "03"; embassyId; serviceId |] ->
             (embassyId |> Graph.NodeIdValue, serviceId |> Graph.NodeIdValue)
             |> GetRequest.EmbassyService
             |> Ok
-        | [| "02"; id |] -> id |> Graph.NodeIdValue |> GetRequest.EmbassyServices |> Ok
-        | [| "03" |] -> Embassies |> Ok
-        | _ -> $"'{parts}' for Embassies.GetRequest" |> NotSupported |> Error
+        | [| "04"; id |] -> id |> Graph.NodeIdValue |> GetRequest.EmbassyServices |> Ok
+        | _ -> $"'{parts}' of Embassies.GetRequest endpoint" |> NotSupported |> Error
 
 type Request =
     | Get of GetRequest
@@ -42,4 +42,4 @@ type Request =
 
         match parts[0][0] with
         | '0' -> parts |> GetRequest.parse |> Result.map Get
-        | _ -> $"'{input}' route of Embassies" |> NotSupported |> Error
+        | _ -> $"'{input}' of Embassies endpoint" |> NotSupported |> Error

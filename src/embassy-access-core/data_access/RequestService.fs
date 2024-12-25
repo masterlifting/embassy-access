@@ -5,27 +5,34 @@ open Infrastructure.Domain
 open EA.Core.Domain
 
 type RequestServiceEntity() =
-    member val Name = String.Empty with get, set
     member val Payload = String.Empty with get, set
+    member val ServiceId = String.Empty with get, set
+    member val ServiceName = String.Empty with get, set
+    member val ServiceDescription: string option = None with get, set
     member val EmbassyId = String.Empty with get, set
     member val EmbassyName = String.Empty with get, set
-    member val Description: string option = None with get, set
+    member val EmbassyDescription: string option = None with get, set
 
     member this.ToDomain() =
-        { Name = this.Name
+        { Id = this.ServiceId |> Graph.NodeIdValue
+          Name = this.ServiceName
           Payload = this.Payload
+          Description = this.ServiceDescription
           Embassy =
             { Id = this.EmbassyId |> Graph.NodeIdValue
               Name = this.EmbassyName
-              Description = None }
-          Description = this.Description }
+              Description = this.EmbassyDescription } }
 
 type internal RequestService with
     member internal this.ToEntity() =
         let result = RequestServiceEntity()
-        result.Name <- this.Name
         result.Payload <- this.Payload
+
+        result.ServiceId <- this.Id.Value
+        result.ServiceName <- this.Name
+        result.ServiceDescription <- this.Description
+
         result.EmbassyId <- this.Embassy.Id.Value
         result.EmbassyName <- this.Embassy.Name
-        result.Description <- this.Description
+        result.EmbassyDescription <- this.Embassy.Description
         result

@@ -19,7 +19,8 @@ let private createButtons chatId msgIdOpt name data =
 
 let private toUserEmbassyResponse chatId messageId userId name (embassies: EmbassyNode seq) =
     embassies
-    |> Seq.map (fun embassy -> Core.Users(Get(UserEmbassy(userId, embassy.Id))).Route, embassy.Name)
+    |> Seq.map (fun embassy ->
+        Core.Users(Get(UserEmbassy(userId, embassy.Id))).Route, embassy.Name |> Graph.split |> List.last)
     |> createButtons chatId messageId name
 
 module internal Get =
@@ -31,15 +32,14 @@ module internal Get =
     let userEmbassy userId embassyId =
         fun (deps: Users.Dependencies) ->
             deps.getUserEmbassyNode userId embassyId
-            |> ResultAsync.bindAsync (fun embassyNode ->
-                match embassyNode.Children with
-                | [] ->
+            |> ResultAsync.bindAsync (function
+                | AP.Leaf value ->
                     deps.EmbassiesDeps
-                    |> EA.Telegram.Consumer.Handlers.Embassies.Get.embassyNodeServices embassyNode.Value
-                | children ->
-                    children
+                    |> EA.Telegram.Consumer.Handlers.Embassies.Get.embassyNodeServices value
+                | AP.Node node ->
+                    node.Children
                     |> Seq.map _.Value
-                    |> toUserEmbassyResponse deps.ChatId (Some deps.MessageId) userId embassyNode.Value.Description
+                    |> toUserEmbassyResponse deps.ChatId (Some deps.MessageId) userId node.Value.Description
                     |> Ok
                     |> async.Return)
 

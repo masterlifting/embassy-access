@@ -19,7 +19,7 @@ let private validateCity (request: Request) (payload: Payload) =
         <| NotSupported $"Requested {payload.City} for the subdomain {payload.SubDomain}"
 
 let private parsePayload =
-    ResultAsync.bind (fun request ->
+    ResultAsync.bind (fun (request: Request) ->
         request.Service.Payload
         |> Uri
         |> Payload.create
@@ -121,7 +121,7 @@ let start order =
 
 let pick order =
     fun (deps: Order.Dependencies) ->
-        
+
         let inline errorFilter error =
             match error with
             | Operation reason ->

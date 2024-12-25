@@ -1,8 +1,11 @@
 ﻿[<AutoOpen>]
 module EA.Core.Domain.RequestService
 
+open Infrastructure.Domain
+
 type RequestService =
-    { Name: string
+    { Id: Graph.NodeId
+      Name: string
       Payload: string
-      Embassy: EmbassyNode
-      Description: string option }
+      Description: string option
+      Embassy: EmbassyNode }

@@ -7,20 +7,20 @@ open EA.Core.Domain
 type KdmidRequest =
     { Uri: Uri
       Embassy: EmbassyNode
+      Service: ServiceNode
       TimeZone: float
       Confirmation: ConfirmationState }
 
-    member this.CreateRequest serviceName =
+    member this.CreateRequest() =
         { Id = RequestId.New
           Service =
-            { Name = serviceName
+            { Id = this.Service.Id
+              Name = this.Service.Name
               Payload = this.Uri.ToString()
-              Embassy = this.Embassy
-              Description = None }
+              Description = this.Service.Description
+              Embassy = this.Embassy }
           Attempt = (DateTime.UtcNow, 0)
           ProcessState = Created
           ConfirmationState = this.Confirmation
           Appointments = Set.empty
           Modified = DateTime.UtcNow }
-
-

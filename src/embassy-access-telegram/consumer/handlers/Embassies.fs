@@ -23,7 +23,7 @@ let private toEmbassyResponse chatId messageId name (embassies: EmbassyNode seq)
     |> Seq.map (fun embassy -> Core.Embassies(Get(Embassy(embassy.Id))).Route, embassy.Name |> Graph.split |> List.last)
     |> createButtons chatId messageId name 3
 
-let private toEmbassyServiceResponse chatId messageId embassyId name (services: ServiceNode seq) =
+let private toEmbassyServiceResponse chatId messageId name embassyId (services: ServiceNode seq) =
     services
     |> Seq.map (fun service ->
         Core.Embassies(Get(EmbassyService(embassyId, service.Id))).Route, service.Name |> Graph.split |> List.last)
@@ -36,47 +36,42 @@ module internal Get =
 
     let embassyServices embassyId =
         fun (deps: Embassies.Dependencies) ->
-            deps.getEmbassyServiceNodes embassyId
-            |> ResultAsync.map (
-                Seq.map _.Value
-                >> toEmbassyServiceResponse deps.ChatId deps.MessageId embassyId None
-            )
+            deps.getEmbassyServices embassyId
+            |> ResultAsync.map (toEmbassyServiceResponse deps.ChatId deps.MessageId None embassyId)
 
     let embassyNodeServices (embassy: EmbassyNode) =
         fun (deps: Embassies.Dependencies) ->
-            deps.getEmbassyServiceNodes embassy.Id
-            |> ResultAsync.map (
-                Seq.map _.Value
-                >> toEmbassyServiceResponse deps.ChatId deps.MessageId embassy.Id embassy.Description
-            )
+            deps.getEmbassyServices embassy.Id
+            |> ResultAsync.map (toEmbassyServiceResponse deps.ChatId deps.MessageId embassy.Description embassy.Id)
 
     let embassy embassyId =
         fun (deps: Embassies.Dependencies) ->
             deps.getEmbassyNode embassyId
-            |> ResultAsync.bindAsync (fun embassyNode ->
-                match embassyNode.Children with
-                | [] -> deps |> embassyNodeServices embassyNode.Value
-                | children ->
-                    children
+            |> ResultAsync.bindAsync (function
+                | AP.Leaf value -> deps |> embassyNodeServices value
+                | AP.Node node ->
+                    node.Children
                     |> Seq.map _.Value
-                    |> toEmbassyResponse deps.ChatId (Some deps.MessageId) embassyNode.Value.Description
+                    |> toEmbassyResponse deps.ChatId (Some deps.MessageId) node.Value.Description
                     |> Ok
                     |> async.Return)
 
     let embassyService embassyId serviceId =
         fun (deps: Embassies.Dependencies) ->
-            deps.getEmbassyServiceNode embassyId serviceId
+            deps.getServiceNode serviceId
             |> ResultAsync.bindAsync (fun serviceNode ->
                 match serviceNode.Children with
                 | [] ->
-                    match serviceNode.IdParts |> List.map _.Value with
-                    | [ "SRV"; "RU"; _ ] ->
-                        deps.RussianEmbassyDeps |> RussianEmbassy.getService embassyId serviceNode.Value
-                    | _ -> serviceNode.ShortName |> NotSupported |> Error |> async.Return
+                    match serviceNode.IdParts.Length > 2 with
+                    | false -> serviceNode.ShortName |> NotSupported |> Error |> async.Return
+                    | true ->
+                        match serviceNode.IdParts[1].Value with
+                        | "RU" -> deps.RussianEmbassyDeps |> RussianEmbassy.getService embassyId serviceNode.Value
+                        | _ -> serviceNode.Id.Value |> NotSupported |> Error |> async.Return
                 | children ->
                     children
                     |> Seq.map _.Value
-                    |> toEmbassyServiceResponse deps.ChatId deps.MessageId embassyId serviceNode.Value.Description
+                    |> toEmbassyServiceResponse deps.ChatId deps.MessageId serviceNode.Value.Description embassyId
                     |> Ok
                     |> async.Return)
 

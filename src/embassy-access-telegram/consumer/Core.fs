@@ -18,8 +18,8 @@ module private Consume =
     let private toResponse request =
         fun deps ->
             match request with
-            | Core.Request.Embassies value -> deps |> Embassies.toResponse value
             | Core.Request.Users value -> deps |> Users.toResponse value
+            | Core.Request.Embassies value -> deps |> Embassies.toResponse value
             | Core.Request.RussianEmbassy value -> deps |> RussianEmbassy.toResponse value
 
     let text value client =
@@ -28,7 +28,9 @@ module private Consume =
             |> Core.Request.parse value
             |> Result.map toResponse
             |> ResultAsync.wrap (fun createResponse ->
-                deps |> createResponse |> produceResult deps.ChatId deps.CancellationToken client)
+                deps
+                |> createResponse
+                |> produceResult deps.ChatId deps.CancellationToken client)
 
     let callback value client =
         fun deps ->
@@ -36,7 +38,9 @@ module private Consume =
             |> Core.Request.parse value
             |> Result.map toResponse
             |> ResultAsync.wrap (fun createResponse ->
-                deps |> createResponse |> produceResult deps.ChatId deps.CancellationToken client)
+                deps
+                |> createResponse
+                |> produceResult deps.ChatId deps.CancellationToken client)
 
 let private create cfg ct client =
     fun data ->

@@ -12,8 +12,8 @@ type Dependencies =
       RussianEmbassyDeps: RussianEmbassy.Dependencies
       getEmbassies: unit -> Async<Result<EmbassyNode list, Error'>>
       getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-      getEmbassyServiceNodes: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode> list, Error'>>
-      getEmbassyServiceNode: Graph.NodeId -> Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
+      getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+      getEmbassyServices: Graph.NodeId -> Async<Result<ServiceNode list, Error'>> }
 
     static member create(deps: Core.Dependencies) =
         let result = ResultBuilder()
@@ -32,7 +32,7 @@ type Dependencies =
                     | Some embassy -> Ok embassy
                     | None -> $"Embassy with Id {embassyId.Value}" |> NotFound |> Error)
 
-            let getEmbassyServiceNodes embassyId =
+            let getEmbassyServices embassyId =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
@@ -47,10 +47,10 @@ type Dependencies =
                             deps.getServiceGraph ()
                             |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                             |> ResultAsync.bind (function
-                                | None -> $"Service of embassy with Id {embassyId.Value}" |> NotFound |> Error
-                                | Some serviceNode -> serviceNode.Children |> Ok))
+                                | None -> $"Services in {embassyNode.Name}" |> NotFound |> Error
+                                | Some serviceNode -> serviceNode.Children |> List.map _.Value |> Ok))
 
-            let getEmbassyServiceNode embassyId serviceId =
+            let getServiceNode serviceId =
                 deps.getServiceGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                 |> ResultAsync.bind (function
@@ -63,6 +63,6 @@ type Dependencies =
                   RussianEmbassyDeps = russianServiceDeps
                   getEmbassies = getEmbassies
                   getEmbassyNode = getEmbassyNode
-                  getEmbassyServiceNodes = getEmbassyServiceNodes
-                  getEmbassyServiceNode = getEmbassyServiceNode }
+                  getServiceNode = getServiceNode
+                  getEmbassyServices = getEmbassyServices }
         }

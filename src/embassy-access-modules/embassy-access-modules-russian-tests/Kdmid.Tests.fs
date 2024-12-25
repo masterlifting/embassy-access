@@ -12,7 +12,6 @@ module private Fixture =
     open Web.Http.Domain.Response
     open Persistence.FileSystem
     open EA.Embassies.Russian.Kdmid.Dependencies
-    open EA.Embassies.Russian.Kdmid.Domain.Order
 
     let httpRequestHeaders =
         Some
@@ -62,12 +61,17 @@ module private Fixture =
             { Id = Graph.NodeId.New
               Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.combine
               Description = None }
+          Service =
+            { Id = Graph.NodeId.New
+              Name = "TestService"
+              Instruction = None
+              Description = None }
           TimeZone = 1.0
           Confirmation = Auto FirstAvailable }
 
     let IssueForeign =
         { KdmidService.Order =
-            { Request = Request.CreateRequest "test"
+            { Request = Request.CreateRequest()
               TimeZone = Request.TimeZone }
           KdmidService.Dependencies = Dependencies }
 

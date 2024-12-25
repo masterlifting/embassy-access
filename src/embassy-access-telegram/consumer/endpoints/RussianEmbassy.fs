@@ -31,7 +31,7 @@ type PostRequest =
               Payload = payload }
             |> PostRequest.Kdmid
             |> Ok
-        | _ -> $"'{parts}' for Services.Russian.PostRequest" |> NotSupported |> Error
+        | _ -> $"'{parts}' of RussianEmbassy.PostRequest endpoint" |> NotSupported |> Error
 
 type Request =
     | Post of PostRequest
@@ -45,4 +45,4 @@ type Request =
 
         match parts[0][0] with
         | '1' -> parts |> PostRequest.parse |> Result.map Post
-        | _ -> $"'{input}' route of Services" |> NotSupported |> Error
+        | _ -> $"'{input}' of RussianEmbassy endpoint" |> NotSupported |> Error

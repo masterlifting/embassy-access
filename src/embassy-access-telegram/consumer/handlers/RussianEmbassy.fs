@@ -56,18 +56,19 @@ module private Kdmid =
     let post (model: KdmidPostModel) =
         fun (deps: RussianEmbassy.Dependencies) -> model.ServiceId.Value |> NotSupported |> Error |> async.Return
 
-    let createKdmidRequest embassy payload =
+    let createKdmidRequest embassy service payload =
         payload
         |> Web.Http.Route.toUri
         |> Result.map (fun uri ->
             { Uri = uri
+              Service = service
               Embassy = embassy
               TimeZone = 1.0
               Confirmation = Disabled })
 
-    let createRequest serviceName (kdmidRequest: KdmidRequest) =
+    let createRequest (kdmidRequest: KdmidRequest) =
         fun (deps: RussianEmbassy.Dependencies) ->
-            let request = kdmidRequest.CreateRequest serviceName
+            let request = kdmidRequest.CreateRequest()
 
             deps.createOrUpdateChat
                 { Id = deps.ChatId
