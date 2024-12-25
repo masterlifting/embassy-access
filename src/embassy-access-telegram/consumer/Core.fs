@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Consumer
+﻿module EA.Telegram.Consumer.Core
 
 open System
 open Infrastructure.Domain
@@ -7,36 +7,36 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Consumer
 open EA.Telegram.Domain
 open EA.Telegram.Dependencies
-open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Handlers.Consumer
+open EA.Telegram.Consumer.Dependencies
 
 module private Consume =
-    open EA.Telegram.Routes
+    open EA.Telegram.Consumer.Endpoints
+    open EA.Telegram.Consumer.Handlers
 
     let private produceResult chatId ct client dataRes = produceResult dataRes chatId ct client
 
-    let private toConsume request =
+    let private toResponse request =
         fun deps ->
             match request with
-            | Router.Request.Embassies value -> deps |> Embassies.consume value
-            | Router.Request.Users value -> deps |> Users.consume value
-            | Router.Request.Russian value -> deps |> Services.Russian.consume value
+            | Core.Request.Embassies value -> deps |> Embassies.toResponse value
+            | Core.Request.Users value -> deps |> Users.toResponse value
+            | Core.Request.RussianEmbassy value -> deps |> RussianEmbassy.toResponse value
 
     let text value client =
         fun deps ->
             deps
-            |> Router.Request.parse value
-            |> Result.map toConsume
-            |> ResultAsync.wrap (fun consume ->
-                deps |> consume |> produceResult deps.ChatId deps.CancellationToken client)
+            |> Core.Request.parse value
+            |> Result.map toResponse
+            |> ResultAsync.wrap (fun createResponse ->
+                deps |> createResponse |> produceResult deps.ChatId deps.CancellationToken client)
 
     let callback value client =
         fun deps ->
             deps
-            |> Router.Request.parse value
-            |> Result.map toConsume
-            |> ResultAsync.wrap (fun consume ->
-                deps |> consume |> produceResult deps.ChatId deps.CancellationToken client)
+            |> Core.Request.parse value
+            |> Result.map toResponse
+            |> ResultAsync.wrap (fun createResponse ->
+                deps |> createResponse |> produceResult deps.ChatId deps.CancellationToken client)
 
 let private create cfg ct client =
     fun data ->

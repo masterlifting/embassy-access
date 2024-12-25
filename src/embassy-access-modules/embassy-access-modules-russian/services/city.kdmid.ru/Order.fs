@@ -10,7 +10,7 @@ open EA.Embassies.Russian.Kdmid.Domain
 open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private validateCity (request: Request) (payload: Payload) =
-    let nodeSubName = [ payload.Country; payload.City ] |> Graph.buildNodeNameOfSeq
+    let nodeSubName = [ payload.Country; payload.City ] |> Graph.combine
 
     match request.Service.Embassy.Name.IndexOf(nodeSubName) <> -1 with
     | true -> Ok payload

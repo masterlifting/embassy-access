@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Handlers.Producer.Core
+module EA.Telegram.Producer.Handlers.Core
 
 open System
 open Infrastructure.Domain
@@ -9,7 +9,7 @@ open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies.Producer
+open EA.Telegram.Producer.Dependencies
 
 let createAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
     fun (deps: Core.Dependencies) ->
@@ -21,20 +21,20 @@ let createAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
             |> ResultAsync.wrap (Chat.Query.findManyBySubscriptions subscriptions))
         |> ResultAsync.map (
             Seq.map (fun chat ->
-                let buttons =
-                    appointments
-                    |> Seq.map (fun appointment ->
-                        (embassy.Id, appointment.Id)
-                        |> EA.Telegram.Command.ChooseAppointments
-                        |> EA.Telegram.Command.set,
-                        appointment.Description)
-                    |> Map
+                // let buttons =
+                //     appointments
+                //     |> Seq.map (fun appointment ->
+                //         (embassy.Id, appointment.Id)
+                //         |> EA.Telegram.Command.ChooseAppointments
+                //         |> EA.Telegram.Command.set,
+                //         appointment.Description)
+                //     |> Map
 
                 (chat.Id, New)
                 |> Buttons.create
                     { Name = $"Choose the appointment for '{embassy}'"
                       Columns = 1
-                      Data = buttons })
+                      Data = Map.empty })
         )
 
 let createConfirmation (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =

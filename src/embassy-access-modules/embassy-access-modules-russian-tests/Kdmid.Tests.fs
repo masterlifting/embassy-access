@@ -60,7 +60,7 @@ module private Fixture =
         { Uri = Uri("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F")
           Embassy =
             { Id = Graph.NodeId.New
-              Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.buildNodeNameOfSeq
+              Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.combine
               Description = None }
           TimeZone = 1.0
           Confirmation = Auto FirstAvailable }

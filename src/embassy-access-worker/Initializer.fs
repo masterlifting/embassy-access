@@ -7,7 +7,7 @@ open Worker.Domain
 let run (_, cfg, ct) =
     async {
         cfg
-        |> EA.Telegram.Consumer.start ct
+        |> EA.Telegram.Consumer.Core.start ct
         |> ResultAsync.mapError (_.Message >> Log.critical)
         |> Async.Ignore
         |> Async.Start

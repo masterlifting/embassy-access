@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Producer
+﻿module EA.Telegram.Producer.Core
 
 open System
 open Infrastructure.Prelude
@@ -23,7 +23,7 @@ let private spread ct =
         |> ResultAsync.map ignore)
 
 module Produce =
-    open EA.Telegram.Handlers.Producer
+    open EA.Telegram.Producer.Handlers
 
     let notification notification ct =
         fun deps ->

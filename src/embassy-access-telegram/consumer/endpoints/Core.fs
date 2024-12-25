@@ -1,22 +1,21 @@
-﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Routes.Router
+﻿module EA.Telegram.Consumer.Endpoints.Core
 
 open Infrastructure.Domain
-open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Consumer.Dependencies
 
 [<Literal>]
 let private Delimiter = "|"
 
 type Request =
-    | Embassies of Embassies.Request
     | Users of Users.Request
-    | Russian of Services.Russian.Request
+    | Embassies of Embassies.Request
+    | RussianEmbassy of RussianEmbassy.Request
 
     member this.Route =
         match this with
-        | Embassies r -> [ "0"; r.Route ]
-        | Users r -> [ "1"; r.Route ]
-        | Russian r -> [ "2"; r.Route ]
+        | Users r -> [ "0"; r.Route ]
+        | Embassies r -> [ "1"; r.Route ]
+        | RussianEmbassy r -> [ "2"; r.Route ]
         |> String.concat Delimiter
 
     static member parse(input: string) =
@@ -25,9 +24,9 @@ type Request =
             let remaining = parts[1..] |> String.concat Delimiter
 
             match parts[0] with
-            | "0" -> remaining |> Embassies.Request.parse |> Result.map Embassies
-            | "1" -> remaining |> Users.Request.parse |> Result.map Users
-            | "2" -> remaining |> Services.Russian.Request.parse |> Result.map Russian
+            | "0" -> remaining |> Users.Request.parse |> Result.map Users
+            | "1" -> remaining |> Embassies.Request.parse |> Result.map Embassies
+            | "2" -> remaining |> RussianEmbassy.Request.parse |> Result.map RussianEmbassy
             | "/start" -> Embassies(Embassies.Get(Embassies.Embassies)) |> Ok
             | "/mine" -> Users(Users.Get(Users.UserEmbassies(deps.ChatId))) |> Ok
             | _ -> $"'{parts}' route of Router" |> NotSupported |> Error

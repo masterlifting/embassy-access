@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Core
+module EA.Telegram.Consumer.Dependencies.Core
 
 open System.Threading
 open Infrastructure.Prelude
@@ -40,8 +40,10 @@ type Dependencies =
 
                         chatStorage |> Chat.Command.create chat |> ResultAsync.map (fun _ -> [])
                     | Some chat -> requestStorage |> Request.Query.findManyByIds chat.Subscriptions)
-                
-            let getServiceGraph () = persistenceDeps.initServiceGraphStorage "" |> ResultAsync.wrap ServiceGraph.get
+
+            let getServiceGraph () =
+                persistenceDeps.initServiceGraphStorage "Services"
+                |> ResultAsync.wrap ServiceGraph.get
 
             return
                 { ChatId = dto.ChatId

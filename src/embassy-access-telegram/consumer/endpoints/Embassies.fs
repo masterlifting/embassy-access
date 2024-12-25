@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Routes.Embassies
+﻿module EA.Telegram.Consumer.Endpoints.Embassies
 
 open Infrastructure.Domain
 

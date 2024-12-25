@@ -13,7 +13,7 @@ let private createEmbassyName (task: WorkerTask) =
         |> Graph.split
         |> List.skip 1
         |> List.take 3
-        |> Graph.buildNodeNameOfSeq
+        |> Graph.combine
         |> Ok
     with ex ->
         Error

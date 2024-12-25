@@ -9,21 +9,22 @@
         <Compile Include="domain\Chat.fs" />
         <Compile Include="data_access\Chat.fs" />
         <Compile Include="dependencies\Persistence.fs" />
-        <Compile Include="dependencies\consumer\Consumer.fs" />
-        <Compile Include="dependencies\consumer\services\Russian.fs" />
-        <Compile Include="dependencies\consumer\Embassies.fs" />
-        <Compile Include="dependencies\consumer\Users.fs" />
-        <Compile Include="dependencies\producer\Producer.fs" />
-        <Compile Include="routes\services\Russian.fs" />
-        <Compile Include="routes\Embassies.fs" />
-        <Compile Include="routes\Users.fs" />
-        <Compile Include="routes\Router.fs" />
-        <Compile Include="handlers\consumer\services\Russian.fs" />
-        <Compile Include="handlers\consumer\Embassies.fs" />
-        <Compile Include="handlers\consumer\Users.fs" />
-        <Compile Include="handlers\producer\Producer.fs" />
-        <Compile Include="Consumer.fs" />
-        <Compile Include="Producer.fs" />
+        <Compile Include="consumer\dependencies\Core.fs" />
+        <Compile Include="consumer\dependencies\RussianEmbassy.fs" />
+        <Compile Include="consumer\dependencies\Embassies.fs" />
+        <Compile Include="consumer\dependencies\Users.fs" />
+        <Compile Include="consumer\endpoints\RussianEmbassy.fs" />
+        <Compile Include="consumer\endpoints\Embassies.fs" />
+        <Compile Include="consumer\endpoints\Users.fs" />
+        <Compile Include="consumer\endpoints\Core.fs" />
+        <Compile Include="consumer\handlers\RussianEmbassy.fs" />
+        <Compile Include="consumer\handlers\Embassies.fs" />
+        <Compile Include="consumer\handlers\Users.fs" />
+        <Compile Include="consumer\Core.fs" />
+        <Compile Include="producer\dependencies\Core.fs" />
+        <Folder Include="producer\endpoints\" />
+        <Compile Include="producer\handlers\Core.fs" />
+        <Compile Include="producer\Core.fs" />
     </ItemGroup>
 
     <ItemGroup>

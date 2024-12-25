@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Producer.Core
+module EA.Telegram.Producer.Dependencies.Core
 
 open Infrastructure.Domain
 open EA.Telegram.DataAccess

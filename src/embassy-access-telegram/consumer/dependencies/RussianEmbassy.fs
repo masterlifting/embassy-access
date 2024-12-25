@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Services.Russian
+module EA.Telegram.Consumer.Dependencies.RussianEmbassy
 
 open System.Threading
 open EA.Telegram.Domain
@@ -9,7 +9,6 @@ open EA.Core.Domain
 open Web.Telegram.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies.Consumer
 
 type Dependencies =
     { ChatId: ChatId

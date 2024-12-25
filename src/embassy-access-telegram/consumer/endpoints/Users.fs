@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Routes.Users
+﻿module EA.Telegram.Consumer.Endpoints.Users
 
 open Infrastructure.Domain
 open Web.Telegram.Domain
