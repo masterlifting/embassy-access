@@ -10,18 +10,17 @@ open EA.Telegram.Consumer.Dependencies
 open EA.Telegram.Consumer.Endpoints
 open EA.Telegram.Consumer.Endpoints.Users
 
-let private createButtons chatId msgIdOpt name data =
-    (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New)
+let private createButtons chatId messageId buttonGroupName data =
+    (chatId, messageId |> Option.map Replace |> Option.defaultValue New)
     |> Buttons.create
-        { Name = name |> Option.defaultValue "Choose what do you want to visit"
-          Columns = 3
+        { Name = buttonGroupName |> Option.defaultValue "Choose what do you want to look at"
+          Columns = 1
           Data = data |> Map.ofSeq }
 
-let private toUserEmbassyResponse chatId messageId userId name (embassies: EmbassyNode seq) =
+let private toUserEmbassyResponse chatId messageId userId buttonGroupName (embassies: EmbassyNode seq) =
     embassies
-    |> Seq.map (fun embassy ->
-        Core.Users(Get(UserEmbassy(userId, embassy.Id))).Route, embassy.Name |> Graph.split |> List.last)
-    |> createButtons chatId messageId name
+    |> Seq.map (fun embassy -> Core.Users(Get(UserEmbassy(userId, embassy.Id))).Route, embassy.Name)
+    |> createButtons chatId messageId buttonGroupName
 
 module internal Get =
     let userEmbassies userId =
@@ -35,7 +34,7 @@ module internal Get =
             |> ResultAsync.bindAsync (function
                 | AP.Leaf value ->
                     deps.EmbassiesDeps
-                    |> EA.Telegram.Consumer.Handlers.Embassies.Get.embassyNodeServices value
+                    |> EA.Telegram.Consumer.Handlers.Embassies.Get.embassyServices value.Id
                 | AP.Node node ->
                     node.Children
                     |> Seq.map _.Value

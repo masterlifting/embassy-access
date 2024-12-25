@@ -2,6 +2,7 @@
 
 open System
 open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
 
 type RequestServiceEntity() =
@@ -21,6 +22,7 @@ type RequestServiceEntity() =
           Embassy =
             { Id = this.EmbassyId |> Graph.NodeIdValue
               Name = this.EmbassyName
+              ShortName = this.EmbassyName |> Graph.split |> Seq.last
               Description = this.EmbassyDescription } }
 
 type internal RequestService with

@@ -7,6 +7,7 @@ open Infrastructure.Prelude
 type EmbassyNode =
     { Id: Graph.NodeId
       Name: string
+      ShortName: string
       Description: string option }
 
     interface Graph.INodeName with

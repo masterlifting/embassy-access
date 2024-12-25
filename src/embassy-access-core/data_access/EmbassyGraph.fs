@@ -31,6 +31,7 @@ type EmbassyGraphEntity() =
                 Graph.Node(
                     { Id = nodeId
                       Name = this.Name
+                      ShortName = this.Name |> Graph.split |> Seq.last
                       Description = this.Description },
                     children
                 )))

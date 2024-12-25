@@ -6,6 +6,7 @@ open Infrastructure.Domain
 type ServiceNode =
     { Id: Graph.NodeId
       Name: string
+      ShortName: string
       Instruction: string option
       Description: string option }
 

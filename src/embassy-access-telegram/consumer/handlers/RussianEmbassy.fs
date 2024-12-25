@@ -22,8 +22,8 @@ let private createMessage request =
 
 module private Midpass =
 
-    let pickService (node: Graph.Node<ServiceNode>) embassy payload =
-        fun deps -> node.ShortName |> NotSupported |> Error |> async.Return
+    let pickService (serviceNode: Graph.Node<ServiceNode>) embassy payload =
+        fun deps -> serviceNode.ShortName |> NotSupported |> Error |> async.Return
 
     let post (model: MidpassPostModel) =
         fun (deps: RussianEmbassy.Dependencies) -> model.Number |> NotSupported |> Error |> async.Return

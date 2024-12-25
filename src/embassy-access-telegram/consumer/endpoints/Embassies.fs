@@ -22,12 +22,12 @@ type GetRequest =
     static member parse(parts: string[]) =
         match parts with
         | [| "00"; id |] -> id |> Graph.NodeIdValue |> GetRequest.Embassy |> Ok
-        | [| "02" |] -> Embassies |> Ok
-        | [| "03"; embassyId; serviceId |] ->
+        | [| "01" |] -> Embassies |> Ok
+        | [| "02"; embassyId; serviceId |] ->
             (embassyId |> Graph.NodeIdValue, serviceId |> Graph.NodeIdValue)
             |> GetRequest.EmbassyService
             |> Ok
-        | [| "04"; id |] -> id |> Graph.NodeIdValue |> GetRequest.EmbassyServices |> Ok
+        | [| "03"; id |] -> id |> Graph.NodeIdValue |> GetRequest.EmbassyServices |> Ok
         | _ -> $"'{parts}' of Embassies.GetRequest endpoint" |> NotSupported |> Error
 
 type Request =

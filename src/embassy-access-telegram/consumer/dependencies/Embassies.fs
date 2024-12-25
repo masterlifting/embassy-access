@@ -20,7 +20,7 @@ type Dependencies =
 
         result {
 
-            let! russianServiceDeps = RussianEmbassy.Dependencies.create deps
+            let! russianEmbassyDeps = RussianEmbassy.Dependencies.create deps
 
             let getEmbassies () =
                 deps.getEmbassyGraph () |> ResultAsync.map (_.Children >> List.map _.Value)
@@ -36,10 +36,14 @@ type Dependencies =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
-                    | None -> $"Embassy with Id {embassyId.Value}" |> NotFound |> Error |> async.Return
+                    | None -> $"Embassy services of Embassy with Id {embassyId.Value}" |> NotFound |> Error |> async.Return
                     | Some embassyNode ->
                         match embassyNode.IdParts.Length > 1 with
-                        | false -> embassyNode.Name |> NotSupported |> Error |> async.Return
+                        | false ->
+                            $"Embassy services of {embassyNode.ShortName}"
+                            |> NotFound
+                            |> Error
+                            |> async.Return
                         | true ->
                             let serviceId =
                                 [ "SRV"; embassyNode.IdParts[1].Value ] |> Graph.combine |> Graph.NodeIdValue
@@ -47,7 +51,7 @@ type Dependencies =
                             deps.getServiceGraph ()
                             |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                             |> ResultAsync.bind (function
-                                | None -> $"Services in {embassyNode.Name}" |> NotFound |> Error
+                                | None -> $"Embassy services of {embassyNode.ShortName}" |> NotFound |> Error
                                 | Some serviceNode -> serviceNode.Children |> List.map _.Value |> Ok))
 
             let getServiceNode serviceId =
@@ -60,7 +64,7 @@ type Dependencies =
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
-                  RussianEmbassyDeps = russianServiceDeps
+                  RussianEmbassyDeps = russianEmbassyDeps
                   getEmbassies = getEmbassies
                   getEmbassyNode = getEmbassyNode
                   getServiceNode = getServiceNode

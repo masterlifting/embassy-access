@@ -38,13 +38,13 @@ type Dependencies =
                     embassies
                     |> List.tryFind (fun embassy -> embassy.Id = embassyId)
                     |> Option.map Ok
-                    |> Option.defaultValue ($"Embassy with Id {embassyId.Value}" |> NotFound |> Error))
+                    |> Option.defaultValue ($"User embassy of Embassy with Id {embassyId.Value}" |> NotFound |> Error))
                 |> ResultAsync.bindAsync (fun embassy ->
                     deps.getEmbassyGraph ()
                     |> ResultAsync.map (Graph.BFS.tryFindById embassy.Id)
                     |> ResultAsync.bind (function
                         | Some embassyNode -> Ok embassyNode
-                        | None -> $"Embassy with Id {embassyId.Value}" |> NotFound |> Error))
+                        | None -> $"User embassy of Embassy with Id {embassy.Id.Value}" |> NotFound |> Error))
 
             return
                 { ChatId = deps.ChatId
