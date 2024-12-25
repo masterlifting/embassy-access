@@ -17,9 +17,14 @@ let private createButtons chatId messageId buttonGroupName data =
           Columns = 1
           Data = data |> Map.ofSeq }
 
-let private toUserEmbassyResponse chatId messageId userId buttonGroupName (embassies: EmbassyNode seq) =
+let private toUserEmbassyResponse chatId messageId buttonGroupName userId (embassies: EmbassyNode seq) =
     embassies
     |> Seq.map (fun embassy -> Core.Users(Get(UserEmbassy(userId, embassy.Id))).Route, embassy.Name)
+    |> createButtons chatId messageId buttonGroupName
+    
+let private toUserEmbassyServicesResponse chatId messageId buttonGroupName  userId embassyId (services: ServiceNode seq) =
+    services
+    |> Seq.map (fun service -> Core.Users(Get(UserEmbassyServices(userId, service.Id))).Route, service.Name)
     |> createButtons chatId messageId buttonGroupName
 
 module internal Get =
@@ -41,6 +46,11 @@ module internal Get =
                     |> toUserEmbassyResponse deps.ChatId (Some deps.MessageId) userId node.Value.Description
                     |> Ok
                     |> async.Return)
+    
+    let getUserEmbassyServices userId embassyId =
+        fun (deps: Users.Dependencies) ->
+            deps.getUserEmbassyServices userId embassyId
+            
 
 let toResponse request =
     fun (deps: Core.Dependencies) ->
