@@ -12,7 +12,7 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       EmbassiesDeps: Embassies.Dependencies
-      getUserEmbassyNode: ChatId -> Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
+      getUserEmbassy: ChatId -> Graph.NodeId -> Async<Result<EmbassyNode * EmbassyNode list, Error'>>
       getUserEmbassyNodes: ChatId -> Async<Result<Graph.Node<EmbassyNode> list, Error'>>
       getUserEmbassyServiceNode:
           ChatId -> Graph.NodeId -> Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
@@ -45,7 +45,7 @@ type Dependencies =
                         List.filter (fun x -> embassyIds |> List.exists (fun y -> y.Value.Contains x.Id.Value))
                     ))
 
-            let getUserEmbassyNode chatId embassyId =
+            let getUserEmbassy chatId embassyId =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
@@ -58,24 +58,21 @@ type Dependencies =
                         getUserServices chatId
                         |> ResultAsync.map (List.map _.Embassy.Id)
                         |> ResultAsync.map (fun embassyIds ->
-                            embassyNode.Children
-                            |> List.filter (fun x -> embassyIds |> List.exists (fun y -> y.Value.Contains x.Id.Value)))
-                        |> ResultAsync.map (fun children -> Graph.Node(embassyNode.Value, children)))
+                            (embassyNode.Value,
+                             embassyNode.Children
+                             |> List.filter (fun x -> embassyIds |> List.exists (fun y -> y.Value.Contains x.Id.Value))
+                             |> List.map _.Value)))
 
-            let getUserEmbassyServiceNodes chatId embassyId =
-                deps.ChatStorage
-                |> Chat.Query.tryFindById chatId
-                |> ResultAsync.bindAsync (function
-                    | None -> $"Telegram chat {chatId.ValueStr}" |> NotFound |> Error |> async.Return
-                    | Some chat ->
-                        deps.RequestStorage
-                        |> Request.Query.findManyByIds chat.Subscriptions
-                        |> ResultAsync.map (List.map _.Service))
+            let getUserEmbassyServiceNodes chatId (embassyId: Graph.NodeId) =
+                getUserServices chatId
                 |> ResultAsync.bindAsync (fun services ->
                     deps.getServiceGraph ()
                     |> ResultAsync.map _.Children
                     |> ResultAsync.map (
-                        List.filter (fun x -> services |> List.exists (fun y -> y.Embassy.Id = embassyId))
+                        List.filter (fun x ->
+                            services
+                            |> List.exists (fun y ->
+                                y.Id.Value.Contains x.Id.Value && y.Embassy.Id.Value.Contains embassyId.Value))
                     ))
 
             let getUserEmbassyServiceNode chatId embassyId serviceId =
@@ -92,7 +89,7 @@ type Dependencies =
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
                   EmbassiesDeps = embassiesDeps
-                  getUserEmbassyNode = getUserEmbassyNode
+                  getUserEmbassy = getUserEmbassy
                   getUserEmbassyNodes = getUserEmbassyNodes
                   getUserEmbassyServiceNode = getUserEmbassyServiceNode
                   getUserEmbassyServiceNodes = getUserEmbassyServiceNodes }

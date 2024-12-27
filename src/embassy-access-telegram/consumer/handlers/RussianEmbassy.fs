@@ -31,6 +31,7 @@ module private Midpass =
 module private Kdmid =
     open EA.Embassies.Russian.Domain
     open EA.Embassies.Russian.Kdmid.Dependencies
+    open EA.Embassies.Russian
 
     let createInstruction embassyId (service: ServiceNode) =
         fun (deps: RussianEmbassy.Dependencies) ->
@@ -53,9 +54,6 @@ module private Kdmid =
             |> Text.create
             |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
 
-    let post (model: KdmidPostModel) =
-        fun (deps: RussianEmbassy.Dependencies) -> model.ServiceId.Value |> NotSupported |> Error |> async.Return
-
     let createKdmidRequest embassy service payload =
         payload
         |> Web.Http.Route.toUri
@@ -65,6 +63,7 @@ module private Kdmid =
               Embassy = embassy
               TimeZone = 1.0
               Confirmation = Disabled })
+        |> async.Return
 
     let createRequest (kdmidRequest: KdmidRequest) =
         fun (deps: RussianEmbassy.Dependencies) ->
@@ -85,49 +84,21 @@ module private Kdmid =
                       TimeZone = timeZone }
                   Dependencies = deps }
                 |> Kdmid)
-            |> ResultAsync.wrap EA.Embassies.Russian.API.Service.get
+            |> ResultAsync.wrap API.Service.get
 
-// let pickService (node: Graph.Node<ServiceNode>) embassy payload =
-//     fun (deps: Services.Russian.Dependencies) ->
-//         match node.IdParts |> Seq.map _.Value |> Seq.last with
-//         | "20" ->
-//             deps.getChatRequests ()
-//             |> ResultAsync.bindAsync (fun requests ->
-//                 match requests with
-//                 | [] ->
-//                     createKdmidRequest embassy payload
-//                     |> ResultAsync.wrap (fun kdmidRequest ->
-//                         deps
-//                         |> createRequest node.Value.Name kdmidRequest
-//                         |> ResultAsync.bindAsync (fun request ->
-//                             deps
-//                             |> getService kdmidRequest.TimeZone request
-//                             |> ResultAsync.map createMessage
-//                             |> ResultAsync.map Text.create
-//                             |> ResultAsync.map (fun create -> create (deps.ChatId, New))))
-//                 | requests ->
-//                     match requests |> List.tryFind (fun request -> request.Id.ValueStr = payload) with
-//                     | Some request ->
-//                         deps
-//                         |> getService 1 request
-//                         |> ResultAsync.map createMessage
-//                         |> ResultAsync.map Text.create
-//                         |> ResultAsync.map (fun create -> create (deps.ChatId, New))
-//                     | None ->
-//                         let command =
-//                             (embassy.Id, node.Value.Id, "{вставить сюда}")
-//                             |> Command.SetService
-//                             |> Command.set
-//
-//                         let doubleLine = Environment.NewLine + Environment.NewLine
-//                         let message = $"%s{command}%s{doubleLine}"
-//
-//                         node.Value.Instruction
-//                         |> Option.map (fun instruction -> message + $"Инструкция:%s{doubleLine}%s{instruction}")
-//                         |> Option.defaultValue message
-//                         |> Text.create
-//                         |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create |> Ok |> async.Return)
-//         | _ -> node.ShortName |> NotSupported |> Error |> async.Return
+    let post (model: KdmidPostModel) =
+        fun (deps: RussianEmbassy.Dependencies) ->
+            let result = ResultAsyncBuilder()
+            result {
+                let! service = deps.getService model.ServiceId
+                let! embassy = deps.getEmbassy model.EmbassyId
+                let! kdmidRequest = createKdmidRequest embassy service model.Payload
+                let! request =  deps |> createRequest kdmidRequest
+                let! result = deps |> getService kdmidRequest.TimeZone request
+                let message = createMessage result
+                let tgResponse = (deps.ChatId, New) |> Text.create message 
+                return tgResponse |> Ok |> async.Return
+            }
 
 let internal getService embassyId (service: ServiceNode) =
     fun (deps: RussianEmbassy.Dependencies) ->

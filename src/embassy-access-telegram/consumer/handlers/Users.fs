@@ -44,15 +44,15 @@ module internal Get =
 
     let userEmbassy userId embassyId =
         fun (deps: Users.Dependencies) ->
-            deps.getUserEmbassyNode userId embassyId
-            |> ResultAsync.bindAsync (function
-                | AP.Leaf value ->
+            deps.getUserEmbassy userId embassyId
+            |> ResultAsync.bindAsync (fun (embassy, embassyСhildren) ->
+                match embassyСhildren with
+                | [] ->
                     deps.EmbassiesDeps
-                    |> EA.Telegram.Consumer.Handlers.Embassies.Get.embassyServices value.Id
-                | AP.Node node ->
-                    node.Children
-                    |> Seq.map _.Value
-                    |> toUserEmbassyResponse deps.ChatId (Some deps.MessageId) node.Value.Description userId
+                    |> EA.Telegram.Consumer.Handlers.Embassies.Get.embassyServices embassy.Id
+                | _ ->
+                    embassyСhildren
+                    |> toUserEmbassyResponse deps.ChatId (Some deps.MessageId) embassy.Description userId
                     |> Ok
                     |> async.Return)
 

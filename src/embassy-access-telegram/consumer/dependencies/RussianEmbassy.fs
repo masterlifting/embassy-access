@@ -16,6 +16,8 @@ type Dependencies =
       CancellationToken: CancellationToken
       initRequestStorage: unit -> Result<Request.RequestStorage, Error'>
       ServiceGraph: Async<Result<Graph.Node<ServiceNode>, Error'>>
+      getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
+      getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>>
       createOrUpdateChat: Chat -> Async<Result<Chat, Error'>>
       createOrUpdateRequest: Request -> Async<Result<Request, Error'>> }
@@ -36,12 +38,28 @@ type Dependencies =
             let createOrUpdateRequest request =
                 deps.RequestStorage |> Request.Command.createOrUpdate request
 
+            let getServices serviceId =
+                deps.getServiceGraph ()
+                |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
+                |> ResultAsync.bind (function
+                    | None -> $"Service with Id {serviceId.Value}" |> NotFound |> Error
+                    | Some serviceNode -> serviceNode.Value |> Ok)
+
+            let getEmbassy embassyId =
+                deps.getEmbassyGraph ()
+                |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
+                |> ResultAsync.bind (function
+                    | None -> $"Embassy with Id {embassyId.Value}" |> NotFound |> Error
+                    | Some embassyNode -> embassyNode.Value |> Ok)
+
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
                   initRequestStorage = fun _ -> deps.RequestStorage |> Ok
                   ServiceGraph = serviceGraph
+                  getService = getServices
+                  getEmbassy = getEmbassy
                   getChatRequests = deps.getChatRequests
                   createOrUpdateChat = createOrUpdateChat
                   createOrUpdateRequest = createOrUpdateRequest }
