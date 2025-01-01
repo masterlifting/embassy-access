@@ -12,6 +12,8 @@ type AppointmentId =
         match this with
         | AppointmentId id -> id
 
+    member this.ValueStr = this.Value |> string
+
     static member create value =
         match value with
         | AP.IsGuid id -> AppointmentId id |> Ok

@@ -53,7 +53,7 @@ module private Kdmid =
             |> Option.defaultValue message
             |> Text.create
             |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
-
+            
     let createKdmidRequest embassy service payload =
         payload
         |> Web.Http.Route.toUri

@@ -8,8 +8,8 @@ type KdmidRequest =
     { Uri: Uri
       Embassy: EmbassyNode
       Service: ServiceNode
-      TimeZone: float
-      Confirmation: ConfirmationState }
+      Confirmation: ConfirmationState
+      TimeZone: float }
 
     member this.CreateRequest() =
         { Id = RequestId.New
