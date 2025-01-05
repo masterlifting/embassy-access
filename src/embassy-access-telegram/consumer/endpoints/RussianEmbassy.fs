@@ -45,7 +45,7 @@ type PostRequest =
         |> String.concat Delimiter
 
     static member parse(parts: string[]) =
-        let parseKdmid serviceId embassyId payload confirmation =
+        let inline createKdmid serviceId embassyId payload confirmation =
             { ServiceId = serviceId |> Graph.NodeIdValue
               EmbassyId = embassyId |> Graph.NodeIdValue
               Payload = payload
@@ -54,17 +54,17 @@ type PostRequest =
             |> Ok
 
         match parts with
-        | [| "10"; serviceId; embassyId; payload |] -> parseKdmid serviceId embassyId payload Disabled
+        | [| "10"; serviceId; embassyId; payload |] -> createKdmid serviceId embassyId payload Disabled
         | [| "11"; serviceId; embassyId; appointmentId; payload |] ->
             appointmentId
             |> AppointmentId.create
-            |> Result.bind (fun appointmentId -> parseKdmid serviceId embassyId payload (Manual appointmentId))
-        | [| "12"; serviceId; embassyId; payload |] -> parseKdmid serviceId embassyId payload (Auto FirstAvailable)
-        | [| "13"; serviceId; embassyId; payload |] -> parseKdmid serviceId embassyId payload (Auto LastAvailable)
+            |> Result.bind (fun appointmentId -> createKdmid serviceId embassyId payload (Manual appointmentId))
+        | [| "12"; serviceId; embassyId; payload |] -> createKdmid serviceId embassyId payload (Auto FirstAvailable)
+        | [| "13"; serviceId; embassyId; payload |] -> createKdmid serviceId embassyId payload (Auto LastAvailable)
         | [| "14"; serviceId; embassyId; start; finish; payload |] ->
             match start, finish with
             | AP.IsDateTime start, AP.IsDateTime finish ->
-                parseKdmid serviceId embassyId payload (Auto(DateTimeRange(start, finish)))
+                createKdmid serviceId embassyId payload (Auto(DateTimeRange(start, finish)))
             | _ -> $"DateTimeRange {start} {finish}" |> NotSupported |> Error
         | [| "15"; number |] -> { Number = number } |> PostRequest.Midpass |> Ok
         | _ -> $"'{parts}' of RussianEmbassy.PostRequest endpoint" |> NotSupported |> Error

@@ -4,13 +4,13 @@ module EA.Telegram.Consumer.Handlers.RussianEmbassy
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open EA.Core.Domain
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
-open EA.Core.Domain
-open EA.Embassies.Russian.Kdmid.Domain
 open EA.Telegram.Consumer.Dependencies
 open EA.Telegram.Consumer.Endpoints
 open EA.Telegram.Consumer.Endpoints.RussianEmbassy
+open EA.Embassies.Russian.Kdmid.Domain
 
 let private createMessage request =
     let errorFilter error = true
@@ -33,27 +33,32 @@ module private Kdmid =
     open EA.Embassies.Russian.Kdmid.Dependencies
     open EA.Embassies.Russian
 
-    let createInstruction embassyId (service: ServiceNode) =
-        fun (deps: RussianEmbassy.Dependencies) ->
-            let request =
-                Core.RussianEmbassy(
-                    Post(
-                        PostRequest.Kdmid(
-                            { ServiceId = service.Id
-                              EmbassyId = embassyId
-                              Payload = "{вставить сюда}" }
+    module Instructions =
+
+        let toImmediateResult embassyId (service: ServiceNode) =
+            fun (deps: RussianEmbassy.Dependencies) ->
+                let request =
+                    Core.RussianEmbassy(
+                        Post(
+                            PostRequest.Kdmid(
+                                { Confirmation = Disabled
+                                  ServiceId = service.Id
+                                  EmbassyId = embassyId
+                                  Payload = "{вставить сюда}" }
+                            )
                         )
                     )
-                )
 
-            let message = $"%s{request.Route}%s{String.addLines 2}"
+                let message = $"%s{request.Route}%s{String.addLines 2}"
 
-            service.Instruction
-            |> Option.map (fun instruction -> message + $"Инструкция:%s{String.addLines 2}%s{instruction}")
-            |> Option.defaultValue message
-            |> Text.create
-            |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
-            
+                service.Instruction
+                |> Option.map (fun instruction -> message + $"Инструкция:%s{String.addLines 2}%s{instruction}")
+                |> Option.defaultValue message
+                |> Text.create
+                |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
+                |> Ok
+                |> async.Return
+
     let createKdmidRequest embassy service payload =
         payload
         |> Web.Http.Route.toUri
@@ -89,22 +94,25 @@ module private Kdmid =
     let post (model: KdmidPostModel) =
         fun (deps: RussianEmbassy.Dependencies) ->
             let result = ResultAsyncBuilder()
+
             result {
                 let! service = deps.getService model.ServiceId
                 let! embassy = deps.getEmbassy model.EmbassyId
                 let! kdmidRequest = createKdmidRequest embassy service model.Payload
-                let! request =  deps |> createRequest kdmidRequest
+                let! request = deps |> createRequest kdmidRequest
                 let! result = deps |> getService kdmidRequest.TimeZone request
                 let message = createMessage result
-                let tgResponse = (deps.ChatId, New) |> Text.create message 
+                let tgResponse = (deps.ChatId, New) |> Text.create message
                 return tgResponse |> Ok |> async.Return
             }
 
 let internal getService embassyId (service: ServiceNode) =
     fun (deps: RussianEmbassy.Dependencies) ->
-        match service.Id.Value with
-        | "SRV.RU.0.1" -> service.Name |> NotSupported |> Error |> async.Return
-        | _ -> deps |> Kdmid.createInstruction embassyId service |> Ok |> async.Return
+        let idParts = service.Id.Value |> Graph.split
+
+        match idParts with
+        | [ _; "RU"; _; _; "0" ] -> deps |> Kdmid.Instructions.toImmediateResult embassyId service
+        | _ -> service.ShortName |> NotSupported |> Error |> async.Return
 
 let toResponse request =
     fun (deps: Core.Dependencies) ->
