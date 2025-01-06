@@ -12,6 +12,7 @@ open EA.Telegram.Dependencies
 open EA.Worker.Dependencies
 
 module Kdmid =
+    open Infrastructure.Logging
     open EA.Embassies.Russian.Kdmid.Dependencies
     open EA.Embassies.Russian.Kdmid.Domain
 
@@ -19,18 +20,24 @@ module Kdmid =
         { RequestStorage: Request.RequestStorage
           pickOrder: Request list -> Async<Result<Request, Error' list>> }
 
-        static member create (schedule: Schedule) cfg ct (deps: Persistence.Dependencies) =
+        static member create (schedule: Schedule) ct (deps: Persistence.Dependencies) =
             let result = ResultBuilder()
 
             result {
                 let! requestStorage = deps.initRequestStorage ()
-                let! telegramDeps = EA.Telegram.Dependencies.Persistence.Dependencies.create cfg
-                let! producerDeps = Producer.Core.Dependencies.create telegramDeps
+
+                let! producerDeps =
+                    Producer.Core.Dependencies.create
+                        { initChatStorage = deps.initChatStorage
+                          initRequestStorage = fun () -> requestStorage |> Ok
+                          initServiceGraphStorage = fun () -> "initServiceGraphStorage" |> NotImplemented |> Error
+                          initEmbassyGraphStorage = fun () -> "initEmbassyGraphStorage" |> NotImplemented |> Error }
 
                 let notify notification =
                     producerDeps
                     |> Producer.Produce.notification notification ct
-                    |> Async.map ignore
+                    |> ResultAsync.mapError (_.Message >> Log.critical)
+                    |> Async.Ignore
 
                 let pickOrder requests =
                     let deps = Order.Dependencies.create requestStorage ct

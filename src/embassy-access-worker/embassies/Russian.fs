@@ -40,14 +40,14 @@ module private Kdmid =
         let setRouteNode city =
             Graph.Node(Name city, [ Graph.Node(Name NAME, []) ])
 
-        let run (task: WorkerTask, cfg, ct) =
+        let handle (task: WorkerTask, cfg, ct) =
             Persistence.Dependencies.create cfg
-            |> Result.bind (Russian.Kdmid.Dependencies.create task.Schedule cfg ct)
+            |> Result.bind (Russian.Kdmid.Dependencies.create task.Schedule ct)
             |> Result.map createOrder
             |> ResultAsync.wrap (fun startOrder ->
                 task
                 |> createEmbassyName
-                |> ResultAsync.bindAsync (Request.Query.findManyByEmbassyId >> startOrder))
+                |> ResultAsync.bindAsync (Request.Query.findManyByEmbassyName >> startOrder))
 
 let private ROUTER =
 
@@ -73,4 +73,4 @@ let private ROUTER =
 
 let register () =
     ROUTER
-    |> RouteNode.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.run)
+    |> RouteNode.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.handle)
