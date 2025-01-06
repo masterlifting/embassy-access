@@ -17,15 +17,15 @@ type Dependencies =
 
         result {
 
-            let! filePath = cfg |> Persistence.Storage.getConnectionString "FileSystem"
+            let! connectionString = cfg |> Persistence.Storage.getConnectionString "FileSystem"
 
-            let initializeChatStorage () =
-                filePath |> Chat.FileSystem |> Chat.init
+            let initChatStorage () =
+                connectionString |> Chat.FileSystem |> Chat.init
 
-            let initializeRequestStorage () =
-                filePath |> Request.FileSystem |> Request.init
+            let initRequestStorage () =
+                connectionString |> Request.FileSystem |> Request.init
 
             return
-                { initChatStorage = initializeChatStorage
-                  initRequestStorage = initializeRequestStorage }
+                { initChatStorage = initChatStorage
+                  initRequestStorage = initRequestStorage }
         }

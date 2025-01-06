@@ -8,10 +8,9 @@ open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
-open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Producer
 
-let createAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
+let toAppointmentsResponse (embassy: EmbassyNode, appointments: Set<Appointment>) =
     fun (deps: Core.Dependencies) ->
         embassy.Id
         |> deps.getEmbassyRequests
@@ -21,17 +20,19 @@ let createAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
             |> deps.getEmbassyChats
             |> ResultAsync.map (
                 Seq.map (fun chat ->
-                    let buttons =
-                        requests
-                        |> Seq.collect (fun request ->
+                    requests
+                    |> Seq.map (fun request ->
+                        request.Service.Payload
+                        |> EA.Embassies.Russian.Kdmid.Domain.Payload.Payload.toValue
+                        |> Result.map (fun payloadValue ->
                             appointments
                             |> Seq.map (fun appointment ->
-                                let route =
+                                let buttonKey =
                                     EA.Telegram.Endpoints.Consumer.Core
                                         .RussianEmbassy(
                                             Post(
                                                 PostRequest.Kdmid(
-                                                    { Confirmation = Manual appointment.Id
+                                                    { Confirmation = appointment.Id |> Manual
                                                       ServiceId = request.Service.Id
                                                       EmbassyId = embassy.Id
                                                       Payload = request.Service.Payload }
@@ -40,30 +41,33 @@ let createAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
                                         )
                                         .Route
 
-                                route, appointment.Description))
-                        |> Map
+                                let buttonName = $"{appointment.Description} ({payloadValue})"
 
-                    (chat.Id, New)
-                    |> Buttons.create
-                        { Name = $"Choose the appointment for '{embassy.ShortName}'"
-                          Columns = 1
-                          Data = buttons })
-            ))
+                                buttonKey, buttonName)))
+                    |> Result.choose
+                    |> Result.map Seq.concat
+                    |> Result.map Map
+                    |> Result.map (fun buttons ->
+                        (chat.Id, New)
+                        |> Buttons.create
+                            { Name = $"Choose the appointment for '{embassy.ShortName}'"
+                              Columns = 1
+                              Data = buttons }))
+            )
+            |> ResultAsync.bind Result.choose)
 
-let createConfirmation (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =
+let toConfirmationResponse (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =
     fun (deps: Core.Dependencies) ->
-        deps.initChatStorage ()
-        |> ResultAsync.wrap (Chat.Query.findManyBySubscription requestId)
+        deps.getSubscriptionChats requestId
         |> ResultAsync.map (
-            Seq.map (fun chat ->
+            List.map (fun chat ->
                 confirmations
-                |> Seq.map (fun confirmation -> $"'{embassy.Name}'. Confirmation: {confirmation.Description}")
+                |> Seq.map (fun confirmation -> $"'{embassy.ShortName}'. Confirmation: {confirmation.Description}")
                 |> String.concat "\n"
                 |> fun msg -> (chat.Id, New) |> Text.create msg)
         )
 
-let createError (requestId: RequestId, error: Error') =
+let toErrorResponse (requestId: RequestId, error: Error') =
     fun (deps: Core.Dependencies) ->
-        deps.initChatStorage ()
-        |> ResultAsync.wrap (Chat.Query.findManyBySubscription requestId)
-        |> ResultAsync.map (Seq.map (fun chat -> Web.Telegram.Producer.Text.createError error chat.Id))
+        deps.getSubscriptionChats requestId
+        |> ResultAsync.map (List.map (fun chat -> Web.Telegram.Producer.Text.createError error chat.Id))

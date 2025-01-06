@@ -5,7 +5,7 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 
-type internal Payload =
+type Payload =
     { Country: string
       City: string
       SubDomain: string
@@ -61,3 +61,15 @@ type internal Payload =
                       Cd = cd
                       Ems = ems }
             }
+
+    static member toValue(payload: string) =
+        payload
+        |> Web.Http.Route.toUri
+        |> Result.bind Web.Http.Route.toQueryParams
+        |> Result.bind (fun queryParams ->
+            queryParams
+            |> Map.tryFind "id"
+            |> Option.map (function
+                | AP.IsInt id -> $"Payload Id '{id}'" |> Ok
+                | _ -> $"Payload Id of the '{payload}'" |> NotSupported |> Error)
+            |> Option.defaultValue ($"Payload value of the '{payload}'" |> NotSupported |> Error))

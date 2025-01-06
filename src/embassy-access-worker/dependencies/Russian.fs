@@ -19,18 +19,16 @@ module Kdmid =
         { RequestStorage: Request.RequestStorage
           pickOrder: Request list -> Async<Result<Request, Error' list>> }
 
-        static member create (schedule: Schedule) ct (persistenceDeps: Persistence.Dependencies) =
+        static member create (schedule: Schedule) cfg ct (deps: Persistence.Dependencies) =
             let result = ResultBuilder()
 
             result {
-                let! requestStorage = persistenceDeps.initRequestStorage ()
-
-                let notificationDeps: Producer.Core.Dependencies =
-                    { initChatStorage = persistenceDeps.initChatStorage
-                      initRequestStorage = fun () -> requestStorage |> Ok }
+                let! requestStorage = deps.initRequestStorage ()
+                let! telegramDeps = EA.Telegram.Dependencies.Persistence.Dependencies.create cfg
+                let! producerDeps = Producer.Core.Dependencies.create telegramDeps
 
                 let notify notification =
-                    notificationDeps
+                    producerDeps
                     |> Producer.Produce.notification notification ct
                     |> Async.map ignore
 

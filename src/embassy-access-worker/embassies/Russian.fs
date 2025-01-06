@@ -42,7 +42,7 @@ module private Kdmid =
 
         let run (task: WorkerTask, cfg, ct) =
             Persistence.Dependencies.create cfg
-            |> Result.bind (Russian.Kdmid.Dependencies.create task.Schedule ct)
+            |> Result.bind (Russian.Kdmid.Dependencies.create task.Schedule cfg ct)
             |> Result.map createOrder
             |> ResultAsync.wrap (fun startOrder ->
                 task

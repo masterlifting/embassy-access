@@ -28,8 +28,8 @@ module Produce =
     let notification notification ct =
         fun deps ->
             match notification with
-            | Appointments(embassy, appointments) -> deps |> Core.createAppointments (embassy, appointments)
+            | Appointments(embassy, appointments) -> deps |> Core.toAppointmentsResponse (embassy, appointments)
             | Confirmations(requestId, embassy, confirmations) ->
-                deps |> Core.createConfirmation (requestId, embassy, confirmations)
-            | Fail(requestId, error) -> deps |> Core.createError (requestId, error)
+                deps |> Core.toConfirmationResponse (requestId, embassy, confirmations)
+            | Fail(requestId, error) -> deps |> Core.toErrorResponse (requestId, error)
             |> spread ct
