@@ -11,38 +11,37 @@ open EA.Core.DataAccess
 type Dependencies =
     { initChatStorage: unit -> Result<Chat.ChatStorage, Error'>
       initRequestStorage: unit -> Result<Request.RequestStorage, Error'>
-      initServiceGraphStorage: string -> Result<ServiceGraph.ServiceGraphStorage, Error'>
-      getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>> }
+      initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>
+      initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'> }
 
     static member create cfg =
         let result = ResultBuilder()
 
         result {
 
-            let! filePath = cfg |> Persistence.Storage.getConnectionString "FileSystem"
+            let! connectionString = cfg |> Persistence.Storage.getConnectionString "FileSystem"
 
-            let initializeChatStorage () =
-                filePath |> Chat.FileSystem |> Chat.init
+            let initChatStorage () =
+                connectionString |> Chat.FileSystem |> Chat.init
 
-            let initializeRequestStorage () =
-                filePath |> Request.FileSystem |> Request.init
+            let initRequestStorage () =
+                connectionString |> Request.FileSystem |> Request.init
 
-            let getEmbassyGraph () =
+            let initEmbassyGraphStorage () =
                 { SectionName = "Embassies"
                   Configuration = cfg }
                 |> EmbassyGraph.Configuration
                 |> EmbassyGraph.init
-                |> ResultAsync.wrap EmbassyGraph.get
 
-            let initServiceGraphStorage sectionName =
-                { SectionName = sectionName
+            let initServiceGraphStorage () =
+                { SectionName = "Services"
                   Configuration = cfg }
                 |> ServiceGraph.Configuration
                 |> ServiceGraph.init
 
             return
-                { initChatStorage = initializeChatStorage
-                  initRequestStorage = initializeRequestStorage
-                  getEmbassyGraph = getEmbassyGraph
+                { initChatStorage = initChatStorage
+                  initRequestStorage = initRequestStorage
+                  initEmbassyGraphStorage = initEmbassyGraphStorage
                   initServiceGraphStorage = initServiceGraphStorage }
         }

@@ -1,14 +1,14 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Consumer.Handlers.Users
+module EA.Telegram.Handlers.Consumer.Users
 
 open System
 open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
-open EA.Telegram.Consumer.Dependencies
-open EA.Telegram.Consumer.Endpoints
-open EA.Telegram.Consumer.Endpoints.Users
+open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Endpoints.Consumer
+open EA.Telegram.Endpoints.Consumer.Users
 
 let private createButtons chatId messageId buttonGroupName data =
     (chatId, messageId |> Option.map Replace |> Option.defaultValue New)
@@ -49,7 +49,7 @@ module internal Get =
                 match embassyСhildren with
                 | [] ->
                     deps.EmbassiesDeps
-                    |> EA.Telegram.Consumer.Handlers.Embassies.Get.embassyServices embassy.Id
+                    |> EA.Telegram.Handlers.Consumer.Embassies.Core.Get.embassyServices embassy.Id
                 | _ ->
                     embassyСhildren
                     |> toUserEmbassyResponse deps.ChatId (Some deps.MessageId) embassy.Description userId
@@ -68,7 +68,7 @@ module internal Get =
             |> ResultAsync.bindAsync (function
                 | AP.Leaf _ ->
                     deps.EmbassiesDeps
-                    |> EA.Telegram.Consumer.Handlers.Embassies.Get.embassyService embassyId serviceId
+                    |> EA.Telegram.Handlers.Consumer.Embassies.Core.Get.embassyService embassyId serviceId
                 | AP.Node node ->
                     node.Children
                     |> Seq.map _.Value

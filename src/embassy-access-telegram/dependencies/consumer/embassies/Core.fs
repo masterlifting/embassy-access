@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Consumer.Dependencies.Embassies
+module EA.Telegram.Dependencies.Consumer.Embassies.Core
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -9,18 +9,18 @@ open EA.Core.Domain
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
-      RussianEmbassyDeps: RussianEmbassy.Dependencies
+      RussianDeps: Russian.Dependencies
       getEmbassies: unit -> Async<Result<EmbassyNode list, Error'>>
       getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getEmbassyServices: Graph.NodeId -> Async<Result<ServiceNode list, Error'>> }
 
-    static member create(deps: Core.Dependencies) =
+    static member create(deps: EA.Telegram.Dependencies.Consumer.Core.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let! russianEmbassyDeps = RussianEmbassy.Dependencies.create deps
+            let! russianDeps = Russian.Dependencies.create deps
 
             let getEmbassies () =
                 deps.getEmbassyGraph () |> ResultAsync.map (_.Children >> List.map _.Value)
@@ -36,7 +36,11 @@ type Dependencies =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
-                    | None -> $"Embassy services of Embassy with Id {embassyId.Value}" |> NotFound |> Error |> async.Return
+                    | None ->
+                        $"Embassy services of Embassy with Id {embassyId.Value}"
+                        |> NotFound
+                        |> Error
+                        |> async.Return
                     | Some embassyNode ->
                         match embassyNode.IdParts.Length > 1 with
                         | false ->
@@ -64,7 +68,7 @@ type Dependencies =
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
-                  RussianEmbassyDeps = russianEmbassyDeps
+                  RussianDeps = russianDeps
                   getEmbassies = getEmbassies
                   getEmbassyNode = getEmbassyNode
                   getServiceNode = getServiceNode

@@ -80,10 +80,10 @@ module private InMemory =
     let private loadData = Query.Json.get<RequestEntity> Name
 
     module Query =
-        let findManyByEmbassyName name client =
+        let findManyByEmbassyId embassyId client =
             client
             |> loadData
-            |> Result.map (Seq.filter (fun x -> x.Service.EmbassyName = name))
+            |> Result.map (Seq.filter (fun x -> x.Service.EmbassyId = embassyId))
             |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
             |> async.Return
 
@@ -131,10 +131,10 @@ module private FileSystem =
     let private loadData = Query.Json.get<RequestEntity>
 
     module Query =
-        let findManyByEmbassyName name client =
+        let findManyByEmbassyId embassyId client =
             client
             |> loadData
-            |> ResultAsync.map (Seq.filter (fun x -> x.Service.EmbassyName = name))
+            |> ResultAsync.map (Seq.filter (fun x -> x.Service.EmbassyId = embassyId))
             |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
 
         let findManyByIds (ids: RequestId seq) client =
@@ -208,10 +208,10 @@ module Command =
 
 module Query =
 
-    let findManyByEmbassyName name storage =
+    let findManyByEmbassyId embassyId storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyName name
-        | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyName name
+        | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyId embassyId
+        | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyId embassyId
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
     let findManyByIds ids storage =

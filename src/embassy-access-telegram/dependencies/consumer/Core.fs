@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Consumer.Dependencies.Core
+module EA.Telegram.Dependencies.Consumer.Core
 
 open System.Threading
 open Infrastructure.Prelude
@@ -16,18 +16,17 @@ type Dependencies =
       CancellationToken: CancellationToken
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
-      initServiceGraphStorage: string -> Result<ServiceGraph.ServiceGraphStorage, Error'>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>> }
 
-    static member create (dto: Consumer.Dto<_>) ct (persistenceDeps: Persistence.Dependencies) =
+    static member create (dto: Consumer.Dto<_>) ct (deps: Persistence.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let! chatStorage = persistenceDeps.initChatStorage ()
-            let! requestStorage = persistenceDeps.initRequestStorage ()
+            let! chatStorage = deps.initChatStorage ()
+            let! requestStorage = deps.initRequestStorage ()
 
             let getChatRequests () =
                 chatStorage
@@ -42,17 +41,18 @@ type Dependencies =
                     | Some chat -> requestStorage |> Request.Query.findManyByIds chat.Subscriptions)
 
             let getServiceGraph () =
-                persistenceDeps.initServiceGraphStorage "Services"
-                |> ResultAsync.wrap ServiceGraph.get
+                deps.initServiceGraphStorage () |> ResultAsync.wrap ServiceGraph.get
+
+            let getEmbassyGraph () =
+                deps.initEmbassyGraphStorage () |> ResultAsync.wrap EmbassyGraph.get
 
             return
-                { ChatId = dto.ChatId
+                { CancellationToken = ct
+                  ChatId = dto.ChatId
                   MessageId = dto.Id
-                  CancellationToken = ct
                   ChatStorage = chatStorage
                   RequestStorage = requestStorage
-                  initServiceGraphStorage = persistenceDeps.initServiceGraphStorage
                   getServiceGraph = getServiceGraph
-                  getEmbassyGraph = persistenceDeps.getEmbassyGraph
+                  getEmbassyGraph = getEmbassyGraph
                   getChatRequests = getChatRequests }
         }

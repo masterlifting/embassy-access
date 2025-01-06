@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Consumer.Handlers.RussianEmbassy
+module EA.Telegram.Handlers.Consumer.Embassies.Russian
 
 open System
 open Infrastructure.Domain
@@ -7,9 +7,8 @@ open Infrastructure.Prelude
 open EA.Core.Domain
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
-open EA.Telegram.Consumer.Dependencies
-open EA.Telegram.Consumer.Endpoints
-open EA.Telegram.Consumer.Endpoints.RussianEmbassy
+open EA.Telegram.Endpoints.Consumer.Embassies.Russian
+open EA.Telegram.Dependencies.Consumer.Embassies
 open EA.Embassies.Russian.Kdmid.Domain
 
 let private createMessage request =
@@ -26,7 +25,7 @@ module private Midpass =
         fun deps -> serviceNode.ShortName |> NotSupported |> Error |> async.Return
 
     let post (model: MidpassPostModel) =
-        fun (deps: RussianEmbassy.Dependencies) -> model.Number |> NotSupported |> Error |> async.Return
+        fun (deps: Russian.Dependencies) -> model.Number |> NotSupported |> Error |> async.Return
 
 module private Kdmid =
     open EA.Embassies.Russian.Domain
@@ -36,9 +35,9 @@ module private Kdmid =
     module Instructions =
 
         let toImmediateResult embassyId (service: ServiceNode) =
-            fun (deps: RussianEmbassy.Dependencies) ->
+            fun (deps: Russian.Dependencies) ->
                 let request =
-                    Core.RussianEmbassy(
+                    EA.Telegram.Endpoints.Consumer.Core.RussianEmbassy(
                         Post(
                             PostRequest.Kdmid(
                                 { Confirmation = Disabled
@@ -71,7 +70,7 @@ module private Kdmid =
         |> async.Return
 
     let createRequest (kdmidRequest: KdmidRequest) =
-        fun (deps: RussianEmbassy.Dependencies) ->
+        fun (deps: Russian.Dependencies) ->
             let request = kdmidRequest.CreateRequest()
 
             deps.createOrUpdateChat
@@ -80,24 +79,21 @@ module private Kdmid =
             |> ResultAsync.bindAsync (fun _ -> request |> deps.createOrUpdateRequest)
 
     let getService timeZone request =
-        fun (deps: RussianEmbassy.Dependencies) ->
-            deps.initRequestStorage ()
-            |> Result.map (fun requestStorage -> Order.Dependencies.create requestStorage deps.CancellationToken)
-            |> Result.map (fun deps ->
-                { Order =
-                    { Request = request
-                      TimeZone = timeZone }
-                  Dependencies = deps }
-                |> Kdmid)
-            |> ResultAsync.wrap API.Service.get
+        fun (deps: Russian.Dependencies) ->
+            { Order =
+                { Request = request
+                  TimeZone = timeZone }
+              Dependencies = Order.Dependencies.create deps.RequestStorage deps.CancellationToken }
+            |> Kdmid
+            |> API.Service.get
 
     let post (model: KdmidPostModel) =
-        fun (deps: RussianEmbassy.Dependencies) ->
+        fun (deps: Russian.Dependencies) ->
             let result = ResultAsyncBuilder()
 
             result {
-                let! service = deps.getService model.ServiceId
-                let! embassy = deps.getEmbassy model.EmbassyId
+                let! service = deps.getServiceNode model.ServiceId
+                let! embassy = deps.getEmbassyNode model.EmbassyId
                 let! kdmidRequest = createKdmidRequest embassy service model.Payload
                 let! request = deps |> createRequest kdmidRequest
                 let! result = deps |> getService kdmidRequest.TimeZone request
@@ -107,7 +103,7 @@ module private Kdmid =
             }
 
 let internal getService embassyId (service: ServiceNode) =
-    fun (deps: RussianEmbassy.Dependencies) ->
+    fun (deps: Russian.Dependencies) ->
         let idParts = service.Id.Value |> Graph.split
 
         match idParts with
@@ -115,8 +111,8 @@ let internal getService embassyId (service: ServiceNode) =
         | _ -> service.ShortName |> NotSupported |> Error |> async.Return
 
 let toResponse request =
-    fun (deps: Core.Dependencies) ->
-        RussianEmbassy.Dependencies.create deps
+    fun (deps: EA.Telegram.Dependencies.Consumer.Core.Dependencies) ->
+        Russian.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Request.Post postRequest ->

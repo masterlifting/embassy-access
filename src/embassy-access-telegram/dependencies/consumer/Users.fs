@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Consumer.Dependencies.Users
+module EA.Telegram.Dependencies.Consumer.Users
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -11,7 +11,7 @@ open EA.Core.DataAccess
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
-      EmbassiesDeps: Embassies.Dependencies
+      EmbassiesDeps: EA.Telegram.Dependencies.Consumer.Embassies.Core.Dependencies
       getUserEmbassy: ChatId -> Graph.NodeId -> Async<Result<EmbassyNode * EmbassyNode list, Error'>>
       getUserEmbassyNodes: ChatId -> Async<Result<Graph.Node<EmbassyNode> list, Error'>>
       getUserEmbassyServiceNode:
@@ -23,7 +23,7 @@ type Dependencies =
 
         result {
 
-            let! embassiesDeps = Embassies.Dependencies.create deps
+            let! embassiesDeps = EA.Telegram.Dependencies.Consumer.Embassies.Core.Dependencies.create deps
 
             let getUserServices chatId =
                 deps.ChatStorage

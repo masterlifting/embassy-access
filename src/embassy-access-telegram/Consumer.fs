@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Consumer.Core
+﻿module EA.Telegram.Consumer
 
 open System
 open Infrastructure.Domain
@@ -7,11 +7,11 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Consumer
 open EA.Telegram.Domain
 open EA.Telegram.Dependencies
-open EA.Telegram.Consumer.Dependencies
+open EA.Telegram.Dependencies.Consumer
 
 module private Consume =
-    open EA.Telegram.Consumer.Endpoints.Core
-    open EA.Telegram.Consumer.Handlers
+    open EA.Telegram.Endpoints.Consumer.Core
+    open EA.Telegram.Handlers.Consumer
 
     let private produceResult chatId ct client dataRes = produceResult dataRes chatId ct client
 
@@ -19,8 +19,8 @@ module private Consume =
         fun deps ->
             match request with
             | Request.Users value -> deps |> Users.toResponse value
-            | Request.Embassies value -> deps |> Embassies.toResponse value
-            | Request.RussianEmbassy value -> deps |> RussianEmbassy.toResponse value
+            | Request.Embassies value -> deps |> Embassies.Core.toResponse value
+            | Request.RussianEmbassy value -> deps |> Embassies.Russian.toResponse value
 
     let text value client =
         fun deps ->

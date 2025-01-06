@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Consumer.Dependencies.RussianEmbassy
+module EA.Telegram.Dependencies.Consumer.Embassies.Russian
 
 open System.Threading
 open EA.Telegram.Domain
@@ -14,23 +14,17 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       CancellationToken: CancellationToken
-      initRequestStorage: unit -> Result<Request.RequestStorage, Error'>
-      ServiceGraph: Async<Result<Graph.Node<ServiceNode>, Error'>>
-      getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
-      getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
+      RequestStorage: Request.RequestStorage
+      getServiceNode: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
+      getEmbassyNode: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>>
       createOrUpdateChat: Chat -> Async<Result<Chat, Error'>>
       createOrUpdateRequest: Request -> Async<Result<Request, Error'>> }
 
-    static member create(deps: Core.Dependencies) =
+    static member create(deps: EA.Telegram.Dependencies.Consumer.Core.Dependencies) =
         let result = ResultBuilder()
 
         result {
-
-            let serviceGraph =
-                "RussianServices"
-                |> deps.initServiceGraphStorage
-                |> ResultAsync.wrap ServiceGraph.get
 
             let createOrUpdateChat chat =
                 deps.ChatStorage |> Chat.Command.createOrUpdate chat
@@ -56,10 +50,9 @@ type Dependencies =
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
-                  initRequestStorage = fun _ -> deps.RequestStorage |> Ok
-                  ServiceGraph = serviceGraph
-                  getService = getServices
-                  getEmbassy = getEmbassy
+                  RequestStorage = deps.RequestStorage
+                  getServiceNode = getServices
+                  getEmbassyNode = getEmbassy
                   getChatRequests = deps.getChatRequests
                   createOrUpdateChat = createOrUpdateChat
                   createOrUpdateRequest = createOrUpdateRequest }

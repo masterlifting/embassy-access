@@ -47,24 +47,28 @@ module private Kdmid =
             |> ResultAsync.wrap (fun startOrder ->
                 task
                 |> createEmbassyName
-                |> ResultAsync.bindAsync (Request.Query.findManyByEmbassyName >> startOrder))
+                |> ResultAsync.bindAsync (Request.Query.findManyByEmbassyId >> startOrder))
 
 let private ROUTER =
+
+    let inline createNode country city =
+        Graph.Node(Name country, [ city |> Kdmid.SearchAppointments.setRouteNode ])
+
     Graph.Node(
         Name "Russian",
-        [ Graph.Node(Name "Serbia", [ "Belgrade" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Germany", [ "Berlin" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "France", [ "Paris" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Montenegro", [ "Podgorica" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Ireland", [ "Dublin" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Italy", [ "Rome" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Switzerland", [ "Bern" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Finland", [ "Helsinki" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Netherlands", [ "Hague" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Albania", [ "Tirana" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Slovenia", [ "Ljubljana" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Bosnia", [ "Sarajevo" |> Kdmid.SearchAppointments.setRouteNode ])
-          Graph.Node(Name "Hungary", [ "Budapest" |> Kdmid.SearchAppointments.setRouteNode ]) ]
+        [ createNode "Serbia" "Belgrade"
+          createNode "Germany" "Berlin"
+          createNode "France" "Paris"
+          createNode "Montenegro" "Podgorica"
+          createNode "Ireland" "Dublin"
+          createNode "Italy" "Rome"
+          createNode "Switzerland" "Bern"
+          createNode "Finland" "Helsinki"
+          createNode "Netherlands" "Hague"
+          createNode "Albania" "Tirana"
+          createNode "Slovenia" "Ljubljana"
+          createNode "Bosnia" "Sarajevo"
+          createNode "Hungary" "Budapest" ]
     )
 
 let register () =

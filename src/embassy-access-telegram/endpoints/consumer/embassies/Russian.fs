@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Consumer.Endpoints.RussianEmbassy
+﻿module EA.Telegram.Endpoints.Consumer.Embassies.Russian
 
 open Infrastructure.Domain
 open Infrastructure.Prelude

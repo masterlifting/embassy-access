@@ -25,13 +25,13 @@ module Kdmid =
             result {
                 let! requestStorage = persistenceDeps.initRequestStorage ()
 
-                let notificationDeps: Producer.Dependencies.Core.Dependencies =
+                let notificationDeps: Producer.Core.Dependencies =
                     { initChatStorage = persistenceDeps.initChatStorage
                       initRequestStorage = fun () -> requestStorage |> Ok }
 
                 let notify notification =
                     notificationDeps
-                    |> Producer.Core.Produce.notification notification ct
+                    |> Producer.Produce.notification notification ct
                     |> Async.map ignore
 
                 let pickOrder requests =
