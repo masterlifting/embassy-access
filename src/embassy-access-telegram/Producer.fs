@@ -25,11 +25,11 @@ let private spread ct =
 module Produce =
     open EA.Telegram.Handlers.Producer
 
-    let notification notification ct =
+    let notification notification =
         fun deps ->
             match notification with
-            | Appointments(embassy, appointments) -> deps |> Core.toAppointmentsResponse (embassy, appointments)
+            | Appointments(embassy, appointments) -> deps |> Core.toAppointments (embassy, appointments)
             | Confirmations(requestId, embassy, confirmations) ->
-                deps |> Core.toConfirmationResponse (requestId, embassy, confirmations)
-            | Fail(requestId, error) -> deps |> Core.toErrorResponse (requestId, error)
-            |> spread ct
+                deps |> Core.toConfirmations (requestId, embassy, confirmations)
+            | Fail(requestId, error) -> deps |> Core.toError (requestId, error)
+            |> spread deps.CancellationToken

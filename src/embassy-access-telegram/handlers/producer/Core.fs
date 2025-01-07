@@ -10,7 +10,7 @@ open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Telegram.Dependencies.Producer
 
-let toAppointmentsResponse (embassy: EmbassyNode, appointments: Set<Appointment>) =
+let toAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
     fun (deps: Core.Dependencies) ->
         embassy.Id
         |> deps.getEmbassyRequests
@@ -56,7 +56,7 @@ let toAppointmentsResponse (embassy: EmbassyNode, appointments: Set<Appointment>
             )
             |> ResultAsync.bind Result.choose)
 
-let toConfirmationResponse (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =
+let toConfirmations (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =
     fun (deps: Core.Dependencies) ->
         deps.getSubscriptionChats requestId
         |> ResultAsync.map (
@@ -67,7 +67,7 @@ let toConfirmationResponse (requestId: RequestId, embassy: EmbassyNode, confirma
                 |> fun msg -> (chat.Id, New) |> Text.create msg)
         )
 
-let toErrorResponse (requestId: RequestId, error: Error') =
+let toError (requestId: RequestId, error: Error') =
     fun (deps: Core.Dependencies) ->
         deps.getSubscriptionChats requestId
         |> ResultAsync.map (List.map (fun chat -> Web.Telegram.Producer.Text.createError error chat.Id))

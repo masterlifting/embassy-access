@@ -27,6 +27,6 @@ type Notification =
         
     member this.Message =
         match this with
-        | Appointments(embassy, appointments) -> $"Appointments for {embassy.Name}: {appointments.Count}"
-        | Confirmations(requestId, embassy, confirmations) -> $"Confirmations for {embassy.Name} request {requestId}: {confirmations.Count}"
-        | Fail(requestId, error) -> $"Failed request {requestId}: {error.Message}"
+        | Appointments(embassy, appointments) -> $"Appointments for {embassy.ShortName}: {appointments.Count}"
+        | Confirmations(requestId, embassy, confirmations) -> $"Confirmations for {embassy.ShortName} request {requestId.ValueStr}: {confirmations.Count}"
+        | Fail(requestId, error) -> $"Failed request {requestId.ValueStr}: {error.Message}"

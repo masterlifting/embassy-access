@@ -3,13 +3,12 @@ module internal EA.Worker.Dependencies.Persistence
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Persistence.Configuration
 open EA.Core.Domain
-open EA.Telegram.DataAccess
 open EA.Core.DataAccess
+open EA.Telegram.DataAccess
 
 type Dependencies =
-    { initChatStorage: unit -> Result<Chat.ChatStorage, Error'>
+    { initTelegramChatStorage: unit -> Result<Chat.ChatStorage, Error'>
       initRequestStorage: unit -> Result<Request.RequestStorage, Error'> }
 
     static member create cfg =
@@ -26,6 +25,6 @@ type Dependencies =
                 connectionString |> Request.FileSystem |> Request.init
 
             return
-                { initChatStorage = initChatStorage
+                { initTelegramChatStorage = initChatStorage
                   initRequestStorage = initRequestStorage }
         }

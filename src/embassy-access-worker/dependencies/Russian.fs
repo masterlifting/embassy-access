@@ -28,14 +28,15 @@ module Kdmid =
 
                 let! producerDeps =
                     Producer.Core.Dependencies.create
-                        { initChatStorage = deps.initChatStorage
+                        ct
+                        { initChatStorage = deps.initTelegramChatStorage
                           initRequestStorage = fun () -> requestStorage |> Ok
                           initServiceGraphStorage = fun () -> "initServiceGraphStorage" |> NotImplemented |> Error
                           initEmbassyGraphStorage = fun () -> "initEmbassyGraphStorage" |> NotImplemented |> Error }
 
                 let notify notification =
                     producerDeps
-                    |> Producer.Produce.notification notification ct
+                    |> Producer.Produce.notification notification
                     |> ResultAsync.mapError (_.Message >> Log.critical)
                     |> Async.Ignore
 

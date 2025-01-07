@@ -384,16 +384,16 @@ KdmidRussianServices: &KdmidRussianServices
     Name: Проверить наличие слотов сейчас
     <<: *KdmidRussianServicesInstructions
   - Id: "1"
+    Name: Присласть доступные слоты при первой возможности
+    <<: *KdmidRussianServicesInstructions
+  - Id: "2"
     Name: Автоматическая запись и поиск слотов
     Description: Автоматическая запись и поиск слотов
     Children:
       - Id: "0"
-        Name: Присласть доступные слоты при первой возможности
-        <<: *KdmidRussianServicesInstructions
-      - Id: "1"
         Name: Автоматически записаться на первый доступный слот
         <<: *KdmidRussianServicesInstructions
-      - Id: "2"
+      - Id: "1"
         Name: Автоматически записаться на слот в указанный период
         <<: *KdmidRussianServicesInstructions
 

@@ -1,6 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Producer.Core
 
+open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Telegram.Domain
@@ -10,11 +11,12 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 
 type Dependencies =
-    { getEmbassyRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
+    { CancellationToken: CancellationToken
+      getEmbassyRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
       getEmbassyChats: RequestId seq -> Async<Result<Chat list, Error'>>
       getSubscriptionChats: RequestId -> Async<Result<Chat list, Error'>> }
 
-    static member create(deps: Persistence.Dependencies) =
+    static member create ct (deps: Persistence.Dependencies) =
         let result = ResultBuilder()
 
         result {
@@ -32,7 +34,8 @@ type Dependencies =
                 |> ResultAsync.wrap (Chat.Query.findManyBySubscription requestId)
 
             return
-                { getEmbassyRequests = getEmbassyRequests
+                { CancellationToken = ct
+                  getEmbassyRequests = getEmbassyRequests
                   getEmbassyChats = getEmbassyChats
                   getSubscriptionChats = getSubscriptionChats }
         }

@@ -34,6 +34,18 @@ module private Kdmid =
 
     module Instructions =
 
+        let inline private create instruction route =
+            fun (chatId, messageId) ->
+                let message = $"%s{route}%s{String.addLines 2}"
+
+                instruction
+                |> Option.map (fun instruction -> message + $"Инструкция:%s{String.addLines 2}%s{instruction}")
+                |> Option.defaultValue message
+                |> Text.create
+                |> fun create -> (chatId, messageId |> Replace) |> create
+                |> Ok
+                |> async.Return
+
         let toImmediateResult embassyId (service: ServiceNode) =
             fun (deps: Russian.Dependencies) ->
                 let request =
@@ -48,15 +60,55 @@ module private Kdmid =
                         )
                     )
 
-                let message = $"%s{request.Route}%s{String.addLines 2}"
+                (deps.ChatId, deps.MessageId) |> create service.Instruction request.Route
 
-                service.Instruction
-                |> Option.map (fun instruction -> message + $"Инструкция:%s{String.addLines 2}%s{instruction}")
-                |> Option.defaultValue message
-                |> Text.create
-                |> fun create -> (deps.ChatId, deps.MessageId |> Replace) |> create
-                |> Ok
-                |> async.Return
+        let toFirstAvailableAutoSubscription embassyId (service: ServiceNode) =
+            fun (deps: Russian.Dependencies) ->
+                let request =
+                    EA.Telegram.Endpoints.Consumer.Core.RussianEmbassy(
+                        Post(
+                            PostRequest.Kdmid(
+                                { Confirmation = Auto <| FirstAvailable
+                                  ServiceId = service.Id
+                                  EmbassyId = embassyId
+                                  Payload = "{вставить сюда}" }
+                            )
+                        )
+                    )
+
+                (deps.ChatId, deps.MessageId) |> create service.Instruction request.Route
+        
+        let toStandardSubscription embassyId (service: ServiceNode) =
+            fun (deps: Russian.Dependencies) ->
+                let request =
+                    EA.Telegram.Endpoints.Consumer.Core.RussianEmbassy(
+                        Post(
+                            PostRequest.Kdmid(
+                                { Confirmation = Auto <| LastAvailable
+                                  ServiceId = service.Id
+                                  EmbassyId = embassyId
+                                  Payload = "{вставить сюда}" }
+                            )
+                        )
+                    )
+
+                (deps.ChatId, deps.MessageId) |> create service.Instruction request.Route
+        
+        let toDateRangeAutoSubscription embassyId (service: ServiceNode) =
+            fun (deps: Russian.Dependencies) ->
+                let request =
+                    EA.Telegram.Endpoints.Consumer.Core.RussianEmbassy(
+                        Post(
+                            PostRequest.Kdmid(
+                                { Confirmation = Auto <| DateTimeRange(DateTime.MinValue, DateTime.MaxValue)
+                                  ServiceId = service.Id
+                                  EmbassyId = embassyId
+                                  Payload = "{вставить сюда}" }
+                            )
+                        )
+                    )
+
+                (deps.ChatId, deps.MessageId) |> create service.Instruction request.Route
 
     let createKdmidRequest embassy service payload =
         payload
@@ -108,6 +160,9 @@ let internal getService embassyId (service: ServiceNode) =
 
         match idParts with
         | [ _; "RU"; _; _; "0" ] -> deps |> Kdmid.Instructions.toImmediateResult embassyId service
+        | [ _; "RU"; _; _; "1" ] -> deps |> Kdmid.Instructions.toStandardSubscription embassyId service
+        | [ _; "RU"; _; _; "0"; "1" ] -> deps |> Kdmid.Instructions.toFirstAvailableAutoSubscription embassyId service
+        | [ _; "RU"; _; _; "0"; "2" ] -> deps |> Kdmid.Instructions.toDateRangeAutoSubscription embassyId service
         | _ -> service.ShortName |> NotSupported |> Error |> async.Return
 
 let toResponse request =
