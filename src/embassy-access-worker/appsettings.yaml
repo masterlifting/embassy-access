@@ -377,14 +377,14 @@ Embassies:
               Name: Berlin
 
 KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
-  Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
+  Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email после регистрации заявки на сайте, после символа | в вышеуказанную команду и отправьте ее в чат.
 
 KdmidRussianServices: &KdmidRussianServices
   - Id: "0"
     Name: Проверить наличие слотов сейчас
     <<: *KdmidRussianServicesInstructions
   - Id: "1"
-    Name: Присласть доступные слоты при первой возможности
+    Name: Получить доступные слоты как только они появятся
     <<: *KdmidRussianServicesInstructions
   - Id: "2"
     Name: Автоматическая запись и поиск слотов
@@ -394,8 +394,11 @@ KdmidRussianServices: &KdmidRussianServices
         Name: Автоматически записаться на первый доступный слот
         <<: *KdmidRussianServicesInstructions
       - Id: "1"
-        Name: Автоматически записаться на слот в указанный период
+        Name: Автоматически записаться на последний доступный слот
         <<: *KdmidRussianServicesInstructions
+      - Id: "2"
+        Name: Автоматически записаться на слот в указанный период
+        Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email после регистрации заявки на сайте, после символа | в вышеуказанную команду и отправьте ее в чат. Так же измените дату и время начала и конца периодаю
 
 Services:
   Id: SRV

@@ -32,7 +32,7 @@ let toAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
                                         .RussianEmbassy(
                                             Post(
                                                 PostRequest.Kdmid(
-                                                    { Confirmation = appointment.Id |> Manual
+                                                    { Confirmation = appointment.Id |> Manual |> Some
                                                       ServiceId = request.Service.Id
                                                       EmbassyId = embassy.Id
                                                       Payload = request.Service.Payload }
