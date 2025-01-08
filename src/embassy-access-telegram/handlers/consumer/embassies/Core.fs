@@ -52,7 +52,7 @@ module internal Get =
                         |> async.Return
                     | true ->
                         match serviceNode.IdParts[1].Value with
-                        | "RU" -> deps.RussianDeps |> Russian.getService embassyId serviceNode.Value
+                        | "RU" -> deps.RussianDeps |> Russian.Get.toResponse embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported

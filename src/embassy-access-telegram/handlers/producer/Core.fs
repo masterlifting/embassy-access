@@ -27,23 +27,19 @@ let toAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
                         |> Result.map (fun payloadValue ->
                             appointments
                             |> Seq.map (fun appointment ->
-                                let buttonKey =
-                                    EA.Telegram.Endpoints.Consumer.Core
-                                        .RussianEmbassy(
-                                            Post(
-                                                PostRequest.Kdmid(
-                                                    { Confirmation = appointment.Id |> Manual |> Some
-                                                      ServiceId = request.Service.Id
-                                                      EmbassyId = embassy.Id
-                                                      Payload = request.Service.Payload }
-                                                )
+                                let request =
+                                    EA.Telegram.Endpoints.Consumer.Core.RussianEmbassy(
+                                        Post(
+                                            PostRequest.KdmidConfirm(
+                                                { RequestId = request.Id
+                                                  AppointmentId = appointment.Id }
                                             )
                                         )
-                                        .Route
+                                    )
 
                                 let buttonName = $"{appointment.Description} ({payloadValue})"
 
-                                buttonKey, buttonName)))
+                                request.Route, buttonName)))
                     |> Result.choose
                     |> Result.map Seq.concat
                     |> Result.map Map
