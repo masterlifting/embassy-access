@@ -5,11 +5,11 @@ open System
 open EA.Core.Domain
 
 type MidpassRequest =
-    { Embassy: EmbassyNode
-      Service: ServiceNode
-      StatementNumber: string }
+    { StatementNumber: string
+      Embassy: EmbassyNode
+      Service: ServiceNode }
 
-    member internal this.CreateRequest() =
+    member internal this.ToNewCoreRequest() =
         { Id = RequestId.New
           Service =
             { Id = this.Service.Id

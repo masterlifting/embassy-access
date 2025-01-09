@@ -7,7 +7,6 @@
     <ItemGroup>
         <Compile Include="services\city.kdmid.ru\domain\Constants.fs" />
         <Compile Include="services\city.kdmid.ru\domain\KdmidRequest.fs" />
-        <Compile Include="services\city.kdmid.ru\domain\Order.fs" />
         <Compile Include="services\city.kdmid.ru\domain\Payload.fs" />
         <Compile Include="services\city.kdmid.ru\dependencies\Order.fs" />
         <Compile Include="services\city.kdmid.ru\web\Http.fs"/>

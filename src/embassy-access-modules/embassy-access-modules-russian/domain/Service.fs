@@ -1,10 +1,11 @@
 ﻿[<AutoOpen>]
 module EA.Embassies.Russian.Domain.Service
 
+open EA.Core.Domain
 open EA.Embassies.Russian
 
 type KdmidService =
-    { Order: Kdmid.Domain.Order.StartOrder 
+    { Request: Request
       Dependencies: Kdmid.Dependencies.Order.Dependencies }
 
 type MidpassService =

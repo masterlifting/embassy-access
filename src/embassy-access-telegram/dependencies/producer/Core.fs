@@ -23,7 +23,7 @@ type Dependencies =
 
             let getEmbassyRequests (embassyId: Graph.NodeId) =
                 deps.initRequestStorage ()
-                |> ResultAsync.wrap (Request.Query.findManyByEmbassyId embassyId.Value)
+                |> ResultAsync.wrap (Request.Query.findManyByEmbassyId embassyId)
 
             let getEmbassyChats (requestIds: RequestId seq) =
                 deps.initChatStorage ()

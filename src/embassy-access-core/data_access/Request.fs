@@ -80,13 +80,20 @@ module private InMemory =
     let private loadData = Query.Json.get<RequestEntity> Name
 
     module Query =
-        let findManyByEmbassyId embassyId client =
+        let tryFindById (id: RequestId) client =
             client
             |> loadData
-            |> Result.map (Seq.filter (fun x -> x.Service.EmbassyId = embassyId))
+            |> Result.map (Seq.tryFind (fun x -> x.Id = id.Value))
+            |> Result.bind (Option.toResult _.ToDomain())
+            |> async.Return
+
+        let findManyByEmbassyId (embassyId: Graph.NodeId) client =
+            client
+            |> loadData
+            |> Result.map (Seq.filter (fun x -> x.Service.EmbassyId = embassyId.Value))
             |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
             |> async.Return
-            
+
         let findManyByEmbassyName name client =
             client
             |> loadData
@@ -138,12 +145,18 @@ module private FileSystem =
     let private loadData = Query.Json.get<RequestEntity>
 
     module Query =
-        let findManyByEmbassyId embassyId client =
+        let tryFindById (id: RequestId) client =
             client
             |> loadData
-            |> ResultAsync.map (Seq.filter (fun x -> x.Service.EmbassyId = embassyId))
+            |> ResultAsync.map (Seq.tryFind (fun x -> x.Id = id.Value))
+            |> ResultAsync.bind (Option.toResult _.ToDomain())
+
+        let findManyByEmbassyId (embassyId: Graph.NodeId) client =
+            client
+            |> loadData
+            |> ResultAsync.map (Seq.filter (fun x -> x.Service.EmbassyId = embassyId.Value))
             |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
-            
+
         let findManyByEmbassyName name client =
             client
             |> loadData
@@ -221,12 +234,18 @@ module Command =
 
 module Query =
 
+    let tryFindById id storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Query.tryFindById id
+        | Storage.FileSystem client -> client |> FileSystem.Query.tryFindById id
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
     let findManyByEmbassyId embassyId storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyId embassyId
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyId embassyId
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
-        
+
     let findManyByEmbassyName name storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyName name

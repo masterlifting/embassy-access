@@ -107,7 +107,7 @@ module internal Post =
 
         let private createCoreRequest (kdmidRequest: KdmidRequest) =
             fun (deps: Russian.Dependencies) ->
-                let request = kdmidRequest.CreateRequest()
+                let request = kdmidRequest.ToNewCoreRequest()
 
                 deps.createOrUpdateChat
                     { Id = deps.ChatId
@@ -121,15 +121,12 @@ module internal Post =
                 { Uri = uri
                   Service = service
                   Embassy = embassy
-                  TimeZone = 1.0
                   Confirmation = confirmation })
             |> async.Return
 
-        let private getService timeZone request =
+        let private getService request =
             fun (deps: Russian.Dependencies) ->
-                { Order =
-                    { Request = request
-                      TimeZone = timeZone }
+                { Request = request
                   Dependencies = Order.Dependencies.create deps.RequestStorage deps.CancellationToken }
                 |> Kdmid
                 |> API.Service.get
@@ -149,11 +146,26 @@ module internal Post =
                 let result = ResultAsyncBuilder()
 
                 result {
-                    let! service = deps.getServiceNode model.ServiceId
-                    let! embassy = deps.getEmbassyNode model.EmbassyId
-                    let! kdmidRequest = createRequest embassy service model.Payload Disabled
-                    let! request = deps |> createCoreRequest kdmidRequest
-                    let! result = deps |> getService kdmidRequest.TimeZone request
+
+                    let! requestOpt =
+                        deps.getEmbassyRequests model.EmbassyId
+                        |> ResultAsync.map (
+                            List.tryFind (fun request ->
+                                request.Service.Id = model.ServiceId && request.Service.Payload = model.Payload)
+                        )
+
+                    let! result =
+                        match requestOpt with
+                        | Some request -> deps |> getService request
+                        | None ->
+                            result {
+                                let! service = deps.getServiceNode model.ServiceId
+                                let! embassy = deps.getEmbassyNode model.EmbassyId
+                                let! kdmidRequest = createRequest embassy service model.Payload Disabled
+                                let! request = deps |> createCoreRequest kdmidRequest
+                                return deps |> getService request
+                            }
+
                     let notification = deps.ChatId |> createNotification result
                     return notification |> Ok |> async.Return
                 }
@@ -178,7 +190,31 @@ module internal Post =
                 }
 
         let confirm (model: Confirm) =
-            fun (deps: Russian.Dependencies) -> "confirm" |> NotImplemented |> Error |> async.Return
+            fun (deps: Russian.Dependencies) ->
+
+                let inline createNotification request =
+                    fun chatId ->
+                        let errorFilter error = true
+
+                        Notification.tryCreate errorFilter request
+                        |> Option.map _.Message
+                        |> Option.defaultValue
+                            $"Не удалось создать уведомление для запроса {request.Id} и результата {request.ProcessState}"
+                        |> fun message -> (chatId, New) |> Text.create message
+
+                let result = ResultAsyncBuilder()
+
+                result {
+                    let! request = deps.getRequest model.RequestId
+
+                    let request =
+                        { request with
+                            ConfirmationState = Manual model.AppointmentId }
+
+                    let! result = deps |> getService request
+                    let notification = deps.ChatId |> createNotification result
+                    return notification |> Ok |> async.Return
+                }
 
     let toResponse request =
         fun (deps: Russian.Dependencies) ->

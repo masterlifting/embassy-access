@@ -55,7 +55,7 @@ module private Fixture =
           postAppointmentsPage = fun _ _ _ -> httpPostStringRequest "appointments_page_has_result_1"
           postConfirmationPage = fun _ _ _ -> httpPostStringRequest "confirmation_page_has_result_1" }
 
-    let private Request =
+    let private KdmidRequest =
         { Uri = Uri("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F")
           Embassy =
             { Id = Graph.NodeId.New
@@ -68,13 +68,10 @@ module private Fixture =
               ShortName = "TestService"
               Instruction = None
               Description = None }
-          TimeZone = 1.0
           Confirmation = Auto FirstAvailable }
 
     let IssueForeign =
-        { KdmidService.Order =
-            { Request = Request.CreateRequest()
-              TimeZone = Request.TimeZone }
+        { KdmidService.Request = KdmidRequest.ToNewCoreRequest()
           KdmidService.Dependencies = Dependencies }
 
 open Fixture

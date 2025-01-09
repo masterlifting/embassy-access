@@ -8,15 +8,14 @@ type KdmidRequest =
     { Uri: Uri
       Embassy: EmbassyNode
       Service: ServiceNode
-      Confirmation: ConfirmationState
-      TimeZone: float }
+      Confirmation: ConfirmationState }
 
-    member this.CreateRequest() =
+    member this.ToNewCoreRequest() =
         { Id = RequestId.New
           Service =
             { Id = this.Service.Id
               Name = this.Service.Name
-              Payload = this.Uri.ToString()
+              Payload = this.Uri |> string
               Description = this.Service.Description
               Embassy = this.Embassy }
           Attempt = (DateTime.UtcNow, 0)

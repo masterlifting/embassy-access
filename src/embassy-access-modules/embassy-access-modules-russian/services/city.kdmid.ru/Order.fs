@@ -50,7 +50,10 @@ let private setAttemptCore timeZone request =
         <| { request with
                Attempt = DateTime.UtcNow, 1 }
 
-let private setAttempt timeZone (deps: Order.Dependencies) =
+let private setAttempt embassy (deps: Order.Dependencies) =
+
+    let timeZone = 1.0 //TODO: get from embassy
+
     ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
         request
         |> setAttemptCore timeZone
@@ -91,7 +94,7 @@ let private setProcessedState deps request confirmation =
         | Ok request -> return! request |> setCompletedState deps
     }
 
-let start order =
+let start (request: Request) =
     fun (deps: Order.Dependencies) ->
 
         // define
@@ -99,11 +102,11 @@ let start order =
         let parsePayload = parsePayload
         let createHttpClient = Http.createClient
         let processInitialPage = InitialPage.handle deps
-        let setAttempt = setAttempt order.TimeZone deps
+        let setAttempt = setAttempt request.Service.Embassy deps
         let processValidationPage = ValidationPage.handle deps
         let processAppointmentsPage = AppointmentsPage.handle deps
         let processConfirmationPage = ConfirmationPage.handle deps
-        let setProcessedState = setProcessedState deps order.Request
+        let setProcessedState = setProcessedState deps request
 
         // pipe
         let run =
@@ -117,9 +120,9 @@ let start order =
             >> processConfirmationPage
             >> setProcessedState
 
-        order.Request |> run
+        request |> run
 
-let pick order =
+let pick (requests: Request seq) notify =
     fun (deps: Order.Dependencies) ->
 
         let inline errorFilter error =
@@ -132,33 +135,33 @@ let pick order =
                 | _ -> false
             | _ -> false
 
-        let rec innerLoop (errors: Error' list) startOrders =
+        let rec innerLoop (errors: Error' list) requests =
             async {
-                match startOrders with
+                match requests with
                 | [] ->
                     return
                         match errors.Length with
                         | 0 -> Error [ "Orders to handle" |> NotFound ]
                         | _ -> Error errors
-                | startOrder :: startOrdersTail ->
-                    match! deps |> start startOrder with
+                | request :: requestsTail ->
+                    match! deps |> start request with
                     | Error error ->
 
                         do!
-                            match error |> Notification.tryCreateFail startOrder.Request.Id errorFilter with
+                            match error |> Notification.tryCreateFail request.Id errorFilter with
                             | None -> () |> async.Return
-                            | Some notification -> notification |> order.notify
+                            | Some notification -> notification |> notify
 
-                        return! startOrdersTail |> innerLoop (errors @ [ error ])
+                        return! requestsTail |> innerLoop (errors @ [ error ])
 
                     | Ok result ->
 
                         do!
                             match result |> Notification.tryCreate errorFilter with
                             | None -> () |> async.Return
-                            | Some notification -> notification |> order.notify
+                            | Some notification -> notification |> notify
 
                         return result |> Ok
             }
 
-        order.StartOrders |> List.ofSeq |> innerLoop []
+        requests |> List.ofSeq |> innerLoop []
