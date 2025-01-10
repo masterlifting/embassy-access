@@ -107,20 +107,12 @@ module internal Post =
 
         let private createCoreRequest (kdmidRequest: KdmidRequest) =
             fun (deps: Russian.Dependencies) ->
-                let request = kdmidRequest.ToNewCoreRequest()
+                let request = kdmidRequest.ToCoreRequest()
 
                 deps.createChatSubscription request.Id
                 |> ResultAsync.bindAsync (fun _ -> request |> deps.createRequest)
 
-        let private createKdmidRequest embassy service payload confirmation =
-            payload
-            |> Web.Http.Route.toUri
-            |> Result.map (fun uri ->
-                { Uri = uri
-                  Service = service
-                  Embassy = embassy
-                  Confirmation = confirmation })
-            |> async.Return
+        let private parsePayload = Web.Http.Route.toUri
 
         let private getService request =
             fun (deps: Russian.Dependencies) ->
@@ -141,9 +133,9 @@ module internal Post =
                             $"Не удалось создать уведомление для запроса {request.Id} и результата {request.ProcessState}"
                         |> fun message -> (chatId, New) |> Text.create message
 
-                let result = ResultAsyncBuilder()
+                let resultAsync = ResultAsyncBuilder()
 
-                result {
+                resultAsync {
 
                     let! requestOpt =
                         deps.getChatRequests ()
@@ -154,20 +146,49 @@ module internal Post =
                                 && request.Service.Payload = model.Payload)
                         )
 
-                    let! result =
+                    return
                         match requestOpt with
-                        | Some request -> deps |> getService request
-                        | None ->
-                            result {
-                                let! service = deps.getServiceNode model.ServiceId
-                                let! embassy = deps.getEmbassyNode model.EmbassyId
-                                let! kdmidRequest = createKdmidRequest embassy service model.Payload Disabled
-                                let! request = deps |> createCoreRequest kdmidRequest
-                                return deps |> getService request
-                            }
+                        | Some request ->
+                            match request.ProcessState with
+                            | InProcess ->
+                                (deps.ChatId, New)
+                                |> Text.create
+                                    $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' уже в обработке."
+                                |> Ok
+                                |> async.Return
+                            | processState ->
+                                resultAsync {
+                                    let! result = deps |> getService request
+                                    let notification = deps.ChatId |> createNotification result
 
-                    let notification = deps.ChatId |> createNotification result
-                    return notification |> Ok |> async.Return
+                                    match processState with
+                                    | Draft ->
+                                        let! _ = deps.updateRequest { result with ProcessState = Draft }
+                                        return notification |> Ok |> async.Return
+                                    | _ -> return notification |> Ok |> async.Return
+                                }
+                        | None ->
+                            resultAsync {
+                                let! service = deps.getService model.ServiceId
+                                let! embassy = deps.getEmbassy model.EmbassyId
+
+                                let! kdmidRequest =
+                                    model.Payload
+                                    |> parsePayload
+                                    |> Result.map (fun uri ->
+                                        { Uri = uri
+                                          Service = service
+                                          Embassy = embassy
+                                          ProcessState = Draft
+                                          ConfirmationState = Disabled })
+                                    |> async.Return
+
+                                let! request = deps |> createCoreRequest kdmidRequest
+                                let! result = deps |> getService request
+                                let notification = deps.ChatId |> createNotification result
+                                let! _ = deps.updateRequest { result with ProcessState = Draft }
+                                return notification |> Ok |> async.Return
+                            }
                 }
 
         let subscribe (model: Subscribe) =
@@ -192,9 +213,20 @@ module internal Post =
                             |> async.Return
                         | None ->
                             result {
-                                let! service = deps.getServiceNode model.ServiceId
-                                let! embassy = deps.getEmbassyNode model.EmbassyId
-                                let! kdmidRequest = createKdmidRequest embassy service model.Payload Disabled
+                                let! service = deps.getService model.ServiceId
+                                let! embassy = deps.getEmbassy model.EmbassyId
+
+                                let! kdmidRequest =
+                                    model.Payload
+                                    |> parsePayload
+                                    |> Result.map (fun uri ->
+                                        { Uri = uri
+                                          Service = service
+                                          Embassy = embassy
+                                          ProcessState = Ready
+                                          ConfirmationState = model.Confirmation })
+                                    |> async.Return
+
                                 let! request = deps |> createCoreRequest kdmidRequest
 
                                 return
@@ -203,9 +235,7 @@ module internal Post =
                                     |> async.Return
                             }
 
-                    let notification = (deps.ChatId, New) |> Text.create message
-
-                    return notification |> Ok |> async.Return
+                    return (deps.ChatId, New) |> Text.create message |> Ok |> async.Return
                 }
 
         let confirm (model: Confirm) =
@@ -231,8 +261,7 @@ module internal Post =
                             ConfirmationState = Manual model.AppointmentId }
 
                     let! result = deps |> getService request
-                    let notification = deps.ChatId |> createNotification result
-                    return notification |> Ok |> async.Return
+                    return deps.ChatId |> createNotification result |> Ok |> async.Return
                 }
 
     let toResponse request =

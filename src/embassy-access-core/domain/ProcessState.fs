@@ -4,7 +4,7 @@ module EA.Core.Domain.ProcessState
 open Infrastructure.Domain
 
 type ProcessState =
-    | Created
+    | Draft
     | Ready
     | InProcess
     | Completed of string

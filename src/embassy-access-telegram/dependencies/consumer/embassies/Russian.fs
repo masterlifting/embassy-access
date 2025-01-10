@@ -14,10 +14,11 @@ type Dependencies =
       MessageId: int
       CancellationToken: CancellationToken
       RequestStorage: Request.RequestStorage
-      getServiceNode: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
-      getEmbassyNode: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
+      getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
+      getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
       getEmbassyRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
       getRequest: RequestId -> Async<Result<Request, Error'>>
+      updateRequest: Request -> Async<Result<Request, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>>
       createChatSubscription: RequestId -> Async<Result<unit, Error'>>
       createRequest: Request -> Async<Result<Request, Error'>> }
@@ -55,6 +56,9 @@ type Dependencies =
                     | None -> $"Request with Id {requestId}" |> NotFound |> Error
                     | Some request -> request |> Ok)
 
+            let updateRequest request =
+                deps.RequestStorage |> Request.Command.update request
+
             let getEmbassyRequests embassyId =
                 deps.RequestStorage |> Request.Query.findManyByEmbassyId embassyId
 
@@ -64,8 +68,9 @@ type Dependencies =
                   CancellationToken = deps.CancellationToken
                   RequestStorage = deps.RequestStorage
                   getRequest = getRequest
-                  getServiceNode = getServices
-                  getEmbassyNode = getEmbassy
+                  updateRequest = updateRequest
+                  getService = getServices
+                  getEmbassy = getEmbassy
                   getEmbassyRequests = getEmbassyRequests
                   getChatRequests = deps.getChatRequests
                   createChatSubscription = createChatSubscription

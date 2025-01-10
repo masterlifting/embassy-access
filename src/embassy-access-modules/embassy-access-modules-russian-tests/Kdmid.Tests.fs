@@ -68,10 +68,11 @@ module private Fixture =
               ShortName = "TestService"
               Instruction = None
               Description = None }
-          Confirmation = Auto FirstAvailable }
+          ProcessState = Draft
+          ConfirmationState = Auto FirstAvailable }
 
     let IssueForeign =
-        { KdmidService.Request = KdmidRequest.ToNewCoreRequest()
+        { KdmidService.Request = KdmidRequest.ToCoreRequest()
           KdmidService.Dependencies = Dependencies }
 
 open Fixture

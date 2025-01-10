@@ -8,9 +8,10 @@ type KdmidRequest =
     { Uri: Uri
       Embassy: EmbassyNode
       Service: ServiceNode
-      Confirmation: ConfirmationState }
+      ProcessState: ProcessState
+      ConfirmationState: ConfirmationState }
 
-    member this.ToNewCoreRequest() =
+    member this.ToCoreRequest() =
         { Id = RequestId.New
           Service =
             { Id = this.Service.Id
@@ -19,7 +20,7 @@ type KdmidRequest =
               Description = this.Service.Description
               Embassy = this.Embassy }
           Attempt = (DateTime.UtcNow, 0)
-          ProcessState = Created
-          ConfirmationState = this.Confirmation
+          ProcessState = this.ProcessState
+          ConfirmationState = this.ConfirmationState
           Appointments = Set.empty
           Modified = DateTime.UtcNow }

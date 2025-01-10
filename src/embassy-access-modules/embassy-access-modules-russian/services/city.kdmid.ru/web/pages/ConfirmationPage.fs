@@ -82,30 +82,19 @@ let private createRequestConfirmation =
     | None -> Error <| NotFound "Confirmation data."
     | Some data -> Ok { Description = data }
 
-let private createResult request (appointment: Appointment) (confirmation: Confirmation) =
+let private setConfirmation request (appointment: Appointment) (confirmation: Confirmation) =
     let appointment =
         { appointment with
             Confirmation = Some confirmation }
 
     let appointments =
         request.Appointments
-        |> Set.filter (fun x -> x.Value <> appointment.Value)
+        |> Set.filter (fun x -> x.Id <> appointment.Id)
         |> Set.add appointment
 
     { request with
         Appointments = appointments
         ConfirmationState = Disabled }
-
-let private createDefaultResult request =
-    async {
-        return
-            Ok
-            <| match request.ConfirmationState with
-               | Manual _ ->
-                   { request with
-                       ConfirmationState = Disabled }
-               | _ -> request
-    }
 
 let private handlePage (deps: Order.Dependencies, httpClient, queryParamsId, formData, request) =
     request
@@ -122,11 +111,15 @@ let private handlePage (deps: Order.Dependencies, httpClient, queryParamsId, for
 
             let parseResponse = ResultAsync.bind parseHttpResponse
             let parseConfirmation = ResultAsync.bind createRequestConfirmation
-            let createResult = ResultAsync.map (createResult request appointment)
+            let setConfirmation = ResultAsync.map (setConfirmation request appointment)
 
             // pipe
-            httpClient |> postRequest |> parseResponse |> parseConfirmation |> createResult
-        | None -> request |> createDefaultResult)
+            httpClient
+            |> postRequest
+            |> parseResponse
+            |> parseConfirmation
+            |> setConfirmation
+        | None -> request |> Ok |> async.Return)
 
 let handle deps =
     ResultAsync.bindAsync (fun (httpClient, queryParamsId, formData, request) ->

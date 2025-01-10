@@ -31,7 +31,10 @@ type ConfirmationStateEntity() =
             match this.ConfirmationOption with
             | Some option -> option.ToDomain() |> Result.map Auto
             | None -> nameof ConfirmationOptionEntity |> NotFound |> Error
-        | _ -> $"The %s{this.Type} of {nameof ConfirmationStateEntity}" |> NotSupported |> Error
+        | _ ->
+            $"The %s{this.Type} of {nameof ConfirmationStateEntity}"
+            |> NotSupported
+            |> Error
 
 type internal ConfirmationState with
     member internal this.ToEntity() =
