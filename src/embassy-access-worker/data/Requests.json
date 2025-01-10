@@ -1,6 +1,6 @@
-﻿[
+[
   {
-    "Id": "26b9141f-0893-487f-a654-99411f16cba7",
+    "Id": "a0bac06e-8f41-4bad-94f1-1146eaa6dbac",
     "Service": {
       "Payload": "https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=96084\u0026cd=FB6BCB48",
       "ServiceId": "SRV.RU.0.0.1",
@@ -11,11 +11,14 @@
       "EmbassyDescription": null
     },
     "Attempt": 0,
-    "AttemptModified": "2025-01-10T16:40:06.3850929Z",
+    "AttemptModified": "2025-01-10T21:59:55.6501074Z",
     "ProcessState": {
       "Type": "Ready",
       "Error": null,
       "Message": null
+    },
+    "SubscriptionState": {
+      "Type": "Auto"
     },
     "ConfirmationState": {
       "Type": "Disabled",
@@ -23,10 +26,10 @@
       "AppointmentId": null
     },
     "Appointments": [],
-    "Modified": "2025-01-10T16:40:06.3850933Z"
+    "Modified": "2025-01-10T21:59:55.6501078Z"
   },
   {
-    "Id": "b2d05fce-7ea5-4dfd-a2ae-c3de4e5139cc",
+    "Id": "27c7b72e-49a6-486d-9cf7-589e5397782f",
     "Service": {
       "Payload": "https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=96084\u0026cd=FB6BCB48",
       "ServiceId": "SRV.RU.0.0.0",
@@ -37,7 +40,7 @@
       "EmbassyDescription": null
     },
     "Attempt": 2,
-    "AttemptModified": "2025-01-10T16:39:33.9952603Z",
+    "AttemptModified": "2025-01-10T21:59:38.6737725Z",
     "ProcessState": {
       "Type": "Failed",
       "Error": {
@@ -47,12 +50,15 @@
       },
       "Message": null
     },
+    "SubscriptionState": {
+      "Type": "Manual"
+    },
     "ConfirmationState": {
       "Type": "Disabled",
       "ConfirmationOption": null,
       "AppointmentId": null
     },
     "Appointments": [],
-    "Modified": "2025-01-10T16:39:33.9952626Z"
+    "Modified": "2025-01-10T21:59:38.6737778Z"
   }
 ]

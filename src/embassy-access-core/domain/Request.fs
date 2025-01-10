@@ -26,6 +26,7 @@ type Request =
       Service: RequestService
       Attempt: DateTime * int
       ProcessState: ProcessState
+      SubscriptionState: SubscriptionState
       ConfirmationState: ConfirmationState
       Appointments: Set<Appointment>
       Modified: DateTime }

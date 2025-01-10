@@ -7,9 +7,6 @@ open Persistence.DataAccess
 open EA.Core.Domain
 
 [<Literal>]
-let private DRAFT = nameof Draft
-
-[<Literal>]
 let private READY = nameof Ready
 
 [<Literal>]
@@ -29,7 +26,6 @@ type ProcessStateEntity() =
 
     member this.ToDomain() =
         match this.Type with
-        | DRAFT -> Draft |> Ok
         | READY -> Ready |> Ok
         | IN_PROCESS -> InProcess |> Ok
         | COMPLETED ->
@@ -53,7 +49,6 @@ type internal ProcessState with
         let result = ProcessStateEntity()
 
         match this with
-        | Draft -> result.Type <- DRAFT
         | Ready -> result.Type <- READY
         | InProcess -> result.Type <- IN_PROCESS
         | Completed msg ->

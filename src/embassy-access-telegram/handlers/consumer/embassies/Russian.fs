@@ -31,7 +31,7 @@ module internal Get =
                     EA.Telegram.Endpoints.Consumer.Core.RussianEmbassy(
                         Post(
                             PostRequest.KdmidSubscribe(
-                                { Confirmation = confirmation
+                                { ConfirmationState = confirmation
                                   ServiceId = service.Id
                                   EmbassyId = embassyId
                                   Payload = "ссылку вставить сюда" }
@@ -68,17 +68,20 @@ module internal Get =
         let toFirstAvailableAutoSubscribe embassyId service =
             fun (deps: Russian.Dependencies) ->
                 (deps.ChatId, deps.MessageId)
-                |> toSubscribe embassyId service (Auto FirstAvailable)
+                |> toSubscribe embassyId service (ConfirmationState.Auto FirstAvailable)
 
         let toLastAvailableAutoSubscribe embassyId service =
             fun (deps: Russian.Dependencies) ->
                 (deps.ChatId, deps.MessageId)
-                |> toSubscribe embassyId service (Auto LastAvailable)
+                |> toSubscribe embassyId service (ConfirmationState.Auto LastAvailable)
 
         let toDateRangeAutoSubscribe embassyId service =
             fun (deps: Russian.Dependencies) ->
                 (deps.ChatId, deps.MessageId)
-                |> toSubscribe embassyId service (Auto(DateTimeRange(DateTime.MinValue, DateTime.MaxValue)))
+                |> toSubscribe
+                    embassyId
+                    service
+                    (ConfirmationState.Auto(DateTimeRange(DateTime.MinValue, DateTime.MaxValue)))
 
     let toResponse embassyId (service: ServiceNode) =
         fun (deps: Russian.Dependencies) ->
@@ -107,7 +110,7 @@ module internal Post =
 
         let private createCoreRequest (kdmidRequest: KdmidRequest) =
             fun (deps: Russian.Dependencies) ->
-                let request = kdmidRequest.ToCoreRequest()
+                let request = kdmidRequest.ToRequest()
 
                 deps.createChatSubscription request.Id
                 |> ResultAsync.bindAsync (fun _ -> request |> deps.createRequest)
@@ -159,13 +162,7 @@ module internal Post =
                             | processState ->
                                 resultAsync {
                                     let! result = deps |> getService request
-                                    let notification = deps.ChatId |> createNotification result
-
-                                    match processState with
-                                    | Draft ->
-                                        let! _ = deps.updateRequest { result with ProcessState = Draft }
-                                        return notification |> Ok |> async.Return
-                                    | _ -> return notification |> Ok |> async.Return
+                                    return deps.ChatId |> createNotification result |> Ok |> async.Return
                                 }
                         | None ->
                             resultAsync {
@@ -179,15 +176,13 @@ module internal Post =
                                         { Uri = uri
                                           Service = service
                                           Embassy = embassy
-                                          ProcessState = Draft
+                                          SubscriptionState = Manual
                                           ConfirmationState = Disabled })
                                     |> async.Return
 
                                 let! request = deps |> createCoreRequest kdmidRequest
                                 let! result = deps |> getService request
-                                let notification = deps.ChatId |> createNotification result
-                                let! _ = deps.updateRequest { result with ProcessState = Draft }
-                                return notification |> Ok |> async.Return
+                                return deps.ChatId |> createNotification result |> Ok |> async.Return
                             }
                 }
 
@@ -223,8 +218,8 @@ module internal Post =
                                         { Uri = uri
                                           Service = service
                                           Embassy = embassy
-                                          ProcessState = Ready
-                                          ConfirmationState = model.Confirmation })
+                                          SubscriptionState = Auto
+                                          ConfirmationState = model.ConfirmationState })
                                     |> async.Return
 
                                 let! request = deps |> createCoreRequest kdmidRequest
@@ -258,7 +253,7 @@ module internal Post =
 
                     let request =
                         { request with
-                            ConfirmationState = Manual model.AppointmentId }
+                            ConfirmationState = ConfirmationState.Manual model.AppointmentId }
 
                     let! result = deps |> getService request
                     return deps.ChatId |> createNotification result |> Ok |> async.Return

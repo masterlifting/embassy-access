@@ -8,6 +8,7 @@ open EA.Core.Domain
 open Persistence
 open EA.Core.DataAccess.RequestService
 open EA.Core.DataAccess.ProcessState
+open EA.Core.DataAccess.SubscriptionState
 open EA.Core.DataAccess.ConfirmationState
 open EA.Core.DataAccess.Appointment
 
@@ -26,6 +27,7 @@ type RequestEntity() =
     member val Attempt = 0 with get, set
     member val AttemptModified = DateTime.UtcNow with get, set
     member val ProcessState = ProcessStateEntity() with get, set
+    member val SubscriptionState = SubscriptionStateEntity() with get, set
     member val ConfirmationState = ConfirmationStateEntity() with get, set
     member val Appointments = Array.empty<AppointmentEntity> with get, set
     member val Modified = DateTime.UtcNow with get, set
@@ -36,6 +38,7 @@ type RequestEntity() =
         result {
 
             let! processState = this.ProcessState.ToDomain()
+            let! subscriptionState = this.SubscriptionState.ToDomain()
             let! confirmationState = this.ConfirmationState.ToDomain()
 
             return
@@ -43,6 +46,7 @@ type RequestEntity() =
                   Service = this.Service.ToDomain()
                   Attempt = this.AttemptModified, this.Attempt
                   ProcessState = processState
+                  SubscriptionState = subscriptionState
                   ConfirmationState = confirmationState
                   Appointments = this.Appointments |> Seq.map _.ToDomain() |> Set.ofSeq
                   Modified = this.Modified }
@@ -56,6 +60,7 @@ type private Request with
         result.Attempt <- this.Attempt |> snd
         result.AttemptModified <- this.Attempt |> fst
         result.ProcessState <- this.ProcessState.ToEntity()
+        result.SubscriptionState <- this.SubscriptionState.ToEntity()
         result.ConfirmationState <- this.ConfirmationState.ToEntity()
         result.Appointments <- this.Appointments |> Seq.map _.ToEntity() |> Seq.toArray
         result.Modified <- this.Modified
@@ -207,7 +212,7 @@ let init storageType =
     match storageType with
     | FileSystem filePath ->
         { Persistence.FileSystem.Domain.FilePath = filePath
-          Persistence.FileSystem.Domain.FileName = Name }
+          Persistence.FileSystem.Domain.FileName = Name + ".json" }
         |> Storage.Connection.FileSystem
         |> Storage.init
     | InMemory -> Storage.Connection.InMemory |> Storage.init

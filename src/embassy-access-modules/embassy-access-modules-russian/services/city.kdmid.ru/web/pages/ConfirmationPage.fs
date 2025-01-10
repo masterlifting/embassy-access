@@ -11,12 +11,12 @@ open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private handleRequestConfirmation (request: Request) =
     match request.ConfirmationState with
-    | Disabled -> Ok <| None
-    | Manual appointmentId ->
+    | ConfirmationState.Disabled -> Ok <| None
+    | ConfirmationState.Manual appointmentId ->
         match request.Appointments |> Seq.tryFind (fun x -> x.Id = appointmentId) with
         | Some appointment -> Ok <| Some appointment
         | None -> Error <| NotFound $"%A{appointmentId}."
-    | Auto confirmationOption ->
+    | ConfirmationState.Auto confirmationOption ->
         match request.Appointments.Count > 0, confirmationOption with
         | false, _ -> Ok None
         | true, FirstAvailable ->

@@ -9,7 +9,7 @@ type MidpassRequest =
       Embassy: EmbassyNode
       Service: ServiceNode }
 
-    member internal this.ToNewCoreRequest() =
+    member internal this.ToRequest() =
         { Id = RequestId.New
           Service =
             { Id = this.Service.Id
@@ -18,7 +18,8 @@ type MidpassRequest =
               Payload = this.StatementNumber
               Embassy = this.Embassy }
           Attempt = (DateTime.UtcNow, 0)
-          ProcessState = Draft
+          ProcessState = Ready
+          SubscriptionState = Manual
           ConfirmationState = Disabled
           Appointments = Set.empty
           Modified = DateTime.UtcNow }

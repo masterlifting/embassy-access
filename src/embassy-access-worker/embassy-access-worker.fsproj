@@ -23,6 +23,8 @@
         <Content Include="appsettings.yaml">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <Content Include="data\Chats.json" />
+        <Content Include="data\Requests.json" />
     </ItemGroup>
 
     <ItemGroup>

@@ -32,8 +32,4 @@
         <ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Content Include="test.json" />
-    </ItemGroup>
-
 </Project>

@@ -5,7 +5,7 @@ Logging:
     Default: Debug
 
 Persistence:
-  FileSystem: C:\
+  FileSystem: ../../../data
 
 SearchAppointments: &SearchAppointments
   - Name: Search appointments

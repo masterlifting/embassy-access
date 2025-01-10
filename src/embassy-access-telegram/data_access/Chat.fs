@@ -195,7 +195,7 @@ let init storageType =
     match storageType with
     | FileSystem filePath ->
         { Persistence.FileSystem.Domain.Source.FilePath = filePath
-          Persistence.FileSystem.Domain.Source.FileName = Name }
+          Persistence.FileSystem.Domain.Source.FileName = Name + ".json" }
         |> Storage.Connection.FileSystem
         |> Storage.init
     | InMemory -> Storage.Connection.InMemory |> Storage.init

@@ -17,7 +17,7 @@ module Model =
         type Subscribe =
             { ServiceId: Graph.NodeId
               EmbassyId: Graph.NodeId
-              Confirmation: ConfirmationState
+              ConfirmationState: ConfirmationState
               Payload: string }
 
         type Confirm =
@@ -37,15 +37,15 @@ type PostRequest =
         match this with
         | KdmidCheckAppointments model -> [ "10"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
         | KdmidSubscribe model ->
-            match model.Confirmation with
-            | Disabled -> [ "11"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
-            | Manual appointmentId ->
+            match model.ConfirmationState with
+            | ConfirmationState.Disabled -> [ "11"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
+            | ConfirmationState.Manual appointmentId ->
                 [ "12"
                   model.ServiceId.Value
                   model.EmbassyId.Value
                   appointmentId.ValueStr
                   model.Payload ]
-            | Auto option ->
+            | ConfirmationState.Auto option ->
                 match option with
                 | FirstAvailable -> [ "13"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
                 | LastAvailable -> [ "14"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
@@ -64,7 +64,7 @@ type PostRequest =
         let inline createKdmidSubscription serviceId embassyId payload confirmation =
             { Model.Kdmid.Subscribe.ServiceId = serviceId |> Graph.NodeIdValue
               Model.Kdmid.Subscribe.EmbassyId = embassyId |> Graph.NodeIdValue
-              Model.Kdmid.Subscribe.Confirmation = confirmation
+              Model.Kdmid.Subscribe.ConfirmationState = confirmation
               Model.Kdmid.Subscribe.Payload = payload }
             |> PostRequest.KdmidSubscribe
             |> Ok
@@ -81,15 +81,15 @@ type PostRequest =
             appointmentId
             |> AppointmentId.create
             |> Result.bind (fun appointmentId ->
-                createKdmidSubscription serviceId embassyId payload (Manual appointmentId))
+                createKdmidSubscription serviceId embassyId payload (ConfirmationState.Manual appointmentId))
         | [| "13"; serviceId; embassyId; payload |] ->
-            createKdmidSubscription serviceId embassyId payload (Auto FirstAvailable)
+            createKdmidSubscription serviceId embassyId payload (ConfirmationState.Auto FirstAvailable)
         | [| "14"; serviceId; embassyId; payload |] ->
-            createKdmidSubscription serviceId embassyId payload (Auto LastAvailable)
+            createKdmidSubscription serviceId embassyId payload (ConfirmationState.Auto LastAvailable)
         | [| "15"; serviceId; embassyId; start; finish; payload |] ->
             match start, finish with
             | AP.IsDateTime start, AP.IsDateTime finish ->
-                createKdmidSubscription serviceId embassyId payload (Auto(DateTimeRange(start, finish)))
+                createKdmidSubscription serviceId embassyId payload (ConfirmationState.Auto(DateTimeRange(start, finish)))
             | _ ->
                 $"start: {start} or finish: {finish} of RussianEmbassy.PostRequest endpoint"
                 |> NotSupported
