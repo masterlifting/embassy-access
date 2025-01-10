@@ -109,12 +109,10 @@ module internal Post =
             fun (deps: Russian.Dependencies) ->
                 let request = kdmidRequest.ToNewCoreRequest()
 
-                deps.createOrUpdateChat
-                    { Id = deps.ChatId
-                      Subscriptions = [ request.Id ] |> Set }
-                |> ResultAsync.bindAsync (fun _ -> request |> deps.createOrUpdateRequest)
+                deps.createChatSubscription request.Id
+                |> ResultAsync.bindAsync (fun _ -> request |> deps.createRequest)
 
-        let private createRequest embassy service payload confirmation =
+        let private createKdmidRequest embassy service payload confirmation =
             payload
             |> Web.Http.Route.toUri
             |> Result.map (fun uri ->
@@ -148,10 +146,12 @@ module internal Post =
                 result {
 
                     let! requestOpt =
-                        deps.getEmbassyRequests model.EmbassyId
+                        deps.getChatRequests ()
                         |> ResultAsync.map (
                             List.tryFind (fun request ->
-                                request.Service.Id = model.ServiceId && request.Service.Payload = model.Payload)
+                                request.Service.Id = model.ServiceId
+                                && request.Service.Embassy.Id = model.EmbassyId
+                                && request.Service.Payload = model.Payload)
                         )
 
                     let! result =
@@ -161,7 +161,7 @@ module internal Post =
                             result {
                                 let! service = deps.getServiceNode model.ServiceId
                                 let! embassy = deps.getEmbassyNode model.EmbassyId
-                                let! kdmidRequest = createRequest embassy service model.Payload Disabled
+                                let! kdmidRequest = createKdmidRequest embassy service model.Payload Disabled
                                 let! request = deps |> createCoreRequest kdmidRequest
                                 return deps |> getService request
                             }
@@ -175,16 +175,35 @@ module internal Post =
                 let result = ResultAsyncBuilder()
 
                 result {
-                    let! service = deps.getServiceNode model.ServiceId
-                    let! embassy = deps.getEmbassyNode model.EmbassyId
-                    let! kdmidRequest = createRequest embassy service model.Payload model.Confirmation
-                    let! request = deps |> createCoreRequest kdmidRequest
-                    let! result = deps.createOrUpdateRequest request
+                    let! requestOpt =
+                        deps.getChatRequests ()
+                        |> ResultAsync.map (
+                            List.tryFind (fun request ->
+                                request.Service.Id = model.ServiceId
+                                && request.Service.Embassy.Id = model.EmbassyId
+                                && request.Service.Payload = model.Payload)
+                        )
 
-                    let notification =
-                        (deps.ChatId, New)
-                        |> Text.create
-                            $"Подписка на услугу {result.Service.Name} для посольства {result.Service.Embassy.ShortName} создана"
+                    let! message =
+                        match requestOpt with
+                        | Some request ->
+                            $"Подписка на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' уже существует."
+                            |> Ok
+                            |> async.Return
+                        | None ->
+                            result {
+                                let! service = deps.getServiceNode model.ServiceId
+                                let! embassy = deps.getEmbassyNode model.EmbassyId
+                                let! kdmidRequest = createKdmidRequest embassy service model.Payload Disabled
+                                let! request = deps |> createCoreRequest kdmidRequest
+
+                                return
+                                    $"Подписка '{request.Id.ValueStr}' на услугу '{service.Name}' для посольства '{embassy.Name}' создана."
+                                    |> Ok
+                                    |> async.Return
+                            }
+
+                    let notification = (deps.ChatId, New) |> Text.create message
 
                     return notification |> Ok |> async.Return
                 }

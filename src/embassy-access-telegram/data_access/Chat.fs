@@ -78,9 +78,7 @@ module private InMemory =
         let findManyBySubscription (subscriptionId: RequestId) client =
             client
             |> loadData
-            |> Result.map (
-                Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y = subscriptionId.ValueStr))
-            )
+            |> Result.map (Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y = subscriptionId.ValueStr)))
             |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
             |> async.Return
 
@@ -110,15 +108,21 @@ module private InMemory =
             |> Result.map (fun _ -> chat)
             |> async.Return
 
-        let createOrUpdate chat client =
+        let createChatSubscription (chatId: ChatId) (subscriptionId: RequestId) client =
             client
             |> loadData
             |> Result.bind (fun data ->
-                match data |> Seq.exists (fun x -> x.Id = chat.Id.Value) with
-                | true -> data |> Common.update chat
-                | false -> data |> Common.create chat)
+                match data |> Seq.tryFindIndex (fun x -> x.Id = chatId.Value) with
+                | None -> $"Chat {chatId}" |> NotFound |> Error
+                | Some index ->
+                    data[index].Subscriptions <-
+                        data[index].Subscriptions
+                        |> Set
+                        |> Set.add subscriptionId.ValueStr
+                        |> Seq.toList
+
+                    data |> Ok)
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
-            |> Result.map (fun _ -> chat)
             |> async.Return
 
 module private FileSystem =
@@ -166,15 +170,21 @@ module private FileSystem =
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
             |> ResultAsync.map (fun _ -> chat)
 
-        let createOrUpdate chat client =
+        let createChatSubscription (chatId: ChatId) (subscriptionId: RequestId) client =
             client
             |> loadData
             |> ResultAsync.bind (fun data ->
-                match data |> Seq.exists (fun x -> x.Id = chat.Id.Value) with
-                | true -> data |> Common.update chat
-                | false -> data |> Common.create chat)
+                match data |> Seq.tryFindIndex (fun x -> x.Id = chatId.Value) with
+                | None -> $"Chat {chatId}" |> NotFound |> Error
+                | Some index ->
+                    data[index].Subscriptions <-
+                        data[index].Subscriptions
+                        |> Set
+                        |> Set.add subscriptionId.ValueStr
+                        |> Seq.toList
+
+                    data |> Ok)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
-            |> ResultAsync.map (fun _ -> chat)
 
 let private toPersistenceStorage storage =
     storage
@@ -223,8 +233,8 @@ module Command =
         | Storage.FileSystem client -> client |> FileSystem.Command.update chat
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
-    let createOrUpdate chat storage =
+    let createChatSubscription chatId subscriptionId storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.Command.createOrUpdate chat
-        | Storage.FileSystem client -> client |> FileSystem.Command.createOrUpdate chat
+        | Storage.InMemory client -> client |> InMemory.Command.createChatSubscription chatId subscriptionId
+        | Storage.FileSystem client -> client |> FileSystem.Command.createChatSubscription chatId subscriptionId
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

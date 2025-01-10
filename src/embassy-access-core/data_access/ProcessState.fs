@@ -10,6 +10,9 @@ open EA.Core.Domain
 let private CREATED = nameof Created
 
 [<Literal>]
+let private READY = nameof Ready
+
+[<Literal>]
 let private IN_PROCESS = nameof InProcess
 
 [<Literal>]
@@ -27,6 +30,7 @@ type ProcessStateEntity() =
     member this.ToDomain() =
         match this.Type with
         | CREATED -> Created |> Ok
+        | READY -> Ready |> Ok
         | IN_PROCESS -> InProcess |> Ok
         | COMPLETED ->
             let msg =
@@ -50,6 +54,7 @@ type internal ProcessState with
 
         match this with
         | Created -> result.Type <- CREATED
+        | Ready -> result.Type <- READY
         | InProcess -> result.Type <- IN_PROCESS
         | Completed msg ->
             result.Type <- COMPLETED
