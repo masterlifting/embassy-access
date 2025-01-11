@@ -4,9 +4,10 @@ module EA.Telegram.Dependencies.Consumer.Embassies.Russian
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Core.Domain
 open Web.Telegram.Domain
+open EA.Core.Domain
 open EA.Core.DataAccess
+open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 
 type Dependencies =
@@ -16,6 +17,7 @@ type Dependencies =
       RequestStorage: Request.RequestStorage
       getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
       getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
+      getSubscriptionsChats: RequestId seq -> Async<Result<Chat list, Error'>>
       getEmbassyRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
       getRequest: RequestId -> Async<Result<Request, Error'>>
       updateRequest: Request -> Async<Result<Request, Error'>>
@@ -62,6 +64,9 @@ type Dependencies =
             let getEmbassyRequests embassyId =
                 deps.RequestStorage |> Request.Query.findManyByEmbassyId embassyId
 
+            let getSubscriptionsChats (requestIds: RequestId seq) =
+                deps.ChatStorage |> Chat.Query.findManyBySubscriptions requestIds
+
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
@@ -72,6 +77,7 @@ type Dependencies =
                   getService = getServices
                   getEmbassy = getEmbassy
                   getEmbassyRequests = getEmbassyRequests
+                  getSubscriptionsChats = getSubscriptionsChats
                   getChatRequests = deps.getChatRequests
                   createChatSubscription = createChatSubscription
                   createRequest = createRequest }

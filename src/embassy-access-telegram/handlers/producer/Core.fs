@@ -14,46 +14,24 @@ open EA.Embassies.Russian.Kdmid.Domain.Payload
 
 let toAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
     fun (deps: Core.Dependencies) ->
-        embassy.Id
-        |> deps.getEmbassyRequests
-        |> ResultAsync.bindAsync (fun requests ->
-            requests
-            |> Seq.map _.Id
-            |> deps.getEmbassyChats
-            |> ResultAsync.map (
-                Seq.map (fun chat ->
-                    requests
-                    |> Seq.map (fun request ->
-                        request.Service.Payload
-                        |> Payload.toValue
-                        |> Result.map (fun payloadValue ->
-                            appointments
-                            |> Seq.map (fun appointment ->
-                                let request =
-                                    RussianEmbassy(
-                                        Post(
-                                            KdmidConfirmAppointment(
-                                                { RequestId = request.Id
-                                                  AppointmentId = appointment.Id }
-                                            )
-                                        )
-                                    )
-
-                                let buttonName = $"{appointment.Description} ({payloadValue})"
-
-                                request.Value, buttonName)))
-                    |> Result.choose
-                    |> Result.map Seq.concat
-                    |> Result.map Map
-                    |> Result.map (fun buttons ->
-                        (chat.Id, New)
-                        |> Buttons.create
-                            { Name = $"Choose the appointment for '{embassy.ShortName}'"
-                              Columns = 1
-                              Data = buttons }))
-            )
-            |> ResultAsync.bind Result.choose)
-
+        let idParts = embassy.Id.Value |> Graph.split
+        match idParts.Length > 1 with
+        | false ->
+            $"Embassy '{embassy.Name}'"
+            |> NotSupported
+            |> Error
+            |> async.Return
+        | true ->
+            match idParts[1] with
+            | "RU" ->
+                EA.Telegram.Dependencies.Consumer.Embassies.Russian.Dependencies.create deps
+                deps.RussianDeps |> Russian.Get.toResponse embassyId serviceNode.Value
+            | _ ->
+                $"Embassy '{embassy.Name}'"
+                |> NotSupported
+                |> Error
+                |> async.Return
+        
 let toConfirmations (requestId: RequestId, embassy: EmbassyNode, confirmations: Set<Confirmation>) =
     fun (deps: Core.Dependencies) ->
         deps.getSubscriptionChats requestId

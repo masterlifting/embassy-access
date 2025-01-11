@@ -10,12 +10,12 @@ open EA.Core.Domain
 open EA.Telegram.Endpoints.Consumer.Embassies.Russian
 open EA.Telegram.Dependencies.Consumer.Embassies
 open EA.Embassies.Russian.Kdmid.Domain
+open EA.Telegram.Endpoints.Consumer.Request
 
 module internal Get =
     open EA.Telegram.Endpoints.Consumer.Request
 
     module private Kdmid =
-
         open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Model.Kdmid
 
         let inline private createInstruction instruction route =
@@ -229,6 +229,48 @@ module internal Post =
                                     |> ResultAsync.map (fun result -> deps.ChatId |> createNotification result)
                             }
                 }
+
+        let sendAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
+            fun (deps: Russian.Dependencies) ->
+                embassy.Id
+                |> deps.getEmbassyRequests
+                |> ResultAsync.bindAsync (fun requests ->
+                    requests
+                    |> Seq.map _.Id
+                    |> deps.getSubscriptionsChats
+                    |> ResultAsync.map (
+                        Seq.map (fun chat ->
+                            requests
+                            |> Seq.map (fun request ->
+                                request.Service.Payload
+                                |> Payload.toValue
+                                |> Result.map (fun payloadValue ->
+                                    appointments
+                                    |> Seq.map (fun appointment ->
+                                        let request =
+                                            RussianEmbassy(
+                                                Post(
+                                                    KdmidConfirmAppointment(
+                                                        { RequestId = request.Id
+                                                          AppointmentId = appointment.Id }
+                                                    )
+                                                )
+                                            )
+
+                                        let buttonName = $"{appointment.Description} ({payloadValue})"
+
+                                        request.Value, buttonName)))
+                            |> Result.choose
+                            |> Result.map Seq.concat
+                            |> Result.map Map
+                            |> Result.map (fun buttons ->
+                                (chat.Id, New)
+                                |> Buttons.create
+                                    { Name = $"Choose the appointment for '{embassy.ShortName}'"
+                                      Columns = 1
+                                      Data = buttons }))
+                    )
+                    |> ResultAsync.bind Result.choose)
 
         let confirmAppointment (model: ConfirmAppointment) =
             fun (deps: Russian.Dependencies) ->
