@@ -10,7 +10,7 @@ open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Consumer
 
 module private Consume =
-    open EA.Telegram.Endpoints.Consumer.Core
+    open EA.Telegram.Endpoints.Consumer.Request
     open EA.Telegram.Handlers.Consumer
 
     let private produceResult chatId ct client dataRes = produceResult dataRes chatId ct client

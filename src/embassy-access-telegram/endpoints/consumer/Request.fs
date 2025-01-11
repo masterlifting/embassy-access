@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Endpoints.Consumer.Core
+﻿module EA.Telegram.Endpoints.Consumer.Request
 
 open Infrastructure.Domain
 open EA.Telegram.Dependencies
@@ -12,11 +12,11 @@ type Request =
     | Embassies of Embassies.Core.Request
     | RussianEmbassy of Embassies.Russian.Request
 
-    member this.Route =
+    member this.Value =
         match this with
-        | Users r -> [ "0"; r.Route ]
-        | Embassies r -> [ "1"; r.Route ]
-        | RussianEmbassy r -> [ "2"; r.Route ]
+        | Users r -> [ "0"; r.Value ]
+        | Embassies r -> [ "1"; r.Value ]
+        | RussianEmbassy r -> [ "2"; r.Value ]
         |> String.concat Delimiter
 
     static member parse(input: string) =

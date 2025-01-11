@@ -20,7 +20,7 @@ module Model =
               ConfirmationState: ConfirmationState
               Payload: string }
 
-        type Confirm =
+        type ConfirmAppointment =
             { RequestId: RequestId
               AppointmentId: AppointmentId }
 
@@ -28,12 +28,12 @@ module Model =
         type CheckStatus = { Number: string }
 
 type PostRequest =
-    | KdmidCheckAppointments of Model.Kdmid.CheckAppointments
     | KdmidSubscribe of Model.Kdmid.Subscribe
-    | KdmidConfirm of Model.Kdmid.Confirm
+    | KdmidCheckAppointments of Model.Kdmid.CheckAppointments
+    | KdmidConfirmAppointment of Model.Kdmid.ConfirmAppointment
     | MidpassCheckStatus of Model.Midpass.CheckStatus
 
-    member this.Code =
+    member this.Value =
         match this with
         | KdmidCheckAppointments model -> [ "10"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
         | KdmidSubscribe model ->
@@ -56,7 +56,7 @@ type PostRequest =
                       start |> string
                       finish |> string
                       model.Payload ]
-        | KdmidConfirm model -> [ "16"; model.RequestId.ValueStr; model.AppointmentId.ValueStr ]
+        | KdmidConfirmAppointment model -> [ "16"; model.RequestId.ValueStr; model.AppointmentId.ValueStr ]
         | MidpassCheckStatus model -> [ "17"; model.Number ]
         |> String.concat Delimiter
 
@@ -99,9 +99,9 @@ type PostRequest =
             |> Result.bind (fun requestId ->
                 AppointmentId.create appointmentId
                 |> Result.map (fun appointmentId ->
-                    { Model.Kdmid.Confirm.RequestId = requestId
-                      Model.Kdmid.Confirm.AppointmentId = appointmentId }))
-            |> Result.map PostRequest.KdmidConfirm
+                    { Model.Kdmid.ConfirmAppointment.RequestId = requestId
+                      Model.Kdmid.ConfirmAppointment.AppointmentId = appointmentId }))
+            |> Result.map PostRequest.KdmidConfirmAppointment
         | [| "17"; number |] ->
             { Model.Midpass.CheckStatus.Number = number }
             |> PostRequest.MidpassCheckStatus
@@ -111,9 +111,9 @@ type PostRequest =
 type Request =
     | Post of PostRequest
 
-    member this.Route =
+    member this.Value =
         match this with
-        | Post r -> r.Code
+        | Post r -> r.Value
 
     static member parse(input: string) =
         let parts = input.Split Delimiter

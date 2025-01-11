@@ -2,13 +2,15 @@
 module EA.Telegram.Handlers.Producer.Core
 
 open System
-open EA.Telegram.Endpoints.Consumer.Embassies.Russian
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Telegram.Dependencies.Producer
+open EA.Telegram.Endpoints.Consumer.Request
+open EA.Telegram.Endpoints.Consumer.Embassies.Russian
+open EA.Embassies.Russian.Kdmid.Domain.Payload
 
 let toAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
     fun (deps: Core.Dependencies) ->
@@ -23,14 +25,14 @@ let toAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
                     requests
                     |> Seq.map (fun request ->
                         request.Service.Payload
-                        |> EA.Embassies.Russian.Kdmid.Domain.Payload.Payload.toValue
+                        |> Payload.toValue
                         |> Result.map (fun payloadValue ->
                             appointments
                             |> Seq.map (fun appointment ->
                                 let request =
-                                    EA.Telegram.Endpoints.Consumer.Core.RussianEmbassy(
+                                    RussianEmbassy(
                                         Post(
-                                            PostRequest.KdmidConfirm(
+                                            KdmidConfirmAppointment(
                                                 { RequestId = request.Id
                                                   AppointmentId = appointment.Id }
                                             )
@@ -39,7 +41,7 @@ let toAppointments (embassy: EmbassyNode, appointments: Set<Appointment>) =
 
                                 let buttonName = $"{appointment.Description} ({payloadValue})"
 
-                                request.Route, buttonName)))
+                                request.Value, buttonName)))
                     |> Result.choose
                     |> Result.map Seq.concat
                     |> Result.map Map

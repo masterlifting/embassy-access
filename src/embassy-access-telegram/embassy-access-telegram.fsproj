@@ -17,7 +17,7 @@
         <Compile Include="endpoints\consumer\Users.fs" />
         <Compile Include="endpoints\consumer\embassies\Core.fs" />
         <Compile Include="endpoints\consumer\embassies\Russian.fs" />
-        <Compile Include="endpoints\consumer\Core.fs" />
+        <Compile Include="endpoints\consumer\Request.fs" />
         <Folder Include="endpoints\producer\" />
         <Compile Include="handlers\consumer\embassies\Russian.fs" />
         <Compile Include="handlers\consumer\embassies\Core.fs" />

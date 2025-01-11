@@ -12,7 +12,7 @@ type GetRequest =
     | UserEmbassyServices of ChatId * embassyId: Graph.NodeId
     | UserEmbassyService of userId: ChatId * embassyId: Graph.NodeId * serviceId: Graph.NodeId
 
-    member this.Code =
+    member this.Value =
         match this with
         | UserEmbassy(userId, embassyId) -> [ "00"; userId.ValueStr; embassyId.Value ]
         | UserEmbassies id -> [ "01"; id.ValueStr ]
@@ -44,9 +44,9 @@ type GetRequest =
 type Request =
     | Get of GetRequest
 
-    member this.Route =
+    member this.Value =
         match this with
-        | Get r -> r.Code
+        | Get r -> r.Value
 
     static member parse(input: string) =
         let parts = input.Split Delimiter
