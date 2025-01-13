@@ -19,10 +19,14 @@
         <Compile Include="endpoints\consumer\embassies\Russian.fs" />
         <Compile Include="endpoints\consumer\Request.fs" />
         <Folder Include="endpoints\producer\" />
-        <Compile Include="handlers\consumer\embassies\Russian.fs" />
-        <Compile Include="handlers\consumer\embassies\Core.fs" />
-        <Compile Include="handlers\consumer\Users.fs" />
-        <Compile Include="handlers\producer\Core.fs" />
+        <Compile Include="services\consumer\embassies\Russian.fs" />
+        <Compile Include="services\consumer\embassies\Core.fs" />
+        <Compile Include="services\consumer\Users.fs" />
+        <Compile Include="services\producer\Core.fs" />
+        <Compile Include="controllers\consumer\Users.fs" />
+        <Compile Include="controllers\consumer\embassies\Core.fs" />
+        <Compile Include="controllers\consumer\embassies\Russian.fs" />
+        <Compile Include="controllers\consumer\Core.fs" />
         <Compile Include="Consumer.fs" />
         <Compile Include="Producer.fs" />
     </ItemGroup>

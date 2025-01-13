@@ -11,22 +11,14 @@ open EA.Telegram.Dependencies.Consumer
 
 module private Consume =
     open EA.Telegram.Endpoints.Consumer.Request
-    open EA.Telegram.Handlers.Consumer
 
     let private produceResult chatId ct client dataRes = produceResult dataRes chatId ct client
-
-    let private toResponse request =
-        fun deps ->
-            match request with
-            | Request.Users value -> deps |> Users.toResponse value
-            | Request.Embassies value -> deps |> Embassies.Core.toResponse value
-            | Request.RussianEmbassy value -> deps |> Embassies.Russian.toResponse value
 
     let text value client =
         fun deps ->
             deps
             |> Request.parse value
-            |> Result.map toResponse
+            |> Result.map EA.Telegram.Controllers.Consumer.Core.respond
             |> ResultAsync.wrap (fun createResponse ->
                 deps
                 |> createResponse
@@ -36,7 +28,7 @@ module private Consume =
         fun deps ->
             deps
             |> Request.parse value
-            |> Result.map toResponse
+            |> Result.map EA.Telegram.Controllers.Consumer.Core.respond
             |> ResultAsync.wrap (fun createResponse ->
                 deps
                 |> createResponse

@@ -1,5 +1,4 @@
-﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Handlers.Consumer.Embassies.Core
+﻿module EA.Telegram.Services.Consumer.Embassies.Core
 
 open System
 open Infrastructure.Domain
@@ -8,7 +7,7 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Handlers.Consumer
+open EA.Telegram.Services.Consumer
 open EA.Telegram.Endpoints.Consumer.Embassies.Core
 
 let private createButtons chatId msgIdOpt buttonGroupName columns data =
@@ -52,7 +51,7 @@ module internal Get =
                         |> async.Return
                     | true ->
                         match serviceNode.IdParts[1].Value with
-                        | "RU" -> deps.RussianDeps |> Russian.Get.toResponse embassyId serviceNode.Value
+                        | "RU" -> deps.RussianDeps |> Russian.Kdmid.Instruction.create embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported
@@ -85,15 +84,3 @@ module internal Get =
     let embassies (deps: Embassies.Core.Dependencies) =
         deps.getEmbassies ()
         |> ResultAsync.map (toEmbassyResponse deps.ChatId None None)
-
-let toResponse request =
-    fun (deps: Core.Dependencies) ->
-        Embassies.Core.Dependencies.create deps
-        |> ResultAsync.wrap (fun deps ->
-            match request with
-            | Get get ->
-                match get with
-                | Embassies -> deps |> Get.embassies
-                | Embassy embassyId -> deps |> Get.embassy embassyId
-                | EmbassyServices embassyId -> deps |> Get.embassyServices embassyId
-                | EmbassyService(embassyId, serviceId) -> deps |> Get.embassyService embassyId serviceId)

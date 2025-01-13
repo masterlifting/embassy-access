@@ -9,16 +9,21 @@ let private Delimiter = "|"
 
 module Model =
     module Kdmid =
-        type CheckAppointments =
-            { ServiceId: Graph.NodeId
-              EmbassyId: Graph.NodeId
-              Payload: string }
 
         type Subscribe =
             { ServiceId: Graph.NodeId
               EmbassyId: Graph.NodeId
               ConfirmationState: ConfirmationState
               Payload: string }
+
+        type CheckAppointments =
+            { ServiceId: Graph.NodeId
+              EmbassyId: Graph.NodeId
+              Payload: string }
+
+        type SendAppointments =
+            { EmbassyId: Graph.NodeId
+              AppointmentIds: Set<AppointmentId> }
 
         type ConfirmAppointment =
             { RequestId: RequestId
@@ -30,6 +35,7 @@ module Model =
 type PostRequest =
     | KdmidSubscribe of Model.Kdmid.Subscribe
     | KdmidCheckAppointments of Model.Kdmid.CheckAppointments
+    | KdmidSendAppointments of Model.Kdmid.SendAppointments
     | KdmidConfirmAppointment of Model.Kdmid.ConfirmAppointment
     | MidpassCheckStatus of Model.Midpass.CheckStatus
 
@@ -56,8 +62,12 @@ type PostRequest =
                       start |> string
                       finish |> string
                       model.Payload ]
-        | KdmidConfirmAppointment model -> [ "16"; model.RequestId.ValueStr; model.AppointmentId.ValueStr ]
-        | MidpassCheckStatus model -> [ "17"; model.Number ]
+        | KdmidSendAppointments model ->
+            [ "16"
+              model.EmbassyId.Value
+              model.AppointmentIds |> Set.map _.ValueStr |> Set.toArray |> String.concat "," ]
+        | KdmidConfirmAppointment model -> [ "17"; model.RequestId.ValueStr; model.AppointmentId.ValueStr ]
+        | MidpassCheckStatus model -> [ "18"; model.Number ]
         |> String.concat Delimiter
 
     static member parse(parts: string[]) =
@@ -89,12 +99,24 @@ type PostRequest =
         | [| "15"; serviceId; embassyId; start; finish; payload |] ->
             match start, finish with
             | AP.IsDateTime start, AP.IsDateTime finish ->
-                createKdmidSubscription serviceId embassyId payload (ConfirmationState.Auto(DateTimeRange(start, finish)))
+                createKdmidSubscription
+                    serviceId
+                    embassyId
+                    payload
+                    (ConfirmationState.Auto(DateTimeRange(start, finish)))
             | _ ->
                 $"start: {start} or finish: {finish} of RussianEmbassy.PostRequest endpoint"
                 |> NotSupported
                 |> Error
-        | [| "16"; requestId; appointmentId |] ->
+        | [| "16"; embassyId; appointmentIds |] ->
+            appointmentIds.Split ','
+            |> Array.map AppointmentId.create
+            |> Result.choose
+            |> Result.map (fun appointmentIds ->
+                { Model.Kdmid.SendAppointments.EmbassyId = embassyId |> Graph.NodeIdValue
+                  Model.Kdmid.SendAppointments.AppointmentIds = appointmentIds |> Set.ofList })
+            |> Result.map PostRequest.KdmidSendAppointments
+        | [| "17"; requestId; appointmentId |] ->
             RequestId.create requestId
             |> Result.bind (fun requestId ->
                 AppointmentId.create appointmentId
@@ -102,7 +124,7 @@ type PostRequest =
                     { Model.Kdmid.ConfirmAppointment.RequestId = requestId
                       Model.Kdmid.ConfirmAppointment.AppointmentId = appointmentId }))
             |> Result.map PostRequest.KdmidConfirmAppointment
-        | [| "17"; number |] ->
+        | [| "18"; number |] ->
             { Model.Midpass.CheckStatus.Number = number }
             |> PostRequest.MidpassCheckStatus
             |> Ok
