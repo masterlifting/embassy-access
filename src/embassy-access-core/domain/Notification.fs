@@ -4,30 +4,25 @@ module EA.Core.Domain.Notification
 open Infrastructure.Domain
 
 type Notification =
-    | Appointments of (EmbassyNode * Set<Appointment>)
-    | Confirmations of (RequestId * EmbassyNode * Set<Confirmation>)
-    | Fail of (RequestId * Error')
+    | Successfully of string
+    | Unsuccessfully of Error'
+    | HasAppointments of Set<Appointment>
+    | HasConfirmations of Set<Confirmation>
 
-    static member tryCreateFail requestId allow error =
-        match error |> allow with
-        | true -> Fail(requestId, error) |> Some
+    static member tryCreateFail error filter =
+        match error |> filter with
+        | true -> Unsuccessfully error |> Some
         | false -> None
 
-    static member tryCreate allowError request =
-        match request.ProcessState with
-        | Completed _ ->
-            match request.Appointments.IsEmpty with
-            | true -> None
-            | false ->
-                match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
-                | [] -> Appointments(request.Service.Embassy, request.Appointments) |> Some
-                | confirmations -> Confirmations(request.Id, request.Service.Embassy, confirmations |> set) |> Some
-        | Failed error -> error |> Notification.tryCreateFail request.Id allowError
-        | _ -> None
-
-    member this.Message =
-        match this with
-        | Appointments(embassy, appointments) -> $"Appointments for {embassy.ShortName}: {appointments.Count}"
-        | Confirmations(requestId, embassy, confirmations) ->
-            $"Confirmations for {embassy.ShortName} request {requestId.ValueStr}: {confirmations.Count}"
-        | Fail(requestId, error) -> $"Failed request {requestId.ValueStr}: {error.Message}"
+    static member tryCreate errorFilter =
+        fun request ->
+            match request.ProcessState with
+            | Completed msg ->
+                match request.Appointments.IsEmpty with
+                | true -> Successfully msg |> Some
+                | false ->
+                    match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
+                    | [] -> request.Appointments |> HasAppointments |> Some
+                    | confirmations -> confirmations |> Set.ofList |> HasConfirmations |> Some
+            | Failed error -> Notification.tryCreateFail error errorFilter
+            | _ -> None

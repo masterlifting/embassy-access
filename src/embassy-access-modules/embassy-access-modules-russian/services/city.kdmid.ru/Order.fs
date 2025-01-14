@@ -148,7 +148,7 @@ let pick (requests: Request seq) notify =
                     | Error error ->
 
                         do!
-                            match error |> Notification.tryCreateFail request.Id errorFilter with
+                            match Notification.tryCreateFail error errorFilter with
                             | None -> () |> async.Return
                             | Some notification -> notification |> notify
 

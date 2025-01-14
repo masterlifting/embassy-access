@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="domain\Constants.fs" />
         <Compile Include="domain\RouteNode.fs" />
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\Russian.fs" />

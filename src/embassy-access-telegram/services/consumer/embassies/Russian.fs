@@ -97,15 +97,53 @@ module Kdmid =
                 | [ _; "RU"; _; _; "2"; "2" ] -> deps |> toDateRangeAutoSubscribe embassyId service
                 | _ -> service.ShortName |> NotSupported |> Error |> async.Return
 
-    let private createNotification request =
+    let private toResponse (request: EA.Core.Domain.Request.Request) =
         fun chatId ->
             let errorFilter _ = true
 
-            Notification.tryCreate errorFilter request
-            |> Option.map _.Message
-            |> Option.defaultValue
-                $"Не удалось создать уведомление для запроса {request.Id} и результата {request.ProcessState}"
-            |> fun message -> (chatId, New) |> Text.create message
+            request
+            |> Notification.tryCreate errorFilter
+            |> Option.map (function
+                | Successfully msg -> (chatId, New) |> Text.create msg |> Ok
+                | Unsuccessfully error -> chatId |> Text.createError error |> Ok
+                | HasAppointments appointments ->
+                    request.Service.Payload
+                    |> Payload.toValue
+                    |> Result.map (fun payloadValue ->
+                        appointments
+                        |> Seq.map (fun appointment ->
+                            let route =
+                                RussianEmbassy(
+                                    Post(
+                                        KdmidConfirmAppointment(
+                                            { RequestId = request.Id
+                                              AppointmentId = appointment.Id }
+                                        )
+                                    )
+                                )
+
+                            route.Value, appointment.Description)
+                        |> Map
+                        |> fun buttons ->
+                            (chatId, New)
+                            |> Buttons.create
+                                { Name =
+                                    $"Choose the appointment for {request.Service.Embassy.ShortName}:{payloadValue}'"
+                                  Columns = 1
+                                  Data = buttons })
+                | HasConfirmations confirmations ->
+                    request.Service.Payload
+                    |> Payload.toValue
+                    |> Result.map (fun payloadValue ->
+                        let resultMsg =
+                            $"Confirmations for {request.Service.Embassy.ShortName}:{payloadValue} are found."
+
+                        (chatId, New) |> Text.create resultMsg))
+            |> Option.defaultValue (
+                (chatId, New)
+                |> Text.create $"Не валидный результат запроса {request.Id}."
+                |> Ok
+            )
 
     let private createCoreRequest (kdmidRequest: KdmidRequest) =
         fun (deps: Russian.Dependencies) ->
@@ -194,7 +232,7 @@ module Kdmid =
                         | _ ->
                             deps
                             |> getService request
-                            |> ResultAsync.map (fun result -> deps.ChatId |> createNotification result)
+                            |> ResultAsync.bind (fun result -> deps.ChatId |> toResponse result)
                     | None ->
                         resultAsync {
                             let! service = deps.getService model.ServiceId
@@ -214,7 +252,7 @@ module Kdmid =
                             return
                                 deps
                                 |> getService request
-                                |> ResultAsync.map (fun result -> deps.ChatId |> createNotification result)
+                                |> ResultAsync.bind (fun result -> deps.ChatId |> toResponse result)
                         }
             }
 
@@ -226,36 +264,7 @@ module Kdmid =
                     request.Service.Id = model.ServiceId
                     && request.Service.Embassy.Id = model.EmbassyId)
             )
-            |> ResultAsync.bind (fun requests ->
-                requests
-                |> Seq.map (fun request ->
-                    request.Service.Payload
-                    |> Payload.toValue
-                    |> Result.map (fun payloadValue ->
-                        request.Appointments
-                        |> Set.filter (fun x -> model.AppointmentIds |> Set.contains x.Id)
-                        |> Seq.map (fun appointment ->
-                            let route =
-                                RussianEmbassy(
-                                    Post(
-                                        KdmidConfirmAppointment(
-                                            { RequestId = request.Id
-                                              AppointmentId = appointment.Id }
-                                        )
-                                    )
-                                )
-
-                            let buttonName = $"{appointment.Description} ({payloadValue})"
-
-                            route.Value, buttonName)
-                        |> Map
-                        |> fun buttons ->
-                            (deps.ChatId, New)
-                            |> Buttons.create
-                                { Name = $"Choose the appointment for '{request.Service.Embassy.ShortName}'"
-                                  Columns = 1
-                                  Data = buttons }))
-                |> Result.choose)
+            |> ResultAsync.bind (Seq.map (fun r -> deps.ChatId |> toResponse r) >> Result.choose)
 
     let confirmAppointment (model: ConfirmAppointment) =
         fun (deps: Russian.Dependencies) ->
@@ -265,7 +274,7 @@ module Kdmid =
                 |> getService
                     { request with
                         ConfirmationState = ConfirmationState.Manual model.AppointmentId })
-            |> ResultAsync.map (fun result -> deps.ChatId |> createNotification result)
+            |> ResultAsync.map (fun r -> deps.ChatId |> toResponse r)
 
 module Midpass =
     open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Model.Midpass
