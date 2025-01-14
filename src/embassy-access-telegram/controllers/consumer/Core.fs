@@ -6,6 +6,6 @@ open EA.Telegram.Endpoints.Consumer.Request
 let respond request =
     fun deps ->
         match request with
-        | Request.Users value -> deps |> Users.respond value
-        | Request.Embassies value -> deps |> Embassies.Core.respond value
-        | Request.RussianEmbassy value -> deps |> Embassies.Russian.respond value
+        | Route.Users value -> deps |> Users.respond value
+        | Route.Embassies value -> deps |> Embassies.Core.respond value
+        | Route.RussianEmbassy value -> deps |> Embassies.Russian.respond value

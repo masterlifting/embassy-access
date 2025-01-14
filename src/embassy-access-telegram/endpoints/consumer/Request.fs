@@ -7,7 +7,7 @@ open EA.Telegram.Endpoints.Consumer
 [<Literal>]
 let private Delimiter = "|"
 
-type Request =
+type Route =
     | Users of Users.Request
     | Embassies of Embassies.Core.Request
     | RussianEmbassy of Embassies.Russian.Request

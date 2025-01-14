@@ -16,7 +16,7 @@ module Kdmid =
     open EA.Embassies.Russian.Kdmid.Domain
     open EA.Embassies.Russian.Kdmid.Dependencies
     open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Model.Kdmid
-    
+
     module Instruction =
 
         let private toResponse instruction route =
@@ -220,45 +220,42 @@ module Kdmid =
 
     let sendAppointments (model: SendAppointments) =
         fun (deps: Russian.Dependencies) ->
-            model.EmbassyId
-            |> deps.getEmbassyRequests
-            |> ResultAsync.bindAsync (fun requests ->
+            deps.getChatRequests ()
+            |> ResultAsync.map (
+                List.filter (fun request ->
+                    request.Service.Id = model.ServiceId
+                    && request.Service.Embassy.Id = model.EmbassyId)
+            )
+            |> ResultAsync.bind (fun requests ->
                 requests
-                |> Seq.map _.Id
-                |> deps.getSubscriptionsChats
-                |> ResultAsync.map (
-                    Seq.map (fun chat ->
-                        requests
-                        |> Seq.map (fun request ->
-                            request.Service.Payload
-                            |> Payload.toValue
-                            |> Result.map (fun payloadValue ->
-                                model.AppointmentIds
-                                |> Seq.map (fun appointmentId ->
-                                    let request =
-                                        RussianEmbassy(
-                                            Post(
-                                                KdmidConfirmAppointment(
-                                                    { RequestId = request.Id
-                                                      AppointmentId = appointmentId }
-                                                )
-                                            )
+                |> Seq.map (fun request ->
+                    request.Service.Payload
+                    |> Payload.toValue
+                    |> Result.map (fun payloadValue ->
+                        request.Appointments
+                        |> Set.filter (fun x -> model.AppointmentIds |> Set.contains x.Id)
+                        |> Seq.map (fun appointment ->
+                            let route =
+                                RussianEmbassy(
+                                    Post(
+                                        KdmidConfirmAppointment(
+                                            { RequestId = request.Id
+                                              AppointmentId = appointment.Id }
                                         )
+                                    )
+                                )
 
-                                    let buttonName = $"{appointment.Description} ({payloadValue})"
+                            let buttonName = $"{appointment.Description} ({payloadValue})"
 
-                                    request.Value, buttonName)))
-                        |> Result.choose
-                        |> Result.map Seq.concat
-                        |> Result.map Map
-                        |> Result.map (fun buttons ->
-                            (chat.Id, New)
+                            route.Value, buttonName)
+                        |> Map
+                        |> fun buttons ->
+                            (deps.ChatId, New)
                             |> Buttons.create
-                                { Name = $"Choose the appointment for '{embassy.ShortName}'"
+                                { Name = $"Choose the appointment for '{request.Service.Embassy.ShortName}'"
                                   Columns = 1
                                   Data = buttons }))
-                )
-                |> ResultAsync.bind Result.choose)
+                |> Result.choose)
 
     let confirmAppointment (model: ConfirmAppointment) =
         fun (deps: Russian.Dependencies) ->

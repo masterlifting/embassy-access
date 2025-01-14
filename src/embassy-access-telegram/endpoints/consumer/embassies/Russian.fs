@@ -22,7 +22,8 @@ module Model =
               Payload: string }
 
         type SendAppointments =
-            { EmbassyId: Graph.NodeId
+            { ServiceId: Graph.NodeId
+              EmbassyId: Graph.NodeId
               AppointmentIds: Set<AppointmentId> }
 
         type ConfirmAppointment =
@@ -64,6 +65,7 @@ type PostRequest =
                       model.Payload ]
         | KdmidSendAppointments model ->
             [ "16"
+              model.ServiceId.Value
               model.EmbassyId.Value
               model.AppointmentIds |> Set.map _.ValueStr |> Set.toArray |> String.concat "," ]
         | KdmidConfirmAppointment model -> [ "17"; model.RequestId.ValueStr; model.AppointmentId.ValueStr ]
@@ -108,12 +110,13 @@ type PostRequest =
                 $"start: {start} or finish: {finish} of RussianEmbassy.PostRequest endpoint"
                 |> NotSupported
                 |> Error
-        | [| "16"; embassyId; appointmentIds |] ->
+        | [| "16"; serviceId; embassyId; appointmentIds |] ->
             appointmentIds.Split ','
             |> Array.map AppointmentId.create
             |> Result.choose
             |> Result.map (fun appointmentIds ->
-                { Model.Kdmid.SendAppointments.EmbassyId = embassyId |> Graph.NodeIdValue
+                { Model.Kdmid.SendAppointments.ServiceId = serviceId |> Graph.NodeIdValue
+                  Model.Kdmid.SendAppointments.EmbassyId = embassyId |> Graph.NodeIdValue
                   Model.Kdmid.SendAppointments.AppointmentIds = appointmentIds |> Set.ofList })
             |> Result.map PostRequest.KdmidSendAppointments
         | [| "17"; requestId; appointmentId |] ->

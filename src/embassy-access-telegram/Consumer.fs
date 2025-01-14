@@ -17,7 +17,7 @@ module private Consume =
     let text value client =
         fun deps ->
             deps
-            |> Request.parse value
+            |> Route.parse value
             |> Result.map EA.Telegram.Controllers.Consumer.Core.respond
             |> ResultAsync.wrap (fun createResponse ->
                 deps
@@ -27,7 +27,7 @@ module private Consume =
     let callback value client =
         fun deps ->
             deps
-            |> Request.parse value
+            |> Route.parse value
             |> Result.map EA.Telegram.Controllers.Consumer.Core.respond
             |> ResultAsync.wrap (fun createResponse ->
                 deps
