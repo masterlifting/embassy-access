@@ -7,7 +7,7 @@ open EA.Telegram.Services.Consumer.Users
 open EA.Telegram.Endpoints.Consumer.Users
 
 let respond request =
-    fun (deps: Core.Dependencies) ->
+    fun (deps: Consumer.Dependencies) ->
         Users.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             match request with

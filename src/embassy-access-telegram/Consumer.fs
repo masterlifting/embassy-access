@@ -5,11 +5,11 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Consumer
-open EA.Telegram.Domain
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Consumer
 
 module private Consume =
+    open EA.Telegram.Controllers.Consumer
     open EA.Telegram.Endpoints.Consumer.Request
 
     let private produceResult chatId ct client dataRes = produceResult dataRes chatId ct client
@@ -18,7 +18,7 @@ module private Consume =
         fun deps ->
             deps
             |> Route.parse value
-            |> Result.map EA.Telegram.Controllers.Consumer.Core.respond
+            |> Result.map Consumer.respond
             |> ResultAsync.wrap (fun createResponse ->
                 deps
                 |> createResponse
@@ -28,33 +28,32 @@ module private Consume =
         fun deps ->
             deps
             |> Route.parse value
-            |> Result.map EA.Telegram.Controllers.Consumer.Core.respond
+            |> Result.map Consumer.respond
             |> ResultAsync.wrap (fun createResponse ->
                 deps
                 |> createResponse
                 |> produceResult deps.ChatId deps.CancellationToken client)
 
-let private create cfg ct client =
-    fun data ->
+let consume data =
+    fun client cfg ct ->
         match data with
         | Message msg ->
             match msg with
             | Text dto ->
                 Persistence.Dependencies.create cfg
-                |> Result.bind (Core.Dependencies.create dto ct)
+                |> Result.bind (Consumer.Dependencies.create dto ct)
                 |> ResultAsync.wrap (client |> Consume.text dto.Value)
                 |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
             | _ -> $"Telegram '%A{msg}'" |> NotSupported |> Error |> async.Return
         | CallbackQuery dto ->
             Persistence.Dependencies.create cfg
-            |> Result.bind (Core.Dependencies.create dto ct)
+            |> Result.bind (Consumer.Dependencies.create dto ct)
             |> ResultAsync.wrap (client |> Consume.callback dto.Value)
             |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
         | _ -> $"Telegram '%A{data}'" |> NotSupported |> Error |> async.Return
 
-let start ct cfg =
-    Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
-    |> Web.Telegram.Domain.Client.EnvKey
-    |> Web.Telegram.Client.init
-    |> Result.map (fun client -> Web.Client.Consumer.Telegram(client, client |> create cfg ct))
-    |> Web.Client.consume ct
+let start client =
+    fun cfg ct ->
+        let handler = fun data -> consume data client cfg ct
+        let client = Web.Client.Consumer.Telegram(client, handler)
+        Web.Client.consume client ct

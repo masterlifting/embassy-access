@@ -5,25 +5,26 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain
 open EA.Core.Domain
-open EA.Telegram.DataAccess
 open EA.Core.DataAccess
+open EA.Telegram.DataAccess
+open EA.Telegram.Dependencies.Consumer.Embassies
 
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
-      EmbassiesDeps: EA.Telegram.Dependencies.Consumer.Embassies.Core.Dependencies
+      EmbassiesDeps: Embassies.Dependencies
       getUserEmbassy: ChatId -> Graph.NodeId -> Async<Result<EmbassyNode * EmbassyNode list, Error'>>
       getUserEmbassyNodes: ChatId -> Async<Result<Graph.Node<EmbassyNode> list, Error'>>
       getUserEmbassyServiceNode:
           ChatId -> Graph.NodeId -> Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getUserEmbassyServiceNodes: ChatId -> Graph.NodeId -> Async<Result<Graph.Node<ServiceNode> list, Error'>> }
 
-    static member create(deps: Core.Dependencies) =
+    static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let! embassiesDeps = EA.Telegram.Dependencies.Consumer.Embassies.Core.Dependencies.create deps
+            let! embassiesDeps = Embassies.Dependencies.create deps
 
             let getUserServices chatId =
                 deps.ChatStorage

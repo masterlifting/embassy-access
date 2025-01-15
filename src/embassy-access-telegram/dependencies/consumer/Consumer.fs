@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Core
+module EA.Telegram.Dependencies.Consumer.Consumer
 
 open System.Threading
 open Infrastructure.Prelude

@@ -1,14 +1,15 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Controllers.Consumer.Embassies.Russian
+module EA.Telegram.Controllers.Consumer.Embassies.RussianEmbassy
 
 open Infrastructure.Prelude
+open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Dependencies.Consumer.Embassies
-open EA.Telegram.Services.Consumer.Embassies.Russian
-open EA.Telegram.Endpoints.Consumer.Embassies.Russian
+open EA.Telegram.Services.Consumer.Embassies.RussianEmbassy
+open EA.Telegram.Endpoints.Consumer.Embassies.RussianEmbassy
 
 let respond request =
-    fun (deps: EA.Telegram.Dependencies.Consumer.Core.Dependencies) ->
-        Russian.Dependencies.create deps
+    fun (deps: Consumer.Dependencies) ->
+        RussianEmbassy.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Post post ->

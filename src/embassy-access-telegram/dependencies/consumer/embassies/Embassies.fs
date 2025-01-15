@@ -1,26 +1,27 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Embassies.Core
+module EA.Telegram.Dependencies.Consumer.Embassies.Embassies
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain
 open EA.Core.Domain
+open EA.Telegram.Dependencies.Consumer
 
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
-      RussianDeps: Russian.Dependencies
+      RussianDeps: RussianEmbassy.Dependencies
       getEmbassies: unit -> Async<Result<EmbassyNode list, Error'>>
       getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getEmbassyServices: Graph.NodeId -> Async<Result<ServiceNode list, Error'>> }
 
-    static member create(deps: EA.Telegram.Dependencies.Consumer.Core.Dependencies) =
+    static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let! russianDeps = Russian.Dependencies.create deps
+            let! russianDeps = RussianEmbassy.Dependencies.create deps
 
             let getEmbassies () =
                 deps.getEmbassyGraph () |> ResultAsync.map (_.Children >> List.map _.Value)

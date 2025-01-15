@@ -8,9 +8,8 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 
-
 type Dependencies =
-    { getTelegramClient: unit -> Result<TelegramBot, Error'>
+    { initTelegramClient: unit -> Result<TelegramBot, Error'>
       initTelegramChatStorage: unit -> Result<Chat.ChatStorage, Error'>
       initRequestStorage: unit -> Result<Request.RequestStorage, Error'> }
 
@@ -22,7 +21,7 @@ type Dependencies =
             let! connectionString = cfg |> Persistence.Storage.getConnectionString "FileSystem"
 
             let initTelegramClient () =
-                EA.Worker.Domain.Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN
+                EA.Worker.Domain.Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN_KEY
                 |> EnvKey
                 |> Web.Telegram.Client.init
 
@@ -33,7 +32,7 @@ type Dependencies =
                 connectionString |> Request.FileSystem |> Request.init
 
             return
-                { getTelegramClient = initTelegramClient
+                { initTelegramClient = initTelegramClient
                   initTelegramChatStorage = initChatStorage
                   initRequestStorage = initRequestStorage }
         }

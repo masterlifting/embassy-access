@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Embassies.Russian
+module EA.Telegram.Dependencies.Consumer.Embassies.RussianEmbassy
 
 open System.Threading
 open Infrastructure.Domain
@@ -9,6 +9,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
+open EA.Telegram.Dependencies.Consumer
 
 type Dependencies =
     { ChatId: ChatId
@@ -25,7 +26,7 @@ type Dependencies =
       createChatSubscription: RequestId -> Async<Result<unit, Error'>>
       createRequest: Request -> Async<Result<Request, Error'>> }
 
-    static member create(deps: EA.Telegram.Dependencies.Consumer.Core.Dependencies) =
+    static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {

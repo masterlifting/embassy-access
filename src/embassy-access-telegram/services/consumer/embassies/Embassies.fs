@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Consumer.Embassies.Core
+﻿module EA.Telegram.Services.Consumer.Embassies.Embassies
 
 open System
 open Infrastructure.Domain
@@ -8,7 +8,7 @@ open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Services.Consumer
-open EA.Telegram.Endpoints.Consumer.Embassies.Core
+open EA.Telegram.Endpoints.Consumer.Embassies.Embassies
 
 let private createButtons chatId msgIdOpt buttonGroupName columns data =
     (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New)
@@ -38,7 +38,7 @@ let private toEmbassyServiceResponse chatId messageId buttonGroupName embassyId 
 module internal Get =
 
     let embassyService embassyId serviceId =
-        fun (deps: Embassies.Core.Dependencies) ->
+        fun (deps: Embassies.Embassies.Dependencies) ->
             deps.getServiceNode serviceId
             |> ResultAsync.bindAsync (fun serviceNode ->
                 match serviceNode.Children with
@@ -51,7 +51,7 @@ module internal Get =
                         |> async.Return
                     | true ->
                         match serviceNode.IdParts[1].Value with
-                        | "RU" -> deps.RussianDeps |> Russian.Kdmid.Instruction.create embassyId serviceNode.Value
+                        | "RU" -> deps.RussianDeps |> RussianEmbassy.Kdmid.Instruction.create embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported
@@ -65,12 +65,12 @@ module internal Get =
                     |> async.Return)
 
     let embassyServices embassyId =
-        fun (deps: Embassies.Core.Dependencies) ->
+        fun (deps: Embassies.Embassies.Dependencies) ->
             deps.getEmbassyServices embassyId
             |> ResultAsync.map (toEmbassyServiceResponse deps.ChatId deps.MessageId None embassyId)
 
     let embassy embassyId =
-        fun (deps: Embassies.Core.Dependencies) ->
+        fun (deps: Embassies.Embassies.Dependencies) ->
             deps.getEmbassyNode embassyId
             |> ResultAsync.bindAsync (function
                 | AP.Leaf value -> deps |> embassyServices value.Id
@@ -81,6 +81,6 @@ module internal Get =
                     |> Ok
                     |> async.Return)
 
-    let embassies (deps: Embassies.Core.Dependencies) =
+    let embassies (deps: Embassies.Embassies.Dependencies) =
         deps.getEmbassies ()
         |> ResultAsync.map (toEmbassyResponse deps.ChatId None None)

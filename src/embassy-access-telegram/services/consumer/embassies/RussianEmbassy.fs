@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Consumer.Embassies.Russian
+﻿module EA.Telegram.Services.Consumer.Embassies.RussianEmbassy
 
 open System
 open Infrastructure.Domain
@@ -7,7 +7,7 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Telegram.Endpoints.Consumer.Request
-open EA.Telegram.Endpoints.Consumer.Embassies.Russian
+open EA.Telegram.Endpoints.Consumer.Embassies.RussianEmbassy
 open EA.Telegram.Dependencies.Consumer.Embassies
 open EA.Embassies.Russian
 open EA.Embassies.Russian.Domain
@@ -15,7 +15,7 @@ open EA.Embassies.Russian.Domain
 module Kdmid =
     open EA.Embassies.Russian.Kdmid.Domain
     open EA.Embassies.Russian.Kdmid.Dependencies
-    open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Model.Kdmid
+    open EA.Telegram.Endpoints.Consumer.Embassies.RussianEmbassy.Model.Kdmid
 
     module Instruction =
 
@@ -49,7 +49,7 @@ module Kdmid =
                 |> async.Return
 
         let private toCheckAppointments embassyId (service: ServiceNode) =
-            fun (deps: Russian.Dependencies) ->
+            fun (deps: RussianEmbassy.Dependencies) ->
                 let request =
                     RussianEmbassy(
                         Post(
@@ -67,20 +67,21 @@ module Kdmid =
                 |> async.Return
 
         let private toStandardSubscribe embassyId service =
-            fun (deps: Russian.Dependencies) -> (deps.ChatId, deps.MessageId) |> toSubscribe embassyId service Disabled
+            fun (deps: RussianEmbassy.Dependencies) ->
+                (deps.ChatId, deps.MessageId) |> toSubscribe embassyId service Disabled
 
         let private toFirstAvailableAutoSubscribe embassyId service =
-            fun (deps: Russian.Dependencies) ->
+            fun (deps: RussianEmbassy.Dependencies) ->
                 (deps.ChatId, deps.MessageId)
                 |> toSubscribe embassyId service (ConfirmationState.Auto <| FirstAvailable)
 
         let private toLastAvailableAutoSubscribe embassyId service =
-            fun (deps: Russian.Dependencies) ->
+            fun (deps: RussianEmbassy.Dependencies) ->
                 (deps.ChatId, deps.MessageId)
                 |> toSubscribe embassyId service (ConfirmationState.Auto <| LastAvailable)
 
         let private toDateRangeAutoSubscribe embassyId service =
-            fun (deps: Russian.Dependencies) ->
+            fun (deps: RussianEmbassy.Dependencies) ->
                 (deps.ChatId, deps.MessageId)
                 |> toSubscribe
                     embassyId
@@ -88,7 +89,7 @@ module Kdmid =
                     (ConfirmationState.Auto <| DateTimeRange(DateTime.MinValue, DateTime.MaxValue))
 
         let create embassyId (service: ServiceNode) =
-            fun (deps: Russian.Dependencies) ->
+            fun (deps: RussianEmbassy.Dependencies) ->
                 match service.Id.Value |> Graph.split with
                 | [ _; "RU"; _; _; "0" ] -> deps |> toCheckAppointments embassyId service
                 | [ _; "RU"; _; _; "1" ] -> deps |> toStandardSubscribe embassyId service
@@ -146,21 +147,21 @@ module Kdmid =
             )
 
     let private createCoreRequest (kdmidRequest: KdmidRequest) =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: RussianEmbassy.Dependencies) ->
             let request = kdmidRequest.ToRequest()
 
             deps.createChatSubscription request.Id
             |> ResultAsync.bindAsync (fun _ -> request |> deps.createRequest)
 
     let private getService request =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: RussianEmbassy.Dependencies) ->
             { Request = request
               Dependencies = Order.Dependencies.create deps.RequestStorage deps.CancellationToken }
             |> Kdmid
             |> API.Service.get
 
     let subscribe (model: Subscribe) =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: RussianEmbassy.Dependencies) ->
             let resultAsync = ResultAsyncBuilder()
 
             resultAsync {
@@ -205,7 +206,7 @@ module Kdmid =
             }
 
     let checkAppointments (model: CheckAppointments) =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: RussianEmbassy.Dependencies) ->
             let resultAsync = ResultAsyncBuilder()
 
             resultAsync {
@@ -257,7 +258,7 @@ module Kdmid =
             }
 
     let sendAppointments (model: SendAppointments) =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: RussianEmbassy.Dependencies) ->
             deps.getChatRequests ()
             |> ResultAsync.map (
                 List.filter (fun request ->
@@ -267,17 +268,17 @@ module Kdmid =
             |> ResultAsync.bind (Seq.map (fun r -> deps.ChatId |> toResponse r) >> Result.choose)
 
     let confirmAppointment (model: ConfirmAppointment) =
-        fun (deps: Russian.Dependencies) ->
+        fun (deps: RussianEmbassy.Dependencies) ->
             deps.getRequest model.RequestId
             |> ResultAsync.bindAsync (fun request ->
                 deps
                 |> getService
                     { request with
                         ConfirmationState = ConfirmationState.Manual model.AppointmentId })
-            |> ResultAsync.map (fun r -> deps.ChatId |> toResponse r)
+            |> ResultAsync.bind (fun r -> deps.ChatId |> toResponse r)
 
 module Midpass =
-    open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Model.Midpass
+    open EA.Telegram.Endpoints.Consumer.Embassies.RussianEmbassy.Model.Midpass
 
     let checkStatus (_: CheckStatus) =
-        fun (_: Russian.Dependencies) -> "checkStatus" |> NotImplemented |> Error |> async.Return
+        fun (_: RussianEmbassy.Dependencies) -> "checkStatus" |> NotImplemented |> Error |> async.Return

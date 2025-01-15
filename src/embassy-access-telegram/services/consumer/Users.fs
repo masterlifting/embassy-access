@@ -35,7 +35,7 @@ let private toUserEmbassyServicesResponse
     |> createButtons chatId messageId buttonGroupName
 
 module internal Get =
-    open EA.Telegram.Services.Consumer.Embassies.Core
+    open EA.Telegram.Services.Consumer.Embassies.Embassies
 
     let userEmbassies userId =
         fun (deps: Users.Dependencies) ->
