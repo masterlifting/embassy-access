@@ -14,13 +14,14 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       CancellationToken: CancellationToken
+      TelegramBot: TelegramBot
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>> }
 
-    static member create (dto: Consumer.Dto<_>) ct (deps: Persistence.Dependencies) =
+    static member create tgClient (dto: Consumer.Dto<_>) ct (deps: Persistence.Dependencies) =
         let result = ResultBuilder()
 
         result {
@@ -50,6 +51,7 @@ type Dependencies =
                 { CancellationToken = ct
                   ChatId = dto.ChatId
                   MessageId = dto.Id
+                  TelegramBot = tgClient
                   ChatStorage = chatStorage
                   RequestStorage = requestStorage
                   getServiceGraph = getServiceGraph

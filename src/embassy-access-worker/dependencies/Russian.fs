@@ -6,8 +6,9 @@ open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Embassies.Russian
 open EA.Core.DataAccess
-open EA.Telegram
+open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
+open EA.Telegram.Services.Consumer.Embassies.RussianEmbassy
 open EA.Worker.Dependencies
 
 module Kdmid =
@@ -18,23 +19,54 @@ module Kdmid =
         { RequestStorage: Request.RequestStorage
           pickOrder: Request list -> Async<Result<Request, Error' list>> }
 
-        static member create ct (deps: Persistence.Dependencies) =
+        static member create ct (persistenceDeps: Persistence.Dependencies) (webDeps: Web.Dependencies) =
             let result = ResultBuilder()
 
             result {
-                let! requestStorage = deps.initRequestStorage ()
-                
-                let! producerDeps =
-                    Producer.Core.Dependencies.create
-                        ct
-                        { initChatStorage = deps.initTelegramChatStorage
-                          initRequestStorage = fun () -> requestStorage |> Ok
-                          initServiceGraphStorage = fun () -> "initServiceGraphStorage" |> NotImplemented |> Error
-                          initEmbassyGraphStorage = fun () -> "initEmbassyGraphStorage" |> NotImplemented |> Error }
+                let! requestStorage = persistenceDeps.initRequestStorage ()
+
+                let getRequestChats (request: Request) =
+                    persistenceDeps.initTelegramChatStorage ()
+                    |> ResultAsync.wrap (Chat.Query.findManyBySubscription request.Id)
 
                 let notify notification =
-                    producerDeps
-                    |> Producer.Produce.notification notification
+
+                    let inline sendNotifications data =
+                        webDeps.initTelegramClient ()
+                        |> ResultAsync.wrap (Web.Telegram.Producer.produceSeq data ct)
+                        |> ResultAsync.map ignore
+
+                    match notification with
+                    | Successfully(request, msg) ->
+                        request
+                        |> getRequestChats
+                        |> ResultAsync.map (
+                            Seq.map (fun chat -> chat.Id |> Kdmid.toSuccessfullyResponse (request, msg))
+                        )
+                        |> ResultAsync.bindAsync sendNotifications
+                    | Unsuccessfully(request, error) ->
+                        request
+                        |> getRequestChats
+                        |> ResultAsync.map (
+                            Seq.map (fun chat -> chat.Id |> Kdmid.toUnsuccessfullyResponse (request, error))
+                        )
+                        |> ResultAsync.bindAsync sendNotifications
+                    | HasAppointments(request, appointments) ->
+                        request
+                        |> getRequestChats
+                        |> ResultAsync.bind (
+                            Seq.map (fun chat -> chat.Id |> Kdmid.toHasAppointmentsResponse (request, appointments))
+                            >> Result.choose
+                        )
+                        |> ResultAsync.bindAsync sendNotifications
+                    | HasConfirmations(request, confirmations) ->
+                        request
+                        |> getRequestChats
+                        |> ResultAsync.bind (
+                            Seq.map (fun chat -> chat.Id |> Kdmid.toHasConfirmationsResponse (request, confirmations))
+                            >> Result.choose
+                        )
+                        |> ResultAsync.bindAsync sendNotifications
                     |> ResultAsync.mapError (_.Message >> Log.critical)
                     |> Async.Ignore
 

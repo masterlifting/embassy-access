@@ -20,7 +20,7 @@ let private createButtons chatId msgIdOpt buttonGroupName columns data =
 let private toEmbassyResponse chatId messageId buttonGroupName (embassies: EmbassyNode seq) =
     embassies
     |> Seq.map (fun embassy ->
-        EA.Telegram.Endpoints.Consumer.Request
+        EA.Telegram.Endpoints.Consumer.Router
             .Embassies(Request.Get(GetRequest.Embassy(embassy.Id)))
             .Value,
         embassy.ShortName)
@@ -29,7 +29,7 @@ let private toEmbassyResponse chatId messageId buttonGroupName (embassies: Embas
 let private toEmbassyServiceResponse chatId messageId buttonGroupName embassyId (services: ServiceNode seq) =
     services
     |> Seq.map (fun service ->
-        EA.Telegram.Endpoints.Consumer.Request
+        EA.Telegram.Endpoints.Consumer.Router
             .Embassies(Get(EmbassyService(embassyId, service.Id)))
             .Value,
         service.ShortName)

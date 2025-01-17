@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Endpoints.Consumer.Request
+﻿module EA.Telegram.Endpoints.Consumer.Router
 
 open Infrastructure.Domain
 open EA.Telegram.Dependencies.Consumer
@@ -7,7 +7,7 @@ open EA.Telegram.Endpoints.Consumer.Embassies
 [<Literal>]
 let private Delimiter = "|"
 
-type Route =
+type Request =
     | Users of Users.Request
     | Embassies of Embassies.Request
     | RussianEmbassy of RussianEmbassy.Request

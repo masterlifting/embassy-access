@@ -18,7 +18,7 @@ let private createButtons chatId messageId buttonGroupName data =
 
 let private toUserEmbassyResponse chatId messageId buttonGroupName userId (embassies: EmbassyNode seq) =
     embassies
-    |> Seq.map (fun embassy -> Request.Users(Get(UserEmbassy(userId, embassy.Id))).Value, embassy.ShortName)
+    |> Seq.map (fun embassy -> Router.Users(Get(UserEmbassy(userId, embassy.Id))).Value, embassy.ShortName)
     |> createButtons chatId messageId buttonGroupName
 
 let private toUserEmbassyServicesResponse
@@ -31,7 +31,7 @@ let private toUserEmbassyServicesResponse
     =
     services
     |> Seq.map (fun service ->
-        Request.Users(Get(UserEmbassyService(userId, embassyId, service.Id))).Value, service.ShortName)
+        Router.Users(Get(UserEmbassyService(userId, embassyId, service.Id))).Value, service.ShortName)
     |> createButtons chatId messageId buttonGroupName
 
 module internal Get =

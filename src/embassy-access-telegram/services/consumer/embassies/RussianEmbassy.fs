@@ -6,7 +6,7 @@ open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
-open EA.Telegram.Endpoints.Consumer.Request
+open EA.Telegram.Endpoints.Consumer.Router
 open EA.Telegram.Endpoints.Consumer.Embassies.RussianEmbassy
 open EA.Telegram.Dependencies.Consumer.Embassies
 open EA.Embassies.Russian
@@ -98,48 +98,60 @@ module Kdmid =
                 | [ _; "RU"; _; _; "2"; "2" ] -> deps |> toDateRangeAutoSubscribe embassyId service
                 | _ -> service.ShortName |> NotSupported |> Error |> async.Return
 
-    let private toResponse (request: EA.Core.Domain.Request.Request) =
+    let toSuccessfullyResponse (request: Request.Request, msg: string) =
+        fun chatId -> (chatId, New) |> Text.create msg
+
+    let toUnsuccessfullyResponse (request: Request.Request, error: Error') =
+        fun chatId -> chatId |> Text.createError error
+
+    let toHasAppointmentsResponse (request: Request.Request, appointments: Appointment.Appointment Set) =
+        fun chatId ->
+            request.Service.Payload
+            |> Payload.toValue
+            |> Result.map (fun payloadValue ->
+                appointments
+                |> Seq.map (fun appointment ->
+                    let route =
+                        RussianEmbassy(
+                            Post(
+                                KdmidConfirmAppointment(
+                                    { RequestId = request.Id
+                                      AppointmentId = appointment.Id }
+                                )
+                            )
+                        )
+
+                    route.Value, appointment.Description)
+                |> Map
+                |> fun buttons ->
+                    (chatId, New)
+                    |> Buttons.create
+                        { Name = $"Choose the appointment for {request.Service.Embassy.ShortName}:{payloadValue}'"
+                          Columns = 1
+                          Data = buttons })
+
+    let toHasConfirmationsResponse (request: Request.Request, confirmations: Confirmation.Confirmation Set) =
+        fun chatId ->
+            request.Service.Payload
+            |> Payload.toValue
+            |> Result.map (fun payloadValue ->
+                let resultMsg =
+                    $"Confirmations for {request.Service.Embassy.ShortName}:{payloadValue} are found."
+
+                (chatId, New) |> Text.create resultMsg)
+
+    let private toResponse (request: Request.Request) =
         fun chatId ->
             let errorFilter _ = true
 
             request
             |> Notification.tryCreate errorFilter
             |> Option.map (function
-                | Successfully msg -> (chatId, New) |> Text.create msg |> Ok
-                | Unsuccessfully error -> chatId |> Text.createError error |> Ok
-                | HasAppointments appointments ->
-                    request.Service.Payload
-                    |> Payload.toValue
-                    |> Result.map (fun payloadValue ->
-                        appointments
-                        |> Seq.map (fun appointment ->
-                            let route =
-                                RussianEmbassy(
-                                    Post(
-                                        KdmidConfirmAppointment(
-                                            { RequestId = request.Id
-                                              AppointmentId = appointment.Id }
-                                        )
-                                    )
-                                )
-
-                            route.Value, appointment.Description)
-                        |> Map
-                        |> fun buttons ->
-                            (chatId, New)
-                            |> Buttons.create
-                                { Name =
-                                    $"Choose the appointment for {request.Service.Embassy.ShortName}:{payloadValue}'"
-                                  Columns = 1
-                                  Data = buttons })
-                | HasConfirmations confirmations ->
-                    request.Service.Payload
-                    |> Payload.toValue
-                    |> Result.map (fun payloadValue ->
-                        let resultMsg =
-                            $"Confirmations for {request.Service.Embassy.ShortName}:{payloadValue} are found."
-
-                        (chatId, New) |> Text.create resultMsg))
+                | Successfully(request, msg) -> chatId |> toSuccessfullyResponse (request, msg) |> Ok
+                | Unsuccessfully(request, error) -> chatId |> toUnsuccessfullyResponse (request, error) |> Ok
+                | HasAppointments(request, appointments) -> chatId |> toHasAppointmentsResponse (request, appointments)
+                | HasConfirmations(request, confirmations) ->
+                    chatId |> toHasConfirmationsResponse (request, confirmations))
             |> Option.defaultValue (
                 (chatId, New)
                 |> Text.create $"Не валидный результат запроса {request.Id}."
