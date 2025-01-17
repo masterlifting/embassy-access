@@ -10,13 +10,13 @@ open EA.Embassies.Russian.Kdmid.Domain
 open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private validateCity (request: Request) (payload: Payload) =
-    let nodeSubName = [ payload.Country; payload.City ] |> Graph.combine
 
-    match request.Service.Embassy.Name.IndexOf(nodeSubName) <> -1 with
+    match request.Service.Embassy.ShortName = payload.City with
     | true -> Ok payload
     | false ->
         Error
-        <| NotSupported $"Requested {payload.City} for the subdomain {payload.SubDomain}"
+        <| NotSupported
+            $"The subdomain '{payload.SubDomain}' of the requested embassy '{request.Service.Embassy.ShortName}'."
 
 let private parsePayload =
     ResultAsync.bind (fun (request: Request) ->
@@ -85,7 +85,7 @@ let private setFailedState error (deps: Order.Dependencies) request =
             ProcessState = Failed error
             Attempt = attempt
             Modified = DateTime.UtcNow }
-    |> ResultAsync.bind (fun _ -> Error <| error.add $"Payload: %s{request.Service.Payload}")
+    |> ResultAsync.bind (fun _ -> Error <| error.extend $"{Environment.NewLine}%s{request.Service.Payload}")
 
 let private setProcessedState deps request confirmation =
     async {

@@ -11,10 +11,10 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       RussianDeps: RussianEmbassy.Dependencies
-      getEmbassies: unit -> Async<Result<EmbassyNode list, Error'>>
-      getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
-      getEmbassyServices: Graph.NodeId -> Async<Result<ServiceNode list, Error'>> }
+      getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
+      getEmbassiesRoot: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
+      getEmbassyServicesRoot: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
 
     static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
@@ -23,8 +23,7 @@ type Dependencies =
 
             let! russianDeps = RussianEmbassy.Dependencies.create deps
 
-            let getEmbassies () =
-                deps.getEmbassyGraph () |> ResultAsync.map (_.Children >> List.map _.Value)
+            let getEmbassiesRoot () = deps.getEmbassyGraph ()
 
             let getEmbassyNode embassyId =
                 deps.getEmbassyGraph ()
@@ -33,7 +32,7 @@ type Dependencies =
                     | Some embassy -> Ok embassy
                     | None -> $"Embassy with Id {embassyId.Value}" |> NotFound |> Error)
 
-            let getEmbassyServices embassyId =
+            let getEmbassyServicesRoot embassyId =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
@@ -57,7 +56,7 @@ type Dependencies =
                             |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                             |> ResultAsync.bind (function
                                 | None -> $"Embassy services of {embassyNode.ShortName}" |> NotFound |> Error
-                                | Some serviceNode -> serviceNode.Children |> List.map _.Value |> Ok))
+                                | Some serviceNode -> serviceNode |> Ok))
 
             let getServiceNode serviceId =
                 deps.getServiceGraph ()
@@ -70,8 +69,8 @@ type Dependencies =
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
                   RussianDeps = russianDeps
-                  getEmbassies = getEmbassies
+                  getEmbassiesRoot = getEmbassiesRoot
                   getEmbassyNode = getEmbassyNode
                   getServiceNode = getServiceNode
-                  getEmbassyServices = getEmbassyServices }
+                  getEmbassyServicesRoot = getEmbassyServicesRoot }
         }

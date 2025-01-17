@@ -33,13 +33,13 @@ let consume data =
                 Persistence.Dependencies.create cfg
                 |> Result.bind (Consumer.Dependencies.create client dto ct)
                 |> ResultAsync.wrap (Consume.text dto.Value)
-                |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
+                |> ResultAsync.mapError (fun error -> error.extend $"{dto.ChatId}")
             | _ -> $"Telegram '%A{msg}'" |> NotSupported |> Error |> async.Return
         | CallbackQuery dto ->
             Persistence.Dependencies.create cfg
             |> Result.bind (Consumer.Dependencies.create client dto ct)
             |> ResultAsync.wrap (Consume.callback dto.Value)
-            |> ResultAsync.mapError (fun error -> error.add $"{dto.ChatId}")
+            |> ResultAsync.mapError (fun error -> error.extend $"{dto.ChatId}")
         | _ -> $"Telegram '%A{data}'" |> NotSupported |> Error |> async.Return
 
 let start client =

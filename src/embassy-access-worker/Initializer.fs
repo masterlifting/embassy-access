@@ -17,5 +17,5 @@ let run (_, cfg, ct) =
         |> Async.Ignore
         |> Async.Start
 
-        return "Has been initialized." |> Info |> Ok
+        return "Services have been initialized." |> Info |> Ok
     }

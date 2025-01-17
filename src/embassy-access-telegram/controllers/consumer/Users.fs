@@ -17,9 +17,9 @@ let respond request =
             match request with
             | Get get ->
                 match get with
-                | UserEmbassies userId -> deps |> Get.userEmbassies userId |> sendResult
-                | UserEmbassy(userId, embassyId) -> deps |> Get.userEmbassy userId embassyId |> sendResult
+                | UserEmbassies userId -> deps |> Get.getUserEmbassies userId |> sendResult
+                | UserEmbassy(userId, embassyId) -> deps |> Get.processUserEmbassy userId embassyId |> sendResult
                 | UserEmbassyServices(userId, embassyId) ->
-                    deps |> Get.userEmbassyServices userId embassyId |> sendResult
+                    deps |> Get.getUserEmbassyServices userId embassyId |> sendResult
                 | UserEmbassyService(userId, embassyId, serviceId) ->
-                    deps |> Get.userEmbassyService userId embassyId serviceId |> sendResult)
+                    deps |> Get.getUserEmbassyService userId embassyId serviceId |> sendResult)

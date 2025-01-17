@@ -164,217 +164,217 @@ Worker:
 
 Embassies:
   Id: EMB
-  Name: Embassies
-  Description: Choose an embassy you want to visit
+  Name: Посольства
+  Description: Выберите посольство, которое вы хотите посетить
   Children:
     - Id: RU
-      Name: Russian
-      Description: In which country is the Russian embassy located?
+      Name: Российское
+      Description: В какой стране находится российское посольство?
       Children:
         - Id: SRB
-          Name: Serbia
-          Description: In which city in Serbia is the Russian embassy located?
+          Name: Сербия
+          Description: В каком городе Сербии находится российское посольство?
           Children:
             - Id: BG
-              Name: Belgrade
+              Name: Белград
         - Id: GER
-          Name: Germany
-          Description: In which city in Germany is the Russian embassy located?
+          Name: Германия
+          Description: В каком городе Германии находится российское посольство?
           Children:
             - Id: BER
-              Name: Berlin
+              Name: Берлин
             - Id: MUN
-              Name: Munich
+              Name: Мюнхен
         - Id: FRA
-          Name: France
-          Description: In which city in France is the Russian embassy located?
+          Name: Франция
+          Description: В каком городе Франции находится российское посольство?
           Children:
             - Id: PAR
-              Name: Paris
+              Name: Париж
         - Id: ITA
-          Name: Italy
-          Description: In which city in Italy is the Russian embassy located?
+          Name: Италия
+          Description: В каком городе Италии находится российское посольство?
           Children:
             - Id: ROM
-              Name: Rome
+              Name: Рим
             - Id: MIL
-              Name: Milan
+              Name: Милан
         - Id: ESP
-          Name: Spain
-          Description: In which city in Spain is the Russian embassy located?
+          Name: Испания
+          Description: В каком городе Испании находится российское посольство?
           Children:
             - Id: MAD
-              Name: Madrid
+              Name: Мадрид
         - Id: CZE
-          Name: Czechia
-          Description: In which city in Czechia is the Russian embassy located?
+          Name: Чехия
+          Description: В каком городе Чехии находится российское посольство?
           Children:
             - Id: PRG
-              Name: Prague
+              Name: Прага
         - Id: POL
-          Name: Poland
-          Description: In which city in Poland is the Russian embassy located?
+          Name: Польша
+          Description: В каком городе Польши находится российское посольство?
           Children:
             - Id: WAR
-              Name: Warsaw
+              Name: Варшава
         - Id: SWI
-          Name: Switzerland
-          Description: In which city in Switzerland is the Russian embassy located?
+          Name: Швейцария
+          Description: В каком городе Швейцарии находится российское посольство?
           Children:
             - Id: BER
-              Name: Bern
+              Name: Берн
         - Id: UK
-          Name: United Kingdom
-          Description: In which city in the United Kingdom is the Russian embassy located?
+          Name: Великобритания
+          Description: В каком городе Великобритании находится российское посольство?
           Children:
             - Id: LON
-              Name: London
+              Name: Лондон
         - Id: CHN
-          Name: China
-          Description: In which city in China is the Russian embassy located?
+          Name: Китай
+          Description: В каком городе Китая находится российское посольство?
           Children:
             - Id: BJ
-              Name: Beijing
+              Name: Пекин
             - Id: SH
-              Name: Shanghai
+              Name: Шанхай
             - Id: GZ
-              Name: Guangzhou
+              Name: Гуанчжоу
         - Id: USA
-          Name: United States
-          Description: In which city in the United States is the Russian embassy located?
+          Name: США
+          Description: В каком городе США находится российское посольство?
           Children:
             - Id: DC
-              Name: Washington
+              Name: Вашингтон
             - Id: NY
-              Name: New York
+              Name: Нью-Йорк
         - Id: IN
-          Name: India
-          Description: In which city in India is the Russian embassy located?
+          Name: Индия
+          Description: В каком городе Индии находится российское посольство?
           Children:
             - Id: DL
-              Name: New Delhi
+              Name: Нью-Дели
             - Id: MUM
-              Name: Mumbai
+              Name: Мумбаи
         - Id: JP
-          Name: Japan
-          Description: In which city in Japan is the Russian embassy located?
+          Name: Япония
+          Description: В каком городе Японии находится российское посольство?
           Children:
             - Id: TK
-              Name: Tokyo
+              Name: Токио
         - Id: EG
-          Name: Egypt
-          Description: In which city in Egypt is the Russian embassy located?
+          Name: Египет
+          Description: В каком городе Египта находится российское посольство?
           Children:
             - Id: CA
-              Name: Cairo
+              Name: Каир
         - Id: BR
-          Name: Brazil
-          Description: In which city in Brazil is the Russian embassy located?
+          Name: Бразилия
+          Description: В каком городе Бразилии находится российское посольство?
           Children:
             - Id: BSB
-              Name: Brasilia
+              Name: Бразилиа
             - Id: SP
-              Name: São Paulo
+              Name: Сан-Паулу
         - Id: AU
-          Name: Australia
-          Description: In which city in Australia is the Russian embassy located?
+          Name: Австралия
+          Description: В каком городе Австралии находится российское посольство?
           Children:
             - Id: CB
-              Name: Canberra
+              Name: Канберра
         - Id: KOR
-          Name: South Korea
-          Description: In which city in South Korea is the Russian embassy located?
+          Name: Южная Корея
+          Description: В каком городе Южной Кореи находится российское посольство?
           Children:
             - Id: SEO
-              Name: Seoul
+              Name: Сеул
         - Id: THA
-          Name: Thailand
-          Description: In which city in Thailand is the Russian embassy located?
+          Name: Таиланд
+          Description: В каком городе Таиланда находится российское посольство?
           Children:
             - Id: BKK
-              Name: Bangkok
+              Name: Бангкок
         - Id: SGP
-          Name: Singapore
-          Description: In which city in Singapore is the Russian embassy located?
+          Name: Сингапур
+          Description: В каком городе Сингапура находится российское посольство?
           Children:
             - Id: SGP
-              Name: Singapore
+              Name: Сингапур
         - Id: SA
-          Name: Saudi Arabia
-          Description: In which city in Saudi Arabia is the Russian embassy located?
+          Name: Саудовская Аравия
+          Description: В каком городе Саудовской Аравии находится российское посольство?
           Children:
             - Id: RD
-              Name: Riyadh
+              Name: Эр-Рияд
         - Id: ZA
-          Name: South Africa
-          Description: In which city in South Africa is the Russian embassy located?
+          Name: Южная Африка
+          Description: В каком городе Южной Африки находится российское посольство?
           Children:
             - Id: PTA
-              Name: Pretoria
+              Name: Претория
     - Id: DE
-      Name: German
-      Description: Choose an embassy
+      Name: Немецкое
+      Description: Выберите посольство
       Children:
         - Id: ESP
-          Name: Spain
-          Description: In which city in Spain is the German embassy located?
+          Name: Испания
+          Description: В каком городе Испании находится немецкое посольство?
           Children:
             - Id: MAD
-              Name: Madrid
+              Name: Мадрид
         - Id: ITA
-          Name: Italy
-          Description: In which city in Italy is the German embassy located?
+          Name: Италия
+          Description: В каком городе Италии находится немецкое посольство?
           Children:
             - Id: ROM
-              Name: Rome
+              Name: Рим
     - Id: IT
-      Name: Italian
-      Description: Choose an embassy
+      Name: Итальянское
+      Description: Выберите посольство
       Children:
         - Id: GRE
-          Name: Greece
-          Description: In which city in Greece is the Italian embassy located?
+          Name: Греция
+          Description: В каком городе Греции находится итальянское посольство?
           Children:
             - Id: ATH
-              Name: Athens
+              Name: Афины
         - Id: UKR
-          Name: Ukraine
-          Description: In which city in Ukraine is the Italian embassy located?
+          Name: Украина
+          Description: В каком городе Украины находится итальянское посольство?
           Children:
             - Id: KYIV
-              Name: Kyiv
+              Name: Киев
     - Id: UK
-      Name: British
-      Description: Choose an embassy
+      Name: Британское
+      Description: Выберите посольство
       Children:
         - Id: POL
-          Name: Poland
-          Description: In which city in Poland is the British embassy located?
+          Name: Польша
+          Description: В каком городе Польши находится британское посольство?
           Children:
             - Id: WAR
-              Name: Warsaw
+              Name: Варшава
         - Id: CZE
-          Name: Czechia
-          Description: In which city in Czechia is the British embassy located?
+          Name: Чехия
+          Description: В каком городе Чехии находится британское посольство?
           Children:
             - Id: PRG
-              Name: Prague
+              Name: Прага
     - Id: FR
-      Name: French
-      Description: Choose an embassy
+      Name: Французское
+      Description: Выберите посольство
       Children:
         - Id: BEL
-          Name: Belgium
-          Description: In which city in Belgium is the French embassy located?
+          Name: Бельгия
+          Description: В каком городе Бельгии находится французское посольство?
           Children:
             - Id: BRU
-              Name: Brussels
+              Name: Брюссель
         - Id: GER
-          Name: Germany
-          Description: In which city in Germany is the French embassy located?
+          Name: Германия
+          Description: В каком городе Германии находится французское посольство?
           Children:
             - Id: BER
-              Name: Berlin
+              Name: Берлин
 
 KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
   Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email после регистрации заявки на сайте, после символа | в вышеуказанную команду и отправьте ее в чат.
@@ -402,8 +402,8 @@ KdmidRussianServices: &KdmidRussianServices
 
 Services:
   Id: SRV
-  Name: Services
-  Description: Choose a service
+  Name: Услуги посольства
+  Description: Выберите услугу посольства
   Children:
     - Id: RU
       Name: Посольство РФ

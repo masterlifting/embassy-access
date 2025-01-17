@@ -37,42 +37,43 @@ let private toUserEmbassyServicesResponse
 module internal Get =
     open EA.Telegram.Services.Consumer.Embassies.Embassies
 
-    let userEmbassies userId =
+    let getUserEmbassies userId =
         fun (deps: Users.Dependencies) ->
-            deps.getUserEmbassyNodes userId
-            |> ResultAsync.map (Seq.map _.Value)
-            |> ResultAsync.map (toUserEmbassyResponse deps.ChatId None None userId)
+            deps.getUserEmbassies userId
+            |> ResultAsync.map (fun (parentDescription, embassies) ->
+                embassies |> toUserEmbassyResponse deps.ChatId None parentDescription userId)
 
-    let userEmbassy userId embassyId =
+    let getUserEmbassyServices userId embassyId =
         fun (deps: Users.Dependencies) ->
-            deps.getUserEmbassy userId embassyId
-            |> ResultAsync.bindAsync (fun (embassy, embassyСhildren) ->
-                match embassyСhildren with
-                | [] -> deps.EmbassiesDeps |> Get.embassyServices embassy.Id
+            deps.getUserEmbassyServices userId embassyId
+            |> ResultAsync.map (fun (parentDescription, services) ->
+                services
+                |> toUserEmbassyServicesResponse deps.ChatId (Some deps.MessageId) parentDescription userId embassyId)
+
+    let processUserEmbassy userId embassyId =
+        fun (deps: Users.Dependencies) ->
+            deps.getUserEmbassyChildren userId embassyId
+            |> ResultAsync.bindAsync (fun (parentDescription, embassies) ->
+                match embassies with
+                | [] -> deps |> getUserEmbassyServices userId embassyId
                 | _ ->
-                    embassyСhildren
-                    |> toUserEmbassyResponse deps.ChatId (Some deps.MessageId) embassy.Description userId
+                    embassies
+                    |> toUserEmbassyResponse deps.ChatId (Some deps.MessageId) parentDescription userId
                     |> Ok
                     |> async.Return)
 
-    let userEmbassyServices userId embassyId =
+    let getUserEmbassyService userId embassyId serviceId =
         fun (deps: Users.Dependencies) ->
-            deps.getUserEmbassyServiceNodes userId embassyId
-            |> ResultAsync.map (Seq.map _.Value)
-            |> ResultAsync.map (toUserEmbassyServicesResponse deps.ChatId None None userId embassyId)
-
-    let userEmbassyService userId embassyId serviceId =
-        fun (deps: Users.Dependencies) ->
-            deps.getUserEmbassyServiceNode userId embassyId serviceId
-            |> ResultAsync.bindAsync (function
-                | AP.Leaf _ -> deps.EmbassiesDeps |> Get.embassyService embassyId serviceId
-                | AP.Node node ->
-                    node.Children
-                    |> Seq.map _.Value
+            deps.getUserEmbassyServiceChildren userId embassyId serviceId
+            |> ResultAsync.bindAsync (fun (parentDescription, services) ->
+                match services with
+                | [] -> deps.EmbassiesDeps |> Get.embassyService embassyId serviceId
+                | _ ->
+                    services
                     |> toUserEmbassyServicesResponse
                         deps.ChatId
                         (Some deps.MessageId)
-                        node.Value.Description
+                        parentDescription
                         userId
                         embassyId
                     |> Ok
