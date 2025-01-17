@@ -8,7 +8,7 @@ open Worker.Domain
 type RouteNode =
     | Name of string
 
-    interface Graph.INodeName with
+    interface Graph.INode with
         member _.Id = String.Empty |> Graph.NodeIdValue
 
         member this.Name =

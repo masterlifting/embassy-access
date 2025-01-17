@@ -10,7 +10,7 @@ type ServiceNode =
       Instruction: string option
       Description: string option }
 
-    interface Graph.INodeName with
+    interface Graph.INode with
         member this.Id = this.Id
         member this.Name = this.Name
         member this.set(id, name) = { this with Id = id; Name = name }
