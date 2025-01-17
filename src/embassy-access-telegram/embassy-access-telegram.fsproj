@@ -13,6 +13,8 @@
         <Compile Include="dependencies\consumer\embassies\RussianEmbassy.fs" />
         <Compile Include="dependencies\consumer\embassies\Embassies.fs" />
         <Compile Include="dependencies\consumer\Users.fs" />
+        <Compile Include="dependencies\producer\Producer.fs" />
+        <Compile Include="dependencies\producer\embassies\RussianEmbassy.fs" />
         <Compile Include="endpoints\consumer\Users.fs" />
         <Compile Include="endpoints\consumer\embassies\Embassies.fs" />
         <Compile Include="endpoints\consumer\embassies\RussianEmbassy.fs" />
@@ -20,6 +22,7 @@
         <Compile Include="services\consumer\embassies\RussianEmbassy.fs" />
         <Compile Include="services\consumer\embassies\Embassies.fs" />
         <Compile Include="services\consumer\Users.fs" />
+        <Compile Include="services\producer\embassies\RussianEmbassy.fs" />
         <Compile Include="controllers\consumer\Users.fs" />
         <Compile Include="controllers\consumer\embassies\Embassies.fs" />
         <Compile Include="controllers\consumer\embassies\RussianEmbassy.fs" />

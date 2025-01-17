@@ -10,7 +10,6 @@ open EA.Telegram.Dependencies.Consumer
 module private Consume =
     open EA.Telegram.Controllers.Consumer
     open EA.Telegram.Endpoints.Consumer.Router
-
     
     let text value =
         fun deps ->

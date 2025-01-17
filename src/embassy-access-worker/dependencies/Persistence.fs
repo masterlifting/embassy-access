@@ -8,14 +8,13 @@ open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 
 type Dependencies =
-    { initTelegramChatStorage: unit -> Result<Chat.ChatStorage, Error'>
+    { initChatStorage: unit -> Result<Chat.ChatStorage, Error'>
       initRequestStorage: unit -> Result<Request.RequestStorage, Error'> }
 
     static member create cfg =
         let result = ResultBuilder()
 
         result {
-
             let! connectionString = cfg |> Persistence.Storage.getConnectionString "FileSystem"
 
             let initChatStorage () =
@@ -25,6 +24,6 @@ type Dependencies =
                 connectionString |> Request.FileSystem |> Request.init
 
             return
-                { initTelegramChatStorage = initChatStorage
+                { initChatStorage = initChatStorage
                   initRequestStorage = initRequestStorage }
         }
