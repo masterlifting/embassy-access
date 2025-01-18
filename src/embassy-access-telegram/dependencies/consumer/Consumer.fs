@@ -15,13 +15,15 @@ type Dependencies =
       MessageId: int
       CancellationToken: CancellationToken
       TelegramBot: TelegramBot
+      sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>>
+      sendResults: Async<Result<Producer.Data list, Error'>> -> Async<Result<unit, Error'>>
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>> }
 
-    static member create tgClient (dto: Consumer.Dto<_>) ct (deps: Persistence.Dependencies) =
+    static member create client (dto: Consumer.Dto<_>) ct (deps: Persistence.Dependencies) =
         let result = ResultBuilder()
 
         result {
@@ -47,11 +49,21 @@ type Dependencies =
             let getEmbassyGraph () =
                 deps.initEmbassyGraphStorage () |> ResultAsync.wrap EmbassyGraph.get
 
+            let sendResult data =
+                Web.Telegram.Producer.produceResult data dto.ChatId ct client
+                |> ResultAsync.map ignore
+
+            let sendResults data =
+                Web.Telegram.Producer.produceResults data dto.ChatId ct client
+                |> ResultAsync.map ignore
+
             return
                 { CancellationToken = ct
                   ChatId = dto.ChatId
                   MessageId = dto.Id
-                  TelegramBot = tgClient
+                  TelegramBot = client
+                  sendResult = sendResult
+                  sendResults = sendResults
                   ChatStorage = chatStorage
                   RequestStorage = requestStorage
                   getServiceGraph = getServiceGraph

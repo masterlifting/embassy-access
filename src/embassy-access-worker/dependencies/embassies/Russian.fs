@@ -1,5 +1,4 @@
-﻿[<RequireQualifiedAccess>]
-module internal EA.Worker.Dependencies.Russian
+﻿module internal EA.Worker.Dependencies.Embassies.Russian
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -9,7 +8,7 @@ open EA.Core.DataAccess
 open EA.Telegram.Dependencies
 open EA.Worker.Dependencies
 open EA.Telegram.Dependencies.Producer.Embassies.RussianEmbassy
-open EA.Telegram.Services.Producer.Embassies.RussianEmbassy
+open EA.Telegram.Services.Producer.Embassies.Russian.Service
 
 module Kdmid =
     open Infrastructure.Logging

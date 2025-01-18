@@ -6,6 +6,7 @@ open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Domain
 open EA.Worker.Dependencies
+open EA.Worker.Dependencies.Embassies.Russian
 
 let private createEmbassyName (task: WorkerTask) =
     try
@@ -20,7 +21,7 @@ let private createEmbassyName (task: WorkerTask) =
 module private Kdmid =
 
     let createOrder =
-        fun (deps: Russian.Kdmid.Dependencies) ->
+        fun (deps: Kdmid.Dependencies) ->
             let start getRequests =
                 deps.RequestStorage
                 |> getRequests
@@ -45,8 +46,7 @@ module private Kdmid =
             |> Result.bind (fun persistenceDeps ->
                 Web.Dependencies.create ()
                 |> Result.map (fun webDeps -> (persistenceDeps, webDeps)))
-            |> Result.bind (fun (persistenceDeps, webDeps) ->
-                Russian.Kdmid.Dependencies.create ct persistenceDeps webDeps)
+            |> Result.bind (fun (persistenceDeps, webDeps) -> Kdmid.Dependencies.create ct persistenceDeps webDeps)
             |> Result.map createOrder
             |> ResultAsync.wrap (fun startOrder ->
                 task

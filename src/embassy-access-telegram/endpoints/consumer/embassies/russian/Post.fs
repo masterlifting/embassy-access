@@ -1,11 +1,9 @@
-﻿module EA.Telegram.Endpoints.Consumer.Embassies.RussianEmbassy
+﻿module EA.Telegram.Endpoints.Consumer.Embassies.Russian.Post
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open EA.Telegram.Domain
 open EA.Core.Domain
-
-[<Literal>]
-let private Delimiter = "|"
 
 module Model =
     module Kdmid =
@@ -30,28 +28,11 @@ module Model =
             { RequestId: RequestId
               AppointmentId: AppointmentId }
 
-    module Midpass =
-        type CheckStatus = { Number: string }
-
-type GetRequest =
-    | KdmidCheckAppointments of RequestId
-
-    member this.Value =
-        match this with
-        | KdmidCheckAppointments requestId -> [ "00"; requestId.ValueStr ]
-        |> String.concat Delimiter
-
-    static member parse(parts: string[]) =
-        match parts with
-        | [| "00"; requestId |] -> RequestId.create requestId |> Result.map GetRequest.KdmidCheckAppointments
-        | _ -> $"'{parts}' of RussianEmbassy.GetRequest endpoint" |> NotSupported |> Error
-
-type PostRequest =
+type Request =
     | KdmidSubscribe of Model.Kdmid.Subscribe
     | KdmidCheckAppointments of Model.Kdmid.CheckAppointments
     | KdmidSendAppointments of Model.Kdmid.SendAppointments
     | KdmidConfirmAppointment of Model.Kdmid.ConfirmAppointment
-    | MidpassCheckStatus of Model.Midpass.CheckStatus
 
     member this.Value =
         match this with
@@ -82,8 +63,7 @@ type PostRequest =
               model.EmbassyId.Value
               model.AppointmentIds |> Set.map _.ValueStr |> Set.toArray |> String.concat "," ]
         | KdmidConfirmAppointment model -> [ "17"; model.RequestId.ValueStr; model.AppointmentId.ValueStr ]
-        | MidpassCheckStatus model -> [ "18"; model.Number ]
-        |> String.concat Delimiter
+        |> String.concat Constants.Endpoint.DELIMITER
 
     static member parse(parts: string[]) =
         let inline createKdmidSubscription serviceId embassyId payload confirmation =
@@ -91,7 +71,7 @@ type PostRequest =
               Model.Kdmid.Subscribe.EmbassyId = embassyId |> Graph.NodeIdValue
               Model.Kdmid.Subscribe.ConfirmationState = confirmation
               Model.Kdmid.Subscribe.Payload = payload }
-            |> PostRequest.KdmidSubscribe
+            |> Request.KdmidSubscribe
             |> Ok
 
         match parts with
@@ -99,7 +79,7 @@ type PostRequest =
             { Model.Kdmid.CheckAppointments.ServiceId = serviceId |> Graph.NodeIdValue
               Model.Kdmid.CheckAppointments.EmbassyId = embassyId |> Graph.NodeIdValue
               Model.Kdmid.CheckAppointments.Payload = payload }
-            |> PostRequest.KdmidCheckAppointments
+            |> Request.KdmidCheckAppointments
             |> Ok
         | [| "11"; serviceId; embassyId; payload |] -> createKdmidSubscription serviceId embassyId payload Disabled
         | [| "12"; serviceId; embassyId; appointmentId; payload |] ->
@@ -131,7 +111,7 @@ type PostRequest =
                 { Model.Kdmid.SendAppointments.ServiceId = serviceId |> Graph.NodeIdValue
                   Model.Kdmid.SendAppointments.EmbassyId = embassyId |> Graph.NodeIdValue
                   Model.Kdmid.SendAppointments.AppointmentIds = appointmentIds |> Set.ofList })
-            |> Result.map PostRequest.KdmidSendAppointments
+            |> Result.map Request.KdmidSendAppointments
         | [| "17"; requestId; appointmentId |] ->
             RequestId.create requestId
             |> Result.bind (fun requestId ->
@@ -139,26 +119,5 @@ type PostRequest =
                 |> Result.map (fun appointmentId ->
                     { Model.Kdmid.ConfirmAppointment.RequestId = requestId
                       Model.Kdmid.ConfirmAppointment.AppointmentId = appointmentId }))
-            |> Result.map PostRequest.KdmidConfirmAppointment
-        | [| "18"; number |] ->
-            { Model.Midpass.CheckStatus.Number = number }
-            |> PostRequest.MidpassCheckStatus
-            |> Ok
+            |> Result.map Request.KdmidConfirmAppointment
         | _ -> $"'{parts}' of RussianEmbassy.PostRequest endpoint" |> NotSupported |> Error
-
-type Request =
-    | Get of GetRequest
-    | Post of PostRequest
-
-    member this.Value =
-        match this with
-        | Get r -> r.Value
-        | Post r -> r.Value
-
-    static member parse(input: string) =
-        let parts = input.Split Delimiter
-
-        match parts[0][0] with
-        | '0' -> parts |> GetRequest.parse |> Result.map Get
-        | '1' -> parts |> PostRequest.parse |> Result.map Post
-        | _ -> $"'{input}' of RussianEmbassy endpoint" |> NotSupported |> Error

@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Embassies.RussianEmbassy
+﻿module EA.Telegram.Services.Embassies.Russian.Service
 
 open System
 open Infrastructure.Domain
@@ -6,21 +6,22 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Telegram.Endpoints.Consumer.Router
-open EA.Telegram.Endpoints.Consumer.Embassies.RussianEmbassy
+open EA.Telegram.Endpoints.Consumer.Embassies.Russian
 
 module Kdmid =
     open EA.Embassies.Russian.Kdmid.Domain
-    open EA.Telegram.Endpoints.Consumer.Embassies.RussianEmbassy.Model.Kdmid
 
     module Notification =
 
-        let toSuccessfullyResponse (request: Request.Request, msg: string) =
+        let toSuccessfullyResponse (request: EA.Core.Domain.Request.Request, msg: string) =
             fun chatId -> (chatId, New) |> Text.create msg
 
-        let toUnsuccessfullyResponse (request: Request.Request, error: Error') =
+        let toUnsuccessfullyResponse (request: EA.Core.Domain.Request.Request, error: Error') =
             fun chatId -> chatId |> Text.createError error
 
-        let toHasAppointmentsResponse (request: Request.Request, appointments: Appointment.Appointment Set) =
+        let toHasAppointmentsResponse
+            (request: EA.Core.Domain.Request.Request, appointments: Appointment.Appointment Set)
+            =
             fun chatId ->
                 request.Service.Payload
                 |> Payload.toValue
@@ -29,8 +30,8 @@ module Kdmid =
                     |> Seq.map (fun appointment ->
                         let route =
                             RussianEmbassy(
-                                Post(
-                                    KdmidConfirmAppointment(
+                                Request.Post(
+                                    Post.KdmidConfirmAppointment(
                                         { RequestId = request.Id
                                           AppointmentId = appointment.Id }
                                     )
@@ -46,7 +47,9 @@ module Kdmid =
                               Columns = 1
                               Data = buttons })
 
-        let toHasConfirmationsResponse (request: Request.Request, confirmations: Confirmation.Confirmation Set) =
+        let toHasConfirmationsResponse
+            (request: EA.Core.Domain.Request.Request, confirmations: Confirmation.Confirmation Set)
+            =
             fun chatId ->
                 request.Service.Payload
                 |> Payload.toValue

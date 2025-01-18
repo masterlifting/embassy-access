@@ -1,11 +1,11 @@
-﻿module EA.Telegram.Services.Producer.Embassies.RussianEmbassy
+﻿module EA.Telegram.Services.Producer.Embassies.Russian.Service
 
 open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Telegram.Dependencies.Producer.Embassies.RussianEmbassy
 
 module Kdmid =
-    open EA.Telegram.Services.Embassies.RussianEmbassy.Kdmid
+    open EA.Telegram.Services.Embassies.Russian.Service.Kdmid
 
     let sendNotification notification =
         fun (deps: Kdmid.Dependencies) ->

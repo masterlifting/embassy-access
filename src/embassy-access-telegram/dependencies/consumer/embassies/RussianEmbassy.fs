@@ -16,6 +16,8 @@ type Dependencies =
       MessageId: int
       CancellationToken: CancellationToken
       RequestStorage: Request.RequestStorage
+      sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>>
+      sendResults: Async<Result<Producer.Data list, Error'>> -> Async<Result<unit, Error'>>
       getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
       getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
       getSubscriptionsChats: RequestId seq -> Async<Result<Chat list, Error'>>
@@ -73,6 +75,8 @@ type Dependencies =
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
                   RequestStorage = deps.RequestStorage
+                  sendResult = deps.sendResult
+                  sendResults = deps.sendResults
                   getRequest = getRequest
                   updateRequest = updateRequest
                   getService = getServices

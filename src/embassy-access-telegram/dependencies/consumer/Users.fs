@@ -13,11 +13,12 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       EmbassiesDeps: Embassies.Dependencies
-      getUserEmbassies: ChatId -> Async<Result<string option * EmbassyNode list, Error'>>
-      getUserEmbassyChildren: ChatId -> Graph.NodeId -> Async<Result<string option * EmbassyNode list, Error'>>
-      getUserEmbassyServices: ChatId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
+      sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>>
+      getUserEmbassies: unit -> Async<Result<string option * EmbassyNode list, Error'>>
+      getUserEmbassyChildren: Graph.NodeId -> Async<Result<string option * EmbassyNode list, Error'>>
+      getUserEmbassyServices: Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
       getUserEmbassyServiceChildren:
-          ChatId -> Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>> }
+          Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>> }
 
     static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
@@ -26,15 +27,15 @@ type Dependencies =
 
             let! embassiesDeps = Embassies.Dependencies.create deps
 
-            let getUserRequests chatId =
+            let getUserRequests () =
                 deps.ChatStorage
-                |> Chat.Query.tryFindById chatId
+                |> Chat.Query.tryFindById deps.ChatId
                 |> ResultAsync.bindAsync (function
-                    | None -> $"Telegram chat {chatId.ValueStr}" |> NotFound |> Error |> async.Return
+                    | None -> $"User '{deps.ChatId.ValueStr}'" |> NotFound |> Error |> async.Return
                     | Some chat -> deps.RequestStorage |> Request.Query.findManyByIds chat.Subscriptions)
 
-            let getUserEmbassies chatId =
-                getUserRequests chatId
+            let getUserEmbassies () =
+                getUserRequests ()
                 |> ResultAsync.map (List.map _.Service.Embassy.Id)
                 |> ResultAsync.bindAsync (fun embassyIds ->
                     deps.getEmbassyGraph ()
@@ -46,7 +47,7 @@ type Dependencies =
                             |> List.exists (fun embassyId -> embassyId.Value.Contains embassy.Id.Value))
                         |> List.map _.Value))
 
-            let getUserEmbassyChildren chatId embassyId =
+            let getUserEmbassyChildren embassyId =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
@@ -56,7 +57,7 @@ type Dependencies =
                         |> Error
                         |> async.Return
                     | Some node ->
-                        getUserRequests chatId
+                        getUserRequests ()
                         |> ResultAsync.map (List.map _.Service.Embassy.Id)
                         |> ResultAsync.map (fun embassyIds ->
                             (node.Value.Description,
@@ -66,8 +67,8 @@ type Dependencies =
                                  |> List.exists (fun embassyId -> embassyId.Value.Contains embassy.Id.Value))
                              |> List.map _.Value)))
 
-            let getUserEmbassyServices chatId (embassyId: Graph.NodeId) =
-                getUserRequests chatId
+            let getUserEmbassyServices (embassyId: Graph.NodeId) =
+                getUserRequests ()
                 |> ResultAsync.map (List.map _.Service)
                 |> ResultAsync.bindAsync (fun userServices ->
                     let embassyIdSubdomain = embassyId.Value |> Graph.split |> Seq.take 2 |> Seq.last
@@ -87,8 +88,8 @@ type Dependencies =
                                 && userService.Embassy.Id.Value.Contains embassyId.Value))
                         |> List.map _.Value))
 
-            let getUserEmbassyServiceChildren chatId (embassyId: Graph.NodeId) (serviceId: Graph.NodeId) =
-                getUserRequests chatId
+            let getUserEmbassyServiceChildren (embassyId: Graph.NodeId) (serviceId: Graph.NodeId) =
+                getUserRequests ()
                 |> ResultAsync.map (List.map _.Service)
                 |> ResultAsync.bindAsync (fun userServices ->
                     deps.getServiceGraph ()
@@ -110,6 +111,7 @@ type Dependencies =
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
                   EmbassiesDeps = embassiesDeps
+                  sendResult = deps.sendResult
                   getUserEmbassies = getUserEmbassies
                   getUserEmbassyServices = getUserEmbassyServices
                   getUserEmbassyChildren = getUserEmbassyChildren

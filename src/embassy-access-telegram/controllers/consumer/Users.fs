@@ -3,23 +3,19 @@ module EA.Telegram.Controllers.Consumer.Users
 
 open Infrastructure.Prelude
 open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Services.Consumer.Users
 open EA.Telegram.Endpoints.Consumer.Users
+open EA.Telegram.Services.Consumer.Users.Service
+open EA.Telegram.Endpoints.Consumer.Users.Request
 
 let respond request =
     fun (deps: Consumer.Dependencies) ->
-        let sendResult data =
-            Web.Telegram.Producer.produceResult data deps.ChatId deps.CancellationToken deps.TelegramBot
-            |> ResultAsync.map ignore
-
         Users.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Get get ->
                 match get with
-                | UserEmbassies userId -> deps |> Get.getUserEmbassies userId |> sendResult
-                | UserEmbassy(userId, embassyId) -> deps |> Get.processUserEmbassy userId embassyId |> sendResult
-                | UserEmbassyServices(userId, embassyId) ->
-                    deps |> Get.getUserEmbassyServices userId embassyId |> sendResult
-                | UserEmbassyService(userId, embassyId, serviceId) ->
-                    deps |> Get.processUserEmbassyService userId embassyId serviceId |> sendResult)
+                | Get.UserEmbassies -> Query.getUserEmbassies ()
+                | Get.UserEmbassy embassyId -> Query.getUserEmbassy embassyId
+                | Get.UserEmbassyServices embassyId -> Query.getUserEmbassyServices embassyId
+                | Get.UserEmbassyService(embassyId, serviceId) -> Query.getUserEmbassyService embassyId serviceId
+                |> fun createResponse -> deps |> createResponse |> deps.sendResult)
