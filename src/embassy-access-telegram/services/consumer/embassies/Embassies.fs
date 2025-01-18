@@ -60,6 +60,35 @@ module internal Get =
                     |> Ok
                     |> async.Return)
 
+    let userEmbassyService userId embassyId serviceId =
+        fun (deps: Embassies.Dependencies) ->
+            deps.getServiceNode serviceId
+            |> ResultAsync.bindAsync (fun serviceNode ->
+                match serviceNode.Children with
+                | [] ->
+                    match serviceNode.IdParts.Length > 1 with
+                    | false ->
+                        $"Embassy service '{serviceNode.ShortName}'"
+                        |> NotSupported
+                        |> Error
+                        |> async.Return
+                    | true ->
+                        match serviceNode.IdParts[1].Value with
+                        | "RU" ->
+                            deps.RussianDeps
+                            |> RussianEmbassy.Kdmid.User.getData userId embassyId serviceNode.Value
+                        | _ ->
+                            $"Embassy service '{serviceNode.ShortName}'"
+                            |> NotSupported
+                            |> Error
+                            |> async.Return
+                | children ->
+                    children
+                    |> Seq.map _.Value
+                    |> toEmbassyServiceResponse deps.ChatId deps.MessageId serviceNode.Value.Description embassyId
+                    |> Ok
+                    |> async.Return)
+
     let embassyServices embassyId =
         fun (deps: Embassies.Dependencies) ->
             deps.getEmbassyServicesRoot embassyId

@@ -87,12 +87,24 @@ type Dependencies =
                                 && userService.Embassy.Id.Value.Contains embassyId.Value))
                         |> List.map _.Value))
 
-            let getUserEmbassyServiceChildren chatId embassyId (serviceId: Graph.NodeId) =
-                getUserEmbassyServices chatId embassyId
-                |> ResultAsync.map (fun (parentDescription, userEmbassyServices) ->
-                    parentDescription,
-                    userEmbassyServices
-                    |> List.filter (fun userEmbassyService -> userEmbassyService.Id.Value.Contains serviceId.Value))
+            let getUserEmbassyServiceChildren chatId (embassyId: Graph.NodeId) (serviceId: Graph.NodeId) =
+                getUserRequests chatId
+                |> ResultAsync.map (List.map _.Service)
+                |> ResultAsync.bindAsync (fun userServices ->
+                    deps.getServiceGraph ()
+                    |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
+                    |> ResultAsync.bind (function
+                        | None -> $"User service of Service with Id {serviceId.Value}" |> NotFound |> Error
+                        | Some node ->
+                            (node.Value.Description,
+                             node.Children
+                             |> List.filter (fun service ->
+                                 userServices
+                                 |> List.exists (fun userService ->
+                                     userService.Id.Value.Contains service.Id.Value
+                                     && userService.Embassy.Id.Value.Contains embassyId.Value))
+                             |> List.map _.Value)
+                            |> Ok))
 
             return
                 { ChatId = deps.ChatId

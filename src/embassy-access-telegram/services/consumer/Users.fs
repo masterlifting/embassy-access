@@ -62,12 +62,12 @@ module internal Get =
                     |> Ok
                     |> async.Return)
 
-    let getUserEmbassyService userId embassyId serviceId =
+    let processUserEmbassyService userId embassyId serviceId =
         fun (deps: Users.Dependencies) ->
             deps.getUserEmbassyServiceChildren userId embassyId serviceId
             |> ResultAsync.bindAsync (fun (parentDescription, services) ->
                 match services with
-                | [] -> deps.EmbassiesDeps |> Get.embassyService embassyId serviceId
+                | [] -> deps.EmbassiesDeps |> Get.userEmbassyService userId embassyId serviceId
                 | _ ->
                     services
                     |> toUserEmbassyServicesResponse

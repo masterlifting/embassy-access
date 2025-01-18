@@ -20,10 +20,14 @@ let respond request =
         RussianEmbassy.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             match request with
+            | Get get ->
+                match get with
+                | GetRequest.KdmidCheckAppointments requestId ->
+                    deps |> Kdmid.checkAppointments' requestId |> sendResult
             | Post post ->
                 match post with
-                | KdmidSubscribe model -> deps |> Kdmid.subscribe model |> sendResult
-                | KdmidCheckAppointments model -> deps |> Kdmid.checkAppointments model |> sendResult
-                | KdmidSendAppointments model -> deps |> Kdmid.sendAppointments model |> sendResults
-                | KdmidConfirmAppointment model -> deps |> Kdmid.confirmAppointment model |> sendResult
-                | MidpassCheckStatus model -> deps |> Midpass.checkStatus model |> sendResult)
+                | PostRequest.KdmidSubscribe model -> deps |> Kdmid.subscribe model |> sendResult
+                | PostRequest.KdmidCheckAppointments model -> deps |> Kdmid.checkAppointments model |> sendResult
+                | PostRequest.KdmidSendAppointments model -> deps |> Kdmid.sendAppointments model |> sendResults
+                | PostRequest.KdmidConfirmAppointment model -> deps |> Kdmid.confirmAppointment model |> sendResult
+                | PostRequest.MidpassCheckStatus model -> deps |> Midpass.checkStatus model |> sendResult)

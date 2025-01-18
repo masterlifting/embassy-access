@@ -22,4 +22,4 @@ let respond request =
                 | UserEmbassyServices(userId, embassyId) ->
                     deps |> Get.getUserEmbassyServices userId embassyId |> sendResult
                 | UserEmbassyService(userId, embassyId, serviceId) ->
-                    deps |> Get.getUserEmbassyService userId embassyId serviceId |> sendResult)
+                    deps |> Get.processUserEmbassyService userId embassyId serviceId |> sendResult)

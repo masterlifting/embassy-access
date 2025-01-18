@@ -33,6 +33,19 @@ module Model =
     module Midpass =
         type CheckStatus = { Number: string }
 
+type GetRequest =
+    | KdmidCheckAppointments of RequestId
+
+    member this.Value =
+        match this with
+        | KdmidCheckAppointments requestId -> [ "00"; requestId.ValueStr ]
+        |> String.concat Delimiter
+
+    static member parse(parts: string[]) =
+        match parts with
+        | [| "00"; requestId |] -> RequestId.create requestId |> Result.map GetRequest.KdmidCheckAppointments
+        | _ -> $"'{parts}' of RussianEmbassy.GetRequest endpoint" |> NotSupported |> Error
+
 type PostRequest =
     | KdmidSubscribe of Model.Kdmid.Subscribe
     | KdmidCheckAppointments of Model.Kdmid.CheckAppointments
@@ -134,15 +147,18 @@ type PostRequest =
         | _ -> $"'{parts}' of RussianEmbassy.PostRequest endpoint" |> NotSupported |> Error
 
 type Request =
+    | Get of GetRequest
     | Post of PostRequest
 
     member this.Value =
         match this with
+        | Get r -> r.Value
         | Post r -> r.Value
 
     static member parse(input: string) =
         let parts = input.Split Delimiter
 
         match parts[0][0] with
+        | '0' -> parts |> GetRequest.parse |> Result.map Get
         | '1' -> parts |> PostRequest.parse |> Result.map Post
         | _ -> $"'{input}' of RussianEmbassy endpoint" |> NotSupported |> Error

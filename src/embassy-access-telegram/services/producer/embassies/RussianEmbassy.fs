@@ -5,7 +5,7 @@ open EA.Core.Domain
 open EA.Telegram.Dependencies.Producer.Embassies.RussianEmbassy
 
 module Kdmid =
-    open EA.Telegram.Services.Consumer.Embassies.RussianEmbassy
+    open EA.Telegram.Services.Embassies.RussianEmbassy.Kdmid
 
     let sendNotification notification =
         fun (deps: Kdmid.Dependencies) ->
@@ -13,18 +13,20 @@ module Kdmid =
             | Successfully(request, msg) ->
                 request
                 |> deps.getRequestChats
-                |> ResultAsync.map (Seq.map (fun chat -> chat.Id |> Kdmid.toSuccessfullyResponse (request, msg)))
+                |> ResultAsync.map (Seq.map (fun chat -> chat.Id |> Notification.toSuccessfullyResponse (request, msg)))
                 |> ResultAsync.bindAsync deps.sendNotifications
             | Unsuccessfully(request, error) ->
                 request
                 |> deps.getRequestChats
-                |> ResultAsync.map (Seq.map (fun chat -> chat.Id |> Kdmid.toUnsuccessfullyResponse (request, error)))
+                |> ResultAsync.map (
+                    Seq.map (fun chat -> chat.Id |> Notification.toUnsuccessfullyResponse (request, error))
+                )
                 |> ResultAsync.bindAsync deps.sendNotifications
             | HasAppointments(request, appointments) ->
                 request
                 |> deps.getRequestChats
                 |> ResultAsync.bind (
-                    Seq.map (fun chat -> chat.Id |> Kdmid.toHasAppointmentsResponse (request, appointments))
+                    Seq.map (fun chat -> chat.Id |> Notification.toHasAppointmentsResponse (request, appointments))
                     >> Result.choose
                 )
                 |> ResultAsync.bindAsync (Seq.ofList >> deps.sendNotifications)
@@ -32,7 +34,7 @@ module Kdmid =
                 request
                 |> deps.getRequestChats
                 |> ResultAsync.bind (
-                    Seq.map (fun chat -> chat.Id |> Kdmid.toHasConfirmationsResponse (request, confirmations))
+                    Seq.map (fun chat -> chat.Id |> Notification.toHasConfirmationsResponse (request, confirmations))
                     >> Result.choose
                 )
                 |> ResultAsync.bindAsync (Seq.ofList >> deps.sendNotifications)
