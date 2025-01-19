@@ -1,40 +1,38 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net8.0</TargetFramework>
-		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-	</PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<Compile Include="Settings.fs" />
-		<Compile Include="embassies\Russian.fs" />
-		<Compile Include="countries\Albania.fs" />
-		<Compile Include="countries\Bosnia.fs" />
-		<Compile Include="countries\Finland.fs" />
-		<Compile Include="countries\France.fs" />
-		<Compile Include="countries\Germany.fs" />
-		<Compile Include="countries\Hungary.fs" />
-		<Compile Include="countries\Ireland.fs" />
-		<Compile Include="countries\Montenegro.fs" />
-		<Compile Include="countries\Netherlands.fs" />
-		<Compile Include="countries\Serbia.fs" />
-		<Compile Include="countries\Slovenia.fs" />
-		<Compile Include="countries\Switzerland.fs" />
-		<Compile Include="Initializer.fs" />
-		<Compile Include="Program.fs" />
-	</ItemGroup>
+    <ItemGroup>
+        <Compile Include="domain\Constants.fs" />
+        <Compile Include="domain\RouteNode.fs" />
+        <Compile Include="dependencies\Web.fs" />
+        <Compile Include="dependencies\Persistence.fs" />
+        <Compile Include="dependencies\embassies\Russian.fs" />
+        <Compile Include="embassies\Russian.fs"/>
+        <Compile Include="Initializer.fs"/>
+        <Compile Include="Program.fs"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<Content Include="Dockerfile" />
-		<Content Include="..\..\.dockerignore">
-			<Link>.dockerignore</Link>
-		</Content>
-	</ItemGroup>
+    <ItemGroup>
+        <Content Include="Dockerfile"/>
+        <Content Include="..\..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
+        <Content Include="appsettings.yaml">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="data\Chats.json" />
+        <Content Include="data\Requests.json" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
-		<ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj"/>
+        <ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj"/>
+        <ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj"/>
+    </ItemGroup>
 
 </Project>

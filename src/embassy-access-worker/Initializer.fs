@@ -1,16 +1,21 @@
 ﻿module internal EA.Worker.Initializer
 
-open Infrastructure
+open Infrastructure.Prelude
 open Infrastructure.Logging
 open Worker.Domain
+open EA.Worker.Dependencies
 
-let initialize (configuration, ct) =
+let run (_, cfg, ct) =
+    let inline startTelegramBotConsumer client =
+        EA.Telegram.Consumer.start client cfg ct
+
     async {
-        configuration
-        |> EA.Telegram.Consumer.start ct
+        Web.Dependencies.create ()
+        |> Result.bind _.initTelegramClient()
+        |> ResultAsync.wrap startTelegramBotConsumer
         |> ResultAsync.mapError (_.Message >> Log.critical)
         |> Async.Ignore
         |> Async.Start
 
-        return Settings.AppName + " has been initialized." |> Info |> Ok
+        return "Services have been initialized." |> Info |> Ok
     }

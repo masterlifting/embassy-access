@@ -1,213 +1,119 @@
 ﻿module internal EA.Worker.Embassies.Russian
 
 open System
-open System.Threading
-open Infrastructure
-open Persistence.Domain
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open Worker.Domain
-open EA.Domain
-open EA.Worker
-open EA.Embassies.Russian.Domain
+open EA.Core.Domain
+open EA.Worker.Domain
+open EA.Worker.Dependencies
+open EA.Worker.Dependencies.Embassies.Russian
 
-type private Deps =
-    { Config: ProcessRequestConfiguration
-      Storage: Storage.Type
-      notify: Notification -> Async<Result<unit, Error'>>
-      ct: CancellationToken }
+let private createEmbassyId (task: WorkerTask) =
+    try
+        let value =
+            task.Id.Value |> Graph.split |> List.skip 1 |> List.take 3 |> Graph.combine
 
-let private createDeps ct configuration country =
-    let deps = ModelBuilder()
-
-    let country = country |> EA.Mapper.Country.toExternal
-    let scheduleTaskName = $"{Settings.AppName}.{country.Name}.{country.City.Name}"
-
-    deps {
-
-        let! timeShift = scheduleTaskName |> Settings.getSchedule configuration |> Result.map _.TimeShift
-        let! storage = configuration |> EA.Persistence.Storage.FileSystem.Request.create
-        let notify = EA.Telegram.Producer.Produce.notification configuration ct
-
-        let processConfig = { TimeShift = timeShift }
-
-        return
-            { Config = processConfig
-              Storage = storage
-              notify = notify
-              ct = ct }
-    }
-
-let private processRequest deps createNotification (request: Request) =
-
-    let processRequest deps =
-        (deps.Storage, deps.Config, deps.ct)
-        |> EA.Deps.Russian.processRequest
-        |> EA.Api.processRequest
-
-    let sendNotification request =
-        createNotification request
-        |> Option.map deps.notify
-        |> Option.defaultValue (Ok() |> async.Return)
-        |> ResultAsync.map (fun _ -> request)
-
-    let sendError error =
-        match error with
-        | Operation reason ->
-            match reason.Code with
-            | Some ErrorCodes.ConfirmationExists
-            | Some ErrorCodes.NotConfirmed
-            | Some ErrorCodes.RequestDeleted -> Fail(request.Id, error) |> deps.notify |> Async.map (fun _ -> error)
-            | _ -> error |> async.Return
-        | _ -> error |> async.Return
-
-    processRequest deps request
-    |> ResultAsync.bindAsync sendNotification
-    |> ResultAsync.map (fun request -> request.ProcessState |> string)
-    |> ResultAsync.mapErrorAsync sendError
-
-let private run getRequests processRequests country =
-    fun (cfg, ct) ->
-
-        // define
-        let getRequests deps = getRequests deps country
-
-        let processRequests deps =
-            ResultAsync.bindAsync (processRequests deps)
-
-        let run = ResultAsync.wrap (fun deps -> getRequests deps |> processRequests deps)
-
-        // run
-
-        country |> createDeps ct cfg |> run
-
-let private toTaskResult (results: Result<string, Error'> array) =
-    let messages, errors = results |> Result.unzip
-
-    match messages, errors with
-    | [], [] -> Ok <| Debug "No results."
-    | [], errors ->
-
+        [ "EMB"; value ] |> Graph.combine |> Graph.NodeIdValue |> Ok
+    with ex ->
         Error
         <| Operation
-            { Message =
-                Environment.NewLine
-                + (errors |> List.map _.MessageEx |> String.concat Environment.NewLine)
-              Code = None }
-    | messages, [] ->
+            { Message = $"Getting embassy Id failed. Error: {ex |> Exception.toMessage}"
+              Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
 
-        Ok <| Info(messages |> String.concat Environment.NewLine)
+module private Kdmid =
 
-    | messages, errors ->
+    let private handleGroup pickOrder requests =
+        requests
+        |> pickOrder
+        |> ResultAsync.mapError Error'.combine
+        |> ResultAsync.map (function
+            | Some request -> request.ProcessState.Message
+            | None -> "No requests found to handle.")
 
-        Ok
-        <| Warn(
-            Environment.NewLine
-            + (messages @ (errors |> List.map _.MessageEx) |> String.concat Environment.NewLine)
-        )
+    let startOrder embassyId =
+        fun (deps: Kdmid.Dependencies) ->
+            deps.getRequests embassyId
+            |> ResultAsync.map (fun requests ->
+                requests
+                |> Seq.groupBy _.Service.Id.Value
+                |> Seq.map (fun (_, requests) ->
+                    requests
+                    |> Seq.sortByDescending _.Modified
+                    |> Seq.truncate 5
+                    |> Seq.toList
+                    |> handleGroup deps.pickOrder))
+            |> ResultAsync.map (Async.Parallel >> Async.map Result.unzip)
+            |> Async.bind (function
+                | Error error -> Error error |> async.Return
+                | Ok value ->
+                    value
+                    |> Async.map (fun (messages, errors) ->
+                        let messages =
+                            messages
+                            |> List.mapi (fun i message -> $"{i + 1}. {message}")
+                            |> String.concat Environment.NewLine
+                            |> function
+                                | AP.IsString x -> Environment.NewLine + x |> Some
+                                | _ -> None
 
-module private SearchAppointments =
+                        let errors =
+                            errors
+                            |> List.map _.Message
+                            |> List.mapi (fun i message -> $"{i + 1}. {message}")
+                            |> String.concat Environment.NewLine
+                            |> function
+                                | AP.IsString x -> Environment.NewLine + x |> Some
+                                | _ -> None
 
-    let private getRequests deps country =
-        let query = Russian country |> EA.Persistence.Query.Request.SearchAppointments
+                        match messages, errors with
+                        | Some messages, Some errors ->
+                            $"{Environment.NewLine}Valid results:{messages}{Environment.NewLine}Invalid results{errors}"
+                            |> Warn
+                        | Some messages, None -> $"{Environment.NewLine}Valid results:{messages}" |> Info
+                        | None, Some errors -> $"{Environment.NewLine}Invalid results:{errors}" |> Warn
+                        | None, None -> "No results found." |> Trace
+                        |> Ok))
 
-        deps.Storage |> EA.Persistence.Repository.Query.Request.getMany query deps.ct
+    module SearchAppointments =
+        let ID = "SA" |> Graph.NodeIdValue
 
-    let private processRequests deps requests =
+        let createRouterNode cityId =
+            Graph.Node(Id(cityId |> Graph.NodeIdValue), [ Graph.Node(Id ID, []) ])
 
-        let createNotification = EA.Notification.Create.appointments
+        let start (task, cfg, ct) =
+            let result = ResultBuilder()
 
-        let processRequest = processRequest deps createNotification
+            result {
+                let! persistenceDeps = Persistence.Dependencies.create cfg
+                let! webDeps = Web.Dependencies.create ()
+                let! deps = Kdmid.Dependencies.create ct persistenceDeps webDeps
+                let! embassyId = task |> createEmbassyId
+                return startOrder embassyId deps
+            }
+            |> ResultAsync.wrap id
 
-        let uniqueRequests = requests |> Seq.filter _.GroupBy.IsNone
+let private ROUTER =
 
-        let groupedRequests =
-            requests
-            |> Seq.filter _.GroupBy.IsSome
-            |> Seq.groupBy _.GroupBy.Value
-            |> Map
-            |> Map.map (fun _ requests -> requests |> Seq.truncate 5)
+    let inline createNode countryId cityId =
+        Graph.Node(Id(countryId |> Graph.NodeIdValue), [ cityId |> Kdmid.SearchAppointments.createRouterNode ])
 
-        let groupedRequests =
-            match uniqueRequests |> Seq.isEmpty with
-            | true -> groupedRequests
-            | false -> groupedRequests |> Map.add "Unique" uniqueRequests
-
-        let processGroupedRequests groups =
-
-            let rec choose (errors: string list) requests =
-                async {
-                    match requests with
-                    | [] ->
-                        return
-                            match errors.Length with
-                            | 0 -> Ok None
-                            | 1 -> Error errors[0]
-                            | _ ->
-                                let msg =
-                                    errors
-                                    |> List.mapi (fun i error -> $"%i{i + 1}.%s{error}")
-                                    |> String.concat Environment.NewLine
-
-                                Error $"Multiple errors:%s{Environment.NewLine}%s{msg}"
-                    | request :: requestsTail ->
-                        match! request |> processRequest with
-                        | Error error -> return! choose (errors @ [ error.MessageEx ]) requestsTail
-                        | Ok result -> return Ok <| Some result
-                }
-
-            let processGroup key group =
-                group
-                |> Seq.toList
-                |> choose []
-                |> ResultAsync.map (fun result ->
-                    match result with
-                    | Some result -> $"'%s{key}': %s{result}"
-                    | None -> $"'%s{key}'. No results.")
-                |> ResultAsync.mapError (fun error -> $"'{key}': %s{error}")
-
-            groups |> Map.map processGroup |> Map.values |> Async.Parallel
-
-        async {
-            let! results = groupedRequests |> processGroupedRequests
-
-            return
-                results
-                |> Array.map (Result.mapError (fun error -> Operation { Message = error; Code = None }))
-                |> toTaskResult
-        }
-
-    let run = run getRequests processRequests
-
-module private MakeAppointments =
-
-    let private getRequests deps country =
-        let query = Russian country |> EA.Persistence.Query.Request.MakeAppointments
-
-        deps.Storage |> EA.Persistence.Repository.Query.Request.getMany query deps.ct
-
-    let private processRequests deps requests =
-
-        let createNotification = EA.Notification.Create.confirmations
-
-        let processRequest = processRequest deps createNotification
-
-        async {
-            let! results = requests |> Seq.map processRequest |> Async.Sequential
-            return results |> toTaskResult
-        }
-
-    let run = run getRequests processRequests
-
-let addTasks country =
     Graph.Node(
-        { Name = "Russian"; Task = None },
-        [ Graph.Node(
-              { Name = "Search appointments"
-                Task = Some <| SearchAppointments.run country },
-              []
-          )
-          Graph.Node(
-              { Name = "Make appointments"
-                Task = Some <| MakeAppointments.run country },
-              []
-          ) ]
+        Id("RU" |> Graph.NodeIdValue),
+        [ createNode "SRB" "BG"
+          createNode "GER" "BER"
+          createNode "FRA" "PAR"
+          createNode "MNE" "PDG"
+          createNode "IRL" "DUB"
+          createNode "SWI" "BER"
+          createNode "FIN" "HEL"
+          createNode "NLD" "HAG"
+          createNode "ALB" "TIR"
+          createNode "SLO" "LJU"
+          createNode "BIH" "SAR"
+          createNode "HUN" "BUD" ]
     )
+
+let register () =
+    ROUTER
+    |> RouteNode.register (Kdmid.SearchAppointments.ID, Kdmid.SearchAppointments.start)

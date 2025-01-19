@@ -1,26 +1,56 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Domain.fs"/>
-        <Compile Include="Mapper.fs"/>
-        <Compile Include="persistence\Query.fs"/>
-        <Compile Include="persistence\Command.fs"/>
-        <Compile Include="persistence\repositories\FileSystemRepository.fs"/>
-        <Compile Include="persistence\repositories\InMemoryRepository.fs"/>
-        <Compile Include="persistence\Repository.fs"/>
-        <Compile Include="persistence\Storage.fs"/>
-        <Compile Include="Command.fs"/>
-        <Compile Include="CommandHandler.fs"/>
-        <Compile Include="Consumer.fs"/>
-        <Compile Include="Producer.fs"/>
+        <Compile Include="domain\Constants.fs" />
+        <Compile Include="domain\Chat.fs" />
+        <Compile Include="data_access\Chat.fs" />
+        <Compile Include="dependencies\Persistence.fs" />
+        <Compile Include="dependencies\consumer\Consumer.fs" />
+        <Compile Include="dependencies\consumer\embassies\russian\Russian.fs" />
+        <Compile Include="dependencies\consumer\embassies\russian\Midpass.fs" />
+        <Compile Include="dependencies\consumer\embassies\russian\Kdmid.fs" />
+        <Compile Include="dependencies\consumer\embassies\Embassies.fs" />
+        <Compile Include="dependencies\consumer\Users.fs" />
+        <Compile Include="dependencies\producer\Producer.fs" />
+        <Compile Include="dependencies\producer\embassies\russian\Kdmid.fs" />
+        <Compile Include="endpoints\consumer\users\Get.fs" />
+        <Compile Include="endpoints\consumer\users\Request.fs" />
+        <Compile Include="endpoints\consumer\embassies\Get.fs" />
+        <Compile Include="endpoints\consumer\embassies\Request.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\kdmid\Get.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\kdmid\Post.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\kdmid\Request.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\midpass\Get.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\midpass\Request.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\Get.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\Post.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\Request.fs" />
+        <Compile Include="endpoints\consumer\Request.fs" />
+        <Compile Include="services\embassies\russian\Service.fs" />
+        <Compile Include="services\consumer\embassies\russian\kdmid\Query.fs" />
+        <Compile Include="services\consumer\embassies\russian\kdmid\Command.fs" />
+        <Compile Include="services\consumer\embassies\russian\kdmid\Instruction.fs" />
+        <Compile Include="services\consumer\embassies\russian\midpass\Query.fs" />
+        <Compile Include="services\consumer\embassies\russian\Service.fs" />
+        <Compile Include="services\consumer\embassies\Service.fs" />
+        <Compile Include="services\consumer\users\Service.fs" />
+        <Compile Include="services\producer\embassies\russian\Service.fs" />
+        <Compile Include="controllers\consumer\Users.fs" />
+        <Compile Include="controllers\consumer\embassies\Embassies.fs" />
+        <Compile Include="controllers\consumer\embassies\russian\Kdmid.fs" />
+        <Compile Include="controllers\consumer\embassies\russian\Midpass.fs" />
+        <Compile Include="controllers\consumer\embassies\russian\Russian.fs" />
+        <Compile Include="controllers\consumer\Controller.fs" />
+        <Compile Include="Consumer.fs" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\embassy-access-core\embassy-access-core.fsproj"/>
+        <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
+        <ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
     </ItemGroup>
 
 </Project>

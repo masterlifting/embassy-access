@@ -1,36 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
-
     <ItemGroup>
-        <Compile Include="Domain.fs"/>
-        <Compile Include="SerDe.fs"/>
-        <Compile Include="Mapper.fs"/>
-        <Compile Include="persistence\Query.fs"/>
-        <Compile Include="persistence\Command.fs"/>
-        <Compile Include="persistence\repositories\InMemoryRepository.fs"/>
-        <Compile Include="persistence\repositories\FileSystemRepository.fs"/>
-        <Compile Include="persistence\Repository.fs"/>
-        <Compile Include="persistence\Storage.fs"/>
-        <Compile Include="embassies\russian\Domain.fs"/>
-        <Compile Include="embassies\russian\Core.fs"/>
-        <Compile Include="embassies\russian\Deps.fs"/>
-        <Compile Include="Notification.fs"/>
-        <Compile Include="Api.fs"/>
-        <Compile Include="Deps.fs"/>
+        <Compile Include="domain\EmbassyNode.fs" />
+        <Compile Include="domain\Confirmation.fs" />
+        <Compile Include="domain\Appointment.fs" />
+        <Compile Include="domain\ProcessState.fs" />
+        <Compile Include="domain\SubscriptionState.fs" />
+        <Compile Include="domain\ConfirmationOption.fs" />
+        <Compile Include="domain\ConfirmationState.fs" />
+        <Compile Include="domain\ServiceNode.fs" />
+        <Compile Include="domain\RequestService.fs" />
+        <Compile Include="domain\Request.fs" />
+        <Compile Include="domain\Notification.fs" />
+        <Compile Include="data_access\EmbassyGraph.fs" />
+        <Compile Include="data_access\ServiceGraph.fs" />
+        <Compile Include="data_access\Confirmation.fs" />
+        <Compile Include="data_access\Appointment.fs" />
+        <Compile Include="data_access\ProcessState.fs" />
+        <Compile Include="data_access\SubscriptionState.fs" />
+        <Compile Include="data_access\ConfirmationOption.fs" />
+        <Compile Include="data_access\ConfirmationState.fs" />
+        <Compile Include="data_access\RequestService.fs" />
+        <Compile Include="data_access\Request.fs" />
     </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="SkiaSharp" Version="2.88.8"/>
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.8" />
-    </ItemGroup>
-
+  
     <ItemGroup>
         <ProjectReference Include="..\..\submodules\fsharp-infrastructure\src\fsharp-infrastructure.fsproj"/>
         <ProjectReference Include="..\..\submodules\fsharp-persistence\src\fsharp-persistence.fsproj"/>
-        <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj"/>
     </ItemGroup>
-
 </Project>
