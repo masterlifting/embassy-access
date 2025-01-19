@@ -2,20 +2,23 @@
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Core.Domain
+open EA.Telegram.Endpoints.Consumer.Embassies.Russian
 
 type Request =
-    | KdmidCheckAppointments of RequestId
-    | MidpassCheckStatus of string
+    | Kdmid of Kdmid.Get.Request
+    | Midpass of Midpass.Get.Request
 
     member this.Value =
         match this with
-        | KdmidCheckAppointments requestId -> [ "00"; requestId.ValueStr ]
-        | MidpassCheckStatus number -> [ "01"; number ]
+        | Kdmid r -> [ "0"; r.Value ]
+        | Midpass r -> [ "1"; r.Value ]
         |> String.concat Constants.Endpoint.DELIMITER
 
-    static member parse(parts: string[]) =
-        match parts with
-        | [| "00"; requestId |] -> RequestId.create requestId |> Result.map Request.KdmidCheckAppointments
-        | [| "01"; number |] -> Request.MidpassCheckStatus number |> Ok
-        | _ -> $"'{parts}' of RussianEmbassy.GetRequest endpoint" |> NotSupported |> Error
+    static member parse(input: string) =
+        let parts = input.Split Constants.Endpoint.DELIMITER
+        let remaining = parts[1..] |> String.concat Constants.Endpoint.DELIMITER
+
+        match parts[0] with
+        | "0" -> remaining |> Kdmid.Get.Request.parse |> Result.map Kdmid
+        | "1" -> remaining |> Midpass.Get.Request.parse |> Result.map Midpass
+        | _ -> $"'{parts}' of Consumer.Embassies.Russian.Get endpoint" |> NotSupported |> Error

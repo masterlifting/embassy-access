@@ -141,7 +141,7 @@ let pick (requests: Request seq) notify =
                 | [] ->
                     return
                         match errors.Length with
-                        | 0 -> Error [ "Orders to handle" |> NotFound ]
+                        | 0 -> Ok None
                         | _ -> Error errors
                 | request :: requestsTail ->
                     match! deps |> start request with
@@ -161,7 +161,7 @@ let pick (requests: Request seq) notify =
                             | None -> () |> async.Return
                             | Some notification -> notification |> notify
 
-                        return result |> Ok
+                        return result |> Some |> Ok
             }
 
         requests |> List.ofSeq |> innerLoop []

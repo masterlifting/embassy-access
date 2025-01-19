@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Embassies.RussianEmbassy
+module EA.Telegram.Dependencies.Consumer.Embassies.Russian.Kdmid
 
 open System.Threading
 open Infrastructure.Domain
@@ -9,7 +9,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Dependencies.Consumer.Embassies
 
 type Dependencies =
     { ChatId: ChatId
@@ -25,20 +25,12 @@ type Dependencies =
       getRequest: RequestId -> Async<Result<Request, Error'>>
       updateRequest: Request -> Async<Result<Request, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>>
-      createChatSubscription: RequestId -> Async<Result<unit, Error'>>
       createRequest: Request -> Async<Result<Request, Error'>> }
 
-    static member create(deps: Consumer.Dependencies) =
+    static member create(deps: Russian.Dependencies) =
         let result = ResultBuilder()
 
         result {
-
-            let createChatSubscription subscriptionId =
-                deps.ChatStorage
-                |> Chat.Command.createChatSubscription deps.ChatId subscriptionId
-
-            let createRequest request =
-                deps.RequestStorage |> Request.Command.create request
 
             let getServices serviceId =
                 deps.getServiceGraph ()
@@ -70,6 +62,11 @@ type Dependencies =
             let getSubscriptionsChats (requestIds: RequestId seq) =
                 deps.ChatStorage |> Chat.Query.findManyBySubscriptions requestIds
 
+            let createRequest (request: Request) =
+                deps.ChatStorage
+                |> Chat.Command.createChatSubscription deps.ChatId request.Id
+                |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.create request)
+
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
@@ -84,6 +81,5 @@ type Dependencies =
                   getEmbassyRequests = getEmbassyRequests
                   getSubscriptionsChats = getSubscriptionsChats
                   getChatRequests = deps.getChatRequests
-                  createChatSubscription = createChatSubscription
                   createRequest = createRequest }
         }

@@ -8,13 +8,14 @@ Persistence:
   FileSystem: ../../../data
 
 SearchAppointments: &SearchAppointments
-  - Name: Search appointments
-    Enabled: false
+  - Id: SA
+    Name: Search appointments
+    Enabled: true
     Wait: false
     Duration: 00:01:00
 
 Worker:
-  Id: WORKER
+  Id: WRK
   Name: Worker
   Enabled: true
   Wait: true
@@ -402,7 +403,7 @@ KdmidRussianServices: &KdmidRussianServices
 
 Services:
   Id: SRV
-  Name: Услуги посольства
+  Name: Услуги
   Description: Выберите услугу посольства
   Children:
     - Id: RU

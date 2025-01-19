@@ -6,25 +6,24 @@ open Infrastructure.Prelude
 open Web.Telegram.Domain
 open EA.Core.Domain
 open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Dependencies.Consumer.Embassies.Russian
 
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
-      RussianDeps: RussianEmbassy.Dependencies
+      RussianDeps: Russian.Dependencies
       sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>>
       getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-      getEmbassiesRoot: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-      getEmbassyServicesRoot: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
+      getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
+      getEmbassyServiceGraph: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
 
     static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let! russianDeps = RussianEmbassy.Dependencies.create deps
-
-            let getEmbassiesRoot () = deps.getEmbassyGraph ()
+            let! russianDeps = Russian.Dependencies.create deps
 
             let getEmbassyNode embassyId =
                 deps.getEmbassyGraph ()
@@ -33,7 +32,7 @@ type Dependencies =
                     | Some embassy -> Ok embassy
                     | None -> $"Embassy with Id {embassyId.Value}" |> NotFound |> Error)
 
-            let getEmbassyServicesRoot embassyId =
+            let getEmbassyServiceGraph embassyId =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
@@ -71,8 +70,8 @@ type Dependencies =
                   MessageId = deps.MessageId
                   RussianDeps = russianDeps
                   sendResult = deps.sendResult
-                  getEmbassiesRoot = getEmbassiesRoot
+                  getEmbassiesGraph = deps.getEmbassyGraph
                   getEmbassyNode = getEmbassyNode
                   getServiceNode = getServiceNode
-                  getEmbassyServicesRoot = getEmbassyServicesRoot }
+                  getEmbassyServiceGraph = getEmbassyServiceGraph }
         }

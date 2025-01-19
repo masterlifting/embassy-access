@@ -10,7 +10,9 @@
         <Compile Include="data_access\Chat.fs" />
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\consumer\Consumer.fs" />
-        <Compile Include="dependencies\consumer\embassies\RussianEmbassy.fs" />
+        <Compile Include="dependencies\consumer\embassies\russian\Russian.fs" />
+        <Compile Include="dependencies\consumer\embassies\russian\Midpass.fs" />
+        <Compile Include="dependencies\consumer\embassies\russian\Kdmid.fs" />
         <Compile Include="dependencies\consumer\embassies\Embassies.fs" />
         <Compile Include="dependencies\consumer\Users.fs" />
         <Compile Include="dependencies\producer\Producer.fs" />
@@ -19,13 +21,19 @@
         <Compile Include="endpoints\consumer\users\Request.fs" />
         <Compile Include="endpoints\consumer\embassies\Get.fs" />
         <Compile Include="endpoints\consumer\embassies\Request.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\kdmid\Get.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\kdmid\Post.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\kdmid\Request.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\midpass\Get.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\midpass\Request.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\Get.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\Post.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\Request.fs" />
-        <Compile Include="endpoints\consumer\Router.fs" />
+        <Compile Include="endpoints\consumer\Request.fs" />
         <Compile Include="services\embassies\russian\Service.fs" />
         <Compile Include="services\consumer\embassies\russian\kdmid\Query.fs" />
         <Compile Include="services\consumer\embassies\russian\kdmid\Command.fs" />
+        <Compile Include="services\consumer\embassies\russian\kdmid\Instruction.fs" />
         <Compile Include="services\consumer\embassies\russian\midpass\Query.fs" />
         <Compile Include="services\consumer\embassies\russian\Service.fs" />
         <Compile Include="services\consumer\embassies\Service.fs" />
@@ -33,7 +41,9 @@
         <Compile Include="services\producer\embassies\russian\Service.fs" />
         <Compile Include="controllers\consumer\Users.fs" />
         <Compile Include="controllers\consumer\embassies\Embassies.fs" />
-        <Compile Include="controllers\consumer\embassies\RussianEmbassy.fs" />
+        <Compile Include="controllers\consumer\embassies\russian\Kdmid.fs" />
+        <Compile Include="controllers\consumer\embassies\russian\Midpass.fs" />
+        <Compile Include="controllers\consumer\embassies\russian\Russian.fs" />
         <Compile Include="controllers\consumer\Consumer.fs" />
         <Compile Include="Consumer.fs" />
     </ItemGroup>

@@ -1,8 +1,8 @@
-﻿module EA.Telegram.Endpoints.Consumer.Users.Request
+﻿module EA.Telegram.Endpoints.Consumer.Embassies.Russian.Midpass.Request
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Endpoints.Consumer.Users
+open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Midpass
 
 type Request =
     | Get of Get.Request
@@ -17,4 +17,7 @@ type Request =
 
         match parts[0] with
         | "0" -> remaining |> Get.Request.parse |> Result.map Get
-        | _ -> $"'{input}' of Consumer.Users endpoint" |> NotSupported |> Error
+        | _ ->
+            $"'{input}' of Consumer.Embassies.Russian.Midpass endpoint"
+            |> NotSupported
+            |> Error

@@ -4,26 +4,28 @@ open Infrastructure.Domain
 open EA.Telegram.Domain
 
 type Request =
-    | Embassy of Graph.NodeId
     | Embassies
-    | EmbassyService of embassyId: Graph.NodeId * serviceId: Graph.NodeId
+    | Embassy of Graph.NodeId
     | EmbassyServices of Graph.NodeId
+    | EmbassyService of embassyId: Graph.NodeId * serviceId: Graph.NodeId
 
     member this.Value =
         match this with
-        | Embassy id -> [ "00"; id.Value ]
-        | Embassies -> [ "01" ]
-        | EmbassyService(embassyId, serviceId) -> [ "02"; embassyId.Value; serviceId.Value ]
-        | EmbassyServices id -> [ "03"; id.Value ]
+        | Embassies -> [ "0" ]
+        | Embassy id -> [ "1"; id.Value ]
+        | EmbassyServices id -> [ "2"; id.Value ]
+        | EmbassyService(embassyId, serviceId) -> [ "3"; embassyId.Value; serviceId.Value ]
         |> String.concat Constants.Endpoint.DELIMITER
 
-    static member parse(parts: string[]) =
+    static member parse(input: string) =
+        let parts = input.Split Constants.Endpoint.DELIMITER
+
         match parts with
-        | [| "00"; id |] -> id |> Graph.NodeIdValue |> Request.Embassy |> Ok
-        | [| "01" |] -> Embassies |> Ok
-        | [| "02"; embassyId; serviceId |] ->
+        | [| "0" |] -> Embassies |> Ok
+        | [| "1"; id |] -> id |> Graph.NodeIdValue |> Embassy |> Ok
+        | [| "2"; id |] -> id |> Graph.NodeIdValue |> EmbassyServices |> Ok
+        | [| "3"; embassyId; serviceId |] ->
             (embassyId |> Graph.NodeIdValue, serviceId |> Graph.NodeIdValue)
-            |> Request.EmbassyService
+            |> EmbassyService
             |> Ok
-        | [| "03"; id |] -> id |> Graph.NodeIdValue |> Request.EmbassyServices |> Ok
-        | _ -> $"'{parts}' of Embassies.GetRequest endpoint" |> NotSupported |> Error
+        | _ -> $"'{parts}' of Consumer.Embassies.Get endpoint" |> NotSupported |> Error

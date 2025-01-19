@@ -14,7 +14,6 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       CancellationToken: CancellationToken
-      TelegramBot: TelegramBot
       sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>>
       sendResults: Async<Result<Producer.Data list, Error'>> -> Async<Result<unit, Error'>>
       ChatStorage: Chat.ChatStorage
@@ -61,7 +60,6 @@ type Dependencies =
                 { CancellationToken = ct
                   ChatId = dto.ChatId
                   MessageId = dto.Id
-                  TelegramBot = client
                   sendResult = sendResult
                   sendResults = sendResults
                   ChatStorage = chatStorage

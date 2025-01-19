@@ -9,11 +9,12 @@ type Request =
 
     member this.Value =
         match this with
-        | Get r -> r.Value
+        | Get r -> ["0"; r.Value ] |> String.concat Constants.Endpoint.DELIMITER
 
     static member parse(input: string) =
         let parts = input.Split Constants.Endpoint.DELIMITER
+        let remaining = parts[1..] |> String.concat Constants.Endpoint.DELIMITER
 
-        match parts[0][0] with
-        | '0' -> parts |> Get.Request.parse |> Result.map Get
-        | _ -> $"'{input}' of Embassies endpoint" |> NotSupported |> Error
+        match parts[0] with
+        | "0" -> remaining |> Get.Request.parse |> Result.map Get
+        | _ -> $"'{input}' of Consumer.Embassies endpoint" |> NotSupported |> Error

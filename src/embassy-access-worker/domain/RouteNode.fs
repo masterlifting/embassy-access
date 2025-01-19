@@ -1,29 +1,31 @@
 ﻿[<AutoOpen>]
 module internal EA.Worker.Domain.RouteNode
 
-open System
 open Infrastructure.Domain
 open Worker.Domain
 
 type RouteNode =
-    | Name of string
+    | Name of id: Graph.NodeId * name: string
 
     interface Graph.INode with
-        member _.Id = String.Empty |> Graph.NodeIdValue
+        member this.Id =
+            match this with
+            | Name(id, _) -> id
 
         member this.Name =
             match this with
-            | Name name -> name
+            | Name(_, name) -> name
 
-        member _.set(_, name) = Name name
+        member _.set(id, name) = Name(id, name)
 
-    static member register(name, handler) =
+    static member register(nodeId, handler) =
         fun router ->
             let rec innerLoop (node: Graph.Node<RouteNode>) =
                 let handler =
-                    { Name = node.ShortName
+                    { Id = node.ShortId
+                      Name = node.ShortName
                       Handler =
-                        match node.Children.IsEmpty, node.ShortName = name with
+                        match node.Children.IsEmpty, node.ShortId = nodeId with
                         | false, _ -> None
                         | true, false -> None
                         | true, true -> handler |> Some }

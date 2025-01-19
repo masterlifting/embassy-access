@@ -17,7 +17,7 @@ module Kdmid =
 
     type Dependencies =
         { RequestStorage: Request.RequestStorage
-          pickOrder: Request list -> Async<Result<Request, Error' list>> }
+          pickOrder: Request list -> Async<Result<Request option, Error' list>> }
 
         static member create ct (persistenceDeps: Persistence.Dependencies) (webDeps: Web.Dependencies) =
             let result = ResultBuilder()

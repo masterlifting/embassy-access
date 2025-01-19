@@ -2,6 +2,7 @@
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Configuration
+open Worker
 open Worker.DataAccess
 open Worker.Domain
 open EA.Worker
@@ -16,28 +17,30 @@ let main _ =
     Logging.useConsole configuration
 
     let rootTask =
-        { Name = APP_NAME
+        { Id = "WRK" |> Graph.NodeIdValue
+          Name = APP_NAME
           Handler = Initializer.run |> Some }
 
     let workerHandlers = Graph.Node(rootTask, [ Embassies.Russian.register () ])
 
     let getTaskNode handlers =
-        fun name ->
+        fun nodeId ->
             { SectionName = APP_NAME
               Configuration = configuration }
             |> TaskGraph.Configuration
             |> TaskGraph.init
             |> ResultAsync.wrap (TaskGraph.create handlers)
-            |> ResultAsync.map (Graph.DFS.tryFindByName name)
+            |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
             |> ResultAsync.bind (function
                 | Some node -> Ok node
-                | None -> $"'%s{name}' in the configuration" |> NotFound |> Error)
+                | None -> $"Task Id '%s{nodeId.Value}' in the configuration" |> NotFound |> Error)
 
     let workerConfig =
-        { Name = rootTask.Name
+        { RootNodeId = rootTask.Id
+          RootNodeName = rootTask.Name
           Configuration = configuration
           getTaskNode = getTaskNode workerHandlers }
 
-    workerConfig |> Worker.Core.start |> Async.RunSynchronously
+    workerConfig |> Worker.start |> Async.RunSynchronously
 
     0

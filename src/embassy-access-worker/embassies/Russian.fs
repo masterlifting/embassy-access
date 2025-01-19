@@ -8,13 +8,16 @@ open EA.Worker.Domain
 open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies.Russian
 
-let private createEmbassyName (task: WorkerTask) =
+let private createEmbassyId (task: WorkerTask) =
     try
-        task.Name |> Graph.split |> List.skip 1 |> List.take 3 |> Graph.combine |> Ok
+        let value =
+            task.Id.Value |> Graph.split |> List.skip 1 |> List.take 3 |> Graph.combine
+
+        [ "EMB"; value ] |> Graph.combine |> Graph.NodeIdValue |> Ok
     with ex ->
         Error
         <| Operation
-            { Message = $"Create embassy name failed. Error: {ex |> Exception.toMessage}"
+            { Message = $"Getting embassy Id failed. Error: {ex |> Exception.toMessage}"
               Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
     |> async.Return
 
@@ -28,18 +31,22 @@ module private Kdmid =
                 |> ResultAsync.mapError (fun error -> [ error ])
                 |> ResultAsync.bindAsync deps.pickOrder
                 |> ResultAsync.mapError Error'.combine
-                |> ResultAsync.map (fun request -> request.ProcessState |> string |> Info)
+                |> ResultAsync.map (function
+                    | Some request -> request.ProcessState |> string |> Info
+                    | None -> "No requests found to handle." |> Debug)
 
             start
 
     module SearchAppointments =
         open EA.Core.DataAccess
 
+        let ID = "SA" |> Graph.NodeIdValue
+
         [<Literal>]
         let NAME = "Search appointments"
 
-        let setRouteNode city =
-            Graph.Node(Name city, [ Graph.Node(Name NAME, []) ])
+        let setRouteNode (cityId, city) =
+            Graph.Node(Name(cityId |> Graph.NodeIdValue, city), [ Graph.Node(Name(ID, NAME), []) ])
 
         let handle (task: WorkerTask, cfg, ct) =
             Persistence.Dependencies.create cfg
@@ -50,31 +57,33 @@ module private Kdmid =
             |> Result.map createOrder
             |> ResultAsync.wrap (fun startOrder ->
                 task
-                |> createEmbassyName
-                |> ResultAsync.bindAsync (Request.Query.findManyByEmbassyName >> startOrder))
+                |> createEmbassyId
+                |> ResultAsync.bindAsync (Request.Query.findManyByEmbassyId >> startOrder))
 
 let private ROUTER =
 
-    let inline createNode country city =
-        Graph.Node(Name country, [ city |> Kdmid.SearchAppointments.setRouteNode ])
+    let inline createNode (countryId, country) (cityId, city) =
+        Graph.Node(
+            Name(countryId |> Graph.NodeIdValue, country),
+            [ (cityId, city) |> Kdmid.SearchAppointments.setRouteNode ]
+        )
 
     Graph.Node(
-        Name "Russian",
-        [ createNode "Serbia" "Belgrade"
-          createNode "Germany" "Berlin"
-          createNode "France" "Paris"
-          createNode "Montenegro" "Podgorica"
-          createNode "Ireland" "Dublin"
-          createNode "Italy" "Rome"
-          createNode "Switzerland" "Bern"
-          createNode "Finland" "Helsinki"
-          createNode "Netherlands" "Hague"
-          createNode "Albania" "Tirana"
-          createNode "Slovenia" "Ljubljana"
-          createNode "Bosnia" "Sarajevo"
-          createNode "Hungary" "Budapest" ]
+        Name("RU" |> Graph.NodeIdValue, "Russian"),
+        [ createNode ("SRB", "Serbia") ("BG", "Belgrade")
+          createNode ("GER", "Germany") ("BER", "Berlin")
+          createNode ("FRA", "France") ("PAR", "Paris")
+          createNode ("MNE", "Montenegro") ("PDG", "Podgorica")
+          createNode ("IRL", "Ireland") ("DUB", "Dublin")
+          createNode ("SWI", "Switzerland") ("BER", "Bern")
+          createNode ("FIN", "Finland") ("HEL", "Helsinki")
+          createNode ("NLD", "Netherlands") ("HAG", "Hague")
+          createNode ("ALB", "Albania") ("TIR", "Tirana")
+          createNode ("SLO", "Slovenia") ("LJU", "Ljubljana")
+          createNode ("BIH", "Bosnia") ("SAR", "Sarajevo")
+          createNode ("HUN", "Hungary") ("BUD", "Budapest") ]
     )
 
 let register () =
     ROUTER
-    |> RouteNode.register (Kdmid.SearchAppointments.NAME, Kdmid.SearchAppointments.handle)
+    |> RouteNode.register (Kdmid.SearchAppointments.ID, Kdmid.SearchAppointments.handle)

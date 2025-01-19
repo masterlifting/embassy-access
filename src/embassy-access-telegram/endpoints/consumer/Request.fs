@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Endpoints.Consumer.Router
+﻿module EA.Telegram.Endpoints.Consumer.Request
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
@@ -30,4 +30,4 @@ type Request =
             |> Result.map RussianEmbassy
         | "/start" -> Embassies(Embassies.Request.Get(Embassies.Get.Request.Embassies)) |> Ok
         | "/mine" -> Users(Users.Request.Get(Users.Get.Request.UserEmbassies)) |> Ok
-        | _ -> $"'{input}' of Endpoints" |> NotSupported |> Error
+        | _ -> $"'{input}' of Endpoints.Consumer" |> NotSupported |> Error

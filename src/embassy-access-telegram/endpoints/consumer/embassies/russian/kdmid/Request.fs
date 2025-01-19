@@ -1,8 +1,8 @@
-﻿module EA.Telegram.Endpoints.Consumer.Embassies.Russian.Request
+﻿module EA.Telegram.Endpoints.Consumer.Embassies.Russian.Kdmid.Request
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Endpoints.Consumer.Embassies.Russian
+open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Kdmid
 
 type Request =
     | Get of Get.Request
