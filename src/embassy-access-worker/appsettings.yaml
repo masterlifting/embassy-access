@@ -30,7 +30,7 @@ Worker:
         - Id: SRB
           Name: Serbia
           Parallel: true
-          Recursively: 00:01:00
+          Recursively: 00:30:00
           Tasks:
             - Id: BG
               Name: Belgrade
@@ -42,7 +42,7 @@ Worker:
                   Duration: 00:01:00
               Schedule:
                 StartTime: 09:00:00
-                StopTime: 23:59:00
+                StopTime: 17:00:00
                 TimeZone: 1
         - Id: GER
           Name: Germany
