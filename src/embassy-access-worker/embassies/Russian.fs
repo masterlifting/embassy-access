@@ -33,7 +33,7 @@ module private Kdmid =
                 |> ResultAsync.mapError Error'.combine
                 |> ResultAsync.map (function
                     | Some request -> request.ProcessState |> string |> Info
-                    | None -> "No requests found to handle." |> Debug)
+                    | None -> "No requests found to handle." |> Trace)
 
             start
 
@@ -42,11 +42,8 @@ module private Kdmid =
 
         let ID = "SA" |> Graph.NodeIdValue
 
-        [<Literal>]
-        let NAME = "Search appointments"
-
-        let setRouteNode (cityId, city) =
-            Graph.Node(Name(cityId |> Graph.NodeIdValue, city), [ Graph.Node(Name(ID, NAME), []) ])
+        let setRouteNode cityId =
+            Graph.Node(Id(cityId |> Graph.NodeIdValue), [ Graph.Node(Id ID, []) ])
 
         let handle (task: WorkerTask, cfg, ct) =
             Persistence.Dependencies.create cfg
@@ -62,26 +59,23 @@ module private Kdmid =
 
 let private ROUTER =
 
-    let inline createNode (countryId, country) (cityId, city) =
-        Graph.Node(
-            Name(countryId |> Graph.NodeIdValue, country),
-            [ (cityId, city) |> Kdmid.SearchAppointments.setRouteNode ]
-        )
+    let inline createNode countryId cityId =
+        Graph.Node(Id(countryId |> Graph.NodeIdValue), [ cityId |> Kdmid.SearchAppointments.setRouteNode ])
 
     Graph.Node(
-        Name("RU" |> Graph.NodeIdValue, "Russian"),
-        [ createNode ("SRB", "Serbia") ("BG", "Belgrade")
-          createNode ("GER", "Germany") ("BER", "Berlin")
-          createNode ("FRA", "France") ("PAR", "Paris")
-          createNode ("MNE", "Montenegro") ("PDG", "Podgorica")
-          createNode ("IRL", "Ireland") ("DUB", "Dublin")
-          createNode ("SWI", "Switzerland") ("BER", "Bern")
-          createNode ("FIN", "Finland") ("HEL", "Helsinki")
-          createNode ("NLD", "Netherlands") ("HAG", "Hague")
-          createNode ("ALB", "Albania") ("TIR", "Tirana")
-          createNode ("SLO", "Slovenia") ("LJU", "Ljubljana")
-          createNode ("BIH", "Bosnia") ("SAR", "Sarajevo")
-          createNode ("HUN", "Hungary") ("BUD", "Budapest") ]
+        Id("RU" |> Graph.NodeIdValue),
+        [ createNode "SRB" "BG"
+          createNode "GER" "BER"
+          createNode "FRA" "PAR"
+          createNode "MNE" "PDG"
+          createNode "IRL" "DUB"
+          createNode "SWI" "BER"
+          createNode "FIN" "HEL"
+          createNode "NLD" "HAG"
+          createNode "ALB" "TIR"
+          createNode "SLO" "LJU"
+          createNode "BIH" "SAR"
+          createNode "HUN" "BUD" ]
     )
 
 let register () =

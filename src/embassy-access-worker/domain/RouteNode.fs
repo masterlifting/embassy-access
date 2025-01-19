@@ -5,18 +5,16 @@ open Infrastructure.Domain
 open Worker.Domain
 
 type RouteNode =
-    | Name of id: Graph.NodeId * name: string
+    | Id of Graph.NodeId
 
     interface Graph.INode with
         member this.Id =
             match this with
-            | Name(id, _) -> id
+            | Id value -> value
 
-        member this.Name =
-            match this with
-            | Name(_, name) -> name
+        member this.Name = System.String.Empty
 
-        member _.set(id, name) = Name(id, name)
+        member _.set(id, _) = Id id
 
     static member register(nodeId, handler) =
         fun router ->

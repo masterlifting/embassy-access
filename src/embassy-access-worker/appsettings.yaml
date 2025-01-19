@@ -26,9 +26,9 @@ Worker:
       Parallel: true
       Recursively: 00:01:00
       Schedule:
-        StartTime: 09:00:00
+        StartTime: 04:00:00
         StopTime: 16:30:00
-        Workdays: mon,tue,wed,thu,fri
+        Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
         - Id: SRB
           Name: Serbia
