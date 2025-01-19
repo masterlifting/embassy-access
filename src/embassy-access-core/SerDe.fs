@@ -1,82 +1,82 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.SerDe
+module EA.Core.SerDe
 
 open Infrastructure
-open EA.Domain
+open EA.Core.Domain
 
 module City =
     //ISO 3166-1 alpha-3
     module private Code =
         [<Literal>]
-        let Belgrade = "BEG"
+        let BELGRADE = "BEG"
 
         [<Literal>]
-        let Berlin = "BER"
+        let BERLIN = "BER"
 
         [<Literal>]
-        let Budapest = "BUD"
+        let BUDAPEST = "BUD"
 
         [<Literal>]
-        let Sarajevo = "SJJ"
+        let SARAJEVO = "SJJ"
 
         [<Literal>]
-        let Podgorica = "TGD"
+        let PODGORICA = "TGD"
 
         [<Literal>]
-        let Tirana = "TIA"
+        let TIRANA = "TIA"
 
         [<Literal>]
-        let Paris = "PAR"
+        let PARIS = "PAR"
 
         [<Literal>]
-        let Rome = "ROM"
+        let ROME = "ROM"
 
         [<Literal>]
-        let Dublin = "DUB"
+        let DUBLIN = "DUB"
 
         [<Literal>]
-        let Bern = "BRN"
+        let BERN = "BRN"
 
         [<Literal>]
-        let Helsinki = "HEL"
+        let HELSINKI = "HEL"
 
         [<Literal>]
-        let Hague = "HAG"
+        let HAGUE = "HAG"
 
         [<Literal>]
-        let Ljubljana = "LJU"
+        let LJUBLJANA = "LJU"
 
     let serialize city =
         match city with
-        | Belgrade -> Code.Belgrade
-        | Berlin -> Code.Berlin
-        | Budapest -> Code.Budapest
-        | Sarajevo -> Code.Sarajevo
-        | Podgorica -> Code.Podgorica
-        | Tirana -> Code.Tirana
-        | Paris -> Code.Paris
-        | Rome -> Code.Rome
-        | Dublin -> Code.Dublin
-        | Bern -> Code.Bern
-        | Helsinki -> Code.Helsinki
-        | Hague -> Code.Hague
-        | Ljubljana -> Code.Ljubljana
+        | Belgrade -> Code.BELGRADE
+        | Berlin -> Code.BERLIN
+        | Budapest -> Code.BUDAPEST
+        | Sarajevo -> Code.SARAJEVO
+        | Podgorica -> Code.PODGORICA
+        | Tirana -> Code.TIRANA
+        | Paris -> Code.PARIS
+        | Rome -> Code.ROME
+        | Dublin -> Code.DUBLIN
+        | Bern -> Code.BERN
+        | Helsinki -> Code.HELSINKI
+        | Hague -> Code.HAGUE
+        | Ljubljana -> Code.LJUBLJANA
 
     let deserialize city =
         match city with
-        | Code.Belgrade -> Ok Belgrade
-        | Code.Berlin -> Ok Berlin
-        | Code.Budapest -> Ok Budapest
-        | Code.Sarajevo -> Ok Sarajevo
-        | Code.Podgorica -> Ok Podgorica
-        | Code.Tirana -> Ok Tirana
-        | Code.Paris -> Ok Paris
-        | Code.Rome -> Ok Rome
-        | Code.Dublin -> Ok Dublin
-        | Code.Bern -> Ok Bern
-        | Code.Helsinki -> Ok Helsinki
-        | Code.Hague -> Ok Hague
-        | Code.Ljubljana -> Ok Ljubljana
+        | Code.BELGRADE -> Ok Belgrade
+        | Code.BERLIN -> Ok Berlin
+        | Code.BUDAPEST -> Ok Budapest
+        | Code.SARAJEVO -> Ok Sarajevo
+        | Code.PODGORICA -> Ok Podgorica
+        | Code.TIRANA -> Ok Tirana
+        | Code.PARIS -> Ok Paris
+        | Code.ROME -> Ok Rome
+        | Code.DUBLIN -> Ok Dublin
+        | Code.BERN -> Ok Bern
+        | Code.HELSINKI -> Ok Helsinki
+        | Code.HAGUE -> Ok Hague
+        | Code.LJUBLJANA -> Ok Ljubljana
         | _ ->
             Error
             <| NotSupported $"{city}. {ErrorReason.buildLine (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__)}"
@@ -84,64 +84,68 @@ module City =
 module Country =
 
     [<Literal>]
-    let private Delimiter = ","
+    let private DELIMITER = ","
 
     //ISO 3166-1 alpha-3
     module private Code =
         [<Literal>]
-        let Serbia = "SRB"
+        let SERBIA = "SRB"
 
         [<Literal>]
-        let Germany = "DEU"
+        let GERMANY = "DEU"
 
         [<Literal>]
-        let Bosnia = "BIH"
+        let BOSNIA = "BIH"
 
         [<Literal>]
-        let Montenegro = "MNE"
+        let MONTENEGRO = "MNE"
 
         [<Literal>]
-        let Albania = "ALB"
+        let ALBANIA = "ALB"
 
         [<Literal>]
-        let Hungary = "HUN"
+        let HUNGARY = "HUN"
 
         [<Literal>]
-        let Ireland = "IRL"
+        let IRELAND = "IRL"
 
         [<Literal>]
-        let Switzerland = "CHE"
+        let SWITZERLAND = "CHE"
 
         [<Literal>]
-        let Finland = "FIN"
+        let FINLAND = "FIN"
 
         [<Literal>]
-        let France = "FRA"
+        let FRANCE = "FRA"
 
         [<Literal>]
-        let Netherlands = "NLD"
+        let NETHERLANDS = "NLD"
 
         [<Literal>]
-        let Slovenia = "SLO"
+        let SLOVENIA = "SLO"
+
+        [<Literal>]
+        let ITALY = "ITA"
 
     let serialize country =
         match country with
-        | Serbia(city) -> (Code.Serbia, city)
-        | Germany(city) -> (Code.Germany, city)
-        | Bosnia(city) -> (Code.Bosnia, city)
-        | Montenegro(city) -> (Code.Montenegro, city)
-        | Albania(city) -> (Code.Albania, city)
-        | Hungary(city) -> (Code.Hungary, city)
-        | Ireland(city) -> (Code.Ireland, city)
-        | Switzerland(city) -> (Code.Switzerland, city)
-        | Finland(city) -> (Code.Finland, city)
-        | France(city) -> (Code.France, city)
-        | Netherlands(city) -> (Code.Netherlands, city)
-        | Slovenia(city) -> (Code.Slovenia, city)
-        |> fun (country, city) -> country + Delimiter + City.serialize city
+        | Serbia city -> (Code.SERBIA, city)
+        | Germany city -> (Code.GERMANY, city)
+        | Bosnia city -> (Code.BOSNIA, city)
+        | Montenegro city -> (Code.MONTENEGRO, city)
+        | Albania city -> (Code.ALBANIA, city)
+        | Hungary city -> (Code.HUNGARY, city)
+        | Ireland city -> (Code.IRELAND, city)
+        | Switzerland city -> (Code.SWITZERLAND, city)
+        | Finland city -> (Code.FINLAND, city)
+        | France city -> (Code.FRANCE, city)
+        | Netherlands city -> (Code.NETHERLANDS, city)
+        | Slovenia city -> (Code.SLOVENIA, city)
+        | Italy city -> (Code.ITALY, city)
+        |> fun (country, city) -> country + DELIMITER + City.serialize city
 
     let deserialize (value: string) =
-        let parts = value.Split Delimiter
+        let parts = value.Split DELIMITER
 
         match parts.Length with
         | 2 ->
@@ -152,18 +156,18 @@ module Country =
             |> City.deserialize
             |> Result.bind (fun city ->
                 match country with
-                | Code.Serbia -> Ok <| Serbia city
-                | Code.Germany -> Ok <| Germany city
-                | Code.Bosnia -> Ok <| Bosnia city
-                | Code.Montenegro -> Ok <| Montenegro city
-                | Code.Albania -> Ok <| Albania city
-                | Code.Hungary -> Ok <| Hungary city
-                | Code.Ireland -> Ok <| Ireland city
-                | Code.Switzerland -> Ok <| Switzerland city
-                | Code.Finland -> Ok <| Finland city
-                | Code.France -> Ok <| France city
-                | Code.Netherlands -> Ok <| Netherlands city
-                | Code.Slovenia -> Ok <| Slovenia city
+                | Code.SERBIA -> Ok <| Serbia city
+                | Code.GERMANY -> Ok <| Germany city
+                | Code.BOSNIA -> Ok <| Bosnia city
+                | Code.MONTENEGRO -> Ok <| Montenegro city
+                | Code.ALBANIA -> Ok <| Albania city
+                | Code.HUNGARY -> Ok <| Hungary city
+                | Code.IRELAND -> Ok <| Ireland city
+                | Code.SWITZERLAND -> Ok <| Switzerland city
+                | Code.FINLAND -> Ok <| Finland city
+                | Code.FRANCE -> Ok <| France city
+                | Code.NETHERLANDS -> Ok <| Netherlands city
+                | Code.SLOVENIA -> Ok <| Slovenia city
                 | _ ->
                     Error
                     <| NotSupported
@@ -175,56 +179,56 @@ module Country =
 module Embassy =
 
     [<Literal>]
-    let private Delimiter = ","
+    let private DELIMITER = ","
 
     //ISO 3166-1 alpha-2
     module private Code =
         [<Literal>]
-        let Russian = "RU"
+        let RUSSIAN = "RU"
 
         [<Literal>]
-        let Spanish = "ES"
+        let SPANISH = "ES"
 
         [<Literal>]
-        let Italian = "IT"
+        let ITALIAN = "IT"
 
         [<Literal>]
-        let French = "FR"
+        let FRENCH = "FR"
 
         [<Literal>]
-        let German = "DE"
+        let GERMAN = "DE"
 
         [<Literal>]
-        let British = "GB"
+        let BRITISH = "GB"
 
     let serialize embassy =
         match embassy with
-        | Russian(country) -> (Code.Russian, country)
-        | Spanish(country) -> (Code.Spanish, country)
-        | Italian(country) -> (Code.Italian, country)
-        | French(country) -> (Code.French, country)
-        | German(country) -> (Code.German, country)
-        | British(country) -> (Code.British, country)
-        |> fun (embassy, country) -> embassy + Delimiter + Country.serialize country
+        | Russian country -> (Code.RUSSIAN, country)
+        | Spanish country -> (Code.SPANISH, country)
+        | Italian country -> (Code.ITALIAN, country)
+        | French country -> (Code.FRENCH, country)
+        | German country -> (Code.GERMAN, country)
+        | British country -> (Code.BRITISH, country)
+        |> fun (embassy, country) -> embassy + DELIMITER + Country.serialize country
 
     let deserialize (value: string) =
-        let parts = value.Split Delimiter
+        let parts = value.Split DELIMITER
 
         match parts.Length > 1 with
         | true ->
             let embassy = parts[0]
-            let countryValue = parts[1..] |> String.concat Delimiter
+            let countryValue = parts[1..] |> String.concat DELIMITER
 
             countryValue
             |> Country.deserialize
             |> Result.bind (fun country ->
                 match embassy with
-                | Code.Russian -> Ok <| Russian country
-                | Code.Spanish -> Ok <| Spanish country
-                | Code.Italian -> Ok <| Italian country
-                | Code.French -> Ok <| French country
-                | Code.German -> Ok <| German country
-                | Code.British -> Ok <| British country
+                | Code.RUSSIAN -> Ok <| Russian country
+                | Code.SPANISH -> Ok <| Spanish country
+                | Code.ITALIAN -> Ok <| Italian country
+                | Code.FRENCH -> Ok <| French country
+                | Code.GERMAN -> Ok <| German country
+                | Code.BRITISH -> Ok <| British country
                 | _ ->
                     Error
                     <| NotSupported

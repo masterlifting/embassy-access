@@ -2,202 +2,445 @@
 
 Logging:
   LogLevel:
-    Default: Information
+    Default: Debug
 
 Persistence:
-  FileSystem: "/usr/src/embassy-access-data"
-
-Workdays: &Workdays
-  StartTime: '09:00:00'
-  StopTime: '16:30:00'
-  Workdays: mon,tue,wed,thu,fri
+  FileSystem: ../../../data
 
 SearchAppointments: &SearchAppointments
-  Name: Search appointments
-  Enabled: true
-  Wait: false
-  Duration: '00:02:00'
-
-MakeAppointments: &MakeAppointments
-  Name: Make appointments
-  Enabled: false
-  Wait: false
-  Duration: '00:03:00'
-
-RussianTask: &RussianTask
-  Name: Russian
-  Recursively: '00:25:00'
-  Parallel: true
+  - Id: SA
+    Name: Search appointments
+    Enabled: false
+    Wait: false
+    Duration: 00:01:00
 
 Worker:
+  Id: WRK
   Name: Worker
   Enabled: true
-  Wait: false
+  Wait: true
+  Schedule:
   Tasks:
-    - Name: Serbia
+    - Id: RU
+      Name: Russian
       Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
-        - Name: Belgrade
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BG
+              Name: Belgrade
+              Parallel: true
+              Tasks:
+                - Id: SA
+                  Name: Search appointments
+                  Enabled: true
+                  Duration: 00:01:00
+              Schedule:
+                StartTime: 09:00:00
+                StopTime: 23:59:00
+                TimeZone: 1
+        - Id: GER
+          Name: Germany
           Parallel: true
           Tasks:
-            - <<: *RussianTask
+            - Id: BER
+              Name: Berlin
+              Parallel: true
               Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 1
+        - Id: FRA
+          Name: France
+          Parallel: true
+          Tasks:
+            - Id: PAR
+              Name: Paris
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 1
+        - Id: MNE
+          Name: Montenegro
+          Parallel: true
+          Tasks:
+            - Id: PDG
+              Name: Podgorica
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 1
+        - Id: IRL
+          Name: Ireland
+          Parallel: true
+          Tasks:
+            - Id: DUB
+              Name: Dublin
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 0
+        - Id: SWI
+          Name: Switzerland
+          Parallel: true
+          Tasks:
+            - Id: BER
+              Name: Bern
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 1
+        - Id: FIN
+          Name: Finland
+          Parallel: true
+          Tasks:
+            - Id: HEL
+              Name: Helsinki
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 2
+        - Id: NLD
+          Name: Netherlands
+          Parallel: true
+          Tasks:
+            - Id: HAG
+              Name: Hague
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 1
+        - Id: ALB
+          Name: Albania
+          Parallel: true
+          Tasks:
+            - Id: TIR
+              Name: Tirana
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 1
+        - Id: SLO
+          Name: Slovenia
+          Parallel: true
+          Tasks:
+            - Id: LJU
+              Name: Ljubljana
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 1
+        - Id: BIH
+          Name: Bosnia
+          Parallel: true
+          Tasks:
+            - Id: SAR
+              Name: Sarajevo
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 1
+        - Id: HUN
+          Name: Hungary
+          Parallel: true
+          Tasks:
+            - Id: BUD
+              Name: Budapest
+              Parallel: true
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 1
 
-    - Name: Germany
-      Parallel: true
-      Tasks:
-        - Name: Berlin
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
+Embassies:
+  Id: EMB
+  Name: Посольства
+  Description: Выберите посольство, которое вы хотите посетить
+  Children:
+    - Id: RU
+      Name: Российское
+      Description: В какой стране находится российское посольство?
+      Children:
+        - Id: SRB
+          Name: Сербия
+          Description: В каком городе Сербии находится российское посольство?
+          Children:
+            - Id: BG
+              Name: Белград
+        - Id: GER
+          Name: Германия
+          Description: В каком городе Германии находится российское посольство?
+          Children:
+            - Id: BER
+              Name: Берлин
+            - Id: MUN
+              Name: Мюнхен
+        - Id: FRA
+          Name: Франция
+          Description: В каком городе Франции находится российское посольство?
+          Children:
+            - Id: PAR
+              Name: Париж
+        - Id: ITA
+          Name: Италия
+          Description: В каком городе Италии находится российское посольство?
+          Children:
+            - Id: ROM
+              Name: Рим
+            - Id: MIL
+              Name: Милан
+        - Id: ESP
+          Name: Испания
+          Description: В каком городе Испании находится российское посольство?
+          Children:
+            - Id: MAD
+              Name: Мадрид
+        - Id: CZE
+          Name: Чехия
+          Description: В каком городе Чехии находится российское посольство?
+          Children:
+            - Id: PRG
+              Name: Прага
+        - Id: POL
+          Name: Польша
+          Description: В каком городе Польши находится российское посольство?
+          Children:
+            - Id: WAR
+              Name: Варшава
+        - Id: SWI
+          Name: Швейцария
+          Description: В каком городе Швейцарии находится российское посольство?
+          Children:
+            - Id: BER
+              Name: Берн
+        - Id: UK
+          Name: Великобритания
+          Description: В каком городе Великобритании находится российское посольство?
+          Children:
+            - Id: LON
+              Name: Лондон
+        - Id: CHN
+          Name: Китай
+          Description: В каком городе Китая находится российское посольство?
+          Children:
+            - Id: BJ
+              Name: Пекин
+            - Id: SH
+              Name: Шанхай
+            - Id: GZ
+              Name: Гуанчжоу
+        - Id: USA
+          Name: США
+          Description: В каком городе США находится российское посольство?
+          Children:
+            - Id: DC
+              Name: Вашингтон
+            - Id: NY
+              Name: Нью-Йорк
+        - Id: IN
+          Name: Индия
+          Description: В каком городе Индии находится российское посольство?
+          Children:
+            - Id: DL
+              Name: Нью-Дели
+            - Id: MUM
+              Name: Мумбаи
+        - Id: JP
+          Name: Япония
+          Description: В каком городе Японии находится российское посольство?
+          Children:
+            - Id: TK
+              Name: Токио
+        - Id: EG
+          Name: Египет
+          Description: В каком городе Египта находится российское посольство?
+          Children:
+            - Id: CA
+              Name: Каир
+        - Id: BR
+          Name: Бразилия
+          Description: В каком городе Бразилии находится российское посольство?
+          Children:
+            - Id: BSB
+              Name: Бразилиа
+            - Id: SP
+              Name: Сан-Паулу
+        - Id: AU
+          Name: Австралия
+          Description: В каком городе Австралии находится российское посольство?
+          Children:
+            - Id: CB
+              Name: Канберра
+        - Id: KOR
+          Name: Южная Корея
+          Description: В каком городе Южной Кореи находится российское посольство?
+          Children:
+            - Id: SEO
+              Name: Сеул
+        - Id: THA
+          Name: Таиланд
+          Description: В каком городе Таиланда находится российское посольство?
+          Children:
+            - Id: BKK
+              Name: Бангкок
+        - Id: SGP
+          Name: Сингапур
+          Description: В каком городе Сингапура находится российское посольство?
+          Children:
+            - Id: SGP
+              Name: Сингапур
+        - Id: SA
+          Name: Саудовская Аравия
+          Description: В каком городе Саудовской Аравии находится российское посольство?
+          Children:
+            - Id: RD
+              Name: Эр-Рияд
+        - Id: ZA
+          Name: Южная Африка
+          Description: В каком городе Южной Африки находится российское посольство?
+          Children:
+            - Id: PTA
+              Name: Претория
+    - Id: DE
+      Name: Немецкое
+      Description: Выберите посольство
+      Children:
+        - Id: ESP
+          Name: Испания
+          Description: В каком городе Испании находится немецкое посольство?
+          Children:
+            - Id: MAD
+              Name: Мадрид
+        - Id: ITA
+          Name: Италия
+          Description: В каком городе Италии находится немецкое посольство?
+          Children:
+            - Id: ROM
+              Name: Рим
+    - Id: IT
+      Name: Итальянское
+      Description: Выберите посольство
+      Children:
+        - Id: GRE
+          Name: Греция
+          Description: В каком городе Греции находится итальянское посольство?
+          Children:
+            - Id: ATH
+              Name: Афины
+        - Id: UKR
+          Name: Украина
+          Description: В каком городе Украины находится итальянское посольство?
+          Children:
+            - Id: KYIV
+              Name: Киев
+    - Id: UK
+      Name: Британское
+      Description: Выберите посольство
+      Children:
+        - Id: POL
+          Name: Польша
+          Description: В каком городе Польши находится британское посольство?
+          Children:
+            - Id: WAR
+              Name: Варшава
+        - Id: CZE
+          Name: Чехия
+          Description: В каком городе Чехии находится британское посольство?
+          Children:
+            - Id: PRG
+              Name: Прага
+    - Id: FR
+      Name: Французское
+      Description: Выберите посольство
+      Children:
+        - Id: BEL
+          Name: Бельгия
+          Description: В каком городе Бельгии находится французское посольство?
+          Children:
+            - Id: BRU
+              Name: Брюссель
+        - Id: GER
+          Name: Германия
+          Description: В каком городе Германии находится французское посольство?
+          Children:
+            - Id: BER
+              Name: Берлин
 
-    - Name: France
-      Parallel: true
-      Tasks:
-        - Name: Paris
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
+KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
+  Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email после регистрации заявки на сайте, после символа | в вышеуказанную команду и отправьте ее в чат.
 
-    - Name: Montenegro
-      Parallel: true
-      Tasks:
-        - Name: Podgorica
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
+KdmidRussianServices: &KdmidRussianServices
+  - Id: "0"
+    Name: Проверить наличие слотов сейчас
+    <<: *KdmidRussianServicesInstructions
+  - Id: "1"
+    Name: Получить доступные слоты как только они появятся
+    <<: *KdmidRussianServicesInstructions
+  - Id: "2"
+    Name: Автоматическая запись и поиск слотов
+    Description: Автоматическая запись и поиск слотов
+    Children:
+      - Id: "0"
+        Name: Автоматически записаться на первый доступный слот
+        <<: *KdmidRussianServicesInstructions
+      - Id: "1"
+        Name: Автоматически записаться на последний доступный слот
+        <<: *KdmidRussianServicesInstructions
+      - Id: "2"
+        Name: Автоматически записаться на слот в указанный период
+        Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email после регистрации заявки на сайте, после символа | в вышеуказанную команду и отправьте ее в чат. Так же измените дату и время начала и конца периодаю
 
-    - Name: Ireland
-      Parallel: true
-      Tasks:
-        - Name: Dublin
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 0
-            <<: *Workdays
-
-    - Name: Switzerland
-      Parallel: true
-      Tasks:
-        - Name: Bern
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
-
-    - Name: Finland
-      Parallel: true
-      Tasks:
-        - Name: Helsinki
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 2
-            <<: *Workdays
-
-    - Name: Netherlands
-      Parallel: true
-      Tasks:
-        - Name: Hague
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
-
-    - Name: Albania
-      Parallel: true
-      Tasks:
-        - Name: Tirana
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
-
-    - Name: Slovenia
-      Parallel: true
-      Tasks:
-        - Name: Ljubljana
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
-
-    - Name: Bosnia
-      Parallel: true
-      Tasks:
-        - Name: Sarajevo
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
-
-    - Name: Hungary
-      Parallel: true
-      Tasks:
-        - Name: Budapest
-          Parallel: true
-          Tasks:
-            - <<: *RussianTask
-              Tasks:
-                - <<: *SearchAppointments
-                - <<: *MakeAppointments
-          Schedule:
-            TimeShift: 1
-            <<: *Workdays
+Services:
+  Id: SRV
+  Name: Услуги
+  Description: Выберите услугу посольства
+  Children:
+    - Id: RU
+      Name: Посольство РФ
+      Description: Выберите услугу посольства РФ
+      Children:
+        - Id: "0"
+          Name: Паспорт
+          Description: Выберите услугу по паспорту посольства РФ
+          Children:
+            - Id: "0"
+              Name: Выпуск заграничного паспорта
+              Description: Выберите услугу по выпуску заграничного паспорта посольства РФ
+              Children:
+                <<: *KdmidRussianServices
+            - Id: "1"
+              Name: Проверка готовности паспорта
+              Instruction: Что бы воспользоваться услугой, добавьте номер справки, которую вы получили после подачи документов, после символа | в вышеуказанную команду и отправьте ее в чат.
+        - Id: "1"
+          Name: Нотариат
+          Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
+          Description: Выберите услугу нотариата посольства РФ
+          Children:
+            - Id: "0"
+              Name: Доверенность
+              Description: Выберите услугу доверенности посольства РФ
+              Children:
+                <<: *KdmidRussianServices
+        - Id: "2"
+          Name: Гражданство
+          Description: Выберите услугу гражданства посольства РФ
+          Children:
+            - Id: "0"
+              Name: Отказ от гражданства
+              Description: Выберите услугу отказа от гражданства посольства РФ
+              Children:
+                <<: *KdmidRussianServices

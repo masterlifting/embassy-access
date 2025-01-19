@@ -1,6 +1,14 @@
 ﻿open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
+open Persistence.Configuration
+open Worker
+open Worker.DataAccess
 open Worker.Domain
 open EA.Worker
+
+[<Literal>]
+let private APP_NAME = "Worker"
 
 [<EntryPoint>]
 let main _ =
@@ -9,31 +17,30 @@ let main _ =
     Logging.useConsole configuration
 
     let rootTask =
-        { Name = Settings.AppName
-          Task = Some Initializer.initialize }
+        { Id = "WRK" |> Graph.NodeIdValue
+          Name = APP_NAME
+          Handler = Initializer.run |> Some }
 
-    let taskHandlers =
-        Graph.Node(
-            rootTask,
-            [ Countries.Albania.Tasks
-              Countries.Bosnia.Tasks
-              Countries.Finland.Tasks
-              Countries.France.Tasks
-              Countries.Germany.Tasks
-              Countries.Hungary.Tasks
-              Countries.Ireland.Tasks
-              Countries.Montenegro.Tasks
-              Countries.Netherlands.Tasks
-              Countries.Serbia.Tasks
-              Countries.Slovenia.Tasks
-              Countries.Switzerland.Tasks ]
-        )
+    let workerHandlers = Graph.Node(rootTask, [ Embassies.Russian.register () ])
+
+    let getTaskNode handlers =
+        fun nodeId ->
+            { SectionName = APP_NAME
+              Configuration = configuration }
+            |> TaskGraph.Configuration
+            |> TaskGraph.init
+            |> ResultAsync.wrap (TaskGraph.create handlers)
+            |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
+            |> ResultAsync.bind (function
+                | Some node -> Ok node
+                | None -> $"Task Id '%s{nodeId.Value}' in the configuration" |> NotFound |> Error)
 
     let workerConfig =
-        { Name = rootTask.Name
+        { RootNodeId = rootTask.Id
+          RootNodeName = rootTask.Name
           Configuration = configuration
-          getTask = configuration |> Settings.getTask taskHandlers }
+          getTaskNode = getTaskNode workerHandlers }
 
-    workerConfig |> Worker.Core.start |> Async.RunSynchronously
+    workerConfig |> Worker.start |> Async.RunSynchronously
 
     0
