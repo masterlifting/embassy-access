@@ -42,7 +42,7 @@ Worker:
                   Duration: 00:01:00
               Schedule:
                 StartTime: 09:00:00
-                StopTime: 20:30:00
+                StopTime: 23:59:00
                 TimeZone: 1
         - Id: GER
           Name: Germany

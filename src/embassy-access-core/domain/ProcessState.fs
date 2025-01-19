@@ -13,5 +13,5 @@ type ProcessState =
         match this with
         | Ready -> "Ready"
         | InProcess -> "InProcess"
-        | Completed value -> $"Completed: {value}"
+        | Completed message -> $"Completed: {message}"
         | Failed error -> $"Failed: {error.Message}"

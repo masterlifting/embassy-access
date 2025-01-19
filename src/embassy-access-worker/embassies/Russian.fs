@@ -38,31 +38,42 @@ module private Kdmid =
                 requests
                 |> Seq.groupBy _.Service.Id.Value
                 |> Seq.map (fun (_, requests) ->
-                    requests |> Seq.truncate 5 |> Seq.toList |> handleGroup deps.pickOrder))
+                    requests
+                    |> Seq.sortByDescending _.Modified
+                    |> Seq.truncate 5
+                    |> Seq.toList
+                    |> handleGroup deps.pickOrder))
             |> ResultAsync.map (Async.Parallel >> Async.map Result.unzip)
-            |> Async.map (function
+            |> Async.bind (function
                 | Error error -> Error error |> async.Return
                 | Ok value ->
                     value
                     |> Async.map (fun (messages, errors) ->
                         let messages =
                             messages
-                            |> List.map (fun message -> $"Message: {message}")
-                            |> String.concat ", "
+                            |> List.mapi (fun i message -> $"{i + 1}. {message}")
+                            |> String.concat Environment.NewLine
+                            |> function
+                                | AP.IsString x -> Environment.NewLine + x |> Some
+                                | _ -> None
 
                         let errors =
                             errors
                             |> List.map _.Message
                             |> List.mapi (fun i message -> $"{i + 1}. {message}")
                             |> String.concat Environment.NewLine
+                            |> function
+                                | AP.IsString x -> Environment.NewLine + x |> Some
+                                | _ -> None
 
-                        let result =
-                            if System.String.IsNullOrWhiteSpace errors then
-                                messages
-                            else
-                                $"{messages}, {errors}"
-
-                        result |> Info |> Ok))
+                        match messages, errors with
+                        | Some messages, Some errors ->
+                            $"{Environment.NewLine}Valid results:{messages}{Environment.NewLine}Invalid results{errors}"
+                            |> Warn
+                        | Some messages, None -> $"{Environment.NewLine}Valid results:{messages}" |> Info
+                        | None, Some errors -> $"{Environment.NewLine}Invalid results:{errors}" |> Warn
+                        | None, None -> "No results found." |> Trace
+                        |> Ok))
 
     module SearchAppointments =
         let ID = "SA" |> Graph.NodeIdValue
