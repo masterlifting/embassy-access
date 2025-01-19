@@ -8,3 +8,10 @@ type ProcessState =
     | InProcess
     | Completed of string
     | Failed of Error'
+    
+    member this.Message =
+        match this with
+        | Ready -> "Ready"
+        | InProcess -> "InProcess"
+        | Completed value -> $"Completed: {value}"
+        | Failed error -> $"Failed: {error.Message}"

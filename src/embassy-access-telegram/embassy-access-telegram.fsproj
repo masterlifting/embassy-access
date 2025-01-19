@@ -16,7 +16,7 @@
         <Compile Include="dependencies\consumer\embassies\Embassies.fs" />
         <Compile Include="dependencies\consumer\Users.fs" />
         <Compile Include="dependencies\producer\Producer.fs" />
-        <Compile Include="dependencies\producer\embassies\RussianEmbassy.fs" />
+        <Compile Include="dependencies\producer\embassies\russian\Kdmid.fs" />
         <Compile Include="endpoints\consumer\users\Get.fs" />
         <Compile Include="endpoints\consumer\users\Request.fs" />
         <Compile Include="endpoints\consumer\embassies\Get.fs" />
@@ -44,7 +44,7 @@
         <Compile Include="controllers\consumer\embassies\russian\Kdmid.fs" />
         <Compile Include="controllers\consumer\embassies\russian\Midpass.fs" />
         <Compile Include="controllers\consumer\embassies\russian\Russian.fs" />
-        <Compile Include="controllers\consumer\Consumer.fs" />
+        <Compile Include="controllers\consumer\Controller.fs" />
         <Compile Include="Consumer.fs" />
     </ItemGroup>
 

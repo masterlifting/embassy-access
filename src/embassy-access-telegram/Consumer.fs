@@ -15,13 +15,13 @@ module private Consume =
         fun deps ->
             value
             |> Request.parse
-            |> ResultAsync.wrap (fun request -> deps |> Consumer.respond request)
+            |> ResultAsync.wrap (fun request -> deps |> Controller.respond request)
 
     let callback value =
         fun deps ->
             value
             |> Request.parse
-            |> ResultAsync.wrap (fun request -> deps |> Consumer.respond request)
+            |> ResultAsync.wrap (fun request -> deps |> Controller.respond request)
 
 let consume data =
     fun client cfg ct ->

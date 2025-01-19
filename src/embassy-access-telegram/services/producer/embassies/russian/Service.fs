@@ -2,7 +2,7 @@
 
 open Infrastructure.Prelude
 open EA.Core.Domain
-open EA.Telegram.Dependencies.Producer.Embassies.RussianEmbassy
+open EA.Telegram.Dependencies.Producer.Embassies.Russian
 
 module Kdmid =
     open EA.Telegram.Services.Embassies.Russian.Service.Kdmid

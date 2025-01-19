@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Controllers.Consumer.Consumer
+module EA.Telegram.Controllers.Consumer.Controller
 
 open EA.Telegram.Controllers.Consumer.Embassies
 open EA.Telegram.Controllers.Consumer.Embassies.Russian

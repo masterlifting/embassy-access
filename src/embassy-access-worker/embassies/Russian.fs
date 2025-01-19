@@ -1,5 +1,6 @@
 ﻿module internal EA.Worker.Embassies.Russian
 
+open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Worker.Domain
@@ -19,48 +20,72 @@ let private createEmbassyId (task: WorkerTask) =
         <| Operation
             { Message = $"Getting embassy Id failed. Error: {ex |> Exception.toMessage}"
               Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
-    |> async.Return
 
 module private Kdmid =
 
-    let createOrder =
-        fun (deps: Kdmid.Dependencies) ->
-            let start getRequests =
-                deps.RequestStorage
-                |> getRequests
-                |> ResultAsync.mapError (fun error -> [ error ])
-                |> ResultAsync.bindAsync deps.pickOrder
-                |> ResultAsync.mapError Error'.combine
-                |> ResultAsync.map (function
-                    | Some request -> request.ProcessState |> string |> Info
-                    | None -> "No requests found to handle." |> Trace)
+    let private handleGroup pickOrder requests =
+        requests
+        |> pickOrder
+        |> ResultAsync.mapError Error'.combine
+        |> ResultAsync.map (function
+            | Some request -> request.ProcessState.Message
+            | None -> "No requests found to handle.")
 
-            start
+    let startOrder embassyId =
+        fun (deps: Kdmid.Dependencies) ->
+            deps.getRequests embassyId
+            |> ResultAsync.map (fun requests ->
+                requests
+                |> Seq.groupBy _.Service.Id.Value
+                |> Seq.map (fun (_, requests) ->
+                    requests |> Seq.truncate 5 |> Seq.toList |> handleGroup deps.pickOrder))
+            |> ResultAsync.map (Async.Parallel >> Async.map Result.unzip)
+            |> Async.map (function
+                | Error error -> Error error |> async.Return
+                | Ok value ->
+                    value
+                    |> Async.map (fun (messages, errors) ->
+                        let messages =
+                            messages
+                            |> List.map (fun message -> $"Message: {message}")
+                            |> String.concat ", "
+
+                        let errors =
+                            errors
+                            |> List.map _.Message
+                            |> List.mapi (fun i message -> $"{i + 1}. {message}")
+                            |> String.concat Environment.NewLine
+
+                        let result =
+                            if System.String.IsNullOrWhiteSpace errors then
+                                messages
+                            else
+                                $"{messages}, {errors}"
+
+                        result |> Info |> Ok))
 
     module SearchAppointments =
-        open EA.Core.DataAccess
-
         let ID = "SA" |> Graph.NodeIdValue
 
-        let setRouteNode cityId =
+        let createRouterNode cityId =
             Graph.Node(Id(cityId |> Graph.NodeIdValue), [ Graph.Node(Id ID, []) ])
 
-        let handle (task: WorkerTask, cfg, ct) =
-            Persistence.Dependencies.create cfg
-            |> Result.bind (fun persistenceDeps ->
-                Web.Dependencies.create ()
-                |> Result.map (fun webDeps -> (persistenceDeps, webDeps)))
-            |> Result.bind (fun (persistenceDeps, webDeps) -> Kdmid.Dependencies.create ct persistenceDeps webDeps)
-            |> Result.map createOrder
-            |> ResultAsync.wrap (fun startOrder ->
-                task
-                |> createEmbassyId
-                |> ResultAsync.bindAsync (Request.Query.findManyByEmbassyId >> startOrder))
+        let start (task, cfg, ct) =
+            let result = ResultBuilder()
+
+            result {
+                let! persistenceDeps = Persistence.Dependencies.create cfg
+                let! webDeps = Web.Dependencies.create ()
+                let! deps = Kdmid.Dependencies.create ct persistenceDeps webDeps
+                let! embassyId = task |> createEmbassyId
+                return startOrder embassyId deps
+            }
+            |> ResultAsync.wrap id
 
 let private ROUTER =
 
     let inline createNode countryId cityId =
-        Graph.Node(Id(countryId |> Graph.NodeIdValue), [ cityId |> Kdmid.SearchAppointments.setRouteNode ])
+        Graph.Node(Id(countryId |> Graph.NodeIdValue), [ cityId |> Kdmid.SearchAppointments.createRouterNode ])
 
     Graph.Node(
         Id("RU" |> Graph.NodeIdValue),
@@ -80,4 +105,4 @@ let private ROUTER =
 
 let register () =
     ROUTER
-    |> RouteNode.register (Kdmid.SearchAppointments.ID, Kdmid.SearchAppointments.handle)
+    |> RouteNode.register (Kdmid.SearchAppointments.ID, Kdmid.SearchAppointments.start)

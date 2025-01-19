@@ -7,7 +7,6 @@ open Infrastructure.Prelude
 open Web.Telegram.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Consumer.Embassies
 
@@ -20,11 +19,8 @@ type Dependencies =
       sendResults: Async<Result<Producer.Data list, Error'>> -> Async<Result<unit, Error'>>
       getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
       getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
-      getSubscriptionsChats: RequestId seq -> Async<Result<Chat list, Error'>>
-      getEmbassyRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
-      getRequest: RequestId -> Async<Result<Request, Error'>>
-      updateRequest: Request -> Async<Result<Request, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>>
+      getRequest: RequestId -> Async<Result<Request, Error'>>
       createRequest: Request -> Async<Result<Request, Error'>> }
 
     static member create(deps: Russian.Dependencies) =
@@ -53,15 +49,6 @@ type Dependencies =
                     | None -> $"Request with Id {requestId}" |> NotFound |> Error
                     | Some request -> request |> Ok)
 
-            let updateRequest request =
-                deps.RequestStorage |> Request.Command.update request
-
-            let getEmbassyRequests embassyId =
-                deps.RequestStorage |> Request.Query.findManyByEmbassyId embassyId
-
-            let getSubscriptionsChats (requestIds: RequestId seq) =
-                deps.ChatStorage |> Chat.Query.findManyBySubscriptions requestIds
-
             let createRequest (request: Request) =
                 deps.ChatStorage
                 |> Chat.Command.createChatSubscription deps.ChatId request.Id
@@ -75,11 +62,8 @@ type Dependencies =
                   sendResult = deps.sendResult
                   sendResults = deps.sendResults
                   getRequest = getRequest
-                  updateRequest = updateRequest
                   getService = getServices
                   getEmbassy = getEmbassy
-                  getEmbassyRequests = getEmbassyRequests
-                  getSubscriptionsChats = getSubscriptionsChats
                   getChatRequests = deps.getChatRequests
                   createRequest = createRequest }
         }
