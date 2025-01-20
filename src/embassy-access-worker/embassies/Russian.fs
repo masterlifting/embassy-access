@@ -51,7 +51,7 @@ module private Kdmid =
                     |> Async.map (fun (messages, errors) ->
                         let messages =
                             messages
-                            |> List.mapi (fun i message -> $"{i + 1}. {message}")
+                            |> List.map (fun message -> $" - {message}")
                             |> String.concat Environment.NewLine
                             |> function
                                 | AP.IsString x -> Environment.NewLine + x |> Some
@@ -60,7 +60,7 @@ module private Kdmid =
                         let errors =
                             errors
                             |> List.map _.Message
-                            |> List.mapi (fun i message -> $"{i + 1}. {message}")
+                            |> List.map (fun message -> $" - {message}")
                             |> String.concat Environment.NewLine
                             |> function
                                 | AP.IsString x -> Environment.NewLine + x |> Some
@@ -70,10 +70,10 @@ module private Kdmid =
                         | Some messages, Some errors ->
                             $"{Environment.NewLine}Valid results:{messages}{Environment.NewLine}Invalid results{errors}"
                             |> Warn
-                        | Some messages, None -> $"{Environment.NewLine}Valid results:{messages}" |> Info
-                        | None, Some errors -> $"{Environment.NewLine}Invalid results:{errors}" |> Warn
-                        | None, None -> "No results found." |> Trace
-                        |> Ok))
+                            |> Ok
+                        | Some messages, None -> $"{Environment.NewLine}{messages}" |> box |> Success |> Ok
+                        | None, Some errors -> { Message = errors; Code = None } |> Operation |> Error
+                        | None, None -> "No results found." |> Debug |> Ok))
 
     module SearchAppointments =
         let ID = "SA" |> Graph.NodeIdValue

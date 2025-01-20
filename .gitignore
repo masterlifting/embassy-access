@@ -453,6 +453,6 @@ bower_components
 ### WebSharper ###
 Scripts/
 
-### Test Data ###
-tests/embassies/russian/test_data/
 .env
+### Test Data ###
+/src/embassy-access-worker/data/
