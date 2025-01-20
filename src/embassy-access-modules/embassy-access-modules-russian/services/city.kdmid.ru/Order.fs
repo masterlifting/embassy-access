@@ -11,7 +11,7 @@ open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private validateCity (request: Request) (payload: Payload) =
 
-    match request.Service.Embassy.ShortName = payload.City with
+    match request.Service.Embassy.Id = payload.EmbassyId with
     | true -> Ok payload
     | false ->
         Error
