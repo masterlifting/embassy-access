@@ -9,23 +9,23 @@ open EA.Telegram.Services.Consumer.Embassies.Russian
 let get embassyId (service: ServiceNode) =
     fun (deps: Russian.Dependencies) ->
         match service.Id.Value |> Graph.split with
-        | [ _; "RU"; _; _; "0" ] ->
+        | [ _; "RUS"; _; _; "0" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Instruction.toCheckAppointments embassyId service)
-        | [ _; "RU"; _; _; "1" ] ->
+        | [ _; "RUS"; _; _; "1" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Instruction.toStandardSubscribe embassyId service)
-        | [ _; "RU"; _; _; "2"; "0" ] ->
+        | [ _; "RUS"; _; _; "2"; "0" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Instruction.toFirstAvailableAutoSubscribe embassyId service)
-        | [ _; "RU"; _; _; "2"; "1" ] ->
+        | [ _; "RUS"; _; _; "2"; "1" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Instruction.toLastAvailableAutoSubscribe embassyId service)
-        | [ _; "RU"; _; _; "2"; "2" ] ->
+        | [ _; "RUS"; _; _; "2"; "2" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Instruction.toDateRangeAutoSubscribe embassyId service)
@@ -39,7 +39,7 @@ let userGet embassyId (service: ServiceNode) =
         )
         |> ResultAsync.bind (fun requests ->
             match service.Id.Value |> Graph.split with
-            | [ _; "RU"; _; _; "0" ] ->
+            | [ _; "RUS"; _; _; "0" ] ->
                 deps
                 |> Kdmid.Dependencies.create
                 |> Result.bind (Kdmid.Query.getSubscriptions requests)

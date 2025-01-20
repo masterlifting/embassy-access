@@ -21,18 +21,18 @@ Worker:
   Wait: true
   Schedule:
   Tasks:
-    - Id: RU
+    - Id: RUS
       Name: Russian
       Parallel: true
       Schedule:
-        Workdays: mon,tue,wed,thu,fri,sat,sun
+        Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
           Name: Serbia
           Parallel: true
-          Recursively: 00:01:00
+          Recursively: 00:30:00
           Tasks:
-            - Id: BG
+            - Id: BEG
               Name: Belgrade
               Parallel: true
               Tasks:
@@ -42,9 +42,9 @@ Worker:
                   Duration: 00:01:00
               Schedule:
                 StartTime: 09:00:00
-                StopTime: 23:59:00
+                StopTime: 17:00:00
                 TimeZone: 1
-        - Id: GER
+        - Id: DEU
           Name: Germany
           Parallel: true
           Tasks:
@@ -70,7 +70,7 @@ Worker:
           Name: Montenegro
           Parallel: true
           Tasks:
-            - Id: PDG
+            - Id: POD
               Name: Podgorica
               Parallel: true
               Tasks:
@@ -88,7 +88,7 @@ Worker:
                 <<: *SearchAppointments
               Schedule:
                 TimeZone: 0
-        - Id: SWI
+        - Id: CHE
           Name: Switzerland
           Parallel: true
           Tasks:
@@ -125,14 +125,14 @@ Worker:
           Name: Albania
           Parallel: true
           Tasks:
-            - Id: TIR
+            - Id: TIA
               Name: Tirana
               Parallel: true
               Tasks:
                 <<: *SearchAppointments
               Schedule:
                 TimeZone: 1
-        - Id: SLO
+        - Id: SVN
           Name: Slovenia
           Parallel: true
           Tasks:
@@ -147,7 +147,7 @@ Worker:
           Name: Bosnia
           Parallel: true
           Tasks:
-            - Id: SAR
+            - Id: SJJ
               Name: Sarajevo
               Parallel: true
               Tasks:
@@ -171,7 +171,7 @@ Embassies:
   Name: Посольства
   Description: Выберите посольство, которое вы хотите посетить
   Children:
-    - Id: RU
+    - Id: RUS
       Name: Российское
       Description: В какой стране находится российское посольство?
       Children:
@@ -179,15 +179,15 @@ Embassies:
           Name: Сербия
           Description: В каком городе Сербии находится российское посольство?
           Children:
-            - Id: BG
+            - Id: BEG
               Name: Белград
-        - Id: GER
+        - Id: DEU
           Name: Германия
           Description: В каком городе Германии находится российское посольство?
           Children:
             - Id: BER
               Name: Берлин
-            - Id: MUN
+            - Id: MUC
               Name: Мюнхен
         - Id: FRA
           Name: Франция
@@ -219,15 +219,15 @@ Embassies:
           Name: Польша
           Description: В каком городе Польши находится российское посольство?
           Children:
-            - Id: WAR
+            - Id: WAW
               Name: Варшава
-        - Id: SWI
+        - Id: CHE
           Name: Швейцария
           Description: В каком городе Швейцарии находится российское посольство?
           Children:
             - Id: BER
               Name: Берн
-        - Id: UK
+        - Id: GBR
           Name: Великобритания
           Description: В каком городе Великобритании находится российское посольство?
           Children:
@@ -237,59 +237,59 @@ Embassies:
           Name: Китай
           Description: В каком городе Китая находится российское посольство?
           Children:
-            - Id: BJ
+            - Id: PEK
               Name: Пекин
-            - Id: SH
+            - Id: SHA
               Name: Шанхай
-            - Id: GZ
+            - Id: CAN
               Name: Гуанчжоу
         - Id: USA
           Name: США
           Description: В каком городе США находится российское посольство?
           Children:
-            - Id: DC
+            - Id: WAS
               Name: Вашингтон
-            - Id: NY
+            - Id: NYC
               Name: Нью-Йорк
-        - Id: IN
+        - Id: IND
           Name: Индия
           Description: В каком городе Индии находится российское посольство?
           Children:
-            - Id: DL
+            - Id: DEL
               Name: Нью-Дели
-            - Id: MUM
+            - Id: BOM
               Name: Мумбаи
-        - Id: JP
+        - Id: JPN
           Name: Япония
           Description: В каком городе Японии находится российское посольство?
           Children:
-            - Id: TK
+            - Id: TYO
               Name: Токио
-        - Id: EG
+        - Id: EGY
           Name: Египет
           Description: В каком городе Египта находится российское посольство?
           Children:
-            - Id: CA
+            - Id: CAI
               Name: Каир
-        - Id: BR
+        - Id: BRA
           Name: Бразилия
           Description: В каком городе Бразилии находится российское посольство?
           Children:
             - Id: BSB
               Name: Бразилиа
-            - Id: SP
+            - Id: SAO
               Name: Сан-Паулу
-        - Id: AU
+        - Id: AUS
           Name: Австралия
           Description: В каком городе Австралии находится российское посольство?
           Children:
-            - Id: CB
+            - Id: CBR
               Name: Канберра
         - Id: KOR
           Name: Южная Корея
           Description: В каком городе Южной Кореи находится российское посольство?
           Children:
-            - Id: SEO
+            - Id: SEL
               Name: Сеул
         - Id: THA
           Name: Таиланд
@@ -303,19 +303,19 @@ Embassies:
           Children:
             - Id: SGP
               Name: Сингапур
-        - Id: SA
+        - Id: SAU
           Name: Саудовская Аравия
           Description: В каком городе Саудовской Аравии находится российское посольство?
           Children:
-            - Id: RD
+            - Id: RUH
               Name: Эр-Рияд
-        - Id: ZA
+        - Id: ZAF
           Name: Южная Африка
           Description: В каком городе Южной Африки находится российское посольство?
           Children:
             - Id: PTA
               Name: Претория
-    - Id: DE
+    - Id: DEU
       Name: Немецкое
       Description: Выберите посольство
       Children:
@@ -331,11 +331,11 @@ Embassies:
           Children:
             - Id: ROM
               Name: Рим
-    - Id: IT
+    - Id: ITA
       Name: Итальянское
       Description: Выберите посольство
       Children:
-        - Id: GRE
+        - Id: GRC
           Name: Греция
           Description: В каком городе Греции находится итальянское посольство?
           Children:
@@ -345,9 +345,9 @@ Embassies:
           Name: Украина
           Description: В каком городе Украины находится итальянское посольство?
           Children:
-            - Id: KYIV
+            - Id: IEV
               Name: Киев
-    - Id: UK
+    - Id: GBR
       Name: Британское
       Description: Выберите посольство
       Children:
@@ -355,7 +355,7 @@ Embassies:
           Name: Польша
           Description: В каком городе Польши находится британское посольство?
           Children:
-            - Id: WAR
+            - Id: WAW
               Name: Варшава
         - Id: CZE
           Name: Чехия
@@ -363,7 +363,7 @@ Embassies:
           Children:
             - Id: PRG
               Name: Прага
-    - Id: FR
+    - Id: FRA
       Name: Французское
       Description: Выберите посольство
       Children:
@@ -373,7 +373,7 @@ Embassies:
           Children:
             - Id: BRU
               Name: Брюссель
-        - Id: GER
+        - Id: DEU
           Name: Германия
           Description: В каком городе Германии находится французское посольство?
           Children:
@@ -409,7 +409,7 @@ Services:
   Name: Услуги
   Description: Выберите услугу посольства
   Children:
-    - Id: RU
+    - Id: RUS
       Name: Посольство РФ
       Description: Выберите услугу посольства РФ
       Children:

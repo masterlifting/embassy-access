@@ -47,7 +47,7 @@ module internal Get =
                         |> async.Return
                     | true ->
                         match serviceNode.IdParts[1].Value with
-                        | "RU" -> deps.RussianDeps |> Russian.Service.get embassyId serviceNode.Value
+                        | "RUS" -> deps.RussianDeps |> Russian.Service.get embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported
@@ -74,7 +74,7 @@ module internal Get =
                         |> async.Return
                     | true ->
                         match serviceNode.IdParts[1].Value with
-                        | "RU" -> deps.RussianDeps |> Russian.Service.userGet embassyId serviceNode.Value
+                        | "RUS" -> deps.RussianDeps |> Russian.Service.userGet embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported

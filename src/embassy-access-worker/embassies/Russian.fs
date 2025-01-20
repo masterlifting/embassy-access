@@ -99,18 +99,18 @@ let private ROUTER =
         Graph.Node(Id(countryId |> Graph.NodeIdValue), [ cityId |> Kdmid.SearchAppointments.createRouterNode ])
 
     Graph.Node(
-        Id("RU" |> Graph.NodeIdValue),
-        [ createNode "SRB" "BG"
-          createNode "GER" "BER"
+        Id("RUS" |> Graph.NodeIdValue),
+        [ createNode "SRB" "BEG"
+          createNode "DEU" "BER"
           createNode "FRA" "PAR"
-          createNode "MNE" "PDG"
+          createNode "MNE" "POD"
           createNode "IRL" "DUB"
-          createNode "SWI" "BER"
+          createNode "CHE" "BER"
           createNode "FIN" "HEL"
           createNode "NLD" "HAG"
-          createNode "ALB" "TIR"
-          createNode "SLO" "LJU"
-          createNode "BIH" "SAR"
+          createNode "ALB" "TIA"
+          createNode "SVN" "LJU"
+          createNode "BIH" "SJJ"
           createNode "HUN" "BUD" ]
     )
 

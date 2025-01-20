@@ -6,8 +6,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 
 type Payload =
-    { Country: string
-      City: string
+    { EmbassyId: Graph.NodeId
       SubDomain: string
       Id: int
       Cd: string
@@ -22,9 +21,9 @@ type Payload =
             payload {
                 let subDomain = hostParts[0]
 
-                let! country, city =
+                let! embassyId =
                     match Constants.SUPPORTED_SUB_DOMAINS |> Map.tryFind subDomain with
-                    | Some(country, city) -> Ok(country, city)
+                    | Some id -> id |> Graph.NodeIdValue |> Ok
                     | None -> subDomain |> NotSupported |> Error
 
                 let! queryParams = uri |> Web.Http.Route.toQueryParams
@@ -54,8 +53,7 @@ type Payload =
                     |> Option.defaultValue (None |> Ok)
 
                 return
-                    { Country = country
-                      City = city
+                    { EmbassyId = embassyId
                       SubDomain = subDomain
                       Id = id
                       Cd = cd
