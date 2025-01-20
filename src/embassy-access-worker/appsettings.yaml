@@ -39,11 +39,10 @@ Worker:
                 - Id: SA
                   Name: Search appointments
                   Enabled: true
-                  Duration: 00:01:00
+                  Duration: 00:30:00
               Schedule:
                 StartTime: 09:00:00
                 StopTime: 17:00:00
-                StopDate: 2025-01-20
                 TimeZone: 1
         - Id: DEU
           Name: Germany
@@ -57,10 +56,10 @@ Worker:
                 - Id: SA
                   Name: Search appointments
                   Enabled: true
-                  Duration: 00:01:00
+                  Duration: 00:30:00
               Schedule:
                 StartTime: 09:00:00
-                StopTime: 23:00:00
+                StopTime: 17:00:00
                 TimeZone: 1
         - Id: FRA
           Name: France
