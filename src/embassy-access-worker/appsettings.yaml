@@ -30,7 +30,7 @@ Worker:
         - Id: SRB
           Name: Serbia
           Parallel: true
-          Recursively: 00:01:00
+          Recursively: 00:30:00
           Tasks:
             - Id: BEG
               Name: Belgrade
@@ -39,7 +39,7 @@ Worker:
                 - Id: SA
                   Name: Search appointments
                   Enabled: true
-                  Duration: 00:30:00
+                  Duration: 00:01:00
               Schedule:
                 StartTime: 09:00:00
                 StopTime: 17:00:00
@@ -47,7 +47,7 @@ Worker:
         - Id: DEU
           Name: Germany
           Parallel: true
-          Recursively: 00:01:00
+          Recursively: 00:30:00
           Tasks:
             - Id: BER
               Name: Berlin
@@ -56,7 +56,7 @@ Worker:
                 - Id: SA
                   Name: Search appointments
                   Enabled: true
-                  Duration: 00:30:00
+                  Duration: 00:01:00
               Schedule:
                 StartTime: 09:00:00
                 StopTime: 17:00:00
