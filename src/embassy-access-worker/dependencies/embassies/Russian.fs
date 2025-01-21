@@ -39,7 +39,10 @@ module Kdmid =
                 let getRequests embassyId =
                     requestStorage
                     |> Request.Query.findManyByEmbassyId embassyId
-                    |> ResultAsync.map (List.filter (fun r -> r.SubscriptionState = Auto))
+                    |> ResultAsync.map (
+                        List.filter (fun request ->
+                            request.SubscriptionState = Auto && request.ProcessState <> InProcess)
+                    )
 
                 let pickOrder requests =
                     (requestStorage, ct)

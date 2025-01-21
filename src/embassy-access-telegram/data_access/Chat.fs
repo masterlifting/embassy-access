@@ -66,6 +66,15 @@ module private InMemory =
     let private loadData = Query.Json.get<ChatEntity> Name
 
     module Query =
+
+        let getSubscriptions client =
+            client
+            |> loadData
+            |> Result.map (Seq.collect _.Subscriptions)
+            |> Result.map (Seq.map RequestId.create)
+            |> Result.bind Result.choose
+            |> async.Return
+
         let tryFindById (id: ChatId) client =
             client
             |> loadData
@@ -108,20 +117,48 @@ module private InMemory =
             |> Result.map (fun _ -> chat)
             |> async.Return
 
-        let createChatSubscription (chatId: ChatId) (subscriptionId: RequestId) client =
+        let createChatSubscription (chatId: ChatId) (subscription: RequestId) client =
             client
             |> loadData
             |> Result.bind (fun data ->
-                match data |> Seq.tryFindIndex (fun x -> x.Id = chatId.Value) with
-                | None -> $"Chat {chatId}" |> NotFound |> Error
+                match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
+                | None -> $"Chat {chatId.ValueStr}" |> NotFound |> Error
+                | Some index ->
+                    data[index].Subscriptions <-
+                        data[index].Subscriptions |> Set |> Set.add subscription.ValueStr |> Seq.toList
+
+                    data |> Ok)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> async.Return
+
+        let deleteChatSubscriptions (chatId: ChatId) (subscriptions: RequestId Set) client =
+            client
+            |> loadData
+            |> Result.bind (fun data ->
+                match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
+                | None -> $"Chat {chatId.ValueStr}" |> NotFound |> Error
                 | Some index ->
                     data[index].Subscriptions <-
                         data[index].Subscriptions
-                        |> Set
-                        |> Set.add subscriptionId.ValueStr
-                        |> Seq.toList
+                        |> List.filter (fun subValue ->
+                            not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = subValue)))
 
                     data |> Ok)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> async.Return
+
+        let deleteSubscriptions (subscriptions: RequestId Set) client =
+            client
+            |> loadData
+            |> Result.bind (fun data ->
+                data
+                |> Seq.iter (fun chat ->
+                    chat.Subscriptions <-
+                        chat.Subscriptions
+                        |> List.filter (fun subValue ->
+                            not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = subValue))))
+
+                data |> Ok)
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
             |> async.Return
 
@@ -131,6 +168,14 @@ module private FileSystem =
     let private loadData = Query.Json.get<ChatEntity>
 
     module Query =
+
+        let getSubscriptions client =
+            client
+            |> loadData
+            |> ResultAsync.map (Seq.collect _.Subscriptions)
+            |> ResultAsync.map (Seq.map RequestId.create)
+            |> ResultAsync.bind Result.choose
+
         let tryFindById (id: ChatId) client =
             client
             |> loadData
@@ -170,21 +215,48 @@ module private FileSystem =
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
             |> ResultAsync.map (fun _ -> chat)
 
-        let createChatSubscription (chatId: ChatId) (subscriptionId: RequestId) client =
+        let createChatSubscription (chatId: ChatId) (subscription: RequestId) client =
             client
             |> loadData
             |> ResultAsync.bind (fun data ->
-                match data |> Seq.tryFindIndex (fun x -> x.Id = chatId.Value) with
-                | None -> $"Chat {chatId}" |> NotFound |> Error
+                match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
+                | None -> $"Chat {chatId.ValueStr}" |> NotFound |> Error
                 | Some index ->
                     data[index].Subscriptions <-
-                        data[index].Subscriptions
-                        |> Set
-                        |> Set.add subscriptionId.ValueStr
-                        |> Seq.toList
+                        data[index].Subscriptions |> Set |> Set.add subscription.ValueStr |> Seq.toList
 
                     data |> Ok)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+
+        let deleteChatSubscriptions (chatId: ChatId) (subscriptions: RequestId Set) client =
+            client
+            |> loadData
+            |> ResultAsync.bind (fun data ->
+                match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
+                | None -> $"Chat {chatId.ValueStr}" |> NotFound |> Error
+                | Some index ->
+                    data[index].Subscriptions <-
+                        data[index].Subscriptions
+                        |> List.filter (fun subValue ->
+                            not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = subValue)))
+
+                    data |> Ok)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+
+        let deleteSubscriptions (subscriptions: RequestId Set) client =
+            client
+            |> loadData
+            |> ResultAsync.bind (fun data ->
+                data
+                |> Seq.iter (fun chat ->
+                    chat.Subscriptions <-
+                        chat.Subscriptions
+                        |> List.filter (fun subValue ->
+                            not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = subValue))))
+
+                data |> Ok)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+
 
 let private toPersistenceStorage storage =
     storage
@@ -202,6 +274,13 @@ let init storageType =
     |> Result.map ChatStorage
 
 module Query =
+
+    let getSubscriptions storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Query.getSubscriptions
+        | Storage.FileSystem client -> client |> FileSystem.Query.getSubscriptions
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
     let tryFindById chatId storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.tryFindById chatId
@@ -233,8 +312,20 @@ module Command =
         | Storage.FileSystem client -> client |> FileSystem.Command.update chat
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
-    let createChatSubscription chatId subscriptionId storage =
+    let createChatSubscription chatId subscription storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.Command.createChatSubscription chatId subscriptionId
-        | Storage.FileSystem client -> client |> FileSystem.Command.createChatSubscription chatId subscriptionId
+        | Storage.InMemory client -> client |> InMemory.Command.createChatSubscription chatId subscription
+        | Storage.FileSystem client -> client |> FileSystem.Command.createChatSubscription chatId subscription
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    let deleteChatSubscriptions chatId subscriptions storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.deleteChatSubscriptions chatId subscriptions
+        | Storage.FileSystem client -> client |> FileSystem.Command.deleteChatSubscriptions chatId subscriptions
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    let deleteSubscriptions subscriptions storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.deleteSubscriptions subscriptions
+        | Storage.FileSystem client -> client |> FileSystem.Command.deleteSubscriptions subscriptions
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
