@@ -17,5 +17,11 @@ let run (_, cfg, ct) =
         |> Async.Ignore
         |> Async.Start
 
-        return "Services have been initialized." |> Info |> Ok
+        Persistence.Dependencies.create cfg
+        |> ResultAsync.wrap _.resetData()
+        |> ResultAsync.mapError (_.Message >> Log.critical)
+        |> Async.Ignore
+        |> Async.Start
+
+        return "Services have been initialized. Data has been reset." |> Info |> Ok
     }
