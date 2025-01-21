@@ -59,8 +59,7 @@ module private Kdmid =
 
                         let errors =
                             errors
-                            |> List.map _.Message
-                            |> List.map (fun message -> $" - {message}")
+                            |> List.map (fun error -> $" - {error.MessageOnly}")
                             |> String.concat Environment.NewLine
                             |> function
                                 | AP.IsString x -> Environment.NewLine + x |> Some
@@ -68,7 +67,7 @@ module private Kdmid =
 
                         match messages, errors with
                         | Some messages, Some errors ->
-                            $"{Environment.NewLine}Valid results:{messages}{Environment.NewLine}Invalid results{errors}"
+                            $"{Environment.NewLine}Valid results:{messages}{Environment.NewLine}Invalid results:{errors}"
                             |> Warn
                             |> Ok
                         | Some messages, None -> $"{Environment.NewLine}{messages}" |> box |> Success |> Ok
