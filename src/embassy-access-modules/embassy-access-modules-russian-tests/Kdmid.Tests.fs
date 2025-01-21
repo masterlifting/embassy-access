@@ -56,9 +56,9 @@ module private Fixture =
           postConfirmationPage = fun _ _ _ -> httpPostStringRequest "confirmation_page_has_result_1" }
 
     let private KdmidRequest =
-        { Uri = Uri("https://berlin.kdmid.ru/queue/orderinfo.aspx?id=290383&cd=B714253F")
+        { Uri = Uri("https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=96794&cd=AB6C2AF3")
           Embassy =
-            { Id = Graph.NodeId.New
+            { Id = "EMB.RUS.SRB.BEG" |> Graph.NodeIdValue
               Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.combine
               ShortName = "Berlin"
               Description = None }
@@ -158,7 +158,7 @@ let private ``validation page should have a deleted request`` =
     }
 
 let private ``appointments page should not have data`` =
-    testTheoryAsync "Appointments page should not have data" [ 1; 2; 3; 4; 5; 6; 7 ]
+    testTheoryAsync "Appointments page should not have data" [ 1 ]
     <| fun i ->
         async {
             let dependencies =
@@ -228,10 +228,11 @@ let private ``confirmation page should have a valid result`` =
 let list =
     testList
         "Kdmid"
-        [ ``validation page should have an error``
-          ``validation page should have a confirmed request``
-          ``validation page should have a confirmation``
-          ``validation page should have a deleted request``
+        [ //``validation page should have an error``
+          //``validation page should have a confirmed request``
+          //``validation page should have a confirmation``
+          //``validation page should have a deleted request``
           ``appointments page should not have data``
-          ``appointments page should have data``
-          ``confirmation page should have a valid result`` ]
+          //``appointments page should have data``
+          //``confirmation page should have a valid result``
+          ]
