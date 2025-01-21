@@ -85,6 +85,13 @@ module private InMemory =
     let private loadData = Query.Json.get<RequestEntity> Name
 
     module Query =
+
+        let getIdentifiers client =
+            client
+            |> loadData
+            |> Result.map (Seq.map (fun x -> x.Id |> RequestId))
+            |> async.Return
+
         let tryFindById (id: RequestId) client =
             client
             |> loadData
@@ -144,12 +151,23 @@ module private InMemory =
             |> Result.map (fun _ -> request)
             |> async.Return
 
+        let deleteMany (ids: RequestId Set) client =
+            client
+            |> loadData
+            |> Result.map (Array.filter (fun request -> not (ids.Contains(request.Id |> RequestId))))
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> async.Return
+
 module private FileSystem =
     open Persistence.FileSystem
 
     let private loadData = Query.Json.get<RequestEntity>
 
     module Query =
+
+        let getIdentifiers client =
+            client |> loadData |> ResultAsync.map (Seq.map (fun x -> x.Id |> RequestId))
+
         let tryFindById (id: RequestId) client =
             client
             |> loadData
@@ -203,6 +221,12 @@ module private FileSystem =
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
             |> ResultAsync.map (fun _ -> request)
 
+        let deleteMany (ids: RequestId Set) client =
+            client
+            |> loadData
+            |> ResultAsync.map (Array.filter (fun request -> not (ids.Contains(request.Id |> RequestId))))
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+
 let private toPersistenceStorage storage =
     storage
     |> function
@@ -218,26 +242,14 @@ let init storageType =
     | InMemory -> Storage.Connection.InMemory |> Storage.init
     |> Result.map RequestStorage
 
-module Command =
-    let create request storage =
-        match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.Command.create request
-        | Storage.FileSystem client -> client |> FileSystem.Command.create request
-        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
-
-    let update request storage =
-        match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.Command.update request
-        | Storage.FileSystem client -> client |> FileSystem.Command.update request
-        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
-
-    let createOrUpdate request storage =
-        match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.Command.createOrUpdate request
-        | Storage.FileSystem client -> client |> FileSystem.Command.createOrUpdate request
-        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
 module Query =
+
+    let getIdentifiers storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Query.getIdentifiers
+        | Storage.FileSystem client -> client |> FileSystem.Query.getIdentifiers
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
     let tryFindById id storage =
         match storage |> toPersistenceStorage with
@@ -261,4 +273,38 @@ module Query =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByIds ids
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByIds ids
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+module Command =
+
+    let create request storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.create request
+        | Storage.FileSystem client -> client |> FileSystem.Command.create request
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    let update request storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.update request
+        | Storage.FileSystem client -> client |> FileSystem.Command.update request
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    //TODO: IMPROVE
+    let updateMany requests storage =
+        requests
+        |> Seq.map (fun request -> storage |> update request)
+        |> Async.Sequential
+        |> Async.map Result.choose
+        |> Async.map (Result.map ignore)
+
+    let createOrUpdate request storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.createOrUpdate request
+        | Storage.FileSystem client -> client |> FileSystem.Command.createOrUpdate request
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    let deleteMany ids storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.deleteMany ids
+        | Storage.FileSystem client -> client |> FileSystem.Command.deleteMany ids
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
