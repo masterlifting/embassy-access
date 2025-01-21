@@ -85,7 +85,7 @@ let private setFailedState error (deps: Order.Dependencies) request =
             ProcessState = Failed error
             Attempt = attempt
             Modified = DateTime.UtcNow }
-    |> ResultAsync.bind (fun _ -> Error <| error.extend $"{Environment.NewLine}%s{request.Service.Payload}")
+    |> ResultAsync.bind (fun _ -> Error <| error.extendMsg $"{Environment.NewLine}%s{request.Service.Payload}")
 
 let private setProcessedState deps request confirmation =
     async {
