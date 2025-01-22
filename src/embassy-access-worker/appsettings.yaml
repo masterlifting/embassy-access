@@ -30,36 +30,34 @@ Worker:
         - Id: SRB
           Name: Serbia
           Parallel: true
-          Recursively: 00:01:00
+          Recursively: 00:50:00
           Tasks:
             - Id: BEG
               Name: Belgrade
-              Parallel: true
               Tasks:
                 - Id: SA
                   Name: Search appointments
                   Enabled: false
                   Duration: 00:01:00
               Schedule:
-                StartTime: 09:00:00
+                StartTime: 08:30:00
                 StopTime: 17:00:00
                 TimeZone: 1
         - Id: DEU
           Name: Germany
           Parallel: true
-          Recursively: 00:01:00
+          Recursively: 00:50:00
           Tasks:
             - Id: BER
               Name: Berlin
-              Parallel: true
               Tasks:
                 - Id: SA
                   Name: Search appointments
                   Enabled: true
                   Duration: 00:01:00
               Schedule:
-                StartTime: 00:00:00
-                StopTime: 23:59:00
+                StartTime: 08:30:00
+                StopTime: 17:00:00
                 TimeZone: 1
         - Id: FRA
           Name: France
