@@ -40,17 +40,7 @@ type Dependencies =
                     let requestIdsToRemove = existingData |> Set.difference requestIdentifiers
                     
                     do! chatStorage |> Chat.Command.deleteSubscriptions subscriptionsToRemove
-                    do! requestStorage |> Request.Command.deleteMany requestIdsToRemove
-                    
-                    return
-                        requestStorage
-                        |> Request.Query.findManyByIds existingData
-                        |> ResultAsync.map (Seq.filter (fun request ->
-                            request.SubscriptionState = Auto
-                            && request.ProcessState = InProcess
-                            && request.Modified < System.DateTime.UtcNow.AddMinutes -5.0 ))
-                        |> ResultAsync.map (Seq.map (fun request -> { request with ProcessState = Ready }))
-                        |> ResultAsync.bindAsync (fun requests -> requestStorage |> Request.Command.updateMany requests)
+                    return requestStorage |> Request.Command.deleteMany requestIdsToRemove
                 }
 
             return

@@ -1,11 +1,13 @@
 ﻿module internal EA.Worker.Dependencies.Embassies.Russian
 
+open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Embassies.Russian
 open EA.Worker.Dependencies
+open Worker.Domain
 
 module Kdmid =
     open Infrastructure.Logging
@@ -16,7 +18,12 @@ module Kdmid =
         { getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
           pickOrder: Request list -> Async<Result<Request option, Error' list>> }
 
-        static member create ct (persistenceDeps: Persistence.Dependencies) (webDeps: Web.Dependencies) =
+        static member create
+            ct
+            (task: WorkerTask)
+            (persistenceDeps: Persistence.Dependencies)
+            (webDeps: Web.Dependencies)
+            =
             let result = ResultBuilder()
 
             result {
@@ -41,7 +48,10 @@ module Kdmid =
                     |> Request.Query.findManyByEmbassyId embassyId
                     |> ResultAsync.map (
                         List.filter (fun request ->
-                            request.SubscriptionState = Auto && request.ProcessState <> InProcess)
+                            request.SubscriptionState = Auto
+                            && (request.ProcessState <> InProcess
+                                || (request.ProcessState = InProcess
+                                    && request.Modified < DateTime.UtcNow.Subtract(task.Duration))))
                     )
 
                 let pickOrder requests =

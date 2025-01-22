@@ -34,12 +34,14 @@ module private Kdmid =
                 match request |> Notification.tryCreate errorFilter with
                 | Some notification ->
                     match notification with
-                    | Successfully(_, message) -> $"Successfully processed: {message} for '{request.Service.Name}'." |> Ok
+                    | Successfully(_, message) ->
+                        $"Successfully processed: {message} for '{request.Service.Name}'." |> Ok
                     | Unsuccessfully(_, error) -> error |> Error
                     | HasAppointments(_, appointments) ->
                         $"Appointments found: {appointments.Count} for '{request.Service.Name}'." |> Ok
                     | HasConfirmations(_, confirmations) ->
-                        $"Confirmations found: {confirmations.Count} for '{request.Service.Name}'." |> Ok
+                        $"Confirmations found: {confirmations.Count} for '{request.Service.Name}'."
+                        |> Ok
                 | None -> $"No notifications created for '{request.Service.Name}'." |> Ok
             | None -> "No requests found to handle." |> Ok)
 
@@ -98,7 +100,7 @@ module private Kdmid =
             result {
                 let! persistenceDeps = Persistence.Dependencies.create cfg
                 let! webDeps = Web.Dependencies.create ()
-                let! deps = Kdmid.Dependencies.create ct persistenceDeps webDeps
+                let! deps = Kdmid.Dependencies.create ct task persistenceDeps webDeps
                 let! embassyId = task |> createEmbassyId
                 return startOrder embassyId deps
             }
