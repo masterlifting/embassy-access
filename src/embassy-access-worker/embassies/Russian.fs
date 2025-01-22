@@ -27,9 +27,21 @@ module private Kdmid =
         requests
         |> pickOrder
         |> ResultAsync.mapError Error'.combine
-        |> ResultAsync.map (function
-            | Some request -> request.ProcessState.Message
-            | None -> "No requests found to handle.")
+        |> ResultAsync.bind (function
+            | Some request ->
+                let errorFilter _ = true
+
+                match request |> Notification.tryCreate errorFilter with
+                | Some notification ->
+                    match notification with
+                    | Successfully(_, message) -> $"Successfully processed: {message} for '{request.Service.Name}'." |> Ok
+                    | Unsuccessfully(_, error) -> error |> Error
+                    | HasAppointments(_, appointments) ->
+                        $"Appointments found: {appointments.Count} for '{request.Service.Name}'." |> Ok
+                    | HasConfirmations(_, confirmations) ->
+                        $"Confirmations found: {confirmations.Count} for '{request.Service.Name}'." |> Ok
+                | None -> $"No notifications created for '{request.Service.Name}'." |> Ok
+            | None -> "No requests found to handle." |> Ok)
 
     let startOrder embassyId =
         fun (deps: Kdmid.Dependencies) ->
