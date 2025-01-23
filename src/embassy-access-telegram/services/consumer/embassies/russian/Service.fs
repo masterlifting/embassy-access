@@ -39,7 +39,11 @@ let userGet embassyId (service: ServiceNode) =
         )
         |> ResultAsync.bind (fun requests ->
             match service.Id.Value |> Graph.split with
-            | [ _; "RUS"; _; _; "0" ] ->
+            | [ _; "RUS"; _; _; "0" ]
+            | [ _; "RUS"; _; _; "1" ]
+            | [ _; "RUS"; _; _; "2"; "0" ]
+            | [ _; "RUS"; _; _; "2"; "1" ]
+            | [ _; "RUS"; _; _; "2"; "2" ] ->
                 deps
                 |> Kdmid.Dependencies.create
                 |> Result.bind (Kdmid.Query.getSubscriptions requests)

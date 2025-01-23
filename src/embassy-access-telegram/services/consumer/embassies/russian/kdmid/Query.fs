@@ -33,6 +33,29 @@ let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
                   Columns = 1
                   Data = data })
 
+let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
+    let getRoute =
+        request.Id
+        |> Kdmid.Get.Appointments
+        |> Get.Kdmid
+        |> Request.Get
+        |> RussianEmbassy
+
+    let deleteRoute =
+        request.Id
+        |> Kdmid.Delete.Subscription
+        |> Delete.Kdmid
+        |> Request.Delete
+        |> RussianEmbassy
+
+    match request.Service.Id.Value |> Graph.split with
+    | [ _; "RUS"; _; _; "0" ] ->
+        Map
+            [ getRoute.Value, "Запросить доступные слоты"
+              deleteRoute.Value, "Удалить подписку" ]
+    | _ -> Map [ deleteRoute.Value, "Удалить подписку" ]
+
+
 let getSubscriptionsMenu requestId =
     fun (deps: Kdmid.Dependencies) ->
         deps.getRequest requestId
@@ -44,20 +67,6 @@ let getSubscriptionsMenu requestId =
                     $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
                 |> Ok
             | _ ->
-                let getRoute =
-                    request.Id
-                    |> Kdmid.Get.Appointments
-                    |> Get.Kdmid
-                    |> Request.Get
-                    |> RussianEmbassy
-
-                let deleteRoute =
-                    request.Id
-                    |> Kdmid.Delete.Subscription
-                    |> Delete.Kdmid
-                    |> Request.Delete
-                    |> RussianEmbassy
-
                 request.Service.Payload
                 |> Payload.toValue
                 |> Result.map (fun payloadValue ->
@@ -65,10 +74,7 @@ let getSubscriptionsMenu requestId =
                     |> Buttons.create
                         { Name = $"Что хотите сделать с '{payloadValue}'?"
                           Columns = 1
-                          Data =
-                            Map
-                                [ getRoute.Value, "Запросить доступные слоты"
-                                  deleteRoute.Value, "Удалить подписку" ] }))
+                          Data = buildSubscriptionMenu request }))
 
 let getAppointments requestId =
     fun (deps: Kdmid.Dependencies) ->
@@ -85,22 +91,3 @@ let getAppointments requestId =
                 deps
                 |> Request.getService request
                 |> ResultAsync.bind (fun result -> deps.ChatId |> Request.toResponse result))
-
-let deleteSubscription requestId =
-    fun (deps: Kdmid.Dependencies) ->
-        deps.getRequest requestId
-        |> ResultAsync.bindAsync (fun request ->
-            match request.ProcessState with
-            | InProcess ->
-                (deps.ChatId, New)
-                |> Text.create
-                    $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
-                |> Ok
-                |> async.Return
-            | _ ->
-                deps.deleteRequest requestId
-                |> ResultAsync.bind (fun _ ->
-                    (deps.ChatId, New)
-                    |> Text.create
-                        $"Вы успешно отписались от уведомлений. Подписка для '{request.Service.Name}' удалена"
-                    |> Ok))

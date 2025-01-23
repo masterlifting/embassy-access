@@ -126,3 +126,22 @@ let confirmAppointment (model: Kdmid.Post.Model.ConfirmAppointment) =
                 { request with
                     ConfirmationState = ConfirmationState.Manual model.AppointmentId })
         |> ResultAsync.bind (fun r -> deps.ChatId |> Request.toResponse r)
+
+let deleteSubscription requestId =
+    fun (deps: Kdmid.Dependencies) ->
+        deps.getRequest requestId
+        |> ResultAsync.bindAsync (fun request ->
+            match request.ProcessState with
+            | InProcess ->
+                (deps.ChatId, New)
+                |> Text.create
+                    $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
+                |> Ok
+                |> async.Return
+            | _ ->
+                deps.deleteRequest requestId
+                |> ResultAsync.bind (fun _ ->
+                    (deps.ChatId, New)
+                    |> Text.create
+                        $"Вы успешно отписались от уведомлений. Подписка для '{request.Service.Name}' удалена"
+                    |> Ok))
