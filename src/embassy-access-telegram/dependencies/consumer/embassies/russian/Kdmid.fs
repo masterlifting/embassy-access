@@ -21,7 +21,8 @@ type Dependencies =
       getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>>
       getRequest: RequestId -> Async<Result<Request, Error'>>
-      createRequest: Request -> Async<Result<Request, Error'>> }
+      createRequest: Request -> Async<Result<Request, Error'>>
+      deleteRequest: RequestId -> Async<Result<unit, Error'>> }
 
     static member create(deps: Russian.Dependencies) =
         let result = ResultBuilder()
@@ -54,6 +55,13 @@ type Dependencies =
                 |> Chat.Command.createChatSubscription deps.ChatId request.Id
                 |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.create request)
 
+            let deleteRequest requestId =
+                let requestIdSet = Set.singleton requestId
+
+                deps.ChatStorage
+                |> Chat.Command.deleteChatSubscriptions deps.ChatId requestIdSet
+                |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.deleteMany requestIdSet)
+
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
@@ -65,5 +73,6 @@ type Dependencies =
                   getService = getServices
                   getEmbassy = getEmbassy
                   getChatRequests = deps.getChatRequests
-                  createRequest = createRequest }
+                  createRequest = createRequest
+                  deleteRequest = deleteRequest }
         }

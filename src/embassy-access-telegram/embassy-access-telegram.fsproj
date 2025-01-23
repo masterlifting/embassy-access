@@ -23,11 +23,13 @@
         <Compile Include="endpoints\consumer\embassies\Request.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\kdmid\Get.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\kdmid\Post.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\kdmid\Delete.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\kdmid\Request.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\midpass\Get.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\midpass\Request.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\Get.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\Post.fs" />
+        <Compile Include="endpoints\consumer\embassies\russian\Delete.fs" />
         <Compile Include="endpoints\consumer\embassies\russian\Request.fs" />
         <Compile Include="endpoints\consumer\Request.fs" />
         <Compile Include="services\embassies\russian\Service.fs" />

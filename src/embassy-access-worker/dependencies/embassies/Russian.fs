@@ -16,7 +16,7 @@ module Kdmid =
 
     type Dependencies =
         { getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
-          pickOrder: Request list -> Async<Result<Request option, Error' list>> }
+          pickOrder: Request list -> Async<Result<Request, Error' list>> }
 
         static member create
             ct

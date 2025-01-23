@@ -138,11 +138,7 @@ let pick (requests: Request seq) notify =
         let rec innerLoop (errors: Error' list) requests =
             async {
                 match requests with
-                | [] ->
-                    return
-                        match errors.Length with
-                        | 0 -> Ok None
-                        | _ -> Error errors
+                | [] -> return Error errors
                 | request :: requestsTail ->
                     match! deps |> start request with
                     | Error error ->
@@ -161,7 +157,7 @@ let pick (requests: Request seq) notify =
                             | None -> () |> async.Return
                             | Some notification -> notification |> notify
 
-                        return result |> Some |> Ok
+                        return result |> Ok
             }
 
         requests |> List.ofSeq |> innerLoop []

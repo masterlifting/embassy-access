@@ -16,7 +16,7 @@ let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
         |> Seq.map (fun request ->
             let route =
                 request.Id
-                |> Kdmid.Get.Appointments
+                |> Kdmid.Get.SubscriptionsMenu
                 |> Get.Kdmid
                 |> Request.Get
                 |> RussianEmbassy
@@ -29,9 +29,46 @@ let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
         |> Result.map (fun data ->
             (deps.ChatId, Replace deps.MessageId)
             |> Buttons.create
-                { Name = "Выберете подписку для проверки слота"
+                { Name = "Выберете подписку"
                   Columns = 1
                   Data = data })
+
+let getSubscriptionsMenu requestId =
+    fun (deps: Kdmid.Dependencies) ->
+        deps.getRequest requestId
+        |> ResultAsync.bind (fun request ->
+            match request.ProcessState with
+            | InProcess ->
+                (deps.ChatId, New)
+                |> Text.create
+                    $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
+                |> Ok
+            | _ ->
+                let getRoute =
+                    request.Id
+                    |> Kdmid.Get.Appointments
+                    |> Get.Kdmid
+                    |> Request.Get
+                    |> RussianEmbassy
+
+                let deleteRoute =
+                    request.Id
+                    |> Kdmid.Delete.Subscription
+                    |> Delete.Kdmid
+                    |> Request.Delete
+                    |> RussianEmbassy
+
+                request.Service.Payload
+                |> Payload.toValue
+                |> Result.map (fun payloadValue ->
+                    (deps.ChatId, Replace deps.MessageId)
+                    |> Buttons.create
+                        { Name = $"Что хотите сделать с '{payloadValue}'?"
+                          Columns = 1
+                          Data =
+                            Map
+                                [ getRoute.Value, "Запросить доступные слоты"
+                                  deleteRoute.Value, "Удалить подписку" ] }))
 
 let getAppointments requestId =
     fun (deps: Kdmid.Dependencies) ->
@@ -48,3 +85,22 @@ let getAppointments requestId =
                 deps
                 |> Request.getService request
                 |> ResultAsync.bind (fun result -> deps.ChatId |> Request.toResponse result))
+
+let deleteSubscription requestId =
+    fun (deps: Kdmid.Dependencies) ->
+        deps.getRequest requestId
+        |> ResultAsync.bindAsync (fun request ->
+            match request.ProcessState with
+            | InProcess ->
+                (deps.ChatId, New)
+                |> Text.create
+                    $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
+                |> Ok
+                |> async.Return
+            | _ ->
+                deps.deleteRequest requestId
+                |> ResultAsync.bind (fun _ ->
+                    (deps.ChatId, New)
+                    |> Text.create
+                        $"Вы успешно отписались от уведомлений. Подписка для '{request.Service.Name}' удалена"
+                    |> Ok))
