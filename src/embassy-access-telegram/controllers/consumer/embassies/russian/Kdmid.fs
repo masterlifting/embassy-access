@@ -12,6 +12,7 @@ let get request =
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Get.Appointments requestId -> Query.getAppointments requestId
+            | Get.SubscriptionsMenu requestId -> Query.getSubscriptionsMenu requestId
             |> fun createResponse -> deps |> createResponse |> deps.sendResult)
 
 let post request =
@@ -24,3 +25,11 @@ let post request =
             | Post.SendAppointments model -> Command.sendAppointments model >> deps.sendResults
             | Post.ConfirmAppointment model -> Command.confirmAppointment model >> deps.sendResult
             |> fun send -> deps |> send)
+
+let delete request =
+    fun (deps: Russian.Dependencies) ->
+        Kdmid.Dependencies.create deps
+        |> ResultAsync.wrap (fun deps ->
+            match request with
+            | Delete.Subscription requestId -> Query.deleteSubscription requestId
+            |> fun createResponse -> deps |> createResponse |> deps.sendResult)

@@ -14,4 +14,5 @@ let respond request =
             match request with
             | Get(Get.Kdmid get) -> deps |> Kdmid.get get
             | Get(Get.Midpass get) -> deps |> Midpass.get get
-            | Post(Post.Kdmid model) -> deps |> Kdmid.post model)
+            | Post(Post.Kdmid model) -> deps |> Kdmid.post model
+            | Delete(Delete.Kdmid delete) -> deps |> Kdmid.delete delete)
