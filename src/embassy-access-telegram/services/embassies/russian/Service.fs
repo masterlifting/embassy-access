@@ -15,7 +15,9 @@ module Kdmid =
         open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Kdmid.Post.Model
 
         let toSuccessfullyResponse (request: EA.Core.Domain.Request.Request, msg: string) =
-            fun chatId -> (chatId, New) |> Text.create msg
+            fun chatId ->
+                (chatId, New)
+                |> Text.create $"{msg} for '{request.Service.Name}' of '{request.Service.Embassy.ShortName}'."
 
         let toUnsuccessfullyResponse (request: EA.Core.Domain.Request.Request, error: Error') =
             fun chatId -> chatId |> Text.createError error
