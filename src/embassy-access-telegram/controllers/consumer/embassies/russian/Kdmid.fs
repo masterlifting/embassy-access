@@ -31,5 +31,5 @@ let delete request =
         Kdmid.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             match request with
-            | Delete.Subscription requestId -> Query.deleteSubscription requestId
+            | Delete.Subscription requestId -> Command.deleteSubscription requestId
             |> fun createResponse -> deps |> createResponse |> deps.sendResult)

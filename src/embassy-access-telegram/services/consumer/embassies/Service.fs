@@ -14,11 +14,14 @@ open EA.Telegram.Endpoints.Consumer.Embassies.Request
 
 module private Response =
     let private createButtons chatId msgIdOpt buttonGroupName columns data =
-        (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New)
-        |> Buttons.create
-            { Name = buttonGroupName |> Option.defaultValue "Choose what do you want to visit"
-              Columns = columns
-              Data = data |> Map.ofSeq }
+        match data |> Seq.length with
+        | 0 -> Text.create "No data"
+        | _ ->
+            Buttons.create
+                { Name = buttonGroupName |> Option.defaultValue "Choose what do you want to visit"
+                  Columns = columns
+                  Data = data |> Map.ofSeq }
+        |> fun send -> (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New) |> send
 
     let toEmbassy chatId messageId buttonGroupName (embassies: EmbassyNode seq) =
         embassies

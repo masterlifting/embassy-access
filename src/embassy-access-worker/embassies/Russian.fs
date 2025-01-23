@@ -33,7 +33,7 @@ module private Kdmid =
             match request |> Notification.tryCreate errorFilter with
             | Some notification ->
                 match notification with
-                | Successfully(_, message) -> $"Successfully processed: {message} for '{request.Service.Name}'." |> Ok
+                | Successfully(_, message) -> $"{message} for '{request.Service.Name}'." |> Ok
                 | Unsuccessfully(_, error) -> error |> Error
                 | HasAppointments(_, appointments) ->
                     $"Appointments found: {appointments.Count} for '{request.Service.Name}'." |> Ok
@@ -81,7 +81,7 @@ module private Kdmid =
                             $"{Environment.NewLine}Valid results:{validResults}{Environment.NewLine}Invalid results:{invalidResults}"
                             |> Warn
                             |> Ok
-                        | Some validResults, None -> $"{Environment.NewLine}{validResults}" |> Info |> Ok
+                        | Some validResults, None -> validResults |> Info |> Ok
                         | None, Some invalidResults ->
                             { Message = invalidResults
                               Code = None }

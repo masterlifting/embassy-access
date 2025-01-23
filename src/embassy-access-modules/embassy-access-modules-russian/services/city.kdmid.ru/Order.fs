@@ -33,22 +33,23 @@ let private setInProcessState (deps: Order.Dependencies) request =
             Modified = DateTime.UtcNow }
 
 let private setAttemptCore timeZone request =
+    let attemptLimit = 20
     let modified, attempt = request.Attempt
     let modified = modified.AddHours timeZone
     let today = DateTime.UtcNow.AddHours timeZone
 
-    match modified.DayOfYear = today.DayOfYear, attempt > 20 with
+    match modified.DayOfYear = today.DayOfYear, attempt > attemptLimit with
     | true, true ->
         Error
-        <| Canceled $"The request was cancelled due to the number of attempts reached the %i{attempt}."
+        <| Canceled $"Number of attempts reached the limit for today: %i{attemptLimit}."
     | true, false ->
-        Ok
-        <| { request with
-               Attempt = DateTime.UtcNow, attempt + 1 }
+        { request with
+            Attempt = DateTime.UtcNow, attempt + 1 }
+        |> Ok
     | _ ->
-        Ok
-        <| { request with
-               Attempt = DateTime.UtcNow, 1 }
+        { request with
+            Attempt = DateTime.UtcNow, 1 }
+        |> Ok
 
 let private setAttempt embassy (deps: Order.Dependencies) =
 
@@ -75,17 +76,19 @@ let private setCompletedState (deps: Order.Dependencies) request =
             Modified = DateTime.UtcNow }
 
 let private setFailedState error (deps: Order.Dependencies) request =
-    let attempt =
+    let attemptResult =
         match error with
-        | Operation { Code = Some(Custom Web.Captcha.ErrorCode) } -> request.Attempt
-        | _ -> DateTime.UtcNow, snd request.Attempt + 1
+        | Operation { Code = Some(Custom Web.Captcha.ErrorCode) } -> request.Attempt |> Ok
+        | _ -> request |> setAttemptCore 1.0 |> Result.map _.Attempt
 
-    deps.updateRequest
-        { request with
-            ProcessState = Failed error
-            Attempt = attempt
-            Modified = DateTime.UtcNow }
-    |> ResultAsync.bind (fun _ -> Error <| error.extendMsg $"{Environment.NewLine}%s{request.Service.Payload}")
+    attemptResult
+    |> ResultAsync.wrap (fun attempt ->
+        deps.updateRequest
+            { request with
+                ProcessState = Failed error
+                Attempt = attempt
+                Modified = DateTime.UtcNow }
+        |> ResultAsync.bind (fun _ -> Error <| error.extendMsg $"{Environment.NewLine}%s{request.Service.Payload}"))
 
 let private setProcessedState deps request confirmation =
     async {
