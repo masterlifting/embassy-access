@@ -37,7 +37,7 @@ Worker:
               Tasks:
                 - Id: SA
                   Name: Search appointments
-                  Enabled: false
+                  Enabled: true
                   Duration: 00:01:00
               Schedule:
                 StartTime: 08:30:00
