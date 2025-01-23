@@ -27,23 +27,20 @@ module private Kdmid =
         requests
         |> pickOrder
         |> ResultAsync.mapError Error'.combine
-        |> ResultAsync.bind (function
-            | Some request ->
-                let errorFilter _ = true
+        |> ResultAsync.bind (fun request ->
+            let errorFilter _ = true
 
-                match request |> Notification.tryCreate errorFilter with
-                | Some notification ->
-                    match notification with
-                    | Successfully(_, message) ->
-                        $"Successfully processed: {message} for '{request.Service.Name}'." |> Ok
-                    | Unsuccessfully(_, error) -> error |> Error
-                    | HasAppointments(_, appointments) ->
-                        $"Appointments found: {appointments.Count} for '{request.Service.Name}'." |> Ok
-                    | HasConfirmations(_, confirmations) ->
-                        $"Confirmations found: {confirmations.Count} for '{request.Service.Name}'."
-                        |> Ok
-                | None -> $"No notifications created for '{request.Service.Name}'." |> Ok
-            | None -> "No requests found to handle." |> Ok)
+            match request |> Notification.tryCreate errorFilter with
+            | Some notification ->
+                match notification with
+                | Successfully(_, message) -> $"Successfully processed: {message} for '{request.Service.Name}'." |> Ok
+                | Unsuccessfully(_, error) -> error |> Error
+                | HasAppointments(_, appointments) ->
+                    $"Appointments found: {appointments.Count} for '{request.Service.Name}'." |> Ok
+                | HasConfirmations(_, confirmations) ->
+                    $"Confirmations found: {confirmations.Count} for '{request.Service.Name}'."
+                    |> Ok
+            | None -> $"No notifications created for '{request.Service.Name}'." |> Ok)
 
     let startOrder embassyId =
         fun (deps: Kdmid.Dependencies) ->
@@ -63,7 +60,7 @@ module private Kdmid =
                 | Ok value ->
                     value
                     |> Async.map (fun (messages, errors) ->
-                        let messages =
+                        let validResults =
                             messages
                             |> List.map (fun message -> $" - {message}")
                             |> String.concat Environment.NewLine
@@ -71,7 +68,7 @@ module private Kdmid =
                                 | AP.IsString x -> Environment.NewLine + x |> Some
                                 | _ -> None
 
-                        let errors =
+                        let invalidResults =
                             errors
                             |> List.map (fun error -> $" - {error.MessageOnly}")
                             |> String.concat Environment.NewLine
@@ -79,13 +76,17 @@ module private Kdmid =
                                 | AP.IsString x -> Environment.NewLine + x |> Some
                                 | _ -> None
 
-                        match messages, errors with
-                        | Some messages, Some errors ->
-                            $"{Environment.NewLine}Valid results:{messages}{Environment.NewLine}Invalid results:{errors}"
+                        match validResults, invalidResults with
+                        | Some validResults, Some invalidResults ->
+                            $"{Environment.NewLine}Valid results:{validResults}{Environment.NewLine}Invalid results:{invalidResults}"
                             |> Warn
                             |> Ok
-                        | Some messages, None -> $"{Environment.NewLine}{messages}" |> box |> Success |> Ok
-                        | None, Some errors -> { Message = errors; Code = None } |> Operation |> Error
+                        | Some validResults, None -> $"{Environment.NewLine}{validResults}" |> Info |> Ok
+                        | None, Some invalidResults ->
+                            { Message = invalidResults
+                              Code = None }
+                            |> Operation
+                            |> Error
                         | None, None -> "No results found." |> Debug |> Ok))
 
     module SearchAppointments =

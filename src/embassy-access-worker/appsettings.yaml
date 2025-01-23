@@ -5,7 +5,7 @@ Logging:
     Default: Debug
 
 Persistence:
-  FileSystem: /usr/src/embassy-access-data
+  FileSystem: ../../../data
 
 SearchAppointments: &SearchAppointments
   - Id: SA
