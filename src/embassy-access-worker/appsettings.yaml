@@ -41,8 +41,9 @@ Worker:
                   Duration: 00:01:00
               Schedule:
                 StartDate: 2025-01-31
-                StartTime: 02:55:00
-                StopTime: 02:56:10
+                StartTime: 21:10:00
+                StopDate: 2025-01-31
+                StopTime: 22:31:00
                 TimeZone: 1
         - Id: DEU
           Name: Germany
