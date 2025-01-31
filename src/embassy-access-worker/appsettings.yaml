@@ -25,7 +25,7 @@ Worker:
       Name: Russian
       Parallel: true
       Schedule:
-        Workdays: mon,tue,wed,thu
+        Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
           Name: Serbia
@@ -40,10 +40,8 @@ Worker:
                   Enabled: true
                   Duration: 00:01:00
               Schedule:
-                StartDate: 2025-01-31
-                StartTime: 21:10:00
-                StopDate: 2025-01-31
-                StopTime: 22:31:00
+                StartTime: 16:55:00
+                StopTime: 16:55:20
                 TimeZone: 1
         - Id: DEU
           Name: Germany
