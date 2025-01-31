@@ -27,5 +27,6 @@ jobs:
             cd /usr/src/embassy-access/
             git stash
             git pull origin main --recurse-submodules
+            git submodule update --init --remote --recursive
             chmod +x /usr/src/embassy-access/.github/workflows/deploy.sh
             /usr/src/embassy-access/.github/workflows/deploy.sh
