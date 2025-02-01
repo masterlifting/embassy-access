@@ -47,7 +47,8 @@ module private Fixture =
         |> ResultAsync.map (Option.defaultValue "")
 
     let Dependencies: Order.Dependencies =
-        { updateRequest = fun request -> async { return Ok request }
+        { RestartAttempts = 1
+          updateRequest = fun request -> async { return Ok request }
           getInitialPage = fun _ _ -> httpGetStringRequest "initial_page_response"
           getCaptcha = fun _ _ -> httpGetBytesRequest "captcha.png"
           solveIntCaptcha = fun _ -> async { return Ok 42 }
@@ -61,7 +62,8 @@ module private Fixture =
             { Id = "EMB.RUS.SRB.BEG" |> Graph.NodeIdValue
               Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.combine
               ShortName = "Berlin"
-              Description = None }
+              Description = None
+              TimeZone = None }
           Service =
             { Id = Graph.NodeId.New
               Name = "TestService"

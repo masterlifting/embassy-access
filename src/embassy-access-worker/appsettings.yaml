@@ -25,7 +25,7 @@ Worker:
       Name: Russian
       Parallel: true
       Schedule:
-        Workdays: mon,tue,wed,thu,fri
+        Workdays: mon,tue,wed,thu,fri,sat
       Tasks:
         - Id: SRB
           Name: Serbia
@@ -185,140 +185,168 @@ Embassies:
           Children:
             - Id: BEG
               Name: Белград
+              TimeZone: 1
         - Id: DEU
           Name: Германия
           Description: В каком городе Германии находится российское посольство?
           Children:
             - Id: BER
               Name: Берлин
+              TimeZone: 1
             - Id: MUC
               Name: Мюнхен
+              TimeZone: 1
         - Id: FRA
           Name: Франция
           Description: В каком городе Франции находится российское посольство?
           Children:
             - Id: PAR
               Name: Париж
+              TimeZone: 1
         - Id: ITA
           Name: Италия
           Description: В каком городе Италии находится российское посольство?
           Children:
             - Id: ROM
               Name: Рим
+              TimeZone: 1
             - Id: MIL
               Name: Милан
+              TimeZone: 1
         - Id: ESP
           Name: Испания
           Description: В каком городе Испании находится российское посольство?
           Children:
             - Id: MAD
               Name: Мадрид
+              TimeZone: 1
         - Id: CZE
           Name: Чехия
           Description: В каком городе Чехии находится российское посольство?
           Children:
             - Id: PRG
               Name: Прага
+              TimeZone: 1
         - Id: POL
           Name: Польша
           Description: В каком городе Польши находится российское посольство?
           Children:
             - Id: WAW
               Name: Варшава
+              TimeZone: 1
         - Id: CHE
           Name: Швейцария
           Description: В каком городе Швейцарии находится российское посольство?
           Children:
             - Id: BER
               Name: Берн
+              TimeZone: 1
         - Id: GBR
           Name: Великобритания
           Description: В каком городе Великобритании находится российское посольство?
           Children:
             - Id: LON
               Name: Лондон
+              TimeZone: 0
         - Id: CHN
           Name: Китай
           Description: В каком городе Китая находится российское посольство?
           Children:
             - Id: PEK
               Name: Пекин
+              TimeZone: 8
             - Id: SHA
               Name: Шанхай
+              TimeZone: 8
             - Id: CAN
               Name: Гуанчжоу
+              TimeZone: 8
         - Id: USA
           Name: США
           Description: В каком городе США находится российское посольство?
           Children:
             - Id: WAS
               Name: Вашингтон
+              TimeZone: -5
             - Id: NYC
               Name: Нью-Йорк
+              TimeZone: -5
         - Id: IND
           Name: Индия
           Description: В каком городе Индии находится российское посольство?
           Children:
             - Id: DEL
               Name: Нью-Дели
+              TimeZone: 5.5
             - Id: BOM
               Name: Мумбаи
+              TimeZone: 5.5
         - Id: JPN
           Name: Япония
           Description: В каком городе Японии находится российское посольство?
           Children:
             - Id: TYO
               Name: Токио
+              TimeZone: 9
         - Id: EGY
           Name: Египет
           Description: В каком городе Египта находится российское посольство?
           Children:
             - Id: CAI
               Name: Каир
+              TimeZone: 2
         - Id: BRA
           Name: Бразилия
           Description: В каком городе Бразилии находится российское посольство?
           Children:
             - Id: BSB
               Name: Бразилиа
+              TimeZone: -3
             - Id: SAO
               Name: Сан-Паулу
+              TimeZone: -3
         - Id: AUS
           Name: Австралия
           Description: В каком городе Австралии находится российское посольство?
           Children:
             - Id: CBR
               Name: Канберра
+              TimeZone: 10
         - Id: KOR
           Name: Южная Корея
           Description: В каком городе Южной Кореи находится российское посольство?
           Children:
             - Id: SEL
               Name: Сеул
+              TimeZone: 9
         - Id: THA
           Name: Таиланд
           Description: В каком городе Таиланда находится российское посольство?
           Children:
             - Id: BKK
               Name: Бангкок
+              TimeZone: 7
         - Id: SGP
           Name: Сингапур
           Description: В каком городе Сингапура находится российское посольство?
           Children:
             - Id: SGP
               Name: Сингапур
+              TimeZone: 8
         - Id: SAU
           Name: Саудовская Аравия
           Description: В каком городе Саудовской Аравии находится российское посольство?
           Children:
             - Id: RUH
               Name: Эр-Рияд
+              TimeZone: 3
         - Id: ZAF
           Name: Южная Африка
           Description: В каком городе Южной Африки находится российское посольство?
           Children:
             - Id: PTA
               Name: Претория
+              TimeZone: 2
     - Id: DEU
       Name: Немецкое
       Description: Выберите посольство
@@ -329,12 +357,14 @@ Embassies:
           Children:
             - Id: MAD
               Name: Мадрид
+              TimeZone: 1
         - Id: ITA
           Name: Италия
           Description: В каком городе Италии находится немецкое посольство?
           Children:
             - Id: ROM
               Name: Рим
+              TimeZone: 1
     - Id: ITA
       Name: Итальянское
       Description: Выберите посольство
@@ -345,12 +375,14 @@ Embassies:
           Children:
             - Id: ATH
               Name: Афины
+              TimeZone: 2
         - Id: UKR
           Name: Украина
           Description: В каком городе Украины находится итальянское посольство?
           Children:
             - Id: IEV
               Name: Киев
+              TimeZone: 2
     - Id: GBR
       Name: Британское
       Description: Выберите посольство
@@ -361,12 +393,14 @@ Embassies:
           Children:
             - Id: WAW
               Name: Варшава
+              TimeZone: 1
         - Id: CZE
           Name: Чехия
           Description: В каком городе Чехии находится британское посольство?
           Children:
             - Id: PRG
               Name: Прага
+              TimeZone: 1
     - Id: FRA
       Name: Французское
       Description: Выберите посольство
@@ -377,12 +411,14 @@ Embassies:
           Children:
             - Id: BRU
               Name: Брюссель
+              TimeZone: 1
         - Id: DEU
           Name: Германия
           Description: В каком городе Германии находится французское посольство?
           Children:
             - Id: BER
               Name: Берлин
+              TimeZone: 1
 
 KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
   Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email после регистрации заявки на сайте, после символа | в вышеуказанную команду и отправьте ее в чат.

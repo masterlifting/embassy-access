@@ -32,8 +32,10 @@ let private setInProcessState (deps: Order.Dependencies) request =
             ProcessState = InProcess
             Modified = DateTime.UtcNow }
 
-let private setAttemptCore timeZone request =
+let private setAttemptCore (request: Request) =
     let attemptLimit = 20
+    let timeZone = request.Service.Embassy.TimeZone |> Option.defaultValue 0.
+
     let modified, attempt = request.Attempt
     let modified = modified.AddHours timeZone
     let today = DateTime.UtcNow.AddHours timeZone
@@ -51,13 +53,10 @@ let private setAttemptCore timeZone request =
             Attempt = DateTime.UtcNow, 1 }
         |> Ok
 
-let private setAttempt embassy (deps: Order.Dependencies) =
-
-    let timeZone = 1.0 //TODO: get from embassy
-
+let private setAttempt (deps: Order.Dependencies) =
     ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
         request
-        |> setAttemptCore timeZone
+        |> setAttemptCore
         |> ResultAsync.wrap deps.updateRequest
         |> ResultAsync.map (fun request -> httpClient, queryParams, formData, request))
 
@@ -75,29 +74,31 @@ let private setCompletedState (deps: Order.Dependencies) request =
             ProcessState = Completed message
             Modified = DateTime.UtcNow }
 
-let private setFailedState error (deps: Order.Dependencies) request =
-    let attemptResult =
-        match error with
-        | Operation { Code = Some(Custom Web.Captcha.ErrorCode) } -> request.Attempt |> Ok
-        | _ -> request |> setAttemptCore 1.0 |> Result.map _.Attempt
+let private handleFailedState error (deps: Order.Dependencies) restart request =
+    match error with
+    | Operation { Code = Some(Custom Web.Captcha.ErrorCode) } ->
+        match deps.RestartAttempts <= 0 with
+        | true -> "Limit of restarting request due to captcha error reached." |> Canceled |> Error |> async.Return
+        | false ->
+            { deps with
+                RestartAttempts = deps.RestartAttempts - 1 }
+            |> restart request
+    | _ ->
+        { request with
+            ProcessState = Failed error
+            Modified = DateTime.UtcNow }
+        |> setAttemptCore
+        |> ResultAsync.wrap deps.updateRequest
+        |> ResultAsync.bind (fun _ -> Error <| error.extendMsg $"{Environment.NewLine}%s{request.Service.Payload}")
 
-    attemptResult
-    |> ResultAsync.wrap (fun attempt ->
-        deps.updateRequest
-            { request with
-                ProcessState = Failed error
-                Attempt = attempt
-                Modified = DateTime.UtcNow }
-        |> ResultAsync.bind (fun _ -> Error <| error.extendMsg $"{Environment.NewLine}%s{request.Service.Payload}"))
-
-let private setProcessedState deps request confirmation =
+let private setProcessedState deps request restart confirmation =
     async {
         match! confirmation with
-        | Error error -> return! request |> setFailedState error deps
+        | Error error -> return! request |> handleFailedState error deps restart
         | Ok request -> return! request |> setCompletedState deps
     }
 
-let start (request: Request) =
+let rec start (request: Request) =
     fun (deps: Order.Dependencies) ->
 
         // define
@@ -105,11 +106,11 @@ let start (request: Request) =
         let parsePayload = parsePayload
         let createHttpClient = Http.createClient
         let processInitialPage = InitialPage.handle deps
-        let setAttempt = setAttempt request.Service.Embassy deps
+        let setAttempt = setAttempt deps
         let processValidationPage = ValidationPage.handle deps
         let processAppointmentsPage = AppointmentsPage.handle deps
         let processConfirmationPage = ConfirmationPage.handle deps
-        let setProcessedState = setProcessedState deps request
+        let setProcessedState = setProcessedState deps request start
 
         // pipe
         let run =
