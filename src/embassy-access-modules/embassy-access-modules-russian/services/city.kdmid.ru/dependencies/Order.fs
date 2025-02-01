@@ -8,7 +8,8 @@ open Web.Http.Domain.Request
 open Web.Http.Domain.Response
 
 type Dependencies =
-    { updateRequest: EA.Core.Domain.Request.Request -> Async<Result<EA.Core.Domain.Request.Request, Error'>>
+    { RestartAttempts: int
+      updateRequest: EA.Core.Domain.Request.Request -> Async<Result<EA.Core.Domain.Request.Request, Error'>>
       getCaptcha: Request -> HttpClient -> Async<Result<Response<byte array>, Error'>>
       solveIntCaptcha: byte array -> Async<Result<int, Error'>>
       getInitialPage: Request -> HttpClient -> Async<Result<Response<string>, Error'>>
@@ -17,7 +18,8 @@ type Dependencies =
       postConfirmationPage: Request -> RequestContent -> HttpClient -> Async<Result<string, Error'>> }
 
     static member create requestStorage ct =
-        { updateRequest = fun request -> requestStorage |> EA.Core.DataAccess.Request.Command.update request
+        { RestartAttempts = 3
+          updateRequest = fun request -> requestStorage |> EA.Core.DataAccess.Request.Command.update request
           getInitialPage =
             fun request client -> client |> Web.Http.Request.get request ct |> Web.Http.Response.String.read ct
           getCaptcha =

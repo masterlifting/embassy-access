@@ -8,7 +8,8 @@ type EmbassyNode =
     { Id: Graph.NodeId
       Name: string
       ShortName: string
-      Description: string option }
+      Description: string option
+      TimeZone: float option}
 
     interface Graph.INode with
         member this.Id = this.Id

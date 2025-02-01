@@ -18,6 +18,7 @@ type EmbassyGraphEntity() =
     member val Id = String.Empty with get, set
     member val Name = String.Empty with get, set
     member val Description: string option = None with get, set
+    member val TimeZone: float option = None with get, set
     member val Children = Array.empty<EmbassyGraphEntity> with get, set
 
     member this.ToDomain() =
@@ -32,7 +33,8 @@ type EmbassyGraphEntity() =
                     { Id = nodeId
                       Name = this.Name
                       ShortName = this.Name |> Graph.split |> Seq.last
-                      Description = this.Description },
+                      Description = this.Description
+                      TimeZone = this.TimeZone },
                     children
                 )))
 
