@@ -76,9 +76,13 @@ let private setCompletedState (deps: Order.Dependencies) request =
 
 let private handleFailedState error (deps: Order.Dependencies) restart request =
     match error with
-    | Operation { Code = Some(Custom Web.Captcha.ErrorCode) } ->
+    | Operation { Code = Some(Custom Web.Captcha.ERROR_CODE) } ->
         match deps.RestartAttempts <= 0 with
-        | true -> "Limit of restarting request due to captcha error reached." |> Canceled |> Error |> async.Return
+        | true ->
+            "Limit of restarting request due to captcha error reached."
+            |> Canceled
+            |> Error
+            |> async.Return
         | false ->
             { deps with
                 RestartAttempts = deps.RestartAttempts - 1 }

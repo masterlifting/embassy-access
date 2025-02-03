@@ -14,7 +14,7 @@ type Request =
 
     static member parse(input: string) =
         let parts = input.Split Constants.Endpoint.DELIMITER
-        
+
         match parts with
         | [| "0"; requestId |] -> RequestId.create requestId |> Result.map Subscription
         | _ ->
