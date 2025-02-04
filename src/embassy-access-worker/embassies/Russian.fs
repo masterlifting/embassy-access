@@ -10,16 +10,15 @@ open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies.Russian
 
 let private createEmbassyId (task: WorkerTask) =
-    try
-        let value =
-            task.Id.Value |> Graph.split |> List.skip 1 |> List.take 3 |> Graph.combine
-
-        [ "EMB"; value ] |> Graph.combine |> Graph.NodeIdValue |> Ok
-    with ex ->
+    task.Id.TryChooseRange 1 (Some 3) //TODO: Upgrade it to take the range excluding the last value
+    |> Option.map (fun range -> (Constants.EMBASSY_ROOT_ID |> Graph.NodeIdValue) :: range)
+    |> Option.map (Graph.Node.Id.combine >> Ok)
+    |> Option.defaultValue (
         Error
         <| Operation
-            { Message = $"Getting embassy Id failed. Error: {ex |> Exception.toMessage}"
+            { Message = $"Creating embassy Id failed."
               Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
+    )
 
 module private Kdmid =
 

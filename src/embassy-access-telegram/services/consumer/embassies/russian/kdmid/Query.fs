@@ -4,6 +4,7 @@ open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
+open EA.Telegram.Domain
 open EA.Telegram.Endpoints.Consumer.Request
 open EA.Telegram.Endpoints.Consumer.Embassies.Russian
 open EA.Telegram.Dependencies.Consumer.Embassies.Russian
@@ -48,8 +49,8 @@ let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
         |> Request.Delete
         |> RussianEmbassy
 
-    match request.Service.Id.Value |> Graph.split with
-    | [ _; "RUS"; _; _; "0" ] ->
+    match request.Service.Id.Split() with
+    | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
         Map
             [ getRoute.Value, "Запросить доступные слоты"
               deleteRoute.Value, "Удалить подписку" ]

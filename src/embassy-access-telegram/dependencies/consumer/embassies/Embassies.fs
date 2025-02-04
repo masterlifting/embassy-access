@@ -42,15 +42,17 @@ type Dependencies =
                         |> Error
                         |> async.Return
                     | Some embassyNode ->
-                        match embassyNode.IdParts.Length > 1 with
-                        | false ->
+                        match embassyNode.Id.TryGetPart 1 with
+                        | None ->
                             $"Embassy services of {embassyNode.ShortName}"
                             |> NotFound
                             |> Error
                             |> async.Return
-                        | true ->
+                        | Some countryId ->
                             let serviceId =
-                                [ "SRV"; embassyNode.IdParts[1].Value ] |> Graph.combine |> Graph.NodeIdValue
+                                [ (EA.Telegram.Domain.Constants.SERVICE_ROOT_ID |> Graph.NodeIdValue)
+                                  countryId ]
+                                |> Graph.Node.Id.combine
 
                             deps.getServiceGraph ()
                             |> ResultAsync.map (Graph.BFS.tryFindById serviceId)

@@ -1,6 +1,7 @@
 ﻿module EA.Telegram.Services.Consumer.Embassies.Service
 
 open System
+open EA.Telegram.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Producer
@@ -42,15 +43,16 @@ module internal Get =
             |> ResultAsync.bindAsync (fun serviceNode ->
                 match serviceNode.Children with
                 | [] ->
-                    match serviceNode.IdParts.Length > 1 with
-                    | false ->
+                    match serviceNode.Id.TryGetPart 1 with
+                    | None ->
                         $"Embassy service '{serviceNode.ShortName}'"
                         |> NotSupported
                         |> Error
                         |> async.Return
-                    | true ->
-                        match serviceNode.IdParts[1].Value with
-                        | "RUS" -> deps.RussianDeps |> Russian.Service.get embassyId serviceNode.Value
+                    | Some countryId ->
+                        match countryId.Value with
+                        | Constants.RUSSIAN_NODE_ID ->
+                            deps.RussianDeps |> Russian.Service.get embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported
@@ -69,15 +71,16 @@ module internal Get =
             |> ResultAsync.bindAsync (fun serviceNode ->
                 match serviceNode.Children with
                 | [] ->
-                    match serviceNode.IdParts.Length > 1 with
-                    | false ->
+                    match serviceNode.Id.TryGetPart 1 with
+                    | None ->
                         $"Embassy service '{serviceNode.ShortName}'"
                         |> NotSupported
                         |> Error
                         |> async.Return
-                    | true ->
-                        match serviceNode.IdParts[1].Value with
-                        | "RUS" -> deps.RussianDeps |> Russian.Service.userGet embassyId serviceNode.Value
+                    | Some countryId ->
+                        match countryId.Value with
+                        | Constants.RUSSIAN_NODE_ID ->
+                            deps.RussianDeps |> Russian.Service.userGet embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported
