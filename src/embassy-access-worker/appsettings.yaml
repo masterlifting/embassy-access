@@ -25,7 +25,7 @@ Worker:
       Name: Russian
       Parallel: true
       Schedule:
-        Workdays: mon,tue,wed,thu,fri,sat
+        Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
           Name: Serbia
@@ -53,7 +53,7 @@ Worker:
               Tasks:
                 - Id: SA
                   Name: Search appointments
-                  Enabled: false
+                  Enabled: true
                   Duration: 00:01:00
               Schedule:
                 StartTime: 08:30:00
