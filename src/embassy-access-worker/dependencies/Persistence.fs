@@ -33,12 +33,14 @@ type Dependencies =
                     let! requestStorage = initRequestStorage () |> async.Return
 
                     let! subscriptions = chatStorage |> Chat.Query.getSubscriptions |> ResultAsync.map Set.ofSeq
-                    let! requestIdentifiers = requestStorage |> Request.Query.getIdentifiers |> ResultAsync.map Set.ofSeq
+
+                    let! requestIdentifiers =
+                        requestStorage |> Request.Query.getIdentifiers |> ResultAsync.map Set.ofSeq
 
                     let existingData = subscriptions |> Set.intersect <| requestIdentifiers
                     let subscriptionsToRemove = existingData |> Set.difference subscriptions
                     let requestIdsToRemove = existingData |> Set.difference requestIdentifiers
-                    
+
                     do! chatStorage |> Chat.Command.deleteSubscriptions subscriptionsToRemove
                     return requestStorage |> Request.Command.deleteMany requestIdsToRemove
                 }

@@ -20,6 +20,7 @@ type Dependencies =
       getUserEmbassyServiceChildren:
           Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>> }
 
+    //TODO: Optimize the requests
     static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
@@ -52,7 +53,7 @@ type Dependencies =
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
                     | None ->
-                        $"User embassy of Embassy with Id {embassyId.Value}"
+                        $"User embassy of Embassy with Id '{embassyId.Value}'"
                         |> NotFound
                         |> Error
                         |> async.Return
@@ -71,22 +72,31 @@ type Dependencies =
                 getUserRequests ()
                 |> ResultAsync.map (List.map _.Service)
                 |> ResultAsync.bindAsync (fun userServices ->
-                    let embassyIdSubdomain = embassyId.Value |> Graph.split |> Seq.take 2 |> Seq.last
+                    match embassyId.TryGetPart 1 with
+                    | None ->
+                        $"User embassy of Embassy with Id '{embassyId.Value}'"
+                        |> NotFound
+                        |> Error
+                        |> async.Return
+                    | Some countryId ->
+                        let serviceId =
+                            [ EA.Telegram.Domain.Constants.SERVICE_ROOT_ID |> Graph.NodeIdValue; countryId ]
+                            |> Graph.Node.Id.combine
 
-                    deps.getServiceGraph ()
-                    |> ResultAsync.map (Graph.BFS.tryFindById ($"SRV.{embassyIdSubdomain}" |> Graph.NodeIdValue))
-                    |> ResultAsync.bind (function
-                        | None -> "Service graph" |> NotFound |> Error
-                        | Some node -> node |> Ok)
-                    |> ResultAsync.map (fun node ->
-                        node.Value.Description,
-                        node.Children
-                        |> List.filter (fun service ->
-                            userServices
-                            |> List.exists (fun userService ->
-                                userService.Id.Value.Contains service.Id.Value
-                                && userService.Embassy.Id.Value.Contains embassyId.Value))
-                        |> List.map _.Value))
+                        deps.getServiceGraph ()
+                        |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
+                        |> ResultAsync.bind (function
+                            | None -> "Service graph" |> NotFound |> Error
+                            | Some node -> node |> Ok)
+                        |> ResultAsync.map (fun node ->
+                            node.Value.Description,
+                            node.Children
+                            |> List.filter (fun service ->
+                                userServices
+                                |> List.exists (fun userService ->
+                                    userService.Id.Value.Contains service.Id.Value
+                                    && userService.Embassy.Id.Value.Contains embassyId.Value))
+                            |> List.map _.Value))
 
             let getUserEmbassyServiceChildren (embassyId: Graph.NodeId) (serviceId: Graph.NodeId) =
                 getUserRequests ()

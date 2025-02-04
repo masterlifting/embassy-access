@@ -3,7 +3,6 @@
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain.Producer
-open Web.Telegram.Producer
 open EA.Core.Domain
 open EA.Telegram.Domain.Chat
 open EA.Telegram.DataAccess
@@ -24,7 +23,7 @@ type Dependencies =
 
             let sendNotifications data =
                 deps.initTelegramClient ()
-                |> ResultAsync.wrap (produceSeq data deps.CancellationToken)
+                |> ResultAsync.wrap (Web.Telegram.Producer.produceSeq data deps.CancellationToken)
                 |> ResultAsync.map ignore
 
             return

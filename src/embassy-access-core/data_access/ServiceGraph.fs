@@ -28,7 +28,7 @@ type ServiceGraphEntity() =
                 Graph.Node(
                     { Id = nodeId
                       Name = this.Name
-                      ShortName = this.Name |> Graph.split |> Seq.last
+                      ShortName = this.Name |> Graph.Node.Name.split |> Seq.last
                       Instruction = this.Instruction
                       Description = this.Description },
                     children

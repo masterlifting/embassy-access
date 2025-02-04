@@ -23,7 +23,7 @@ module ErrorCode =
     let PAGE_HAS_ERROR = "PageHasError"
 
     [<Literal>]
-    let NOT_CONFIRMED = "NotConfirmed"
+    let NOT_CONFIRMED = "RequestNotConfirmed"
 
     [<Literal>]
     let CONFIRMATION_EXISTS = "ConfirmationExists"

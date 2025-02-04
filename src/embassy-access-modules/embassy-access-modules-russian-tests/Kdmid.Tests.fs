@@ -60,7 +60,7 @@ module private Fixture =
         { Uri = Uri("https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=96794&cd=AB6C2AF3")
           Embassy =
             { Id = "EMB.RUS.SRB.BEG" |> Graph.NodeIdValue
-              Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.combine
+              Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.Node.Name.combine
               ShortName = "Berlin"
               Description = None
               TimeZone = None }

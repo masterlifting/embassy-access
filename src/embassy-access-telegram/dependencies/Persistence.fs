@@ -19,13 +19,13 @@ type Dependencies =
 
         result {
 
-            let! connectionString = cfg |> Persistence.Storage.getConnectionString "FileSystem"
+            let! filePath = cfg |> Persistence.Storage.getConnectionString "FileSystem"
 
             let initChatStorage () =
-                connectionString |> Chat.FileSystem |> Chat.init
+                filePath |> Chat.FileSystem |> Chat.init
 
             let initRequestStorage () =
-                connectionString |> Request.FileSystem |> Request.init
+                filePath |> Request.FileSystem |> Request.init
 
             let initEmbassyGraphStorage () =
                 { SectionName = "Embassies"
