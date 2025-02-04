@@ -46,7 +46,7 @@ Worker:
         - Id: DEU
           Name: Germany
           Parallel: true
-          Recursively: 00:30:00
+          Recursively: 01:00:00
           Tasks:
             - Id: BER
               Name: Berlin
