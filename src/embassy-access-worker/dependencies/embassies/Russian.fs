@@ -32,7 +32,8 @@ module Kdmid =
                 let telegramProducerDeps: Dependencies.Producer.Producer.Dependencies =
                     { CancellationToken = ct
                       initTelegramClient = webDeps.initTelegramClient
-                      initChatStorage = persistenceDeps.initChatStorage }
+                      initChatStorage = persistenceDeps.initChatStorage
+                      initRequestStorage = persistenceDeps.initRequestStorage }
 
                 let! telegramProducerKdmidDeps =
                     Dependencies.Producer.Embassies.Russian.Kdmid.Dependencies.create telegramProducerDeps

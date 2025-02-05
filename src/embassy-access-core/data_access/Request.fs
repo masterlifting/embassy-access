@@ -112,6 +112,13 @@ module private InMemory =
             |> Result.map (Seq.filter (fun x -> x.Service.EmbassyName = name))
             |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
             |> async.Return
+            
+        let findManyByServiceId (id: Graph.NodeId) client =
+            client
+            |> loadData
+            |> Result.map (Seq.filter (fun x -> x.Service.ServiceId = id.Value))
+            |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
+            |> async.Return
 
         let findManyByIds (ids: RequestId seq) client =
             let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
@@ -178,6 +185,12 @@ module private FileSystem =
             client
             |> loadData
             |> ResultAsync.map (Seq.filter (fun x -> x.Service.EmbassyId = embassyId.Value))
+            |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
+            
+        let findManyByServiceId (id: Graph.NodeId) client =
+            client
+            |> loadData
+            |> ResultAsync.map (Seq.filter (fun x -> x.Service.ServiceId = id.Value))
             |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
 
         let findManyByEmbassyName name client =
@@ -267,6 +280,12 @@ module Query =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyName name
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyName name
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+        
+    let findManyByServiceId id storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Query.findManyByServiceId id
+        | Storage.FileSystem client -> client |> FileSystem.Query.findManyByServiceId id
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
     let findManyByIds ids storage =
