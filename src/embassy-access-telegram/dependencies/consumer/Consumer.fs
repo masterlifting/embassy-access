@@ -53,7 +53,7 @@ type Dependencies =
                 |> ResultAsync.map ignore
 
             let sendResults data =
-                Web.Telegram.Producer.produceResults data dto.ChatId ct client
+                Web.Telegram.Producer.produceResultSeq data dto.ChatId ct client
                 |> ResultAsync.map ignore
 
             return

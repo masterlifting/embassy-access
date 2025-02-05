@@ -7,6 +7,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Embassies.Russian
 open EA.Worker.Dependencies
+open EA.Telegram.Dependencies.Producer
 open Worker.Domain
 
 module Kdmid =
@@ -29,14 +30,13 @@ module Kdmid =
             result {
                 let! requestStorage = persistenceDeps.initRequestStorage ()
 
-                let telegramProducerDeps: Dependencies.Producer.Producer.Dependencies =
+                let telegramProducerDeps: Producer.Dependencies =
                     { CancellationToken = ct
                       initTelegramClient = webDeps.initTelegramClient
                       initChatStorage = persistenceDeps.initChatStorage
-                      initRequestStorage = persistenceDeps.initRequestStorage }
+                      initRequestStorage = fun _ -> requestStorage |> Ok }
 
-                let! telegramProducerKdmidDeps =
-                    Dependencies.Producer.Embassies.Russian.Kdmid.Dependencies.create telegramProducerDeps
+                let! telegramProducerKdmidDeps = Embassies.Russian.Kdmid.Dependencies.create telegramProducerDeps
 
                 let notify notification =
                     telegramProducerKdmidDeps
