@@ -4,6 +4,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
+open EA.Core.DataAccess
 open EA.Telegram.Domain.Chat
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
@@ -18,8 +19,12 @@ type Dependencies =
 
         result {
             let getRequestChats (request: Request) =
-                deps.initChatStorage ()
-                |> ResultAsync.wrap (Chat.Query.findManyBySubscription request.Id)
+                deps.initRequestStorage ()
+                |> ResultAsync.wrap (Request.Query.findManyByServiceId request.Service.Id)
+                |> ResultAsync.map (Seq.map _.Id)
+                |> ResultAsync.bindAsync (fun subscriptionIds ->
+                    deps.initChatStorage ()
+                    |> ResultAsync.wrap (Chat.Query.findManyBySubscriptions subscriptionIds))
 
             let sendNotifications data =
                 deps.initTelegramClient ()
