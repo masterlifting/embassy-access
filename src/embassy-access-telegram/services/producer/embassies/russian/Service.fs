@@ -10,11 +10,7 @@ module Kdmid =
     let sendNotification notification =
         fun (deps: Kdmid.Dependencies) ->
             match notification with
-            | Successfully(request, msg) ->
-                request
-                |> deps.getRequestChats
-                |> ResultAsync.map (Seq.map (fun chat -> chat.Id |> Notification.toSuccessfullyResponse (request, msg)))
-                |> ResultAsync.bindAsync deps.sendNotifications
+            | Successfully _ -> () |> Ok |> async.Return
             | Unsuccessfully(request, error) ->
                 request
                 |> deps.getRequestChats

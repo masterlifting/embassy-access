@@ -10,7 +10,8 @@ open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies.Russian
 
 let private createEmbassyId (task: WorkerTask) =
-    task.Id.TryChooseRange 1 (Some 3) //TODO: Upgrade it to take the range excluding the last value
+    task.Id.TryTakeRange 1 None
+    |> Option.map (fun range -> range[.. range.Length - 2]) // Reduce the handler Id here (e.g. "RUS.SRB.BEG.SA" -> "RUS.SRB.BEG")
     |> Option.map (fun range -> (Constants.EMBASSY_ROOT_ID |> Graph.NodeIdValue) :: range)
     |> Option.map (Graph.Node.Id.combine >> Ok)
     |> Option.defaultValue (
@@ -89,10 +90,10 @@ module private Kdmid =
                         | None, None -> "No results found." |> Debug |> Ok))
 
     module SearchAppointments =
-        let ID = "SA" |> Graph.NodeIdValue
+        let HandlerId = "SA" |> Graph.NodeIdValue
 
         let createRouterNode cityId =
-            Graph.Node(Id(cityId |> Graph.NodeIdValue), [ Graph.Node(Id ID, []) ])
+            Graph.Node(Id(cityId |> Graph.NodeIdValue), [ Graph.Node(Id HandlerId, []) ])
 
         let start (task, cfg, ct) =
             let result = ResultBuilder()
@@ -106,7 +107,7 @@ module private Kdmid =
             }
             |> ResultAsync.wrap id
 
-let private ROUTER =
+let private Router =
 
     let inline createNode countryId cityId =
         Graph.Node(Id(countryId |> Graph.NodeIdValue), [ cityId |> Kdmid.SearchAppointments.createRouterNode ])
@@ -128,5 +129,5 @@ let private ROUTER =
     )
 
 let register () =
-    ROUTER
-    |> RouteNode.register (Kdmid.SearchAppointments.ID, Kdmid.SearchAppointments.start)
+    Router
+    |> RouteNode.register (Kdmid.SearchAppointments.HandlerId, Kdmid.SearchAppointments.start)
