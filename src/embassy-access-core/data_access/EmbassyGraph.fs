@@ -19,7 +19,7 @@ type EmbassyGraphEntity() =
     member val Name = String.Empty with get, set
     member val Description: string option = None with get, set
     member val TimeZone: float option = None with get, set
-    member val Children = Array.empty<EmbassyGraphEntity> with get, set
+    member val Children: EmbassyGraphEntity[] | null = [||] with get, set
 
     member this.ToDomain() =
         this.Id
