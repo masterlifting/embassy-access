@@ -44,7 +44,8 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                                   Embassy = embassy
                                   SubscriptionState = Auto
                                   ConfirmationState = model.ConfirmationState })
-                            |> ResultAsync.wrap (fun kdmidRequest -> kdmidRequest.ToRequest() |> deps.createRequest)
+                            |> Result.map _.ToRequest()
+                            |> ResultAsync.wrap deps.createRequest
 
                         return
                             $"Подписка '{request.Id.ValueStr}' на услугу '{service.Name}' для посольства '{embassy.Name}' создана."
@@ -80,7 +81,9 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                             $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' уже в обработке."
                         |> Ok
                         |> async.Return
-                    | _ ->
+                    | Ready
+                    | Failed _
+                    | Completed _ ->
                         deps
                         |> Request.getService request
                         |> ResultAsync.bind (fun result -> deps.ChatId |> Request.toResponse result)
@@ -98,7 +101,8 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                                   Embassy = embassy
                                   SubscriptionState = Manual
                                   ConfirmationState = Disabled })
-                            |> ResultAsync.wrap (fun kdmidRequest -> kdmidRequest.ToRequest() |> deps.createRequest)
+                            |> Result.map _.ToRequest()
+                            |> ResultAsync.wrap deps.createRequest
 
                         return
                             deps
@@ -138,10 +142,11 @@ let deleteSubscription requestId =
                     $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
                 |> Ok
                 |> async.Return
-            | _ ->
+            | Ready
+            | Failed _
+            | Completed _ ->
                 deps.deleteRequest requestId
                 |> ResultAsync.bind (fun _ ->
                     (deps.ChatId, New)
-                    |> Text.create
-                        $"Вы успешно отписались от уведомлений. Подписка для '{request.Service.Name}' удалена"
+                    |> Text.create $"Подписка для '{request.Service.Name}' удалена"
                     |> Ok))

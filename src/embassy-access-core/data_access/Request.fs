@@ -79,6 +79,11 @@ module private Common =
             Ok data
         | None -> $"{request.Id}" |> NotFound |> Error
 
+    let delete (id: RequestId) (data: RequestEntity array) =
+        match data |> Array.tryFindIndex (fun x -> x.Id = id.Value) with
+        | Some index -> data |> Array.removeAt index |> Ok
+        | None -> $"{id}" |> NotFound |> Error
+
 module private InMemory =
     open Persistence.InMemory
 
@@ -112,7 +117,7 @@ module private InMemory =
             |> Result.map (Seq.filter (fun x -> x.Service.EmbassyName = name))
             |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
             |> async.Return
-            
+
         let findManyByServiceId (id: Graph.NodeId) client =
             client
             |> loadData
@@ -158,6 +163,13 @@ module private InMemory =
             |> Result.map (fun _ -> request)
             |> async.Return
 
+        let delete (id: RequestId) client =
+            client
+            |> loadData
+            |> Result.bind (Common.delete id)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> async.Return
+
         let deleteMany (ids: RequestId Set) client =
             client
             |> loadData
@@ -186,7 +198,7 @@ module private FileSystem =
             |> loadData
             |> ResultAsync.map (Seq.filter (fun x -> x.Service.EmbassyId = embassyId.Value))
             |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
-            
+
         let findManyByServiceId (id: Graph.NodeId) client =
             client
             |> loadData
@@ -233,6 +245,12 @@ module private FileSystem =
                 | false -> data |> Common.create request)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
             |> ResultAsync.map (fun _ -> request)
+
+        let delete (id: RequestId) client =
+            client
+            |> loadData
+            |> ResultAsync.bind (Common.delete id)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
 
         let deleteMany (ids: RequestId Set) client =
             client
@@ -281,7 +299,7 @@ module Query =
         | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyName name
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyName name
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
-        
+
     let findManyByServiceId id storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByServiceId id
@@ -312,6 +330,12 @@ module Command =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.createOrUpdate request
         | Storage.FileSystem client -> client |> FileSystem.Command.createOrUpdate request
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    let delete id storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.delete id
+        | Storage.FileSystem client -> client |> FileSystem.Command.delete id
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
     let deleteMany ids storage =

@@ -15,7 +15,7 @@ type ServiceGraphEntity() =
     member val Name: string = String.Empty with get, set
     member val Instruction: string option = None with get, set
     member val Description: string option = None with get, set
-    member val Children: ServiceGraphEntity[] = [||] with get, set
+    member val Children: ServiceGraphEntity[] | null = [||] with get, set
 
     member this.ToDomain() =
         this.Id

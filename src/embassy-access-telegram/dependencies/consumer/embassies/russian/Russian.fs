@@ -37,5 +37,5 @@ type Dependencies =
                   RequestStorage = deps.RequestStorage
                   getEmbassyGraph = deps.getEmbassyGraph
                   getServiceGraph = deps.getServiceGraph
-                  getChatRequests = deps.getChatRequests }
+                  getChatRequests = deps.getOrCreateChatRequests }
         }

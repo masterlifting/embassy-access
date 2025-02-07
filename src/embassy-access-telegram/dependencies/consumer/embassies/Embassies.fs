@@ -5,6 +5,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain
 open EA.Core.Domain
+open EA.Telegram.Domain
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Dependencies.Consumer.Embassies.Russian
 
@@ -30,41 +31,47 @@ type Dependencies =
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bind (function
                     | Some embassy -> Ok embassy
-                    | None -> $"Embassy with Id {embassyId.Value}" |> NotFound |> Error)
+                    | None -> $"Embassy '%s{embassyId.Value}" |> NotFound |> Error)
 
             let getEmbassyServiceGraph embassyId =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
                     | None ->
-                        $"Embassy services of Embassy with Id {embassyId.Value}"
+                        $"Services of Embassy '%s{embassyId.Value}'"
                         |> NotFound
                         |> Error
                         |> async.Return
-                    | Some embassyNode ->
-                        match embassyNode.Id.TryGetPart 1 with
+                    | Some node ->
+                        // try to get the countryId from the embassyId. It should be the second part of the embassyId
+                        match node.Id.TryGetPart 1 with
                         | None ->
-                            $"Embassy services of {embassyNode.ShortName}"
+                            $"Services of Embassy '%s{embassyId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
                             |> NotFound
                             |> Error
                             |> async.Return
                         | Some countryId ->
                             let serviceId =
-                                [ (EA.Telegram.Domain.Constants.SERVICE_ROOT_ID |> Graph.NodeIdValue)
-                                  countryId ]
+                                [ (Constants.SERVICE_NODE_ID |> Graph.NodeIdValue); countryId ]
                                 |> Graph.Node.Id.combine
 
                             deps.getServiceGraph ()
                             |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                             |> ResultAsync.bind (function
-                                | None -> $"Embassy services of {embassyNode.ShortName}" |> NotFound |> Error
+                                | None ->
+                                    $"Services of Embassy '%s{embassyId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
+                                    |> NotFound
+                                    |> Error
                                 | Some serviceNode -> serviceNode |> Ok))
 
             let getServiceNode serviceId =
                 deps.getServiceGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                 |> ResultAsync.bind (function
-                    | None -> $"Service with Id {serviceId.Value}" |> NotFound |> Error
+                    | None ->
+                        $"Service '%s{serviceId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
+                        |> NotFound
+                        |> Error
                     | Some serviceNode -> serviceNode |> Ok)
 
             return

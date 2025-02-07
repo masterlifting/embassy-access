@@ -29,25 +29,34 @@ type Dependencies =
 
         result {
 
-            let getServices serviceId =
+            let getService serviceId =
                 deps.getServiceGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                 |> ResultAsync.bind (function
-                    | None -> $"Service with Id {serviceId.Value}" |> NotFound |> Error
+                    | None ->
+                        $"Service '%s{serviceId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
+                        |> NotFound
+                        |> Error
                     | Some serviceNode -> serviceNode.Value |> Ok)
 
             let getEmbassy embassyId =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bind (function
-                    | None -> $"Embassy with Id {embassyId.Value}" |> NotFound |> Error
+                    | None ->
+                        $"Embassy '%s{embassyId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
+                        |> NotFound
+                        |> Error
                     | Some embassyNode -> embassyNode.Value |> Ok)
 
             let getRequest requestId =
                 deps.RequestStorage
                 |> Request.Query.tryFindById requestId
                 |> ResultAsync.bind (function
-                    | None -> $"Request with Id {requestId}" |> NotFound |> Error
+                    | None ->
+                        $"Request '%s{requestId.ValueStr}' for user chat '%s{deps.ChatId.ValueStr}'"
+                        |> NotFound
+                        |> Error
                     | Some request -> request |> Ok)
 
             let createRequest (request: Request) =
@@ -56,11 +65,9 @@ type Dependencies =
                 |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.create request)
 
             let deleteRequest requestId =
-                let requestIdSet = Set.singleton requestId
-
                 deps.ChatStorage
-                |> Chat.Command.deleteChatSubscriptions deps.ChatId requestIdSet
-                |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.deleteMany requestIdSet)
+                |> Chat.Command.deleteChatSubscription deps.ChatId requestId
+                |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.delete requestId)
 
             return
                 { ChatId = deps.ChatId
@@ -70,7 +77,7 @@ type Dependencies =
                   sendResult = deps.sendResult
                   sendResults = deps.sendResults
                   getRequest = getRequest
-                  getService = getServices
+                  getService = getService
                   getEmbassy = getEmbassy
                   getChatRequests = deps.getChatRequests
                   createRequest = createRequest

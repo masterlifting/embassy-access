@@ -20,7 +20,7 @@ type Dependencies =
       RequestStorage: Request.RequestStorage
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
-      getChatRequests: unit -> Async<Result<Request list, Error'>> }
+      getOrCreateChatRequests: unit -> Async<Result<Request list, Error'>> }
 
     static member create client (dto: Consumer.Dto<_>) ct (deps: Persistence.Dependencies) =
         let result = ResultBuilder()
@@ -30,7 +30,7 @@ type Dependencies =
             let! chatStorage = deps.initChatStorage ()
             let! requestStorage = deps.initRequestStorage ()
 
-            let getChatRequests () =
+            let getOrCreateChatRequests () =
                 chatStorage
                 |> Chat.Query.tryFindById dto.ChatId
                 |> ResultAsync.bindAsync (function
@@ -49,11 +49,13 @@ type Dependencies =
                 deps.initEmbassyGraphStorage () |> ResultAsync.wrap EmbassyGraph.get
 
             let sendResult data =
-                Web.Telegram.Producer.produceResult data dto.ChatId ct client
+                client
+                |> Web.Telegram.Producer.produceResult data dto.ChatId ct
                 |> ResultAsync.map ignore
 
             let sendResults data =
-                Web.Telegram.Producer.produceResultSeq data dto.ChatId ct client
+                client
+                |> Web.Telegram.Producer.produceResultSeq data dto.ChatId ct
                 |> ResultAsync.map ignore
 
             return
@@ -66,5 +68,5 @@ type Dependencies =
                   RequestStorage = requestStorage
                   getServiceGraph = getServiceGraph
                   getEmbassyGraph = getEmbassyGraph
-                  getChatRequests = getChatRequests }
+                  getOrCreateChatRequests = getOrCreateChatRequests }
         }
