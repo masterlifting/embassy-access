@@ -15,12 +15,12 @@ let private createButtons chatId msgIdOpt buttonGroupName data =
     | 0 -> Text.create "No data"
     | _ ->
         Buttons.create
-            { Name = buttonGroupName |> Option.defaultValue "Choose what do you want to visit"
+            { Name = buttonGroupName |> Option.defaultValue "Choose what do you want"
               Columns = 1
               Data = data |> Map.ofSeq }
     |> fun send -> (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New) |> send
 
-let private toUserEmbassyResponse chatId messageId buttonGroupName (embassies: EmbassyNode seq) =
+let private toUserEmbassiesResponse chatId messageId buttonGroupName (embassies: EmbassyNode seq) =
     embassies
     |> Seq.map (fun embassy -> Request.Users(Get(Get.UserEmbassy(embassy.Id))).Value, embassy.ShortName)
     |> createButtons chatId messageId buttonGroupName
@@ -32,13 +32,13 @@ let private toUserEmbassyServicesResponse chatId messageId buttonGroupName embas
     |> createButtons chatId messageId buttonGroupName
 
 module internal Query =
-    open EA.Telegram.Services.Consumer.Embassies.Service
+    open EA.Telegram.Services.Consumer
 
     let getUserEmbassies () =
         fun (deps: Users.Dependencies) ->
             deps.getUserEmbassies ()
             |> ResultAsync.map (fun (parentDescription, embassies) ->
-                embassies |> toUserEmbassyResponse deps.ChatId None parentDescription)
+                embassies |> toUserEmbassiesResponse deps.ChatId None parentDescription)
 
     let getUserEmbassyServices embassyId =
         fun (deps: Users.Dependencies) ->
@@ -55,7 +55,7 @@ module internal Query =
                 | [] -> deps |> getUserEmbassyServices embassyId
                 | _ ->
                     embassies
-                    |> toUserEmbassyResponse deps.ChatId (Some deps.MessageId) parentDescription
+                    |> toUserEmbassiesResponse deps.ChatId (Some deps.MessageId) parentDescription
                     |> Ok
                     |> async.Return)
 
@@ -64,7 +64,9 @@ module internal Query =
             deps.getUserEmbassyServiceChildren embassyId serviceId
             |> ResultAsync.bindAsync (fun (parentDescription, services) ->
                 match services with
-                | [] -> deps.EmbassiesDeps |> Get.userEmbassyService embassyId serviceId
+                | [] ->
+                    deps.EmbassiesDeps
+                    |> Embassies.Service.Query.getUserEmbassyService embassyId serviceId
                 | _ ->
                     services
                     |> toUserEmbassyServicesResponse deps.ChatId (Some deps.MessageId) parentDescription embassyId

@@ -67,13 +67,15 @@ let getSubscriptionsMenu requestId =
                 |> Text.create
                     $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
                 |> Ok
-            | _ ->
+            | Ready
+            | Failed _
+            | Completed _ ->
                 request.Service.Payload
                 |> Payload.toValue
                 |> Result.map (fun payloadValue ->
                     (deps.ChatId, Replace deps.MessageId)
                     |> Buttons.create
-                        { Name = $"Что хотите сделать с '{payloadValue}'?"
+                        { Name = $"Что хотите сделать с подпиской '{payloadValue}'?"
                           Columns = 1
                           Data = buildSubscriptionMenu request }))
 
@@ -88,7 +90,9 @@ let getAppointments requestId =
                     $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' уже в обработке."
                 |> Ok
                 |> async.Return
-            | _ ->
+            | Ready
+            | Failed _
+            | Completed _ ->
                 deps
                 |> Request.getService request
                 |> ResultAsync.bind (fun result -> deps.ChatId |> Request.toResponse result))

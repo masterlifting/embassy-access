@@ -15,8 +15,8 @@ let respond request =
             match request with
             | Get get ->
                 match get with
-                | Get.Embassies -> Get.embassies ()
-                | Get.Embassy embassyId -> Get.embassy embassyId
-                | Get.EmbassyServices embassyId -> Get.embassyServices embassyId
-                | Get.EmbassyService(embassyId, serviceId) -> Get.embassyService embassyId serviceId
+                | Get.Embassies -> Query.getEmbassies ()
+                | Get.Embassy embassyId -> Query.getEmbassy embassyId
+                | Get.EmbassyServices embassyId -> Query.getEmbassyServices embassyId
+                | Get.EmbassyService(embassyId, serviceId) -> Query.getEmbassyService embassyId serviceId
                 |> fun createResponse -> deps |> createResponse |> deps.sendResult)

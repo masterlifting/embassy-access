@@ -19,7 +19,7 @@ module private Response =
         | 0 -> Text.create "No data"
         | _ ->
             Buttons.create
-                { Name = buttonGroupName |> Option.defaultValue "Choose what do you want to visit"
+                { Name = buttonGroupName |> Option.defaultValue "Choose what do you want"
                   Columns = columns
                   Data = data |> Map.ofSeq }
         |> fun send -> (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New) |> send
@@ -35,9 +35,9 @@ module private Response =
             Request.Embassies(Get(Get.EmbassyService(embassyId, service.Id))).Value, service.ShortName)
         |> createButtons chatId (Some messageId) buttonGroupName 1
 
-module internal Get =
+module internal Query =
 
-    let embassyService embassyId serviceId =
+    let getEmbassyService embassyId serviceId =
         fun (deps: Embassies.Dependencies) ->
             deps.getServiceNode serviceId
             |> ResultAsync.bindAsync (fun serviceNode ->
@@ -65,7 +65,7 @@ module internal Get =
                     |> Ok
                     |> async.Return)
 
-    let userEmbassyService embassyId serviceId =
+    let getUserEmbassyService embassyId serviceId =
         fun (deps: Embassies.Dependencies) ->
             deps.getServiceNode serviceId
             |> ResultAsync.bindAsync (fun serviceNode ->
@@ -93,7 +93,7 @@ module internal Get =
                     |> Ok
                     |> async.Return)
 
-    let embassyServices embassyId =
+    let getEmbassyServices embassyId =
         fun (deps: Embassies.Dependencies) ->
             deps.getEmbassyServiceGraph embassyId
             |> ResultAsync.map (fun node ->
@@ -101,11 +101,11 @@ module internal Get =
                 |> Seq.map _.Value
                 |> Response.toEmbassyService deps.ChatId deps.MessageId node.Value.Description embassyId)
 
-    let embassy embassyId =
+    let getEmbassy embassyId =
         fun (deps: Embassies.Dependencies) ->
             deps.getEmbassyNode embassyId
             |> ResultAsync.bindAsync (function
-                | AP.Leaf value -> deps |> embassyServices value.Id
+                | AP.Leaf value -> deps |> getEmbassyServices value.Id
                 | AP.Node node ->
                     node.Children
                     |> Seq.map _.Value
@@ -113,7 +113,7 @@ module internal Get =
                     |> Ok
                     |> async.Return)
 
-    let embassies () =
+    let getEmbassies () =
         fun (deps: Embassies.Dependencies) ->
             deps.getEmbassiesGraph ()
             |> ResultAsync.map (fun node ->

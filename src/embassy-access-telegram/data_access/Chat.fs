@@ -60,6 +60,11 @@ module private Common =
             Ok data
         | None -> $"{chat.Id}" |> NotFound |> Error
 
+    let delete (chatId: ChatId) (data: ChatEntity array) =
+        match data |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
+        | Some index -> data |> Array.removeAt index |> Ok
+        | None -> $"{chatId}" |> NotFound |> Error
+
 module private InMemory =
     open Persistence.InMemory
 
@@ -126,6 +131,21 @@ module private InMemory =
                 | Some index ->
                     data[index].Subscriptions <-
                         data[index].Subscriptions |> Set |> Set.add subscription.ValueStr |> Seq.toList
+
+                    data |> Ok)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> async.Return
+
+        let deleteChatSubscription (chatId: ChatId) (subscription: RequestId) client =
+            client
+            |> loadData
+            |> Result.bind (fun data ->
+                match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
+                | None -> $"Chat {chatId.ValueStr}" |> NotFound |> Error
+                | Some index ->
+                    data[index].Subscriptions <-
+                        data[index].Subscriptions
+                        |> List.filter (fun subValue -> subValue <> subscription.ValueStr)
 
                     data |> Ok)
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
@@ -228,6 +248,20 @@ module private FileSystem =
                     data |> Ok)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
 
+        let deleteChatSubscription (chatId: ChatId) (subscription: RequestId) client =
+            client
+            |> loadData
+            |> ResultAsync.bind (fun data ->
+                match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
+                | None -> $"Chat {chatId.ValueStr}" |> NotFound |> Error
+                | Some index ->
+                    data[index].Subscriptions <-
+                        data[index].Subscriptions
+                        |> List.filter (fun subValue -> subValue <> subscription.ValueStr)
+
+                    data |> Ok)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+
         let deleteChatSubscriptions (chatId: ChatId) (subscriptions: RequestId Set) client =
             client
             |> loadData
@@ -316,6 +350,12 @@ module Command =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.createChatSubscription chatId subscription
         | Storage.FileSystem client -> client |> FileSystem.Command.createChatSubscription chatId subscription
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    let deleteChatSubscription chatId subscription storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.deleteChatSubscription chatId subscription
+        | Storage.FileSystem client -> client |> FileSystem.Command.deleteChatSubscription chatId subscription
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
     let deleteChatSubscriptions chatId subscriptions storage =
