@@ -1,8 +1,6 @@
 <!-- @format -->
 
-# Embassy Access (F#)
-
-# !Development in progress!
+# Embassy Access (F#) | dev
 
 ## Overview
 
@@ -21,22 +19,21 @@ The project is structured into several components, including core functionality,
   - `fsharp-worker`: Manages background tasks and processing.
   - `fsharp-web`: Web-related functionalities.
 
-- **Source**
+- **Sources**
 
-  - `embassy-access-core`: Core logic and functionalities with domain models and APIs.
+  - **embassy-access-modules**
+    - `embassy-access-modules-russian`: Logic for the Russian embassy.
+    - `embassy-access-modules-russian-tests`: Tests for the Russian embassy module.
+  - `embassy-access-core`: Common code for any embassy.
   - `embassy-access-telegram`: Telegram bot for interacting with users.
-  - `embassy-access-worker`: Background worker services for processing business logic.
-
-- **Tests**
-  - `embassy-access-tests`: Tests for the core functionalities.
+  - `embassy-access-worker`: Background services for processing tasks for any embassy.
 
 ## Getting Started
 
 ### Prerequisites
 
-- .NET SDK
-- F#
-- Visual Studio or any other compatible IDE
+- .NET 9 SDK/Runtime
+- F# experience
 
 ### Cloning the Repository
 
@@ -46,11 +43,23 @@ git clone https://github.com/masterlifting/embassy-access --recurse-submodules
 
 ### Building the Solution
 
-Open embassy-access.sln in Visual Studio and build the solution. Ensure all submodules are correctly initialized and updated.
+```bash
+cd embassy-access
+dotnet build
+```
 
 ### Running the Application
 
-- `embassy-access-worker`: Run the worker service to process background tasks and telegram bot.
+Now the `embassy-access-worker` is a single entry point for the application. 
+It can be run using the following command:
+
+You should configure the settings in the `appsettings.yaml` file before running the application.
+Use the `appsettings.yaml` file as a template.
+
+```bash
+cd src/embassy-access-worker
+dotnet run
+```
 
 ### Contributing
 

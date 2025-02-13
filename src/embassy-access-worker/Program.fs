@@ -16,12 +16,12 @@ let main _ =
     let configuration = Configuration.getYaml "appsettings"
     Logging.useConsole configuration
 
-    let rootTask =
+    let rootHandler =
         { Id = "WRK" |> Graph.NodeIdValue
           Name = APP_NAME
           Handler = Initializer.run |> Some }
 
-    let workerHandlers = Graph.Node(rootTask, [ Embassies.Russian.register () ])
+    let appHandlers = Graph.Node(rootHandler, [ Embassies.Russian.register () ])
 
     let getTaskNode handlers =
         fun nodeId ->
@@ -36,10 +36,10 @@ let main _ =
                 | None -> $"Task Id '%s{nodeId.Value}' in the configuration" |> NotFound |> Error)
 
     let workerConfig =
-        { RootNodeId = rootTask.Id
-          RootNodeName = rootTask.Name
+        { Name = rootHandler.Name
           Configuration = configuration
-          getTaskNode = getTaskNode workerHandlers }
+          TaskNodeRootId = rootHandler.Id
+          getTaskNode = getTaskNode appHandlers }
 
     workerConfig |> Worker.start |> Async.RunSynchronously
 
