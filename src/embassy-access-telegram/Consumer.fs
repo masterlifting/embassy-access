@@ -9,7 +9,7 @@ open EA.Telegram.Dependencies.Consumer
 
 module private Consume =
     open EA.Telegram.Controllers.Consumer
-    open EA.Telegram.Endpoints.Consumer.Request
+    open EA.Telegram.Endpoints.Request
 
     let text value =
         fun deps ->

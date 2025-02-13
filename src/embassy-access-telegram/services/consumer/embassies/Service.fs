@@ -7,11 +7,11 @@ open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
+open EA.Telegram.Endpoints
+open EA.Telegram.Endpoints.Embassies
+open EA.Telegram.Endpoints.Embassies.Request
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Dependencies.Consumer.Embassies
-open EA.Telegram.Endpoints.Consumer
-open EA.Telegram.Endpoints.Consumer.Embassies
-open EA.Telegram.Endpoints.Consumer.Embassies.Request
 
 module private Response =
     let private createButtons chatId msgIdOpt buttonGroupName columns data =

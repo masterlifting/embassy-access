@@ -6,8 +6,8 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Domain
+open EA.Telegram.Endpoints.Embassies.Russian
 open EA.Telegram.Dependencies.Consumer.Embassies.Russian
-open EA.Telegram.Endpoints.Consumer.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian.Service.Kdmid
 
 let subscribe (model: Kdmid.Post.Model.Subscribe) =

@@ -6,10 +6,10 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Embassies.Russian
-open EA.Telegram.Endpoints.Consumer.Request
-open EA.Telegram.Endpoints.Consumer.Embassies.Russian
+open EA.Telegram.Endpoints.Request
+open EA.Telegram.Endpoints.Embassies.Russian
+open EA.Telegram.Endpoints.Embassies.Russian.Kdmid.Post.Model
 open EA.Telegram.Dependencies.Consumer.Embassies.Russian
-open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Kdmid.Post.Model
 
 let private toResponse instruction route =
     fun (chatId, messageId) ->

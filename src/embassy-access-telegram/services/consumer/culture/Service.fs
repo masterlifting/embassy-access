@@ -4,8 +4,8 @@ open System
 open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
+open EA.Telegram.Endpoints
 open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Endpoints.Consumer
 
 let private createButtons chatId msgIdOpt buttonGroupName data =
     match data |> Seq.length with

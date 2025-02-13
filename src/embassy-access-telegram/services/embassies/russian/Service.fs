@@ -5,14 +5,14 @@ open Infrastructure.Domain
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
-open EA.Telegram.Endpoints.Consumer.Request
-open EA.Telegram.Endpoints.Consumer.Embassies.Russian
+open EA.Telegram.Endpoints.Request
+open EA.Telegram.Endpoints.Embassies.Russian
 
 module Kdmid =
     open EA.Embassies.Russian.Kdmid.Domain
 
     module Notification =
-        open EA.Telegram.Endpoints.Consumer.Embassies.Russian.Kdmid.Post.Model
+        open EA.Telegram.Endpoints.Embassies.Russian.Kdmid.Post.Model
 
         let toSuccessfullyResponse (request: EA.Core.Domain.Request.Request, msg: string) =
             fun chatId ->
