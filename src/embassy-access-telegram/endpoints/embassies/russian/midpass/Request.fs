@@ -18,6 +18,6 @@ type Request =
         match parts[0] with
         | "0" -> remaining |> Get.Request.parse |> Result.map Get
         | _ ->
-            $"'{input}' of Consumer.Embassies.Russian.Midpass endpoint"
+            $"'{input}' of Embassies.Russian.Midpass endpoint"
             |> NotSupported
             |> Error

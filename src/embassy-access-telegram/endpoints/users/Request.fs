@@ -17,4 +17,4 @@ type Request =
 
         match parts[0] with
         | "0" -> remaining |> Get.Request.parse |> Result.map Get
-        | _ -> $"'{input}' of Consumer.Users endpoint" |> NotSupported |> Error
+        | _ -> $"'{input}' of Users endpoint" |> NotSupported |> Error

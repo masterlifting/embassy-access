@@ -1,23 +1,27 @@
-﻿module EA.Telegram.Endpoints.Embassies.Russian.Kdmid.Delete
+﻿module EA.Telegram.Endpoints.Culture.Post
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Core.Domain
+
+module Model =
+    type Culture = { Name: string; Code: string }
+
+open Model
 
 type Request =
-    | Subscription of RequestId
+    | SetCulture of Culture
 
     member this.Value =
         match this with
-        | Subscription requestId -> [ "0"; requestId.ValueStr ]
+        | SetCulture model -> [ "0"; model.Name; model.Code ]
         |> String.concat Constants.Endpoint.DELIMITER
 
     static member parse(input: string) =
         let parts = input.Split Constants.Endpoint.DELIMITER
 
         match parts with
-        | [| "0"; requestId |] -> RequestId.create requestId |> Result.map Subscription
+        | [| "0"; name; code |] -> { Name = name; Code = code } |> SetCulture |> Ok
         | _ ->
-            $"'{parts}' of Embassies.Russian.Kdmid.Delete endpoint"
+            $"'{parts}' of Culture.Post endpoint"
             |> NotSupported
             |> Error

@@ -19,6 +19,6 @@ type Request =
         match parts[0] with
         | "0" -> remaining |> Kdmid.Delete.Request.parse |> Result.map Kdmid
         | _ ->
-            $"'{parts}' of Consumer.Embassies.Russian.Delete endpoint"
+            $"'{parts}' of Embassies.Russian.Delete endpoint"
             |> NotSupported
             |> Error

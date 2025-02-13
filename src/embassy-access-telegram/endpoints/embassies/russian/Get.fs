@@ -21,4 +21,4 @@ type Request =
         match parts[0] with
         | "0" -> remaining |> Kdmid.Get.Request.parse |> Result.map Kdmid
         | "1" -> remaining |> Midpass.Get.Request.parse |> Result.map Midpass
-        | _ -> $"'{parts}' of Consumer.Embassies.Russian.Get endpoint" |> NotSupported |> Error
+        | _ -> $"'{parts}' of Embassies.Russian.Get endpoint" |> NotSupported |> Error

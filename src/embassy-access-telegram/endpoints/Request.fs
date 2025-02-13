@@ -33,4 +33,4 @@ type Request =
         | "/culture" -> Culture(Culture.Request.Get(Culture.Get.Request.Cultures)) |> Ok
         | "/start" -> Embassies(Embassies.Request.Get(Embassies.Get.Request.Embassies)) |> Ok
         | "/mine" -> Users(Users.Request.Get(Users.Get.Request.UserEmbassies)) |> Ok
-        | _ -> $"'{input}' of Endpoints.Consumer" |> NotSupported |> Error
+        | _ -> $"'{input}' of Endpoints" |> NotSupported |> Error

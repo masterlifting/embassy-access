@@ -17,6 +17,6 @@ type Request =
         match parts with
         | [| "0"; number |] -> Status number |> Ok
         | _ ->
-            $"'{parts}' of Consumer.Embassies.Russian.Midpass.Get endpoint"
+            $"'{parts}' of Embassies.Russian.Midpass.Get endpoint"
             |> NotSupported
             |> Error

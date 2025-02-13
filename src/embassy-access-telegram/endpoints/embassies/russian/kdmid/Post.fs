@@ -92,7 +92,7 @@ type Request =
             | AP.IsDateTime start, AP.IsDateTime finish ->
                 createSubscription serviceId embassyId payload (ConfirmationState.Auto(DateTimeRange(start, finish)))
             | _ ->
-                $"start: {start} or finish: {finish} of Consumer.Embassies.Russian.Kdmid.Post.KdmidSubscribe endpoint"
+                $"start: {start} or finish: {finish} of Embassies.Russian.Kdmid.Post.KdmidSubscribe endpoint"
                 |> NotSupported
                 |> Error
         | [| "5"; serviceId; embassyId; payload |] ->
@@ -119,6 +119,6 @@ type Request =
                       AppointmentId = appointmentId }))
             |> Result.map ConfirmAppointment
         | _ ->
-            $"'{parts}' of Consumer.Embassies.Russian.Kdmid.Post endpoint"
+            $"'{parts}' of Embassies.Russian.Kdmid.Post endpoint"
             |> NotSupported
             |> Error

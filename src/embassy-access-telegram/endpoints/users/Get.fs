@@ -28,4 +28,4 @@ type Request =
             (embassyId |> Graph.NodeIdValue, serviceId |> Graph.NodeIdValue)
             |> UserEmbassyService
             |> Ok
-        | _ -> $"'{parts}' of Consumer.Users.Get endpoint" |> NotSupported |> Error
+        | _ -> $"'{parts}' of Users.Get endpoint" |> NotSupported |> Error

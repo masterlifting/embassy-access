@@ -24,4 +24,4 @@ type Request =
         | "0" -> remaining |> Get.Request.parse |> Result.map Get
         | "1" -> remaining |> Post.Request.parse |> Result.map Post
         | "2" -> remaining |> Delete.Request.parse |> Result.map Delete
-        | _ -> $"'{input}' of Consumer.Embassies.Russian endpoint" |> NotSupported |> Error
+        | _ -> $"'{input}' of Embassies.Russian endpoint" |> NotSupported |> Error

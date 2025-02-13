@@ -16,4 +16,4 @@ type Request =
 
         match parts with
         | [| "0" |] -> Cultures |> Ok
-        | _ -> $"'{parts}' of Consumer.Cultures.Get endpoint" |> NotSupported |> Error
+        | _ -> $"'{parts}' of Culture.Get endpoint" |> NotSupported |> Error

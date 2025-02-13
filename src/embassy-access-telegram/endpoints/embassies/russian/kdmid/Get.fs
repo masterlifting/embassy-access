@@ -21,6 +21,6 @@ type Request =
         | [| "0"; requestId |] -> RequestId.create requestId |> Result.map Appointments
         | [| "1"; requestId |] -> RequestId.create requestId |> Result.map SubscriptionsMenu
         | _ ->
-            $"'{parts}' of Consumer.Embassies.Russian.Kdmid.Get endpoint"
+            $"'{parts}' of Embassies.Russian.Kdmid.Get endpoint"
             |> NotSupported
             |> Error

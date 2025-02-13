@@ -19,6 +19,6 @@ type Request =
         match parts[0] with
         | "0" -> remaining |> Kdmid.Post.Request.parse |> Result.map Kdmid
         | _ ->
-            $"'{parts}' of Consumer.Embassies.Russian.Post endpoint"
+            $"'{parts}' of Embassies.Russian.Post endpoint"
             |> NotSupported
             |> Error

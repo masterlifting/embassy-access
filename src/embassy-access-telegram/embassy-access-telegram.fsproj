@@ -9,6 +9,7 @@
         <Compile Include="domain\Constants.fs" />
         <Compile Include="domain\Chat.fs" />
         <Compile Include="endpoints\culture\Get.fs" />
+        <Compile Include="endpoints\culture\Post.fs" />
         <Compile Include="endpoints\culture\Request.fs" />
         <Compile Include="endpoints\users\Get.fs" />
         <Compile Include="endpoints\users\Request.fs" />
@@ -44,7 +45,8 @@
         <Compile Include="services\consumer\embassies\russian\Service.fs" />
         <Compile Include="services\consumer\embassies\Service.fs" />
         <Compile Include="services\consumer\users\Service.fs" />
-        <Compile Include="services\consumer\culture\Service.fs" />
+        <Compile Include="services\consumer\culture\Query.fs" />
+        <Compile Include="services\consumer\culture\Command.fs" />
         <Compile Include="services\producer\embassies\russian\Service.fs" />
         <Compile Include="controllers\culture\Culture.fs" />
         <Compile Include="controllers\users\Users.fs" />

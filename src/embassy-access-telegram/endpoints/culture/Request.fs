@@ -6,10 +6,12 @@ open EA.Telegram.Endpoints.Culture
 
 type Request =
     | Get of Get.Request
+    | Post of Post.Request
 
     member this.Value =
         match this with
         | Get r -> [ "0"; r.Value ] |> String.concat Constants.Endpoint.DELIMITER
+        | Post r -> [ "1"; r.Value ] |> String.concat Constants.Endpoint.DELIMITER
 
     static member parse(input: string) =
         let parts = input.Split Constants.Endpoint.DELIMITER
@@ -17,4 +19,5 @@ type Request =
 
         match parts[0] with
         | "0" -> remaining |> Get.Request.parse |> Result.map Get
-        | _ -> $"'{input}' of Consumer.Culture endpoint" |> NotSupported |> Error
+        | "1" -> remaining |> Post.Request.parse |> Result.map Post
+        | _ -> $"'{input}' of Culture endpoint" |> NotSupported |> Error
