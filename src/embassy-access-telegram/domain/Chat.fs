@@ -6,4 +6,5 @@ open Web.Telegram.Domain
 
 type Chat =
     { Id: ChatId
-      Subscriptions: Set<RequestId> }
+      Subscriptions: Set<RequestId>
+      Culture: Culture }

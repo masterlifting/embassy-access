@@ -20,6 +20,7 @@ type StorageType =
 type ChatEntity() =
     member val Id = 0L with get, set
     member val Subscriptions = List.empty<string> with get, set
+    member val Culture = Constants.EN_US_CULTURE with get, set
 
     member this.ToDomain() =
         this.Subscriptions
@@ -31,7 +32,8 @@ type ChatEntity() =
         |> Result.map Set.ofList
         |> Result.map (fun subscriptions ->
             { Id = this.Id |> ChatId
-              Subscriptions = subscriptions })
+              Subscriptions = subscriptions
+              Culture = this.Culture |> Culture.toDomain })
 
 type private Chat with
     member private this.ToEntity() =

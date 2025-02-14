@@ -4,6 +4,7 @@ open System
 open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
+open EA.Telegram.Endpoints.Request
 open EA.Telegram.Endpoints.Culture
 open EA.Telegram.Dependencies.Consumer
 
@@ -19,17 +20,12 @@ let private createButtons chatId msgIdOpt buttonGroupName data =
 
 let getCultures () =
     fun (deps: Culture.Dependencies) ->
-        deps.getSystemCultures ()
+        deps.getAvailableCultures ()
         |> ResultAsync.map (
-            Seq.map (fun (name, displayName) ->
-                let route: Post.Model.Culture =
-                    { Post.Model.Culture.Name = displayName
-                      Post.Model.Culture.Code = name }
-                    |> Post.SetCulture
-                    |> Culture.Post
-                    |> Request.Post
-                    |> Culture
+            Seq.map (fun culture ->
+                let route = culture.Name |> Post.SetCulture |> Request.Post |> Culture
+                let name = culture.NativeName.ToUpperInvariant()
 
-                (route.Value, displayName))
+                (route.Value, name))
         )
         |> ResultAsync.map (createButtons deps.ChatId None (Some "Choose the language"))

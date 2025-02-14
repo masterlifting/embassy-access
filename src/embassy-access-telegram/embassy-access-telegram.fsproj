@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Compile Include="domain\Constants.fs" />
+        <Compile Include="domain\Culture.fs" />
         <Compile Include="domain\Chat.fs" />
         <Compile Include="endpoints\culture\Get.fs" />
         <Compile Include="endpoints\culture\Post.fs" />
@@ -26,6 +27,7 @@
         <Compile Include="endpoints\embassies\russian\Delete.fs" />
         <Compile Include="endpoints\embassies\russian\Request.fs" />
         <Compile Include="endpoints\Request.fs" />
+        <Compile Include="data_access\Culture.fs" />
         <Compile Include="data_access\Chat.fs" />
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\consumer\Consumer.fs" />

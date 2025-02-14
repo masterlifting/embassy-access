@@ -3,25 +3,17 @@
 open Infrastructure.Domain
 open EA.Telegram.Domain
 
-module Model =
-    type Culture = { Name: string; Code: string }
-
-open Model
-
 type Request =
-    | SetCulture of Culture
+    | SetCulture of string
 
     member this.Value =
         match this with
-        | SetCulture model -> [ "0"; model.Name; model.Code ]
+        | SetCulture code -> [ "0"; code ]
         |> String.concat Constants.Endpoint.DELIMITER
 
     static member parse(input: string) =
         let parts = input.Split Constants.Endpoint.DELIMITER
 
         match parts with
-        | [| "0"; name; code |] -> { Name = name; Code = code } |> SetCulture |> Ok
-        | _ ->
-            $"'{parts}' of Culture.Post endpoint"
-            |> NotSupported
-            |> Error
+        | [| "0"; code |] -> code |> SetCulture |> Ok
+        | _ -> $"'{parts}' of Culture.Post endpoint" |> NotSupported |> Error

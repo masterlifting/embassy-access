@@ -6,6 +6,7 @@ open Infrastructure.Prelude
 open Infrastructure.Domain
 open Web.Telegram.Domain
 open EA.Core.Domain
+open EA.Telegram.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
@@ -37,7 +38,8 @@ type Dependencies =
                     | None ->
                         let chat: EA.Telegram.Domain.Chat.Chat =
                             { Id = dto.ChatId
-                              Subscriptions = Set [] }
+                              Subscriptions = Set []
+                              Culture = Culture.createDefault () }
 
                         chatStorage |> Chat.Command.create chat |> ResultAsync.map (fun _ -> [])
                     | Some chat -> requestStorage |> Request.Query.findManyByIds chat.Subscriptions)
