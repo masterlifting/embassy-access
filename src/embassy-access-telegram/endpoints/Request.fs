@@ -31,6 +31,6 @@ type Request =
             |> Embassies.Russian.Request.Request.parse
             |> Result.map RussianEmbassy
         | "/culture" -> Culture(Culture.Request.Get(Culture.Get.Request.Cultures)) |> Ok
-        | "/start" -> Embassies(Embassies.Request.Get(Embassies.Get.Request.Embassies)) |> Ok
         | "/mine" -> Users(Users.Request.Get(Users.Get.Request.UserEmbassies)) |> Ok
+        | "/start" -> Embassies(Embassies.Request.Get(Embassies.Get.Request.Embassies)) |> Ok
         | _ -> $"'{input}' of Endpoints" |> NotSupported |> Error

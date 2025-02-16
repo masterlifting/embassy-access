@@ -1,6 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.DataAccess.Chat
 
+open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
@@ -20,7 +21,7 @@ type StorageType =
 type ChatEntity() =
     member val Id = 0L with get, set
     member val Subscriptions = List.empty<string> with get, set
-    member val Culture = Constants.EN_US_CULTURE with get, set
+    member val Culture = String.Empty with get, set
 
     member this.ToDomain() =
         this.Subscriptions
@@ -46,6 +47,8 @@ type private Chat with
             |> Seq.map (function
                 | RequestId id -> string id)
             |> Seq.toList
+            
+        result.Culture <- this.Culture.Value
 
         result
 
@@ -370,4 +373,10 @@ module Command =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.deleteSubscriptions subscriptions
         | Storage.FileSystem client -> client |> FileSystem.Command.deleteSubscriptions subscriptions
+        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+        
+    let setCulture chatId culture storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.srtCulture chatId culture
+        | Storage.FileSystem client -> client |> FileSystem.Command.srtCulture chatId culture
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

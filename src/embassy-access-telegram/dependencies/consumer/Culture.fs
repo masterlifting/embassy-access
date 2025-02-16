@@ -1,17 +1,16 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Consumer.Culture
 
-open System.Threading
-open System.Globalization
-open EA.Telegram.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain
+open EA.Telegram.Domain
+open EA.Telegram.DataAccess
 
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
-      getAvailableCultures: unit -> Async<Result<CultureInfo seq, Error'>>
+      getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: string -> Async<Result<unit, Error'>>
       sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>> }
 
@@ -20,27 +19,14 @@ type Dependencies =
 
         result {
 
-            let getSystemCultures () =
-                async {
-                    try
-                        return
-                            CultureInfo.GetCultures(CultureTypes.AllCultures)
-                            |> Seq.filter (fun c -> Constants.SUPPORTED_CULTURES.Contains c.Name)
-                            |> Ok
-                    with ex ->
-                        return
-                            Error
-                            <| Operation
-                                { Message = ex |> Exception.toMessage
-                                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
-                }
-                
+            let getAvailableCultures () = [ English, "English"; Russian, "Русский" ] |> Ok |> async.Return
+
             let setCurrentCulture (code: string) =
                 async {
                     try
-                        Thread.CurrentThread.CurrentCulture <- CultureInfo.CreateSpecificCulture code
-                        Thread.CurrentThread.CurrentUICulture <- CultureInfo.CreateSpecificCulture code
-                        return Ok ()
+                        deps.ChatStorage
+                        |> Chat.Command.create
+                        return Ok()
                     with ex ->
                         return
                             Error
@@ -52,7 +38,7 @@ type Dependencies =
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
-                  getAvailableCultures = getSystemCultures
+                  getAvailableCultures = getAvailableCultures
                   setCurrentCulture = setCurrentCulture
                   sendResult = deps.sendResult }
         }
