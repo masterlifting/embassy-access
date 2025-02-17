@@ -18,5 +18,5 @@ let respond request =
                 |> fun createResponse -> deps |> createResponse |> deps.sendResult
             | Post post ->
                 match post with
-                | Post.SetCulture model -> Command.setCulture model
+                | Post.SetCulture culture -> Command.setCulture culture
                 |> fun createResponse -> deps |> createResponse |> deps.sendResult)

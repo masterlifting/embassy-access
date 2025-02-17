@@ -47,7 +47,7 @@ type private Chat with
             |> Seq.map (function
                 | RequestId id -> string id)
             |> Seq.toList
-            
+
         result.Culture <- this.Culture.Value
 
         result
@@ -187,6 +187,23 @@ module private InMemory =
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
             |> async.Return
 
+        let setCulture (chatId: ChatId) (culture: Culture) client =
+            client
+            |> loadData
+            |> Result.bind (fun data ->
+                match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
+                | None ->
+                    data
+                    |> Common.create
+                        { Id = chatId
+                          Subscriptions = Set.empty
+                          Culture = culture }
+                | Some index ->
+                    data[index].Culture <- culture.Value
+                    data |> Ok)
+            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> async.Return
+
 module private FileSystem =
     open Persistence.FileSystem
 
@@ -296,6 +313,22 @@ module private FileSystem =
                 data |> Ok)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
 
+        let setCulture (chatId: ChatId) (culture: Culture) client =
+            client
+            |> loadData
+            |> ResultAsync.bind (fun data ->
+                match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
+                | None ->
+                    data
+                    |> Common.create
+                        { Id = chatId
+                          Subscriptions = Set.empty
+                          Culture = culture }
+                | Some index ->
+                    data[index].Culture <- culture.Value
+                    data |> Ok)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+
 
 let private toPersistenceStorage storage =
     storage
@@ -374,9 +407,9 @@ module Command =
         | Storage.InMemory client -> client |> InMemory.Command.deleteSubscriptions subscriptions
         | Storage.FileSystem client -> client |> FileSystem.Command.deleteSubscriptions subscriptions
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
-        
+
     let setCulture chatId culture storage =
         match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.Command.srtCulture chatId culture
-        | Storage.FileSystem client -> client |> FileSystem.Command.srtCulture chatId culture
+        | Storage.InMemory client -> client |> InMemory.Command.setCulture chatId culture
+        | Storage.FileSystem client -> client |> FileSystem.Command.setCulture chatId culture
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

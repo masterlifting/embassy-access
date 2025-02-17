@@ -23,8 +23,8 @@ let getCultures () =
         deps.getAvailableCultures ()
         |> ResultAsync.map (
             Seq.map (fun culture ->
-                let route = culture.Name |> Post.SetCulture |> Request.Post |> Culture
-                let name = culture.NativeName.ToUpperInvariant()
+                let route = culture.Key |> Post.SetCulture |> Request.Post |> Culture
+                let name = culture.Value
 
                 (route.Value, name))
         )
