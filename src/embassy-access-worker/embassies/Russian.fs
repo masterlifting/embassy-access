@@ -54,7 +54,7 @@ module private Kdmid =
                     |> Seq.truncate 5
                     |> Seq.toList
                     |> handleGroup deps.pickOrder))
-            |> ResultAsync.map (Async.Parallel >> Async.map Result.unzip)
+            |> ResultAsync.map (Async.Sequential >> Async.map Result.unzip)
             |> Async.bind (function
                 | Error error -> Error error |> async.Return
                 | Ok value ->
