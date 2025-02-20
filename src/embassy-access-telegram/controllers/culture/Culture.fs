@@ -15,8 +15,10 @@ let respond request =
             | Get get ->
                 match get with
                 | Get.Cultures -> Query.getCultures ()
+                | Get.CulturesCallback route -> Query.getCulturesCallback route
                 |> fun createResponse -> deps |> createResponse |> deps.sendResult
             | Post post ->
                 match post with
                 | Post.SetCulture culture -> Command.setCulture culture
+                | Post.SetCultureCallback (route, culture) -> Command.setCultureCallback route culture
                 |> fun createResponse -> deps |> createResponse |> deps.sendResult)
