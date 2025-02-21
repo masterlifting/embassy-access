@@ -10,8 +10,9 @@ type Request =
 
     member this.Value =
         match this with
-        | Get r -> [ "0"; r.Value ] |> String.concat Constants.Endpoint.DELIMITER
-        | Post r -> [ "1"; r.Value ] |> String.concat Constants.Endpoint.DELIMITER
+        | Get r -> [ "0"; r.Value ]
+        | Post r -> [ "1"; r.Value ]
+        |> String.concat Constants.Endpoint.DELIMITER
 
     static member parse(input: string) =
         let parts = input.Split Constants.Endpoint.DELIMITER

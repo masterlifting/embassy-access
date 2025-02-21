@@ -29,7 +29,7 @@ let useCulture route callback =
     fun (consumerDeps: Consumer.Dependencies) ->
         Culture.Dependencies.create consumerDeps
         |> ResultAsync.wrap (fun deps ->
-            deps.getChat ()
+            deps.tryGetChat ()
             |> ResultAsync.bindAsync (function
                 | Some chat -> consumerDeps |> callback chat
                 | None -> deps |> Query.getCulturesCallback route |> deps.sendResult))

@@ -3,6 +3,10 @@
 open Infrastructure.Domain
 open EA.Telegram.Domain
 
+// There is required to define its own DELIMITER constant as we can have the callback with the same delimiter
+[<Literal>]
+let DELIMITER = "'"
+
 type Request =
     | SetCulture of Culture
     | SetCultureCallback of string * Culture
@@ -11,10 +15,10 @@ type Request =
         match this with
         | SetCulture culture -> [ "0"; culture.Value ]
         | SetCultureCallback(callback, culture) -> [ "1"; callback; culture.Value ]
-        |> String.concat Constants.Endpoint.DELIMITER
+        |> String.concat DELIMITER
 
     static member parse(input: string) =
-        let parts = input.Split Constants.Endpoint.DELIMITER
+        let parts = input.Split DELIMITER
 
         match parts with
         | [| "0"; code |] -> code |> Culture.create |> SetCulture |> Ok
