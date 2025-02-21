@@ -7,9 +7,9 @@ open EA.Telegram.Endpoints.Embassies.Russian.Request
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Dependencies.Consumer.Embassies.Russian
 
-let respond request =
+let respond request chat =
     fun (deps: Consumer.Dependencies) ->
-        Russian.Dependencies.create deps
+        Russian.Dependencies.create chat deps
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Get(Get.Kdmid get) -> deps |> Kdmid.get get

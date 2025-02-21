@@ -61,7 +61,7 @@ module internal Query =
                 | children ->
                     children
                     |> Seq.map _.Value
-                    |> Response.toEmbassyService deps.ChatId deps.MessageId serviceNode.Value.Description embassyId
+                    |> Response.toEmbassyService deps.Chat.Id deps.MessageId serviceNode.Value.Description embassyId
                     |> Ok
                     |> async.Return)
 
@@ -89,7 +89,7 @@ module internal Query =
                 | children ->
                     children
                     |> Seq.map _.Value
-                    |> Response.toEmbassyService deps.ChatId deps.MessageId serviceNode.Value.Description embassyId
+                    |> Response.toEmbassyService deps.Chat.Id deps.MessageId serviceNode.Value.Description embassyId
                     |> Ok
                     |> async.Return)
 
@@ -99,7 +99,7 @@ module internal Query =
             |> ResultAsync.map (fun node ->
                 node.Children
                 |> Seq.map _.Value
-                |> Response.toEmbassyService deps.ChatId deps.MessageId node.Value.Description embassyId)
+                |> Response.toEmbassyService deps.Chat.Id deps.MessageId node.Value.Description embassyId)
 
     let getEmbassy embassyId =
         fun (deps: Embassies.Dependencies) ->
@@ -109,7 +109,7 @@ module internal Query =
                 | AP.Node node ->
                     node.Children
                     |> Seq.map _.Value
-                    |> Response.toEmbassy deps.ChatId (Some deps.MessageId) node.Value.Description
+                    |> Response.toEmbassy deps.Chat.Id (Some deps.MessageId) node.Value.Description
                     |> Ok
                     |> async.Return)
 
@@ -119,4 +119,4 @@ module internal Query =
             |> ResultAsync.map (fun node ->
                 node.Children
                 |> Seq.map _.Value
-                |> Response.toEmbassy deps.ChatId None node.Value.Description)
+                |> Response.toEmbassy deps.Chat.Id None node.Value.Description)

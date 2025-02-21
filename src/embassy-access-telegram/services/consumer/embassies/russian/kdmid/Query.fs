@@ -28,7 +28,7 @@ let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
         |> Result.choose
         |> Result.map Map
         |> Result.map (fun data ->
-            (deps.ChatId, Replace deps.MessageId)
+            (deps.Chat.Id, Replace deps.MessageId)
             |> Buttons.create
                 { Name = "Выберете подписку"
                   Columns = 1
@@ -63,7 +63,7 @@ let getSubscriptionsMenu requestId =
         |> ResultAsync.bind (fun request ->
             match request.ProcessState with
             | InProcess ->
-                (deps.ChatId, New)
+                (deps.Chat.Id, New)
                 |> Text.create
                     $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
                 |> Ok
@@ -73,7 +73,7 @@ let getSubscriptionsMenu requestId =
                 request.Service.Payload
                 |> Payload.toValue
                 |> Result.map (fun payloadValue ->
-                    (deps.ChatId, Replace deps.MessageId)
+                    (deps.Chat.Id, Replace deps.MessageId)
                     |> Buttons.create
                         { Name = $"Что хотите сделать с подпиской '{payloadValue}'?"
                           Columns = 1
@@ -85,7 +85,7 @@ let getAppointments requestId =
         |> ResultAsync.bindAsync (fun request ->
             match request.ProcessState with
             | InProcess ->
-                (deps.ChatId, New)
+                (deps.Chat.Id, New)
                 |> Text.create
                     $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' уже в обработке."
                 |> Ok
@@ -95,4 +95,4 @@ let getAppointments requestId =
             | Completed _ ->
                 deps
                 |> Request.getService request
-                |> ResultAsync.bind (fun result -> deps.ChatId |> Request.toResponse result))
+                |> ResultAsync.bind (fun result -> deps.Chat.Id |> Request.toResponse result))

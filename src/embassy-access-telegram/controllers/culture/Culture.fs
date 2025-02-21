@@ -31,5 +31,5 @@ let useCulture route callback =
         |> ResultAsync.wrap (fun deps ->
             deps.getChat ()
             |> ResultAsync.bindAsync (function
-                | Some _ -> consumerDeps |> callback
+                | Some chat -> consumerDeps |> callback chat
                 | None -> deps |> Query.getCulturesCallback route |> deps.sendResult))

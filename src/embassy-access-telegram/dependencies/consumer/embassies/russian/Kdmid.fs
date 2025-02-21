@@ -2,6 +2,7 @@
 module EA.Telegram.Dependencies.Consumer.Embassies.Russian.Kdmid
 
 open System.Threading
+open EA.Telegram.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain
@@ -11,7 +12,7 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Consumer.Embassies
 
 type Dependencies =
-    { ChatId: ChatId
+    { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
       RequestStorage: Request.RequestStorage
@@ -34,7 +35,7 @@ type Dependencies =
                 |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                 |> ResultAsync.bind (function
                     | None ->
-                        $"Service '%s{serviceId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
+                        $"Service '%s{serviceId.Value}' for user chat '%s{deps.Chat.Id.ValueStr}'"
                         |> NotFound
                         |> Error
                     | Some serviceNode -> serviceNode.Value |> Ok)
@@ -44,7 +45,7 @@ type Dependencies =
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bind (function
                     | None ->
-                        $"Embassy '%s{embassyId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
+                        $"Embassy '%s{embassyId.Value}' for user chat '%s{deps.Chat.Id.ValueStr}'"
                         |> NotFound
                         |> Error
                     | Some embassyNode -> embassyNode.Value |> Ok)
@@ -54,23 +55,23 @@ type Dependencies =
                 |> Request.Query.tryFindById requestId
                 |> ResultAsync.bind (function
                     | None ->
-                        $"Request '%s{requestId.ValueStr}' for user chat '%s{deps.ChatId.ValueStr}'"
+                        $"Request '%s{requestId.ValueStr}' for user chat '%s{deps.Chat.Id.ValueStr}'"
                         |> NotFound
                         |> Error
                     | Some request -> request |> Ok)
 
             let createRequest (request: Request) =
                 deps.ChatStorage
-                |> Chat.Command.createChatSubscription deps.ChatId request.Id
+                |> Chat.Command.createChatSubscription deps.Chat.Id request.Id
                 |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.create request)
 
             let deleteRequest requestId =
                 deps.ChatStorage
-                |> Chat.Command.deleteChatSubscription deps.ChatId requestId
+                |> Chat.Command.deleteChatSubscription deps.Chat.Id requestId
                 |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.delete requestId)
 
             return
-                { ChatId = deps.ChatId
+                { Chat = deps.Chat
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
                   RequestStorage = deps.RequestStorage

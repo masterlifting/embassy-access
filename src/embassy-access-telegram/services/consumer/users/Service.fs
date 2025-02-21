@@ -38,14 +38,14 @@ module internal Query =
         fun (deps: Users.Dependencies) ->
             deps.getUserEmbassies ()
             |> ResultAsync.map (fun (parentDescription, embassies) ->
-                embassies |> toUserEmbassiesResponse deps.ChatId None parentDescription)
+                embassies |> toUserEmbassiesResponse deps.Chat.Id None parentDescription)
 
     let getUserEmbassyServices embassyId =
         fun (deps: Users.Dependencies) ->
             deps.getUserEmbassyServices embassyId
             |> ResultAsync.map (fun (parentDescription, services) ->
                 services
-                |> toUserEmbassyServicesResponse deps.ChatId (Some deps.MessageId) parentDescription embassyId)
+                |> toUserEmbassyServicesResponse deps.Chat.Id (Some deps.MessageId) parentDescription embassyId)
 
     let getUserEmbassy embassyId =
         fun (deps: Users.Dependencies) ->
@@ -55,7 +55,7 @@ module internal Query =
                 | [] -> deps |> getUserEmbassyServices embassyId
                 | _ ->
                     embassies
-                    |> toUserEmbassiesResponse deps.ChatId (Some deps.MessageId) parentDescription
+                    |> toUserEmbassiesResponse deps.Chat.Id (Some deps.MessageId) parentDescription
                     |> Ok
                     |> async.Return)
 
@@ -69,6 +69,6 @@ module internal Query =
                     |> Embassies.Service.Query.getUserEmbassyService embassyId serviceId
                 | _ ->
                     services
-                    |> toUserEmbassyServicesResponse deps.ChatId (Some deps.MessageId) parentDescription embassyId
+                    |> toUserEmbassyServicesResponse deps.Chat.Id (Some deps.MessageId) parentDescription embassyId
                     |> Ok
                     |> async.Return)

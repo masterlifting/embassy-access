@@ -7,9 +7,9 @@ open EA.Telegram.Endpoints.Users.Request
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Services.Consumer.Users.Service
 
-let respond request =
+let respond request chat =
     fun (deps: Consumer.Dependencies) ->
-        Users.Dependencies.create deps
+        Users.Dependencies.create chat deps
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Get get ->

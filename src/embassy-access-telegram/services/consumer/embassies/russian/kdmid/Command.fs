@@ -53,7 +53,7 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                             |> async.Return
                     }
 
-            return (deps.ChatId, New) |> Text.create message |> Ok |> async.Return
+            return (deps.Chat.Id, New) |> Text.create message |> Ok |> async.Return
         }
 
 let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
@@ -76,7 +76,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                 | Some request ->
                     match request.ProcessState with
                     | InProcess ->
-                        (deps.ChatId, New)
+                        (deps.Chat.Id, New)
                         |> Text.create
                             $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' уже в обработке."
                         |> Ok
@@ -86,7 +86,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                     | Completed _ ->
                         deps
                         |> Request.getService request
-                        |> ResultAsync.bind (fun result -> deps.ChatId |> Request.toResponse result)
+                        |> ResultAsync.bind (fun result -> deps.Chat.Id |> Request.toResponse result)
                 | None ->
                     resultAsync {
                         let! service = deps.getService model.ServiceId
@@ -107,7 +107,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                         return
                             deps
                             |> Request.getService request
-                            |> ResultAsync.bind (fun result -> deps.ChatId |> Request.toResponse result)
+                            |> ResultAsync.bind (fun result -> deps.Chat.Id |> Request.toResponse result)
                     }
         }
 
@@ -119,7 +119,7 @@ let sendAppointments (model: Kdmid.Post.Model.SendAppointments) =
                 request.Service.Id = model.ServiceId
                 && request.Service.Embassy.Id = model.EmbassyId)
         )
-        |> ResultAsync.bind (Seq.map (fun r -> deps.ChatId |> Request.toResponse r) >> Result.choose)
+        |> ResultAsync.bind (Seq.map (fun r -> deps.Chat.Id |> Request.toResponse r) >> Result.choose)
 
 let confirmAppointment (model: Kdmid.Post.Model.ConfirmAppointment) =
     fun (deps: Kdmid.Dependencies) ->
@@ -129,7 +129,7 @@ let confirmAppointment (model: Kdmid.Post.Model.ConfirmAppointment) =
             |> Request.getService
                 { request with
                     ConfirmationState = ConfirmationState.Manual model.AppointmentId })
-        |> ResultAsync.bind (fun r -> deps.ChatId |> Request.toResponse r)
+        |> ResultAsync.bind (fun r -> deps.Chat.Id |> Request.toResponse r)
 
 let deleteSubscription requestId =
     fun (deps: Kdmid.Dependencies) ->
@@ -137,7 +137,7 @@ let deleteSubscription requestId =
         |> ResultAsync.bindAsync (fun request ->
             match request.ProcessState with
             | InProcess ->
-                (deps.ChatId, New)
+                (deps.Chat.Id, New)
                 |> Text.create
                     $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
                 |> Ok
@@ -147,6 +147,6 @@ let deleteSubscription requestId =
             | Completed _ ->
                 deps.deleteRequest requestId
                 |> ResultAsync.bind (fun _ ->
-                    (deps.ChatId, New)
+                    (deps.Chat.Id, New)
                     |> Text.create $"Подписка для '{request.Service.Name}' удалена"
                     |> Ok))

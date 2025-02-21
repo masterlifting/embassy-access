@@ -2,13 +2,14 @@
 module EA.Telegram.Dependencies.Consumer.Embassies.Russian.Midpass
 
 open System.Threading
+open EA.Telegram.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain
 open EA.Telegram.Dependencies.Consumer.Embassies
 
 type Dependencies =
-    { ChatId: ChatId
+    { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
       sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>> }
@@ -18,7 +19,7 @@ type Dependencies =
 
         result {
             return
-                { ChatId = deps.ChatId
+                { Chat = deps.Chat
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
                   sendResult = deps.sendResult }

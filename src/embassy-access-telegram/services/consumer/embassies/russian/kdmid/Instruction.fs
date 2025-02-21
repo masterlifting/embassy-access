@@ -49,25 +49,25 @@ let toCheckAppointments embassyId (service: ServiceNode) =
             |> Request.Post
             |> RussianEmbassy
 
-        (deps.ChatId, deps.MessageId)
+        (deps.Chat.Id, deps.MessageId)
         |> toResponse service.Instruction request.Value
         |> Ok
         |> async.Return
 
 let toStandardSubscribe embassyId service =
-    fun (deps: Kdmid.Dependencies) -> (deps.ChatId, deps.MessageId) |> toSubscribe embassyId service Disabled
+    fun (deps: Kdmid.Dependencies) -> (deps.Chat.Id, deps.MessageId) |> toSubscribe embassyId service Disabled
 
 let toFirstAvailableAutoSubscribe embassyId service =
     fun (deps: Kdmid.Dependencies) ->
-        (deps.ChatId, deps.MessageId)
+        (deps.Chat.Id, deps.MessageId)
         |> toSubscribe embassyId service (ConfirmationState.Auto <| FirstAvailable)
 
 let toLastAvailableAutoSubscribe embassyId service =
     fun (deps: Kdmid.Dependencies) ->
-        (deps.ChatId, deps.MessageId)
+        (deps.Chat.Id, deps.MessageId)
         |> toSubscribe embassyId service (ConfirmationState.Auto <| LastAvailable)
 
 let toDateRangeAutoSubscribe embassyId service =
     fun (deps: Kdmid.Dependencies) ->
-        (deps.ChatId, deps.MessageId)
+        (deps.Chat.Id, deps.MessageId)
         |> toSubscribe embassyId service (ConfirmationState.Auto <| DateTimeRange(DateTime.MinValue, DateTime.MaxValue))

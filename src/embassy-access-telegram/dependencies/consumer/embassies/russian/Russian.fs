@@ -12,7 +12,7 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Consumer
 
 type Dependencies =
-    { ChatId: ChatId
+    { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
       sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>>
@@ -23,12 +23,12 @@ type Dependencies =
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>> }
 
-    static member create(deps: Consumer.Dependencies) =
+    static member create chat (deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
             return
-                { ChatId = deps.ChatId
+                { Chat = chat
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
                   sendResult = deps.sendResult
