@@ -37,7 +37,7 @@ type Dependencies =
 
             let getUserEmbassies () =
                 getUserRequests ()
-                |> ResultAsync.map (List.map _.Service.Embassy.Id)
+                |> ResultAsync.map (List.map _.Service.Embassy.Id >> List.distinct)
                 |> ResultAsync.bindAsync (fun embassyIds ->
                     deps.getEmbassyGraph ()
                     |> ResultAsync.map (fun node ->
@@ -57,12 +57,12 @@ type Dependencies =
                         |> async.Return
                     | Some node ->
                         getUserRequests ()
-                        |> ResultAsync.map (List.map _.Service.Embassy.Id)
+                        |> ResultAsync.map (List.map _.Service.Embassy.Id >> List.distinct)
                         |> ResultAsync.map (fun embassyIds ->
-                            (node.Value.Description,
-                             node.Children
-                             |> List.filter (fun embassy -> embassy.Id.In embassyIds)
-                             |> List.map _.Value)))
+                            node.Value.Description,
+                            node.Children
+                            |> List.filter (fun embassy -> embassy.Id.In embassyIds)
+                            |> List.map _.Value))
 
             let getUserEmbassyServices (embassyId: Graph.NodeId) =
                 getUserRequests ()
