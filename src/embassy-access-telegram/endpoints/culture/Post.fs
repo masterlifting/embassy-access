@@ -10,7 +10,7 @@ type Request =
     member this.Value =
         match this with
         | SetCulture culture -> [ "0"; culture.Value ]
-        | SetCultureCallback(request, culture) -> [ "1"; request; culture.Value ]
+        | SetCultureCallback(callback, culture) -> [ "1"; callback; culture.Value ]
         |> String.concat Constants.Endpoint.DELIMITER
 
     static member parse(input: string) =

@@ -7,9 +7,9 @@ open EA.Telegram.Controllers.Consumer.Users
 open EA.Telegram.Controllers.Consumer.Embassies
 open EA.Telegram.Controllers.Consumer.Embassies.Russian
 
-let respond route =
+let rec respond route =
     match route with
-    | Request.Culture value -> Culture.respond value
-    | Request.Users value -> Users.respond value
-    | Request.Embassies value -> Embassies.respond value
-    | Request.RussianEmbassy value -> Russian.respond value
+    | Request.Culture value -> Culture.respond value respond
+    | Request.Users value -> Users.respond value |> (Culture.useCulture route.Value)
+    | Request.Embassies value -> Embassies.respond value |> (Culture.useCulture route.Value)
+    | Request.RussianEmbassy value -> Russian.respond value |> (Culture.useCulture route.Value)

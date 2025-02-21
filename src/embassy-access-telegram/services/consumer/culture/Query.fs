@@ -29,13 +29,18 @@ let getCultures () =
                 (route.Value, name))
         )
         |> ResultAsync.map (createButtons deps.ChatId None (Some "Choose the language"))
-        
-let getCulturesCallback request =
+
+let getCulturesCallback callback =
     fun (deps: Culture.Dependencies) ->
         deps.getAvailableCultures ()
         |> ResultAsync.map (
             Seq.map (fun culture ->
-                let route = (request, culture.Key) |> Post.SetCultureCallback |> Request.Post |> Culture
+                let route =
+                    (callback, culture.Key)
+                    |> Post.SetCultureCallback
+                    |> Request.Post
+                    |> Culture
+
                 let name = culture.Value
 
                 (route.Value, name))
