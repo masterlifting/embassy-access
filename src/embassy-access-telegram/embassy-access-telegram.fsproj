@@ -61,6 +61,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\submodules\fsharp-multilang\src\fsharp-multilang.fsproj" />
         <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
         <ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
     </ItemGroup>

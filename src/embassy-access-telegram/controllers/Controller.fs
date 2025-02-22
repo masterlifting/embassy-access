@@ -10,6 +10,6 @@ open EA.Telegram.Controllers.Consumer.Embassies.Russian
 let rec respond request =
     match request with
     | Culture value -> Culture.respond value respond
-    | Users value -> value |> Users.respond |> (Culture.trySet request)
-    | Embassies value -> value |> Embassies.respond |> (Culture.trySet request)
-    | RussianEmbassy value -> value |> Russian.respond |> (Culture.trySet request)
+    | Users value -> value |> Users.respond |> (Culture.wrap request)
+    | Embassies value -> value |> Embassies.respond |> (Culture.wrap request)
+    | RussianEmbassy value -> value |> Russian.respond |> (Culture.wrap request)

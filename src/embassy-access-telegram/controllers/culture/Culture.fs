@@ -10,6 +10,8 @@ open EA.Telegram.Endpoints.Culture.Request
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Services.Consumer.Culture
 
+open Multilang.Domain.Item
+
 let respond request entrypoint =
     fun (consumerDeps: Consumer.Dependencies) ->
         Culture.Dependencies.create consumerDeps
@@ -28,7 +30,7 @@ let respond request entrypoint =
                         EA.Telegram.Endpoints.Request.Request.parse callback
                         |> ResultAsync.wrap (fun route -> consumerDeps |> entrypoint route)))
 
-let trySet (request: EA.Telegram.Endpoints.Request.Request) callback =
+let wrap (request: EA.Telegram.Endpoints.Request.Request) callback =
     fun (consumerDeps: Consumer.Dependencies) ->
         Culture.Dependencies.create consumerDeps
         |> ResultAsync.wrap (fun deps ->
