@@ -25,11 +25,11 @@ let respond request entrypoint =
                         EA.Telegram.Endpoints.Request.Request.parse callback
                         |> ResultAsync.wrap (fun route -> consumerDeps |> entrypoint route)))
 
-let useCulture route callback =
+let useCulture (request: EA.Telegram.Endpoints.Request.Request) callback =
     fun (consumerDeps: Consumer.Dependencies) ->
         Culture.Dependencies.create consumerDeps
         |> ResultAsync.wrap (fun deps ->
             deps.tryGetChat ()
             |> ResultAsync.bindAsync (function
                 | Some chat -> consumerDeps |> callback chat
-                | None -> deps |> Query.getCulturesCallback route |> deps.sendResult))
+                | None -> deps |> Query.getCulturesCallback request.Value |> deps.sendResult))

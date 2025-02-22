@@ -27,6 +27,10 @@ type Dependencies =
         let result = ResultBuilder()
 
         result {
+
+            let getChatRequests () =
+                deps.RequestStorage |> Request.Query.findManyByIds chat.Subscriptions
+
             return
                 { Chat = chat
                   MessageId = deps.MessageId
@@ -37,5 +41,5 @@ type Dependencies =
                   RequestStorage = deps.RequestStorage
                   getEmbassyGraph = deps.getEmbassyGraph
                   getServiceGraph = deps.getServiceGraph
-                  getChatRequests = deps.getOrCreateChatRequests }
+                  getChatRequests = getChatRequests }
         }
