@@ -4,24 +4,15 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain.Consumer
+open EA.Telegram.Endpoints.Request
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Controllers.Consumer
 
-module private Consume =
-    open EA.Telegram.Controllers.Consumer
-    open EA.Telegram.Endpoints.Request
-
-    let text value =
-        fun deps ->
-            value
-            |> Request.parse
-            |> ResultAsync.wrap (fun request -> deps |> Controller.respond request)
-
-    let callback value =
-        fun deps ->
-            value
-            |> Request.parse
-            |> ResultAsync.wrap (fun request -> deps |> Controller.respond request)
+let private respond value =
+    fun deps ->
+        Request.parse value
+        |> ResultAsync.wrap (fun request -> deps |> Controller.respond request)
 
 let consume data =
     fun client cfg ct ->
@@ -31,13 +22,13 @@ let consume data =
             | Text dto ->
                 Persistence.Dependencies.create cfg
                 |> Result.bind (Consumer.Dependencies.create client dto ct)
-                |> ResultAsync.wrap (Consume.text dto.Value)
+                |> ResultAsync.wrap (respond dto.Value)
                 |> ResultAsync.mapError (fun error -> error.extendMsg $"{dto.ChatId}")
             | _ -> $"Telegram '%A{msg}'" |> NotSupported |> Error |> async.Return
         | CallbackQuery dto ->
             Persistence.Dependencies.create cfg
             |> Result.bind (Consumer.Dependencies.create client dto ct)
-            |> ResultAsync.wrap (Consume.callback dto.Value)
+            |> ResultAsync.wrap (respond dto.Value)
             |> ResultAsync.mapError (fun error -> error.extendMsg $"{dto.ChatId}")
         | _ -> $"Telegram '%A{data}'" |> NotSupported |> Error |> async.Return
 

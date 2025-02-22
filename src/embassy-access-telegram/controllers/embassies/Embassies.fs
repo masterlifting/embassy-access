@@ -2,14 +2,18 @@
 module EA.Telegram.Controllers.Consumer.Embassies.Embassies
 
 open Infrastructure.Prelude
+open EA.Telegram.Domain
 open EA.Telegram.Endpoints.Embassies
 open EA.Telegram.Endpoints.Embassies.Request
 open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Dependencies.Consumer.Embassies
 open EA.Telegram.Services.Consumer.Embassies.Service
+open EA.Telegram.Controllers.Consumer.Culture
 
-let respond request chat=
+let respond request chat =
     fun (deps: Consumer.Dependencies) ->
+        let applyCulture msg = deps |> Culture.apply chat.Culture msg
+
         Embassies.Dependencies.create chat deps
         |> ResultAsync.wrap (fun deps ->
             match request with

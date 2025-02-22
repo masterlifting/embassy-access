@@ -1,7 +1,10 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Controllers.Consumer.Culture.Culture
 
+open Infrastructure.Domain
 open Infrastructure.Prelude
+open Web.Telegram.Domain.Producer
+open EA.Telegram.Domain
 open EA.Telegram.Endpoints.Culture
 open EA.Telegram.Endpoints.Culture.Request
 open EA.Telegram.Dependencies.Consumer
@@ -25,7 +28,7 @@ let respond request entrypoint =
                         EA.Telegram.Endpoints.Request.Request.parse callback
                         |> ResultAsync.wrap (fun route -> consumerDeps |> entrypoint route)))
 
-let useCulture (request: EA.Telegram.Endpoints.Request.Request) callback =
+let trySet (request: EA.Telegram.Endpoints.Request.Request) callback =
     fun (consumerDeps: Consumer.Dependencies) ->
         Culture.Dependencies.create consumerDeps
         |> ResultAsync.wrap (fun deps ->
@@ -33,3 +36,6 @@ let useCulture (request: EA.Telegram.Endpoints.Request.Request) callback =
             |> ResultAsync.bindAsync (function
                 | Some chat -> consumerDeps |> callback chat
                 | None -> deps |> Query.getCulturesCallback request.Value |> deps.sendResult))
+
+let apply (culture: Culture) (msg: Async<Result<Data, Error'>>) =
+    fun (deps: Consumer.Dependencies) -> "Culture.apply" |> NotSupported |> Error |> async.Return
