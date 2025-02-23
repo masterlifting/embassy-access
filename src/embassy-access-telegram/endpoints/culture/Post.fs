@@ -1,7 +1,7 @@
 ﻿module EA.Telegram.Endpoints.Culture.Post
 
 open Infrastructure.Domain
-open EA.Telegram.Domain
+open Multilang.Domain
 
 // There is required to define its own DELIMITER constant as we can have the callback with the same delimiter
 [<Literal>]

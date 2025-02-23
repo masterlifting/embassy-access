@@ -1,8 +1,8 @@
 ﻿module EA.Telegram.Services.Consumer.Culture.Command
 
 open System
-open EA.Telegram.Domain
 open Infrastructure.Prelude
+open Multilang.Domain
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Telegram.Dependencies.Consumer

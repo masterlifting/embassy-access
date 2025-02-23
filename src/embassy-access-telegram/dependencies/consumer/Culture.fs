@@ -3,6 +3,7 @@ module EA.Telegram.Dependencies.Consumer.Culture
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Multilang.Domain
 open Web.Telegram.Domain
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess

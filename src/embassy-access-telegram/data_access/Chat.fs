@@ -4,9 +4,11 @@ module EA.Telegram.DataAccess.Chat
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Core.Domain
+open Multilang.Domain
+open Multilang.DataAccess
 open Persistence
 open Web.Telegram.Domain
+open EA.Core.Domain
 open EA.Telegram.Domain
 
 [<Literal>]
