@@ -38,17 +38,50 @@ let wrap (request: EA.Telegram.Endpoints.Request.Request) callback =
                 | Some chat -> consumerDeps |> callback chat
                 | None -> deps |> Query.getCulturesCallback request.Value |> deps.sendResult))
 
+
+let private translateButtons culture (buttonsGroup: Dto<Buttons>) =
+    let items =
+        { Translation.Item.Id = buttonsGroup.Value.Name
+          Translation.Item.Value = buttonsGroup.Value.Name }
+        :: (buttonsGroup.Value.Data
+            |> Map.toList
+            |> List.map (fun (key, value) -> { Id = key; Value = value }))
+
+    let request: Translation.Input = { Culture = culture; Items = items }
+
+    request
+    |> Translator.translate
+    |> ResultAsync.map (fun response ->
+        let resultMap = response |> List.map (fun item -> item.Id, item.Value) |> Map.ofList
+
+        let newName =
+            resultMap
+            |> Map.tryFind buttonsGroup.Value.Name
+            |> Option.defaultValue buttonsGroup.Value.Name
+
+        let newData =
+            buttonsGroup.Value.Data
+            |> Map.map (fun key value -> resultMap |> Map.tryFind key |> Option.defaultValue value)
+
+        { buttonsGroup with
+            Value =
+                { buttonsGroup.Value with
+                    Name = newName
+                    Data = newData } }
+        |> Buttons)
+
+
 let apply (culture: Culture) (msgRes: Async<Result<Data, Error'>>) =
     fun (deps: Consumer.Dependencies) ->
         let resultAsync = ResultAsyncBuilder()
-        resultAsync{
+
+        resultAsync {
             let! msg = msgRes
-            
+
             return
                 match msg with
                 | Text dto -> "Culture.apply.Text" |> NotSupported |> Error |> async.Return
                 | Html dto -> "Culture.apply.Html" |> NotSupported |> Error |> async.Return
-                | Buttons dto -> "Culture.apply.Buttons" |> NotSupported |> Error |> async.Return
+                | Buttons dto -> dto |> translateButtons culture
                 | WebApps dto -> "Culture.apply.WebApp" |> NotSupported |> Error |> async.Return
         }
-            
