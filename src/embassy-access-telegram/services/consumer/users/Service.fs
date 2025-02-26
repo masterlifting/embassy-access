@@ -14,10 +14,10 @@ let private createButtons chatId msgIdOpt buttonGroupName data =
     match data |> Seq.length with
     | 0 -> Text.create "No data"
     | _ ->
-        Buttons.create
+        ButtonsGroup.create
             { Name = buttonGroupName |> Option.defaultValue "Choose what do you want"
               Columns = 1
-              Data = data |> Map.ofSeq }
+              Items = data |> Map.ofSeq }
     |> fun send -> (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New) |> send
 
 let private toUserEmbassiesResponse chatId messageId buttonGroupName (embassies: EmbassyNode seq) =

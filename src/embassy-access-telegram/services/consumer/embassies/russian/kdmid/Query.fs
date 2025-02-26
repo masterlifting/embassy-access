@@ -29,10 +29,10 @@ let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
         |> Result.map Map
         |> Result.map (fun data ->
             (deps.Chat.Id, Replace deps.MessageId)
-            |> Buttons.create
+            |> ButtonsGroup.create
                 { Name = "Выберете подписку"
                   Columns = 1
-                  Data = data })
+                  Items = data })
 
 let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
     let getRoute =
@@ -74,10 +74,10 @@ let getSubscriptionsMenu requestId =
                 |> Payload.toValue
                 |> Result.map (fun payloadValue ->
                     (deps.Chat.Id, Replace deps.MessageId)
-                    |> Buttons.create
+                    |> ButtonsGroup.create
                         { Name = $"Что хотите сделать с подпиской '{payloadValue}'?"
                           Columns = 1
-                          Data = buildSubscriptionMenu request }))
+                          Items = buildSubscriptionMenu request }))
 
 let getAppointments requestId =
     fun (deps: Kdmid.Dependencies) ->

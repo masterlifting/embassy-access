@@ -14,7 +14,7 @@ type Dependencies =
     { Chat: Chat
       MessageId: int
       EmbassiesDeps: Embassies.Dependencies
-      sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>>
+      sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
       getUserEmbassies: unit -> Async<Result<string option * EmbassyNode list, Error'>>
       getUserEmbassyChildren: Graph.NodeId -> Async<Result<string option * EmbassyNode list, Error'>>
       getUserEmbassyServices: Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>

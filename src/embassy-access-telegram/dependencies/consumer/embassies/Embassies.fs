@@ -13,7 +13,7 @@ type Dependencies =
     { Chat: Chat
       MessageId: int
       RussianDeps: Russian.Dependencies
-      sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>>
+      sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
       getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>

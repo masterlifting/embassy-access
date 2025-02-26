@@ -43,10 +43,10 @@ module Kdmid =
                     |> Map
                     |> fun buttons ->
                         (chatId, New)
-                        |> Buttons.create
+                        |> ButtonsGroup.create
                             { Name = $"Choose the appointment for {request.Service.Embassy.ShortName}:{payloadValue}'"
                               Columns = 1
-                              Data = buttons })
+                              Items = buttons })
 
         let toHasConfirmationsResponse
             (request: EA.Core.Domain.Request.Request, confirmations: Confirmation.Confirmation Set)

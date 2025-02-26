@@ -14,7 +14,7 @@ type Dependencies =
       tryGetChat: unit -> Async<Result<Chat option, Error'>>
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: Culture -> Async<Result<unit, Error'>>
-      sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>> }
+      sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>> }
 
     static member create(deps: Consumer.Dependencies) =
         let result = ResultBuilder()

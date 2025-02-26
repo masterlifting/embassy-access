@@ -12,10 +12,10 @@ let private createButtons chatId msgIdOpt buttonGroupName data =
     match data |> Seq.length with
     | 0 -> Text.create "No data"
     | _ ->
-        Buttons.create
+        ButtonsGroup.create
             { Name = buttonGroupName |> Option.defaultValue "Choose what do you want"
               Columns = 1
-              Data = data |> Map.ofSeq }
+              Items = data |> Map.ofSeq }
     |> fun mapToData -> (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New) |> mapToData
 
 let getCultures () =
@@ -26,7 +26,7 @@ let getCultures () =
                 let route = culture.Key |> Post.SetCulture |> Request.Post |> Culture
                 let name = culture.Value
 
-                (route.Value, name))
+                route.Value |> Text, name)
         )
         |> ResultAsync.map (createButtons deps.ChatId None (Some "Choose the language"))
 

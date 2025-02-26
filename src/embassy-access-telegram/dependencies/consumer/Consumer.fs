@@ -15,8 +15,8 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       CancellationToken: CancellationToken
-      sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>>
-      sendResults: Async<Result<Producer.Data list, Error'>> -> Async<Result<unit, Error'>>
+      sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
+      sendResults: Async<Result<Producer.Message list, Error'>> -> Async<Result<unit, Error'>>
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>

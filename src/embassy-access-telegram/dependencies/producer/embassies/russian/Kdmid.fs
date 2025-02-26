@@ -12,7 +12,7 @@ open EA.Telegram.Dependencies.Producer
 
 type Dependencies =
     { getRequestChats: Request -> Async<Result<Chat list, Error'>>
-      sendNotifications: Data seq -> Async<Result<unit, Error'>> }
+      sendNotifications: Message seq -> Async<Result<unit, Error'>> }
 
     static member create(deps: Producer.Dependencies) =
         let result = ResultBuilder()

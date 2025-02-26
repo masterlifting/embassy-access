@@ -12,7 +12,7 @@ type Dependencies =
     { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
-      sendResult: Async<Result<Producer.Data, Error'>> -> Async<Result<unit, Error'>> }
+      sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>> }
 
     static member create(deps: Russian.Dependencies) =
         let result = ResultBuilder()
