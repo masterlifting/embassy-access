@@ -22,7 +22,7 @@ type Dependencies =
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
 
-    static member create client (dto: Consumer.Dto<_>) ct (deps: Persistence.Dependencies) =
+    static member create client (payload: Consumer.Payload<_>) ct (deps: Persistence.Dependencies) =
         let result = ResultBuilder()
 
         result {
@@ -38,18 +38,18 @@ type Dependencies =
 
             let sendResult data =
                 client
-                |> Web.Telegram.Producer.produceResult data dto.ChatId ct
+                |> Web.Telegram.Producer.produceResult data payload.ChatId ct
                 |> ResultAsync.map ignore
 
             let sendResults data =
                 client
-                |> Web.Telegram.Producer.produceResultSeq data dto.ChatId ct
+                |> Web.Telegram.Producer.produceResultSeq data payload.ChatId ct
                 |> ResultAsync.map ignore
 
             return
                 { CancellationToken = ct
-                  ChatId = dto.ChatId
-                  MessageId = dto.Id
+                  ChatId = payload.ChatId
+                  MessageId = payload.MessageId
                   sendResult = sendResult
                   sendResults = sendResults
                   ChatStorage = chatStorage

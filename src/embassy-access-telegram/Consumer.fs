@@ -19,17 +19,17 @@ let consume data =
         match data with
         | Message msg ->
             match msg with
-            | Text dto ->
+            | Text payload ->
                 Persistence.Dependencies.create cfg
-                |> Result.bind (Consumer.Dependencies.create client dto ct)
-                |> ResultAsync.wrap (respond dto.Value)
-                |> ResultAsync.mapError (fun error -> error.extendMsg $"{dto.ChatId}")
+                |> Result.bind (Consumer.Dependencies.create client payload ct)
+                |> ResultAsync.wrap (respond payload.Value)
+                |> ResultAsync.mapError (fun error -> error.extendMsg $"{payload.ChatId}")
             | _ -> $"Telegram '%A{msg}'" |> NotSupported |> Error |> async.Return
-        | CallbackQuery dto ->
+        | CallbackQuery payload ->
             Persistence.Dependencies.create cfg
-            |> Result.bind (Consumer.Dependencies.create client dto ct)
-            |> ResultAsync.wrap (respond dto.Value)
-            |> ResultAsync.mapError (fun error -> error.extendMsg $"{dto.ChatId}")
+            |> Result.bind (Consumer.Dependencies.create client payload ct)
+            |> ResultAsync.wrap (respond payload.Value)
+            |> ResultAsync.mapError (fun error -> error.extendMsg $"{payload.ChatId}")
         | _ -> $"Telegram '%A{data}'" |> NotSupported |> Error |> async.Return
 
 let start client =

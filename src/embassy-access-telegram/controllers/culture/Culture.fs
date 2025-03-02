@@ -44,8 +44,10 @@ let private translateButtons culture (buttonsGroup: Payload<ButtonsGroup>) =
         { Translation.Item.Id = buttonsGroup.Value.Name
           Translation.Item.Value = buttonsGroup.Value.Name }
         :: (buttonsGroup.Value.Items
-            |> Map.toList
-            |> List.map (fun (key, value) -> { Id = key; Value = value }))
+            |> Set.map (fun button ->
+                { Id = button.Callback.Value
+                  Value = button.Name })
+            |> Set.toList)
 
     let request: Translation.Request = { Culture = culture; Items = items }
 
@@ -60,15 +62,15 @@ let private translateButtons culture (buttonsGroup: Payload<ButtonsGroup>) =
             |> Map.tryFind buttonsGroup.Value.Name
             |> Option.defaultValue buttonsGroup.Value.Name
 
-        let newData =
+        let buttons =
             buttonsGroup.Value.Items
-            |> Map.map (fun key value -> responseItemsMap |> Map.tryFind key |> Option.defaultValue value)
+            |> Map.map (fun button -> responseItemsMap |> Map.tryFind key |> Option.defaultValue value)
 
         { buttonsGroup with
             Value =
                 { buttonsGroup.Value with
                     Name = buttonsGroupName
-                    Items = newData } }
+                    Items = buttons } }
         |> ButtonsGroup)
 
 
@@ -81,8 +83,6 @@ let apply (culture: Culture) (msgRes: Async<Result<Message, Error'>>) =
 
             return
                 match msg with
-                | Text dto -> "Culture.apply.Text" |> NotSupported |> Error |> async.Return
-                | Html dto -> "Culture.apply.Html" |> NotSupported |> Error |> async.Return
-                | ButtonsGroup dto -> dto |> translateButtons culture
-                | WebApps dto -> "Culture.apply.WebApp" |> NotSupported |> Error |> async.Return
+                | Text payload -> "Culture.apply.Text" |> NotSupported |> Error |> async.Return
+                | ButtonsGroup payload -> payload |> translateButtons culture
         }
