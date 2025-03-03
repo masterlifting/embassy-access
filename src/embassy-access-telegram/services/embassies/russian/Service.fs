@@ -16,8 +16,9 @@ module Kdmid =
 
         let toSuccessfullyResponse (request: EA.Core.Domain.Request.Request, msg: string) =
             fun chatId ->
-                (chatId, New)
-                |> Text.create $"{msg} for '{request.Service.Name}' of '{request.Service.Embassy.ShortName}'."
+                $"{msg} for '{request.Service.Name}' of '{request.Service.Embassy.ShortName}'."
+                |> Text.create
+                |> Message.createNew chatId
 
         let toUnsuccessfullyResponse (request: EA.Core.Domain.Request.Request, error: Error') =
             fun chatId -> chatId |> Text.createError error
@@ -40,13 +41,15 @@ module Kdmid =
                             |> RussianEmbassy
 
                         route.Value, appointment.Description)
-                    |> Map
-                    |> fun buttons ->
+                    |> fun data ->
                         (chatId, New)
                         |> ButtonsGroup.create
                             { Name = $"Choose the appointment for {request.Service.Embassy.ShortName}:{payloadValue}'"
                               Columns = 1
-                              Items = buttons })
+                              Buttons =
+                                data
+                                |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
+                                |> Set.ofSeq })
 
         let toHasConfirmationsResponse
             (request: EA.Core.Domain.Request.Request, confirmations: Confirmation.Confirmation Set)
@@ -55,10 +58,9 @@ module Kdmid =
                 request.Service.Payload
                 |> Payload.toValue
                 |> Result.map (fun payloadValue ->
-                    let resultMsg =
-                        $"Confirmations for {request.Service.Embassy.ShortName}:{payloadValue} are found."
-
-                    (chatId, New) |> Text.create resultMsg)
+                    $"Confirmations for {request.Service.Embassy.ShortName}:{payloadValue} are found."
+                    |> Text.create
+                    |> Message.createNew chatId)
 
     module Request =
         open EA.Embassies.Russian
@@ -80,8 +82,9 @@ module Kdmid =
                     | HasConfirmations(request, confirmations) ->
                         chatId |> Notification.toHasConfirmationsResponse (request, confirmations))
                 |> Option.defaultValue (
-                    (chatId, New)
-                    |> Text.create $"Не валидный результат запроса {request.Id}."
+                    $"Не валидный результат запроса {request.Id}."
+                    |> Text.create
+                    |> Message.createNew chatId
                     |> Ok
                 )
 

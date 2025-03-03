@@ -8,15 +8,18 @@ open EA.Telegram.Endpoints.Request
 open EA.Telegram.Endpoints.Culture
 open EA.Telegram.Dependencies.Consumer
 
-let private createButtons chatId msgIdOpt buttonGroupName data =
+let private createMessage chatId msgIdOpt nameOpt data =
     match data |> Seq.length with
     | 0 -> Text.create "No data"
     | _ ->
         ButtonsGroup.create
-            { Name = buttonGroupName |> Option.defaultValue "Choose what do you want"
+            { Name = nameOpt |> Option.defaultValue "Choose what do you want"
               Columns = 1
-              Items = data |> Map.ofSeq }
-    |> fun mapToData -> (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New) |> mapToData
+              Buttons =
+                data
+                |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
+                |> Set.ofSeq }
+    |> Message.tryReplace msgIdOpt chatId
 
 let getCultures () =
     fun (deps: Culture.Dependencies) ->
@@ -26,9 +29,9 @@ let getCultures () =
                 let route = culture.Key |> Post.SetCulture |> Request.Post |> Culture
                 let name = culture.Value
 
-                route.Value |> Text, name)
+                route.Value, name)
         )
-        |> ResultAsync.map (createButtons deps.ChatId None (Some "Choose the language"))
+        |> ResultAsync.map (createMessage deps.ChatId None (Some "Choose the language"))
 
 let getCulturesCallback callback =
     fun (deps: Culture.Dependencies) ->
@@ -36,13 +39,10 @@ let getCulturesCallback callback =
         |> ResultAsync.map (
             Seq.map (fun culture ->
                 let route =
-                    (callback, culture.Key)
-                    |> Post.SetCultureCallback
-                    |> Request.Post
-                    |> Culture
+                    (callback, culture.Key) |> Post.SetCultureCallback |> Request.Post |> Culture
 
                 let name = culture.Value
 
                 (route.Value, name))
         )
-        |> ResultAsync.map (createButtons deps.ChatId None (Some "Choose the language"))
+        |> ResultAsync.map (createMessage deps.ChatId None (Some "Choose the language"))

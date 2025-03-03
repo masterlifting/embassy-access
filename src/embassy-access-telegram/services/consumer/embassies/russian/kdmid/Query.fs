@@ -26,13 +26,15 @@ let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
             |> Payload.toValue
             |> Result.map (fun payloadValue -> route.Value, payloadValue))
         |> Result.choose
-        |> Result.map Map
         |> Result.map (fun data ->
             (deps.Chat.Id, Replace deps.MessageId)
             |> ButtonsGroup.create
                 { Name = "Выберете подписку"
                   Columns = 1
-                  Items = data })
+                  Buttons =
+                    data
+                    |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
+                    |> Set.ofSeq })
 
 let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
     let getRoute =
@@ -55,6 +57,8 @@ let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
             [ getRoute.Value, "Запросить доступные слоты"
               deleteRoute.Value, "Удалить подписку" ]
     | _ -> Map [ deleteRoute.Value, "Удалить подписку" ]
+    |> Seq.map (fun x -> x.Key |> CallbackData |> Button.create x.Value)
+    |> Set.ofSeq
 
 
 let getSubscriptionsMenu requestId =
@@ -77,7 +81,7 @@ let getSubscriptionsMenu requestId =
                     |> ButtonsGroup.create
                         { Name = $"Что хотите сделать с подпиской '{payloadValue}'?"
                           Columns = 1
-                          Items = buildSubscriptionMenu request }))
+                          Buttons = buildSubscriptionMenu request }))
 
 let getAppointments requestId =
     fun (deps: Kdmid.Dependencies) ->

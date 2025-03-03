@@ -10,26 +10,29 @@ open EA.Telegram.Endpoints.Users
 open EA.Telegram.Endpoints.Users.Request
 open EA.Telegram.Dependencies.Consumer
 
-let private createButtons chatId msgIdOpt buttonGroupName data =
+let private createMessage chatId msgIdOpt nameOpt data =
     match data |> Seq.length with
     | 0 -> Text.create "No data"
     | _ ->
         ButtonsGroup.create
-            { Name = buttonGroupName |> Option.defaultValue "Choose what do you want"
+            { Name = nameOpt |> Option.defaultValue "Choose what do you want"
               Columns = 1
-              Items = data |> Map.ofSeq }
-    |> fun send -> (chatId, msgIdOpt |> Option.map Replace |> Option.defaultValue New) |> send
+              Buttons =
+                data
+                |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
+                |> Set.ofSeq }
+    |> Message.tryReplace msgIdOpt chatId
 
 let private toUserEmbassiesResponse chatId messageId buttonGroupName (embassies: EmbassyNode seq) =
     embassies
     |> Seq.map (fun embassy -> Request.Users(Get(Get.UserEmbassy(embassy.Id))).Value, embassy.ShortName)
-    |> createButtons chatId messageId buttonGroupName
+    |> createMessage chatId messageId buttonGroupName
 
 let private toUserEmbassyServicesResponse chatId messageId buttonGroupName embassyId (services: ServiceNode seq) =
     services
     |> Seq.map (fun service ->
         Request.Users(Get(Get.UserEmbassyService(embassyId, service.Id))).Value, service.ShortName)
-    |> createButtons chatId messageId buttonGroupName
+    |> createMessage chatId messageId buttonGroupName
 
 module internal Query =
     open EA.Telegram.Services.Consumer
