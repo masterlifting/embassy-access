@@ -39,17 +39,18 @@ let wrap (request: EA.Telegram.Endpoints.Request.Request) callback =
                 | None -> deps |> Query.getCulturesCallback request.Value |> deps.sendResult))
 
 
-let private translateButtonsGroup culture (group: Payload<ButtonsGroup>) =
+let private translateButtonsGroup culture (payload: Payload<ButtonsGroup>) =
+    let group = payload.Value
+
     let items =
-        { Id = group.Value.Name
-          Value = group.Value.Name }
-        :: (group.Value.Buttons
+        { Id = group.Name; Value = group.Name }
+        :: (group.Buttons
             |> Set.map (fun button ->
                 { Id = button.Callback.Value
                   Value = button.Name })
             |> Set.toList)
 
-    let request: Translation.Request = { Culture = culture; Items = items }
+    let request = { Culture = culture; Items = items }
 
     request
     |> Translator.translate
@@ -58,12 +59,10 @@ let private translateButtonsGroup culture (group: Payload<ButtonsGroup>) =
             response.Items |> List.map (fun item -> item.Id, item.Value) |> Map.ofList
 
         let buttonsGroupName =
-            responseItemsMap
-            |> Map.tryFind group.Value.Name
-            |> Option.defaultValue group.Value.Name
+            responseItemsMap |> Map.tryFind group.Name |> Option.defaultValue group.Name
 
         let buttons =
-            group.Value.Buttons
+            group.Buttons
             |> Set.map (fun button ->
                 let buttonName =
                     responseItemsMap
@@ -73,26 +72,27 @@ let private translateButtonsGroup culture (group: Payload<ButtonsGroup>) =
                 { button with Name = buttonName })
 
         { group with
-            Value =
-                { group.Value with
-                    Name = buttonsGroupName
-                    Buttons = buttons } }
-        |> ButtonsGroup)
+            Name = buttonsGroupName
+            Buttons = buttons })
+    |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
 
-let private translateText culture (text: Payload<string>) =
-    let request: Translation.Request =
+let private translateText culture (payload: Payload<string>) =
+    let id = "0"
+    let text = payload.Value
+
+    let request =
         { Culture = culture
-          Items = [ { Id = text.Value; Value = text.Value } ] }
+          Items = [ { Id = id; Value = text } ] }
 
     request
     |> Translator.translate
     |> ResultAsync.map (fun response ->
-        let responseItem =
-            response.Items
-            |> List.tryFind (fun item -> item.Id = text.Value)
-            |> Option.defaultValue { Id = text.Value; Value = text.Value }
-
-        { text with Value = responseItem.Value } |> Text)
+        response.Items
+        |> List.map (fun item -> item.Id, item.Value)
+        |> Map.ofList
+        |> Map.tryFind id
+        |> Option.defaultValue text)
+    |> ResultAsync.map (fun value -> { payload with Value = value } |> Text)
 
 let apply (culture: Culture) (msgRes: Async<Result<Message, Error'>>) =
     fun (deps: Consumer.Dependencies) ->
