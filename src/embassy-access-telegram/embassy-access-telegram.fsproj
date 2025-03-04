@@ -37,6 +37,8 @@
         <Compile Include="dependencies\consumer\Users.fs" />
         <Compile Include="dependencies\producer\Producer.fs" />
         <Compile Include="dependencies\producer\embassies\russian\Kdmid.fs" />
+        <Compile Include="services\culture\Query.fs" />
+        <Compile Include="services\culture\Command.fs" />
         <Compile Include="services\embassies\russian\Service.fs" />
         <Compile Include="services\consumer\embassies\russian\kdmid\Query.fs" />
         <Compile Include="services\consumer\embassies\russian\kdmid\Command.fs" />
@@ -45,8 +47,6 @@
         <Compile Include="services\consumer\embassies\russian\Service.fs" />
         <Compile Include="services\consumer\embassies\Service.fs" />
         <Compile Include="services\consumer\users\Service.fs" />
-        <Compile Include="services\consumer\culture\Query.fs" />
-        <Compile Include="services\consumer\culture\Command.fs" />
         <Compile Include="services\producer\embassies\russian\Service.fs" />
         <Compile Include="controllers\culture\Culture.fs" />
         <Compile Include="controllers\users\Users.fs" />

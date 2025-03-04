@@ -1,6 +1,5 @@
 ﻿module EA.Telegram.Services.Consumer.Embassies.Service
 
-open System
 open EA.Telegram.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude

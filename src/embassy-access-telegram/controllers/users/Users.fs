@@ -6,8 +6,8 @@ open EA.Telegram.Domain
 open EA.Telegram.Endpoints.Users
 open EA.Telegram.Endpoints.Users.Request
 open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Services.Culture
 open EA.Telegram.Services.Consumer.Users.Service
-open EA.Telegram.Services.Consumer.Culture
 
 let respond request chat =
     fun (deps: Consumer.Dependencies) ->

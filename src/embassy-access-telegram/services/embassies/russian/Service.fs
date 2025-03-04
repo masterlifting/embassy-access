@@ -1,6 +1,5 @@
 ﻿module EA.Telegram.Services.Embassies.Russian.Service
 
-open System
 open Infrastructure.Domain
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer

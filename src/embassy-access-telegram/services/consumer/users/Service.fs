@@ -1,6 +1,5 @@
 ﻿module EA.Telegram.Services.Consumer.Users.Service
 
-open System
 open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer

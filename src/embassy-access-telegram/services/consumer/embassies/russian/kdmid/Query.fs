@@ -60,7 +60,6 @@ let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
     |> Seq.map (fun x -> x.Key |> CallbackData |> Button.create x.Value)
     |> Set.ofSeq
 
-
 let getSubscriptionsMenu requestId =
     fun (deps: Kdmid.Dependencies) ->
         deps.getRequest requestId

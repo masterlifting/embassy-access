@@ -1,6 +1,5 @@
-﻿module EA.Telegram.Services.Consumer.Culture.Query
+﻿module EA.Telegram.Services.Culture.Query
 
-open System
 open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer

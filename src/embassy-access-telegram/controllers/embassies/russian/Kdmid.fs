@@ -2,8 +2,8 @@
 module EA.Telegram.Controllers.Consumer.Embassies.Russian.Kdmid
 
 open Infrastructure.Prelude
-open EA.Telegram.Dependencies.Consumer.Embassies.Russian
 open EA.Telegram.Endpoints.Embassies.Russian.Kdmid
+open EA.Telegram.Dependencies.Consumer.Embassies.Russian
 open EA.Telegram.Services.Consumer.Embassies.Russian.Kdmid
 
 let get request =

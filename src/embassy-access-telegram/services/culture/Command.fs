@@ -1,7 +1,5 @@
-﻿module EA.Telegram.Services.Consumer.Culture.Command
+﻿module EA.Telegram.Services.Culture.Command
 
-open System
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open Multilang.Domain
 open Web.Telegram.Producer
@@ -72,25 +70,25 @@ let private translateText culture (payload: Payload<string>) =
         |> Option.defaultValue text)
     |> ResultAsync.map (fun value -> { payload with Value = value } |> Text)
 
-let translate (culture: Culture) (message: Message) =
+let translate culture message =
     fun (deps: Consumer.Dependencies) ->
         match message with
         | Text payload -> payload |> translateText culture
         | ButtonsGroup payload -> payload |> translateButtonsGroup culture
 
-let translateSeq (culture: Culture) (messages: Message list) =
+let translateSeq culture messages =
     fun (deps: Consumer.Dependencies) ->
         messages
         |> List.map (fun message -> deps |> translate culture message)
         |> Async.Sequential
         |> Async.map Result.choose
 
-let translateRes (culture: Culture) (msgRes: Async<Result<Message, Error'>>) =
+let translateRes culture msgRes =
     fun (deps: Consumer.Dependencies) ->
         msgRes
         |> ResultAsync.bindAsync (fun message -> deps |> translate culture message)
 
-let translateSeqRes (culture: Culture) (msgRes: Async<Result<Message list, Error'>>) =
+let translateSeqRes culture msgRes =
     fun (deps: Consumer.Dependencies) ->
         msgRes
         |> ResultAsync.bindAsync (fun messages -> deps |> translateSeq culture messages)

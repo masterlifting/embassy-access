@@ -2,9 +2,9 @@
 module EA.Telegram.Controllers.Consumer.Embassies.Russian.Midpass
 
 open Infrastructure.Prelude
+open EA.Telegram.Endpoints.Embassies.Russian.Midpass
 open EA.Telegram.Dependencies.Consumer.Embassies.Russian
 open EA.Telegram.Services.Consumer.Embassies.Russian.Midpass
-open EA.Telegram.Endpoints.Embassies.Russian.Midpass
 
 let get request =
     fun (dependencies: Russian.Dependencies) ->
