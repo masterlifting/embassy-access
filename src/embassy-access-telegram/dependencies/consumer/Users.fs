@@ -21,12 +21,12 @@ type Dependencies =
       getUserEmbassyServiceChildren:
           Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>> }
 
-    static member create chat (deps: Consumer.Dependencies) =
+    static member create chat (translate, translateSeq) (deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let! embassiesDeps = Embassies.Dependencies.create chat deps
+            let! embassiesDeps = Embassies.Dependencies.create chat (translate, translateSeq) deps
 
             let getUserRequests () =
                 deps.ChatStorage

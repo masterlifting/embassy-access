@@ -7,9 +7,9 @@ open EA.Telegram.Services.Consumer.Embassies.Russian.Midpass
 open EA.Telegram.Endpoints.Embassies.Russian.Midpass
 
 let get request =
-    fun (deps: Russian.Dependencies) ->
-        Midpass.Dependencies.create deps
+    fun (dependencies: Russian.Dependencies) ->
+        Midpass.Dependencies.create dependencies
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Get.Status number -> Query.checkStatus number
-            |> fun createResponse -> deps |> createResponse |> deps.sendResult)
+            |> fun createResponse -> deps |> (createResponse >> dependencies.translate) |> deps.sendResult)
