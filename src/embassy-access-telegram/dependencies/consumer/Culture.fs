@@ -11,6 +11,7 @@ open EA.Telegram.DataAccess
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
+      ConsumerDeps: Consumer.Dependencies
       tryGetChat: unit -> Async<Result<Chat option, Error'>>
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: Culture -> Async<Result<unit, Error'>>
@@ -26,13 +27,14 @@ type Dependencies =
 
             let setCurrentCulture culture =
                 deps.ChatStorage |> Chat.Command.setCulture deps.ChatId culture
-                
+
             let tryGetChat () =
                 deps.ChatStorage |> Chat.Query.tryFindById deps.ChatId
 
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
+                  ConsumerDeps = deps
                   tryGetChat = tryGetChat
                   getAvailableCultures = getAvailableCultures
                   setCurrentCulture = setCurrentCulture

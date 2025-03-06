@@ -2,7 +2,6 @@
 module EA.Telegram.Controllers.Consumer.Users.Users
 
 open Infrastructure.Prelude
-open EA.Telegram.Domain
 open EA.Telegram.Endpoints.Users
 open EA.Telegram.Endpoints.Users.Request
 open EA.Telegram.Dependencies.Consumer
@@ -11,14 +10,15 @@ open EA.Telegram.Services.Consumer.Users.Service
 
 let respond request chat =
     fun (deps: Consumer.Dependencies) ->
-        let translate msgRes =
-            deps |> Command.translateRes chat.Culture msgRes
-
-        let translateSeq msgSeqRes =
-            deps |> Command.translateSeqRes chat.Culture msgSeqRes
-
-        Users.Dependencies.create chat (translate, translateSeq) deps
+        Users.Dependencies.create chat deps
         |> ResultAsync.wrap (fun deps ->
+
+            let translate msgRes =
+                deps.CultureDeps |> Command.translateRes chat.Culture msgRes
+
+            let sendResult getResponse =
+                deps |> (getResponse >> translate) |> deps.sendResult
+
             match request with
             | Get get ->
                 match get with
@@ -26,4 +26,4 @@ let respond request chat =
                 | Get.UserEmbassy embassyId -> Query.getUserEmbassy embassyId
                 | Get.UserEmbassyServices embassyId -> Query.getUserEmbassyServices embassyId
                 | Get.UserEmbassyService(embassyId, serviceId) -> Query.getUserEmbassyService embassyId serviceId
-                |> fun createResponse -> deps |> (createResponse >> translate) |> deps.sendResult)
+                |> sendResult)

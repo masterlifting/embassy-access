@@ -71,24 +71,24 @@ let private translateText culture (payload: Payload<string>) =
     |> ResultAsync.map (fun value -> { payload with Value = value } |> Text)
 
 let translate culture message =
-    fun (deps: Consumer.Dependencies) ->
+    fun (deps: Culture.Dependencies) ->
         match message with
         | Text payload -> payload |> translateText culture
         | ButtonsGroup payload -> payload |> translateButtonsGroup culture
 
 let translateSeq culture messages =
-    fun (deps: Consumer.Dependencies) ->
+    fun (deps: Culture.Dependencies) ->
         messages
         |> List.map (fun message -> deps |> translate culture message)
         |> Async.Sequential
         |> Async.map Result.choose
 
 let translateRes culture msgRes =
-    fun (deps: Consumer.Dependencies) ->
+    fun (deps: Culture.Dependencies) ->
         msgRes
         |> ResultAsync.bindAsync (fun message -> deps |> translate culture message)
 
 let translateSeqRes culture msgRes =
-    fun (deps: Consumer.Dependencies) ->
+    fun (deps: Culture.Dependencies) ->
         msgRes
         |> ResultAsync.bindAsync (fun messages -> deps |> translateSeq culture messages)

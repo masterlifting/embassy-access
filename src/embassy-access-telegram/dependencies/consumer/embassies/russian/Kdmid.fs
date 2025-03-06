@@ -9,12 +9,14 @@ open Web.Telegram.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
+open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Dependencies.Consumer.Embassies
 
 type Dependencies =
     { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
+      CultureDeps: Culture.Dependencies
       RequestStorage: Request.RequestStorage
       sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
       sendResults: Async<Result<Producer.Message list, Error'>> -> Async<Result<unit, Error'>>
@@ -74,6 +76,7 @@ type Dependencies =
                 { Chat = deps.Chat
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
+                  CultureDeps = deps.CultureDeps
                   RequestStorage = deps.RequestStorage
                   sendResult = deps.sendResult
                   sendResults = deps.sendResults

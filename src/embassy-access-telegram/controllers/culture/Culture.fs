@@ -8,8 +8,8 @@ open EA.Telegram.Dependencies.Consumer
 open EA.Telegram.Services.Culture
 
 let respond request entrypoint =
-    fun (consumerDeps: Consumer.Dependencies) ->
-        Culture.Dependencies.create consumerDeps
+    fun (deps: Consumer.Dependencies) ->
+        Culture.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Get get ->
@@ -23,13 +23,13 @@ let respond request entrypoint =
                     |> Command.setCultureCallback culture
                     |> ResultAsync.bindAsync (fun _ ->
                         EA.Telegram.Endpoints.Request.Request.parse callback
-                        |> ResultAsync.wrap (fun route -> consumerDeps |> entrypoint route)))
+                        |> ResultAsync.wrap (fun route -> deps.ConsumerDeps |> entrypoint route)))
 
 let apply (request: EA.Telegram.Endpoints.Request.Request) callback =
-    fun (consumerDeps: Consumer.Dependencies) ->
-        Culture.Dependencies.create consumerDeps
+    fun (deps: Consumer.Dependencies) ->
+        Culture.Dependencies.create deps
         |> ResultAsync.wrap (fun deps ->
             deps.tryGetChat ()
             |> ResultAsync.bindAsync (function
-                | Some chat -> consumerDeps |> callback chat
+                | Some chat -> deps.ConsumerDeps |> callback chat
                 | None -> deps |> Query.getCulturesCallback request.Value |> deps.sendResult))

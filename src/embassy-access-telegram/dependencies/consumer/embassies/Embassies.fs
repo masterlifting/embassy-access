@@ -12,6 +12,7 @@ open EA.Telegram.Dependencies.Consumer.Embassies.Russian
 type Dependencies =
     { Chat: Chat
       MessageId: int
+      CultureDeps: Culture.Dependencies
       RussianDeps: Russian.Dependencies
       sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
       getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
@@ -19,12 +20,13 @@ type Dependencies =
       getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getEmbassyServiceGraph: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
 
-    static member create chat (translate, translateSeq) (deps: Consumer.Dependencies) =
+    static member create chat (deps: Consumer.Dependencies) =
         let result = ResultBuilder()
 
         result {
 
-            let! russianDeps = Russian.Dependencies.create chat (translate, translateSeq) deps
+            let! cultureDeps = Culture.Dependencies.create deps
+            let! russianDeps = Russian.Dependencies.create chat deps
 
             let getEmbassyNode embassyId =
                 deps.getEmbassyGraph ()
@@ -77,6 +79,7 @@ type Dependencies =
             return
                 { Chat = chat
                   MessageId = deps.MessageId
+                  CultureDeps = cultureDeps
                   RussianDeps = russianDeps
                   sendResult = deps.sendResult
                   getEmbassiesGraph = deps.getEmbassyGraph

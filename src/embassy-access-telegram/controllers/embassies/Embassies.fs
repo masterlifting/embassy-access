@@ -12,14 +12,15 @@ open EA.Telegram.Services.Consumer.Embassies.Service
 
 let respond request chat =
     fun (deps: Consumer.Dependencies) ->
-        let translate msgRes =
-            deps |> Command.translateRes chat.Culture msgRes
-
-        let translateSeq msgSeqRes =
-            deps |> Command.translateSeqRes chat.Culture msgSeqRes
-
-        Embassies.Dependencies.create chat (translate, translateSeq) deps
+        Embassies.Dependencies.create chat deps
         |> ResultAsync.wrap (fun deps ->
+
+            let translate msgRes =
+                deps.CultureDeps |> Command.translateRes chat.Culture msgRes
+
+            let sendResult getResponse =
+                deps |> (getResponse >> translate) |> deps.sendResult
+
             match request with
             | Get get ->
                 match get with
@@ -27,4 +28,4 @@ let respond request chat =
                 | Get.Embassy embassyId -> Query.getEmbassy embassyId
                 | Get.EmbassyServices embassyId -> Query.getEmbassyServices embassyId
                 | Get.EmbassyService(embassyId, serviceId) -> Query.getEmbassyService embassyId serviceId
-                |> fun createResponse -> deps |> (createResponse >> translate) |> deps.sendResult)
+                |> sendResult)
