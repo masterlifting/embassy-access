@@ -13,8 +13,8 @@ type Request =
 
     member this.Value =
         match this with
-        | SetCulture culture -> [ "0"; culture.Value ]
-        | SetCultureCallback(callback, culture) -> [ "1"; callback; culture.Value ]
+        | SetCulture culture -> [ "0"; culture.Code ]
+        | SetCultureCallback(callback, culture) -> [ "1"; callback; culture.Code ]
         |> String.concat DELIMITER
 
     static member parse(input: string) =

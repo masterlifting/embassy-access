@@ -50,7 +50,7 @@ type private Chat with
                 | RequestId id -> string id)
             |> Seq.toList
 
-        result.Culture <- this.Culture.Value
+        result.Culture <- this.Culture.Code
 
         result
 
@@ -201,7 +201,7 @@ module private InMemory =
                           Subscriptions = Set.empty
                           Culture = culture }
                 | Some index ->
-                    data[index].Culture <- culture.Value
+                    data[index].Culture <- culture.Code
                     data |> Ok)
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
             |> async.Return
@@ -327,7 +327,7 @@ module private FileSystem =
                           Subscriptions = Set.empty
                           Culture = culture }
                 | Some index ->
-                    data[index].Culture <- culture.Value
+                    data[index].Culture <- culture.Code
                     data |> Ok)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
 

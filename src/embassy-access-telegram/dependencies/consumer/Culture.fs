@@ -12,6 +12,7 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       ConsumerDeps: Consumer.Dependencies
+      TranslationClient: Multilang.Translator.Type
       tryGetChat: unit -> Async<Result<Chat option, Error'>>
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: Culture -> Async<Result<unit, Error'>>
@@ -31,10 +32,16 @@ type Dependencies =
             let tryGetChat () =
                 deps.ChatStorage |> Chat.Query.tryFindById deps.ChatId
 
+            let! translationClient =
+                { Multilang.OpenAI.Domain.Connection.Token = "" }
+                |> Multilang.Translator.Connection.OpenAI
+                |> Multilang.Translator.init
+
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
                   ConsumerDeps = deps
+                  TranslationClient = translationClient
                   tryGetChat = tryGetChat
                   getAvailableCultures = getAvailableCultures
                   setCurrentCulture = setCurrentCulture

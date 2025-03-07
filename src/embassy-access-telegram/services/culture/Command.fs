@@ -16,65 +16,67 @@ let setCultureCallback (culture: Culture) =
     fun (deps: Culture.Dependencies) -> culture |> deps.setCurrentCulture
 
 let private translateButtonsGroup culture (payload: Payload<ButtonsGroup>) =
-    let group = payload.Value
+    fun client ->
+        let group = payload.Value
 
-    let items =
-        { Id = group.Name; Value = group.Name }
-        :: (group.Buttons
-            |> Set.map (fun button ->
-                { Id = button.Callback.Value
-                  Value = button.Name })
-            |> Set.toList)
+        let items =
+            { Id = group.Name; Value = group.Name }
+            :: (group.Buttons
+                |> Set.map (fun button ->
+                    { Id = button.Callback.Value
+                      Value = button.Name })
+                |> Set.toList)
 
-    let request = { Culture = culture; Items = items }
+        let request = { Culture = culture; Items = items }
 
-    request
-    |> Multilang.Translator.translate
-    |> ResultAsync.map (fun response ->
-        let responseItemsMap =
-            response.Items |> List.map (fun item -> item.Id, item.Value) |> Map.ofList
+        client
+        |> Multilang.Translator.translate request
+        |> ResultAsync.map (fun response ->
+            let responseItemsMap =
+                response.Items |> List.map (fun item -> item.Id, item.Value) |> Map.ofList
 
-        let buttonsGroupName =
-            responseItemsMap |> Map.tryFind group.Name |> Option.defaultValue group.Name
+            let buttonsGroupName =
+                responseItemsMap |> Map.tryFind group.Name |> Option.defaultValue group.Name
 
-        let buttons =
-            group.Buttons
-            |> Set.map (fun button ->
-                let buttonName =
-                    responseItemsMap
-                    |> Map.tryFind button.Callback.Value
-                    |> Option.defaultValue button.Name
+            let buttons =
+                group.Buttons
+                |> Set.map (fun button ->
+                    let buttonName =
+                        responseItemsMap
+                        |> Map.tryFind button.Callback.Value
+                        |> Option.defaultValue button.Name
 
-                { button with Name = buttonName })
+                    { button with Name = buttonName })
 
-        { group with
-            Name = buttonsGroupName
-            Buttons = buttons })
-    |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
+            { group with
+                Name = buttonsGroupName
+                Buttons = buttons })
+        |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
 
 let private translateText culture (payload: Payload<string>) =
-    let id = "0"
-    let text = payload.Value
+    fun client ->
+        let id = "0"
+        let text = payload.Value
 
-    let request =
-        { Culture = culture
-          Items = [ { Id = id; Value = text } ] }
+        let request =
+            { Culture = culture
+              Items = [ { Id = id; Value = text } ] }
 
-    request
-    |> Multilang.Translator.translate
-    |> ResultAsync.map (fun response ->
-        response.Items
-        |> List.map (fun item -> item.Id, item.Value)
-        |> Map.ofList
-        |> Map.tryFind id
-        |> Option.defaultValue text)
-    |> ResultAsync.map (fun value -> { payload with Value = value } |> Text)
+        client
+        |> Multilang.Translator.translate request
+        |> ResultAsync.map (fun response ->
+            response.Items
+            |> List.map (fun item -> item.Id, item.Value)
+            |> Map.ofList
+            |> Map.tryFind id
+            |> Option.defaultValue text)
+        |> ResultAsync.map (fun value -> { payload with Value = value } |> Text)
 
 let translate culture message =
     fun (deps: Culture.Dependencies) ->
         match message with
-        | Text payload -> payload |> translateText culture
-        | ButtonsGroup payload -> payload |> translateButtonsGroup culture
+        | Text payload -> deps.TranslationClient |> translateText culture payload
+        | ButtonsGroup payload -> deps.TranslationClient |> translateButtonsGroup culture payload
 
 let translateSeq culture messages =
     fun (deps: Culture.Dependencies) ->
