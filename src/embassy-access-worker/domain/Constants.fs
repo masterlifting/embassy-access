@@ -6,4 +6,3 @@ let internal EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN_KEY =
 
 [<Literal>]
 let EMBASSY_ROOT_ID = "EMB"
-

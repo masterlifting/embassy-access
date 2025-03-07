@@ -5,6 +5,7 @@ open System
 open Infrastructure.Domain
 open Web.Http.Domain.Request
 open Web.Http.Domain.Response
+
 type HttpClient = Web.Http.Domain.Client.Client
 
 type Dependencies =

@@ -16,6 +16,7 @@ type Dependencies =
             let initTelegramClient () =
                 EA.Worker.Domain.Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN_KEY
                 |> EnvKey
+                |> fun token -> { Token = token }
                 |> Web.Telegram.Client.init
 
             return { initTelegramClient = initTelegramClient }

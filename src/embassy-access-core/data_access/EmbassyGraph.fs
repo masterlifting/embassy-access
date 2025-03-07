@@ -12,7 +12,7 @@ let private Name = "Embassies"
 
 type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Type
 
-type StorageType = Configuration of Configuration.Domain.Client
+type StorageType = Configuration of Configuration.Domain.Connection
 
 type EmbassyGraphEntity() =
     member val Id = String.Empty with get, set
@@ -41,10 +41,10 @@ type EmbassyGraphEntity() =
 module private Configuration =
     open Persistence.Configuration
 
-    let private loadData = Query.get<EmbassyGraphEntity>
+    let private loadData = Read.section<EmbassyGraphEntity>
 
-    let get section client =
-        client |> loadData section |> Result.bind _.ToDomain() |> async.Return
+    let get client =
+        client |> loadData |> Result.bind _.ToDomain() |> async.Return
 
 let private toPersistenceStorage storage =
     storage
@@ -61,5 +61,5 @@ let init storageType =
 
 let get storage =
     match storage |> toPersistenceStorage with
-    | Storage.Configuration client -> client.Configuration |> Configuration.get client.SectionName
+    | Storage.Configuration client -> client |> Configuration.get
     | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return

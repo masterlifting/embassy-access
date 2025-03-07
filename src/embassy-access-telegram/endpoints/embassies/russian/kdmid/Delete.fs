@@ -17,7 +17,4 @@ type Request =
 
         match parts with
         | [| "0"; requestId |] -> RequestId.create requestId |> Result.map Subscription
-        | _ ->
-            $"'{parts}' of Embassies.Russian.Kdmid.Delete endpoint"
-            |> NotSupported
-            |> Error
+        | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Delete endpoint" |> NotSupported |> Error

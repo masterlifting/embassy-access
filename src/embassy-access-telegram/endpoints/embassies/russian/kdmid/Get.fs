@@ -20,7 +20,4 @@ type Request =
         match parts with
         | [| "0"; requestId |] -> RequestId.create requestId |> Result.map Appointments
         | [| "1"; requestId |] -> RequestId.create requestId |> Result.map SubscriptionsMenu
-        | _ ->
-            $"'{parts}' of Embassies.Russian.Kdmid.Get endpoint"
-            |> NotSupported
-            |> Error
+        | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Get endpoint" |> NotSupported |> Error

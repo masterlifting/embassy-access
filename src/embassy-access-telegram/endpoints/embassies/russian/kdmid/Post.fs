@@ -118,7 +118,4 @@ type Request =
                     { RequestId = requestId
                       AppointmentId = appointmentId }))
             |> Result.map ConfirmAppointment
-        | _ ->
-            $"'{parts}' of Embassies.Russian.Kdmid.Post endpoint"
-            |> NotSupported
-            |> Error
+        | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Post endpoint" |> NotSupported |> Error
