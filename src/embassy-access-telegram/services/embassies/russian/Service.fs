@@ -65,6 +65,7 @@ module Kdmid =
         open EA.Embassies.Russian
         open EA.Embassies.Russian.Domain
         open EA.Telegram.Dependencies.Consumer.Embassies.Russian
+        open EA.Embassies.Russian.Kdmid.Dependencies
 
         let toResponse request =
             fun chatId ->
@@ -90,6 +91,6 @@ module Kdmid =
         let getService request =
             fun (deps: Kdmid.Dependencies) ->
                 { Request = request
-                  Dependencies = Kdmid.Dependencies.Order.Dependencies.create deps.RequestStorage deps.CancellationToken }
+                  Dependencies = Order.Dependencies.create deps.RequestStorage deps.CancellationToken }
                 |> Kdmid
                 |> API.Service.get
