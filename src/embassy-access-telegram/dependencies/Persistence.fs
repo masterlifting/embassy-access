@@ -1,6 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Persistence
 
+open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Configuration
@@ -19,7 +20,11 @@ type Dependencies =
 
         result {
 
-            let! filePath = cfg |> Persistence.Storage.getConnectionString "FileSystem"
+            let! filePath =
+                cfg
+                |> Configuration.getSection<string> "Persistence:FileSystem"
+                |> Option.map Ok
+                |> Option.defaultValue ("Section 'Persistence:FileSystem' in the configuration." |> NotFound |> Error)
 
             let initChatStorage () =
                 filePath |> Chat.FileSystem |> Chat.init

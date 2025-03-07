@@ -1,6 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module internal EA.Worker.Dependencies.Persistence
 
+open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
@@ -16,7 +17,12 @@ type Dependencies =
         let result = ResultBuilder()
 
         result {
-            let! connectionString = cfg |> Persistence.Storage.getConnectionString "FileSystem"
+            
+            let! connectionString =
+                cfg
+                |> Configuration.getSection<string> "Persistence:FileSystem"
+                |> Option.map Ok
+                |> Option.defaultValue ("Section 'Persistence:FileSystem' in the configuration." |> NotFound |> Error)
 
             let initChatStorage () =
                 connectionString |> Chat.FileSystem |> Chat.init
