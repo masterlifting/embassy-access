@@ -3,9 +3,9 @@ module EA.Embassies.Russian.Kdmid.Dependencies.Order
 
 open System
 open Infrastructure.Domain
-open Web.Http.Domain.Client
 open Web.Http.Domain.Request
 open Web.Http.Domain.Response
+type HttpClient = Web.Http.Domain.Client.Client
 
 type Dependencies =
     { RestartAttempts: int

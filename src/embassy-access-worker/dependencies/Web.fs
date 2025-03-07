@@ -6,7 +6,7 @@ open Infrastructure.Prelude
 open Web.Telegram.Domain.Client
 
 type Dependencies =
-    { initTelegramClient: unit -> Result<TelegramBot, Error'> }
+    { initTelegramClient: unit -> Result<Client, Error'> }
 
     static member create() =
         let result = ResultBuilder()
