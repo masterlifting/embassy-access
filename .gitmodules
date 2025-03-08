@@ -14,3 +14,7 @@
 	path = submodules/fsharp-infrastructure
 	url = https://github.com/masterlifting/fsharp-infrastructure.git
 	branch = main
+[submodule "submodules/fsharp-ai-provider"]
+	path = submodules/fsharp-ai-provider
+	url = https://github.com/masterlifting/fsharp-ai-provider.git
+	branch = main
