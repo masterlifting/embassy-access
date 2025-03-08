@@ -10,7 +10,7 @@ open Persistence
 [<Literal>]
 let private Name = "Embassies"
 
-type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Type
+type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Provider
 
 type StorageType = Configuration of Configuration.Domain.Connection
 

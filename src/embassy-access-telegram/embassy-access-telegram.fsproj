@@ -27,6 +27,7 @@
         <Compile Include="endpoints\embassies\russian\Request.fs" />
         <Compile Include="endpoints\Request.fs" />
         <Compile Include="data_access\Chat.fs" />
+        <Compile Include="dependencies\AIProvider.fs" />
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\consumer\Consumer.fs" />
         <Compile Include="dependencies\consumer\Culture.fs" />
@@ -37,6 +38,8 @@
         <Compile Include="dependencies\consumer\Users.fs" />
         <Compile Include="dependencies\producer\Producer.fs" />
         <Compile Include="dependencies\producer\embassies\russian\Kdmid.fs" />
+        <Compile Include="services\culture\payloads\ButtonsGroup.fs" />
+        <Compile Include="services\culture\payloads\Text.fs" />
         <Compile Include="services\culture\Query.fs" />
         <Compile Include="services\culture\Command.fs" />
         <Compile Include="services\embassies\russian\Service.fs" />
@@ -59,7 +62,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\submodules\fsharp-multilang\src\fsharp-multilang.fsproj" />
+        <ProjectReference Include="..\..\submodules\fsharp-ai-provider\src\fsharp-ai-provider.fsproj" />
         <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
         <ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
     </ItemGroup>

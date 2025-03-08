@@ -4,8 +4,6 @@ module EA.Telegram.DataAccess.Chat
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Multilang.Domain
-open Multilang.DataAccess
 open Persistence
 open Web.Telegram.Domain
 open EA.Core.Domain
@@ -14,7 +12,7 @@ open EA.Telegram.Domain
 [<Literal>]
 let private Name = "Chats"
 
-type ChatStorage = ChatStorage of Storage.Type
+type ChatStorage = ChatStorage of Storage.Provider
 
 type StorageType =
     | InMemory
@@ -36,7 +34,7 @@ type ChatEntity() =
         |> Result.map (fun subscriptions ->
             { Id = this.Id |> ChatId
               Subscriptions = subscriptions
-              Culture = this.Culture |> Culture.toDomain })
+              Culture = this.Culture |> Culture.create })
 
 type private Chat with
     member private this.ToEntity() =

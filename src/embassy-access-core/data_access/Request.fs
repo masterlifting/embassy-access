@@ -15,7 +15,7 @@ open EA.Core.DataAccess.Appointment
 [<Literal>]
 let private Name = "Requests"
 
-type RequestStorage = RequestStorage of Storage.Type
+type RequestStorage = RequestStorage of Storage.Provider
 
 type StorageType =
     | InMemory

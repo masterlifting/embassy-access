@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Submodules", "Submodules", 
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "fsharp-infrastructure", "submodules\fsharp-infrastructure\src\fsharp-infrastructure.fsproj", "{83C61746-FC1D-4FDF-BA1A-F2DF1E9B7F73}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "fsharp-multilang", "submodules\fsharp-multilang\src\fsharp-multilang.fsproj", "{5F961105-67C5-4395-93BE-D91AC79CE137}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "fsharp-ai-provider", "submodules\fsharp-ai-provider\src\fsharp-ai-provider.fsproj", "{5F961105-67C5-4395-93BE-D91AC79CE137}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "fsharp-persistence", "submodules\fsharp-persistence\src\fsharp-persistence.fsproj", "{2E157B25-AB55-4E0B-9D91-3134109DA1B7}"
 EndProject

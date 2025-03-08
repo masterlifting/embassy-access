@@ -6,7 +6,7 @@ open Infrastructure.Prelude
 open EA.Core.Domain
 open Persistence
 
-type ServiceGraphStorage = ServiceGraphStorage of Storage.Type
+type ServiceGraphStorage = ServiceGraphStorage of Storage.Provider
 
 type StorageType = Configuration of Configuration.Domain.Connection
 

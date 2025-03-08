@@ -3,7 +3,7 @@ module EA.Telegram.Dependencies.Consumer.Culture
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Multilang.Domain
+open AIProvider.Services
 open Web.Telegram.Domain
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
@@ -12,10 +12,10 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       ConsumerDeps: Consumer.Dependencies
-      TranslationClient: Multilang.Translator.Type
       tryGetChat: unit -> Async<Result<Chat option, Error'>>
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: Culture -> Async<Result<unit, Error'>>
+      translate: Culture.Domain.Request -> Async<Result<Culture.Domain.Response, Error'>>
       sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>> }
 
     static member create(deps: Consumer.Dependencies) =
@@ -32,18 +32,16 @@ type Dependencies =
             let tryGetChat () =
                 deps.ChatStorage |> Chat.Query.tryFindById deps.ChatId
 
-            let! translationClient =
-                { Multilang.OpenAI.Domain.Connection.Token = "" }
-                |> Multilang.Translator.Connection.OpenAI
-                |> Multilang.Translator.init
+            let translate request =
+                deps.AIProvider |> Culture.Service.translate request
 
             return
                 { ChatId = deps.ChatId
                   MessageId = deps.MessageId
                   ConsumerDeps = deps
-                  TranslationClient = translationClient
                   tryGetChat = tryGetChat
                   getAvailableCultures = getAvailableCultures
                   setCurrentCulture = setCurrentCulture
+                  translate = translate
                   sendResult = deps.sendResult }
         }

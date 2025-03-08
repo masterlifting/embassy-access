@@ -21,12 +21,15 @@ let consume data =
             match msg with
             | Text payload ->
                 Persistence.Dependencies.create cfg
+                |> Result.bind (fun pDeps ->
+                    AIProvider.Dependencies.create cfg |> Result.map (fun aiDeps -> pDeps, aiDeps))
                 |> Result.bind (Consumer.Dependencies.create client payload ct)
                 |> ResultAsync.wrap (respond payload.Value)
                 |> ResultAsync.mapError (fun error -> error.extendMsg $"{payload.ChatId}")
             | _ -> $"Telegram '%A{msg}'" |> NotSupported |> Error |> async.Return
         | CallbackQuery payload ->
             Persistence.Dependencies.create cfg
+            |> Result.bind (fun pDeps -> AIProvider.Dependencies.create cfg |> Result.map (fun aiDeps -> pDeps, aiDeps))
             |> Result.bind (Consumer.Dependencies.create client payload ct)
             |> ResultAsync.wrap (respond payload.Value)
             |> ResultAsync.mapError (fun error -> error.extendMsg $"{payload.ChatId}")
