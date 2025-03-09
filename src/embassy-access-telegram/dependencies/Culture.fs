@@ -34,7 +34,7 @@ type Dependencies =
                     chatStorage |> Chat.Query.tryFindById chatId
 
                 let translate request =
-                    aiProvider |> Culture.Service.translate request
+                    aiProvider |> Culture.Service.translate request ct
 
                 return
                     { ChatId = chatId
