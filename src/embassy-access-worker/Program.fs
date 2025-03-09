@@ -12,7 +12,9 @@ let private APP_NAME = "Worker"
 
 [<EntryPoint>]
 let main _ =
-
+    
+    System.Console.OutputEncoding <- System.Text.Encoding.UTF8
+    
     let configuration = Configuration.getYaml "appsettings"
     Logging.useConsole configuration
 

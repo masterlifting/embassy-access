@@ -11,20 +11,16 @@ open EA.Worker.Domain.Constants
 type Dependencies =
     { TelegramClient: TelegramClient }
 
-    static member create cfg =
+    static member create() =
         let result = ResultBuilder()
 
         result {
 
             let initTelegramClient () =
-                cfg
-                |> Configuration.getSection<string> EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN_KEY
-                |> Option.map (fun token -> { Token = token } |> Web.Telegram.Client.init)
-                |> Option.defaultValue (
-                    $"'{EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN_KEY}' in the configuration."
-                    |> NotFound
-                    |> Error
-                )
+                Configuration.getEnvVar TELEGRAM_BOT_TOKEN_KEY
+                |> Result.bind (function
+                    | Some token -> { Token = token } |> Web.Telegram.Client.init
+                    | None -> $"'{TELEGRAM_BOT_TOKEN_KEY}' in the configuration." |> NotFound |> Error)
 
             let! telegramClient = initTelegramClient ()
 

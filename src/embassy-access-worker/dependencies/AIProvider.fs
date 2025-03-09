@@ -5,25 +5,24 @@ open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider
+open EA.Worker.Domain.Constants
 
 type Dependencies =
     { initProvider: unit -> Result<Client.Provider, Error'> }
 
-    static member create cfg =
+    static member create() =
         let result = ResultBuilder()
 
         result {
 
-            let! openAiKey =
-                cfg
-                |> Configuration.getSection<string> "OpenAI:APIKey"
-                |> Option.map Ok
-                |> Option.defaultValue ("Section 'OpenAI:APIKey' in the configuration." |> NotFound |> Error)
-
             let initProvider () =
-                { OpenAI.Domain.Connection.Token = openAiKey }
-                |> Client.Connection.OpenAI
-                |> Client.init
+                Configuration.getEnvVar OPENAI_API_KEY
+                |> Result.bind (function
+                    | Some token ->
+                        { AIProvider.OpenAI.Domain.Token = token }
+                        |> Client.Connection.OpenAI
+                        |> Client.init
+                    | None -> $"'{OPENAI_API_KEY}' in the configuration." |> NotFound |> Error)
 
             return { initProvider = initProvider }
         }

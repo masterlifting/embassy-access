@@ -8,7 +8,7 @@ let create cfg ct =
     let result = ResultBuilder()
 
     result {
-        let! webDeps = EA.Worker.Dependencies.Web.Dependencies.create cfg
+        let! webDeps = EA.Worker.Dependencies.Web.Dependencies.create ()
         let! persistenceDeps = EA.Worker.Dependencies.Persistence.Dependencies.create cfg
 
         let result: Producer.Dependencies =

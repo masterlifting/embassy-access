@@ -18,10 +18,10 @@ type Dependencies =
       Culture: Culture.Dependencies
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
-      sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-      sendResults: Async<Result<Producer.Message list, Error'>> -> Async<Result<unit, Error'>>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-      getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
+      getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+      sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
+      sendResults: Async<Result<Producer.Message list, Error'>> -> Async<Result<unit, Error'>> }
 
     static member create(payload: Consumer.Payload<_>) =
         fun (deps: Consumer.Dependencies) ->
@@ -64,8 +64,8 @@ type Dependencies =
                       Culture = cultureDeps
                       ChatStorage = chatStorage
                       RequestStorage = requestStorage
-                      sendResult = sendResult
-                      sendResults = sendResults
                       getServiceGraph = getServiceGraph
-                      getEmbassyGraph = getEmbassyGraph }
+                      getEmbassyGraph = getEmbassyGraph
+                      sendResult = sendResult
+                      sendResults = sendResults }
             }
