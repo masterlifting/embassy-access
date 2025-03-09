@@ -6,7 +6,6 @@ open Infrastructure.Prelude
 open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Domain
-open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies.Russian
 
 let private createEmbassyId (task: WorkerTask) =
@@ -99,9 +98,7 @@ module private Kdmid =
             let result = ResultBuilder()
 
             result {
-                let! persistenceDeps = Persistence.Dependencies.create cfg
-                let! webDeps = Web.Dependencies.create ()
-                let! deps = Kdmid.Dependencies.create ct task persistenceDeps webDeps
+                let! deps = Kdmid.Dependencies.create task cfg ct
                 let! embassyId = task |> createEmbassyId
                 return startOrder embassyId deps
             }

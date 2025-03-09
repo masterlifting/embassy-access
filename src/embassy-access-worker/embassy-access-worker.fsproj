@@ -11,6 +11,9 @@
         <Compile Include="domain\RouteNode.fs" />
         <Compile Include="dependencies\Web.fs" />
         <Compile Include="dependencies\Persistence.fs" />
+        <Compile Include="dependencies\AIProvider.fs" />
+        <Compile Include="dependencies\embassy-access-telegram\Consumer.fs" />
+        <Compile Include="dependencies\embassy-access-telegram\Producer.fs" />
         <Compile Include="dependencies\embassies\Russian.fs" />
         <Compile Include="embassies\Russian.fs"/>
         <Compile Include="Initializer.fs"/>

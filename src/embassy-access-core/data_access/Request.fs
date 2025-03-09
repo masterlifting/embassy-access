@@ -19,7 +19,7 @@ type RequestStorage = RequestStorage of Storage.Provider
 
 type StorageType =
     | InMemory
-    | FileSystem of filepath: string
+    | FileSystem of Persistence.FileSystem.Domain.Connection
 
 type RequestEntity() =
     member val Id = Guid.Empty with get, set
@@ -265,11 +265,7 @@ let private toPersistenceStorage storage =
 
 let init storageType =
     match storageType with
-    | FileSystem filePath ->
-        { Persistence.FileSystem.Domain.FilePath = filePath
-          Persistence.FileSystem.Domain.FileName = Name + ".json" }
-        |> Storage.Connection.FileSystem
-        |> Storage.init
+    | FileSystem connection -> connection |> Storage.Connection.FileSystem |> Storage.init
     | InMemory -> Storage.Connection.InMemory |> Storage.init
     |> Result.map RequestStorage
 

@@ -16,7 +16,7 @@ type ChatStorage = ChatStorage of Storage.Provider
 
 type StorageType =
     | InMemory
-    | FileSystem of filepath: string
+    | FileSystem of Persistence.FileSystem.Domain.Connection
 
 type ChatEntity() =
     member val Id = 0L with get, set
@@ -337,11 +337,7 @@ let private toPersistenceStorage storage =
 
 let init storageType =
     match storageType with
-    | FileSystem filePath ->
-        { Persistence.FileSystem.Domain.Connection.FilePath = filePath
-          Persistence.FileSystem.Domain.Connection.FileName = Name + ".json" }
-        |> Storage.Connection.FileSystem
-        |> Storage.init
+    | FileSystem connection -> connection |> Storage.Connection.FileSystem |> Storage.init
     | InMemory -> Storage.Connection.InMemory |> Storage.init
     |> Result.map ChatStorage
 

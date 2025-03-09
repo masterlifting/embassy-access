@@ -11,12 +11,12 @@ open EA.Telegram.Services.Culture
 open EA.Telegram.Services.Consumer.Embassies.Service
 
 let respond request chat =
-    fun (deps: Consumer.Dependencies) ->
+    fun (deps: Request.Dependencies) ->
         Embassies.Dependencies.create chat deps
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.CultureDeps |> Command.translateRes chat.Culture msgRes
+                deps.Culture |> Command.translateRes chat.Culture msgRes
 
             let sendResult getResponse =
                 deps |> (getResponse >> translate) |> deps.sendResult

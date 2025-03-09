@@ -13,7 +13,7 @@ let get request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.CultureDeps |> Command.translateRes deps.Chat.Culture msgRes
+                deps.Culture |> Command.translateRes deps.Chat.Culture msgRes
 
             let sendResult getResponse =
                 deps |> (getResponse >> translate) |> deps.sendResult

@@ -16,7 +16,7 @@ type Dependencies =
     { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
-      CultureDeps: Culture.Dependencies
+      Culture: Culture.Dependencies
       RequestStorage: Request.RequestStorage
       sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
       sendResults: Async<Result<Producer.Message list, Error'>> -> Async<Result<unit, Error'>>
@@ -76,7 +76,7 @@ type Dependencies =
                 { Chat = deps.Chat
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
-                  CultureDeps = deps.CultureDeps
+                  Culture = deps.Culture
                   RequestStorage = deps.RequestStorage
                   sendResult = deps.sendResult
                   sendResults = deps.sendResults

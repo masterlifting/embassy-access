@@ -67,7 +67,7 @@ module internal Query =
             |> ResultAsync.bindAsync (fun (parentDescription, services) ->
                 match services with
                 | [] ->
-                    deps.EmbassiesDeps
+                    deps.Embassies
                     |> Embassies.Service.Query.getUserEmbassyService embassyId serviceId
                 | _ ->
                     services

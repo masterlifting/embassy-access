@@ -54,7 +54,7 @@ module internal Query =
                     | Some countryId ->
                         match countryId.Value with
                         | Constants.RUSSIAN_NODE_ID ->
-                            deps.RussianDeps |> Russian.Service.get embassyId serviceNode.Value
+                            deps.Russian |> Russian.Service.get embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported
@@ -82,7 +82,7 @@ module internal Query =
                     | Some countryId ->
                         match countryId.Value with
                         | Constants.RUSSIAN_NODE_ID ->
-                            deps.RussianDeps |> Russian.Service.userGet embassyId serviceNode.Value
+                            deps.Russian |> Russian.Service.userGet embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported

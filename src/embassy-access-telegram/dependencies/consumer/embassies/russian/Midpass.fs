@@ -13,7 +13,7 @@ type Dependencies =
     { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
-      CultureDeps: Culture.Dependencies
+      Culture: Culture.Dependencies
       sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>> }
 
     static member create(deps: Russian.Dependencies) =
@@ -24,6 +24,6 @@ type Dependencies =
                 { Chat = deps.Chat
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
-                  CultureDeps = deps.CultureDeps
+                  Culture = deps.Culture
                   sendResult = deps.sendResult }
         }

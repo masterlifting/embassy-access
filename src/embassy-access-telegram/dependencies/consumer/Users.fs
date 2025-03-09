@@ -13,8 +13,8 @@ open EA.Telegram.Dependencies.Consumer.Embassies
 type Dependencies =
     { Chat: Chat
       MessageId: int
-      CultureDeps: Culture.Dependencies
-      EmbassiesDeps: Embassies.Dependencies
+      Culture: Culture.Dependencies
+      Embassies: Embassies.Dependencies
       sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
       getUserEmbassies: unit -> Async<Result<string option * EmbassyNode list, Error'>>
       getUserEmbassyChildren: Graph.NodeId -> Async<Result<string option * EmbassyNode list, Error'>>
@@ -22,12 +22,10 @@ type Dependencies =
       getUserEmbassyServiceChildren:
           Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>> }
 
-    static member create chat (deps: Consumer.Dependencies) =
+    static member create chat (deps: Request.Dependencies) =
         let result = ResultBuilder()
 
         result {
-
-            let! cultureDeps = Culture.Dependencies.create deps
             let! embassiesDeps = Embassies.Dependencies.create chat deps
 
             let getUserRequests () =
@@ -124,8 +122,8 @@ type Dependencies =
             return
                 { Chat = chat
                   MessageId = deps.MessageId
-                  CultureDeps = cultureDeps
-                  EmbassiesDeps = embassiesDeps
+                  Culture = deps.Culture
+                  Embassies = embassiesDeps
                   sendResult = deps.sendResult
                   getUserEmbassies = getUserEmbassies
                   getUserEmbassyServices = getUserEmbassyServices

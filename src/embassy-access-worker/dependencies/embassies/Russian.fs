@@ -19,33 +19,22 @@ module Kdmid =
         { getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
           pickOrder: Request list -> Async<Result<Request, Error' list>> }
 
-        static member create
-            ct
-            (task: WorkerTask)
-            (persistenceDeps: Persistence.Dependencies)
-            (webDeps: Web.Dependencies)
-            =
+        static member create (task: WorkerTask) cfg ct =
             let result = ResultBuilder()
 
             result {
-                let! requestStorage = persistenceDeps.initRequestStorage ()
-
-                let telegramProducerDeps: Producer.Dependencies =
-                    { CancellationToken = ct
-                      initTelegramClient = webDeps.initTelegramClient
-                      initChatStorage = persistenceDeps.initChatStorage
-                      initRequestStorage = fun _ -> requestStorage |> Ok }
-
-                let! telegramProducerKdmidDeps = Embassies.Russian.Kdmid.Dependencies.create telegramProducerDeps
+                let! persistenceDeps = Persistence.Dependencies.create cfg
+                let! tgProducerDeps = EA.Worker.Dependencies.Telegram.Producer.create cfg ct
+                let! kdmidDeps = Embassies.Russian.Kdmid.Dependencies.create tgProducerDeps
 
                 let notify notification =
-                    telegramProducerKdmidDeps
+                    kdmidDeps
                     |> Services.Producer.Embassies.Russian.Service.Kdmid.sendNotification notification
                     |> ResultAsync.mapError (_.Message >> Log.critical)
                     |> Async.Ignore
 
                 let getRequests embassyId =
-                    requestStorage
+                    persistenceDeps.RequestStorage
                     |> Request.Query.findManyByEmbassyId embassyId
                     |> ResultAsync.map (
                         List.filter (fun request ->
@@ -56,7 +45,7 @@ module Kdmid =
                     )
 
                 let pickOrder requests =
-                    (requestStorage, ct)
+                    (persistenceDeps.RequestStorage, ct)
                     ||> Order.Dependencies.create
                     |> API.Order.Kdmid.pick requests notify
 

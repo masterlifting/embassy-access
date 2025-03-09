@@ -4,39 +4,61 @@ module internal EA.Worker.Dependencies.Persistence
 open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Persistence.FileSystem
+open Persistence.Configuration
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 
 type Dependencies =
-    { initChatStorage: unit -> Result<Chat.ChatStorage, Error'>
-      initRequestStorage: unit -> Result<Request.RequestStorage, Error'>
+    { ChatStorage: Chat.ChatStorage
+      RequestStorage: Request.RequestStorage
+      initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>
+      initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>
       resetData: unit -> Async<Result<unit, Error'>> }
 
     static member create cfg =
         let result = ResultBuilder()
 
         result {
-            
-            let! connectionString =
+
+            let! fileStoragePath =
                 cfg
                 |> Configuration.getSection<string> "Persistence:FileSystem"
                 |> Option.map Ok
                 |> Option.defaultValue ("Section 'Persistence:FileSystem' in the configuration." |> NotFound |> Error)
 
             let initChatStorage () =
-                connectionString |> Chat.FileSystem |> Chat.init
+                { FilePath = fileStoragePath
+                  FileName = "Chats.json" }
+                |> Chat.FileSystem
+                |> Chat.init
 
             let initRequestStorage () =
-                connectionString |> Request.FileSystem |> Request.init
+                { FilePath = fileStoragePath
+                  FileName = "Requests.json" }
+                |> Request.FileSystem
+                |> Request.init
+
+            let initEmbassyGraphStorage () =
+                { SectionName = "Embassies"
+                  Configuration = cfg }
+                |> EmbassyGraph.Configuration
+                |> EmbassyGraph.init
+
+            let initServiceGraphStorage () =
+                { SectionName = "Services"
+                  Configuration = cfg }
+                |> ServiceGraph.Configuration
+                |> ServiceGraph.init
+
+            let! chatStorage = initChatStorage ()
+            let! requestStorage = initRequestStorage ()
 
             let resetData () =
                 let resultAsync = ResultAsyncBuilder()
 
                 resultAsync {
-
-                    let! chatStorage = initChatStorage () |> async.Return
-                    let! requestStorage = initRequestStorage () |> async.Return
 
                     let! subscriptions = chatStorage |> Chat.Query.getSubscriptions |> ResultAsync.map Set.ofSeq
 
@@ -52,7 +74,9 @@ type Dependencies =
                 }
 
             return
-                { initChatStorage = initChatStorage
-                  initRequestStorage = initRequestStorage
+                { ChatStorage = chatStorage
+                  RequestStorage = requestStorage
+                  initEmbassyGraphStorage = initEmbassyGraphStorage
+                  initServiceGraphStorage = initServiceGraphStorage
                   resetData = resetData }
         }

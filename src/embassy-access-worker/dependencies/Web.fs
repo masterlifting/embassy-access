@@ -1,23 +1,32 @@
 ﻿[<RequireQualifiedAccess>]
 module internal EA.Worker.Dependencies.Web
 
+open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Telegram.Domain.Client
+open EA.Telegram.Domain
+open Web.Telegram.Domain
+open EA.Worker.Domain.Constants
 
 type Dependencies =
-    { initTelegramClient: unit -> Result<Client, Error'> }
+    { TelegramClient: TelegramClient }
 
-    static member create() =
+    static member create cfg =
         let result = ResultBuilder()
 
         result {
 
             let initTelegramClient () =
-                EA.Worker.Domain.Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN_KEY
-                |> EnvKey
-                |> fun token -> { Token = token }
-                |> Web.Telegram.Client.init
+                cfg
+                |> Configuration.getSection<string> EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN_KEY
+                |> Option.map (fun token -> { Token = token } |> Web.Telegram.Client.init)
+                |> Option.defaultValue (
+                    $"'{EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN_KEY}' in the configuration."
+                    |> NotFound
+                    |> Error
+                )
 
-            return { initTelegramClient = initTelegramClient }
+            let! telegramClient = initTelegramClient ()
+
+            return { TelegramClient = telegramClient }
         }

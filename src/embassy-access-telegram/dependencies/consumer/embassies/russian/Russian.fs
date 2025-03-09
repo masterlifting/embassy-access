@@ -15,7 +15,7 @@ type Dependencies =
     { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
-      CultureDeps: Culture.Dependencies
+      Culture: Culture.Dependencies
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
       sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
@@ -24,12 +24,10 @@ type Dependencies =
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>> }
 
-    static member create chat (deps: Consumer.Dependencies) =
+    static member create chat (deps: Request.Dependencies) =
         let result = ResultBuilder()
 
         result {
-            let! cultureDeps = Culture.Dependencies.create deps
-
             let getChatRequests () =
                 deps.RequestStorage |> Request.Query.findManyByIds chat.Subscriptions
 
@@ -37,7 +35,7 @@ type Dependencies =
                 { Chat = chat
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
-                  CultureDeps = cultureDeps
+                  Culture = deps.Culture
                   ChatStorage = deps.ChatStorage
                   RequestStorage = deps.RequestStorage
                   sendResult = deps.sendResult
