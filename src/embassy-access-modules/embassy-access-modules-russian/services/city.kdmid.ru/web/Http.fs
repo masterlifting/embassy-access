@@ -8,13 +8,13 @@ open Web.Http.Domain
 
 let private createKdmidClient subDomain =
 
-    let host = $"%s{subDomain}.kdmid.ru"
-    let baseUrl = $"https://%s{host}"
+    let hostName = $"%s{subDomain}.kdmid.ru"
+    let host = $"https://%s{hostName}"
 
     let headers =
         Map
-            [ "Host", [ host ]
-              "Origin", [ baseUrl ]
+            [ "Host", [ hostName ]
+              "Origin", [ host ]
               "Accept",
               [ "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8" ]
               "Accept-Language", [ "en-US,en;q=0.9,ru;q=0.8" ]
@@ -28,7 +28,7 @@ let private createKdmidClient subDomain =
         |> Some
 
 
-    { BaseUrl = baseUrl; Headers = headers } |> Web.Http.Client.init
+    { Host = host; Headers = headers } |> Web.Http.Client.init
 
 let createClient =
     ResultAsync.bind (fun (payload, request: EA.Core.Domain.Request.Request) ->

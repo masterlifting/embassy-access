@@ -13,16 +13,22 @@ type Dependencies =
     static member create() =
         let result = ResultBuilder()
 
+        let inline getEnv name =
+            Configuration.getEnvVar name
+            |> Result.bind (function
+                | Some value -> Ok value
+                | None -> $"'{name}' in the configuration." |> NotFound |> Error)
+
         result {
 
+            let! openAiApiKey = getEnv OPENAI_API_KEY
+            let! openAiProjectId = getEnv OPENAI_PROJECT_ID
+
             let initProvider () =
-                Configuration.getEnvVar OPENAI_API_KEY
-                |> Result.bind (function
-                    | Some token ->
-                        { AIProvider.OpenAI.Domain.Token = token }
-                        |> Client.Connection.OpenAI
-                        |> Client.init
-                    | None -> $"'{OPENAI_API_KEY}' in the configuration." |> NotFound |> Error)
+                { AIProvider.OpenAI.Domain.Token = openAiApiKey
+                  AIProvider.OpenAI.Domain.ProjectId = openAiProjectId }
+                |> Client.Connection.OpenAI
+                |> Client.init
 
             return { initProvider = initProvider }
         }
