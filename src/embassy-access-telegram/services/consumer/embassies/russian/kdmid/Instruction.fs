@@ -17,7 +17,7 @@ let private toResponse instruction route =
         let message = $"{route}{String.addLines 2}"
 
         instruction
-        |> Option.map (fun instr -> message + $"Инструкция:{String.addLines 2}{instr}")
+        |> Option.map (fun instr -> message + $"Instruction:{String.addLines 2}{instr}")
         |> Option.defaultValue message
         |> fun message -> (chatId, messageId |> Replace) |> Text.create message
 
@@ -27,7 +27,7 @@ let private toSubscribe embassyId (service: ServiceNode) confirmation =
             { ConfirmationState = confirmation
               ServiceId = service.Id
               EmbassyId = embassyId
-              Payload = "ссылку вставить сюда" }
+              Payload = "The link should be inserted here" }
             |> Kdmid.Post.Subscribe
             |> Post.Kdmid
             |> Request.Post
@@ -43,7 +43,7 @@ let toCheckAppointments embassyId (service: ServiceNode) =
         let request =
             { ServiceId = service.Id
               EmbassyId = embassyId
-              Payload = "ссылку вставить сюда" }
+              Payload = "The link should be inserted here" }
             |> Kdmid.Post.CheckAppointments
             |> Post.Kdmid
             |> Request.Post

@@ -14,11 +14,13 @@ open EA.Telegram.Dependencies.Consumer.Embassies
 
 module private Response =
     let private createMessage chatId msgIdOpt nameOpt columns data =
+        let name = nameOpt |> Option.defaultValue "Choose from the list"
+
         match data |> Seq.length with
-        | 0 -> Text.create "No data"
+        | 0 -> Text.create $"No data for the {name}"
         | _ ->
             ButtonsGroup.create
-                { Name = nameOpt |> Option.defaultValue "Choose what do you want"
+                { Name = name
                   Columns = columns
                   Buttons =
                     data
@@ -53,8 +55,7 @@ module internal Query =
                         |> async.Return
                     | Some countryId ->
                         match countryId.Value with
-                        | Constants.RUSSIAN_NODE_ID ->
-                            deps.Russian |> Russian.Service.get embassyId serviceNode.Value
+                        | Constants.RUSSIAN_NODE_ID -> deps.Russian |> Russian.Service.get embassyId serviceNode.Value
                         | _ ->
                             $"Embassy service '{serviceNode.ShortName}'"
                             |> NotSupported

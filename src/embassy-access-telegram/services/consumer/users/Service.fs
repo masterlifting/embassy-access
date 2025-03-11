@@ -10,11 +10,13 @@ open EA.Telegram.Endpoints.Users.Request
 open EA.Telegram.Dependencies.Consumer
 
 let private createMessage chatId msgIdOpt nameOpt data =
+    let name = nameOpt |> Option.defaultValue "Choose from the list"
+
     match data |> Seq.length with
-    | 0 -> Text.create "No data"
+    | 0 -> Text.create $"No data for the {name}"
     | _ ->
         ButtonsGroup.create
-            { Name = nameOpt |> Option.defaultValue "Choose what do you want"
+            { Name = name
               Columns = 1
               Buttons =
                 data

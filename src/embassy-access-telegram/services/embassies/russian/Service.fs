@@ -82,7 +82,7 @@ module Kdmid =
                     | HasConfirmations(request, confirmations) ->
                         chatId |> Notification.toHasConfirmationsResponse (request, confirmations))
                 |> Option.defaultValue (
-                    $"Не валидный результат запроса {request.Id}."
+                    $"I'm sorry, but I can't process your request for '{request.Service.Name}' of '{request.Service.Embassy.ShortName}'."
                     |> Text.create
                     |> Message.createNew chatId
                     |> Ok

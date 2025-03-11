@@ -26,7 +26,7 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
             let! message =
                 match requestOpt with
                 | Some request ->
-                    $"Подписка на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' уже существует."
+                    $"Subscription for the service '{request.Service.Name}' for the embassy '{request.Service.Embassy.Name}' already exists."
                     |> Ok
                     |> async.Return
                 | None ->
@@ -47,7 +47,7 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                             |> ResultAsync.wrap deps.createRequest
 
                         return
-                            $"Подписка '{request.Id.ValueStr}' на услугу '{service.Name}' для посольства '{embassy.Name}' создана."
+                            $"Subscription '{request.Id.ValueStr}' for the service '{service.Name}' for the embassy '{embassy.Name}' has been created."
                             |> Ok
                             |> async.Return
                     }
@@ -77,7 +77,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                     | InProcess ->
                         (deps.Chat.Id, New)
                         |> Text.create
-                            $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' уже в обработке."
+                            $"The request for the service '{request.Service.Name}' for the embassy '{request.Service.Embassy.Name}' is already being processed."
                         |> Ok
                         |> async.Return
                     | Ready
@@ -138,7 +138,7 @@ let deleteSubscription requestId =
             | InProcess ->
                 (deps.Chat.Id, New)
                 |> Text.create
-                    $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
+                    $"The request for the service '{request.Service.Name}' for the embassy '{request.Service.Embassy.Name}' is still being processed."
                 |> Ok
                 |> async.Return
             | Ready
@@ -147,5 +147,5 @@ let deleteSubscription requestId =
                 deps.deleteRequest requestId
                 |> ResultAsync.bind (fun _ ->
                     (deps.Chat.Id, New)
-                    |> Text.create $"Подписка для '{request.Service.Name}' удалена"
+                    |> Text.create $"Subscription for '{request.Service.Name}' has been deleted"
                     |> Ok))

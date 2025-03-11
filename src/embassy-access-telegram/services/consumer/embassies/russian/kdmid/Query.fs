@@ -29,7 +29,7 @@ let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
         |> Result.map (fun data ->
             (deps.Chat.Id, Replace deps.MessageId)
             |> ButtonsGroup.create
-                { Name = "Выберете подписку"
+                { Name = "Select the subscription"
                   Columns = 1
                   Buttons =
                     data
@@ -54,9 +54,9 @@ let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
     match request.Service.Id.Split() with
     | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
         Map
-            [ getRoute.Value, "Запросить доступные слоты"
-              deleteRoute.Value, "Удалить подписку" ]
-    | _ -> Map [ deleteRoute.Value, "Удалить подписку" ]
+            [ getRoute.Value, "Request available slots"
+              deleteRoute.Value, "Delete subscription" ]
+    | _ -> Map [ deleteRoute.Value, "Delete subscription" ]
     |> Seq.map (fun x -> x.Key |> CallbackData |> Button.create x.Value)
     |> Set.ofSeq
 
@@ -68,7 +68,7 @@ let getSubscriptionsMenu requestId =
             | InProcess ->
                 (deps.Chat.Id, New)
                 |> Text.create
-                    $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' еще в обработке."
+                    $"The request for the service '{request.Service.Name}' for the embassy '{request.Service.Embassy.Name}' is still being processed."
                 |> Ok
             | Ready
             | Failed _
@@ -78,7 +78,7 @@ let getSubscriptionsMenu requestId =
                 |> Result.map (fun payloadValue ->
                     (deps.Chat.Id, Replace deps.MessageId)
                     |> ButtonsGroup.create
-                        { Name = $"Что хотите сделать с подпиской '{payloadValue}'?"
+                        { Name = $"What do you want to do with the subscription '{payloadValue}'?"
                           Columns = 1
                           Buttons = buildSubscriptionMenu request }))
 
@@ -90,7 +90,7 @@ let getAppointments requestId =
             | InProcess ->
                 (deps.Chat.Id, New)
                 |> Text.create
-                    $"Запрос на услугу '{request.Service.Name}' для посольства '{request.Service.Embassy.Name}' уже в обработке."
+                    $"The request for the service '{request.Service.Name}' for the embassy '{request.Service.Embassy.Name}' is already being processed."
                 |> Ok
                 |> async.Return
             | Ready

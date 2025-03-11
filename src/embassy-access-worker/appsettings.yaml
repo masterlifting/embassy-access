@@ -169,315 +169,315 @@ Worker:
 
 Embassies:
   Id: EMB
-  Name: Посольства
-  Description: Выберите посольство, которое вы хотите посетить
+  Name: Embassies
+  Description: Select the embassy you want to visit
   Children:
-    - Id: RUS
-      Name: Российское
-      Description: В какой стране находится российское посольство?
+    - Id: ENG
+      Name: English
+      Description: In which country is the Russian Embassy located?
       Children:
         - Id: SRB
-          Name: Сербия
-          Description: В каком городе Сербии находится российское посольство?
+          Name: Serbia
+          Description: In which city of Serbia is the Russian Embassy located?
           Children:
             - Id: BEG
-              Name: Белград
+              Name: Belgrade
               TimeZone: 1
         - Id: DEU
-          Name: Германия
-          Description: В каком городе Германии находится российское посольство?
+          Name: Germany
+          Description: In which city of Germany is the Russian Embassy located?
           Children:
             - Id: BER
-              Name: Берлин
+              Name: Berlin
               TimeZone: 1
             - Id: MUC
-              Name: Мюнхен
+              Name: Munich
               TimeZone: 1
         - Id: FRA
-          Name: Франция
-          Description: В каком городе Франции находится российское посольство?
+          Name: France
+          Description: In which city of France is the Russian Embassy located?
           Children:
             - Id: PAR
-              Name: Париж
+              Name: Paris
               TimeZone: 1
         - Id: ITA
-          Name: Италия
-          Description: В каком городе Италии находится российское посольство?
+          Name: Italy
+          Description: In which city of Italy is the Russian Embassy located?
           Children:
             - Id: ROM
-              Name: Рим
+              Name: Rome
               TimeZone: 1
             - Id: MIL
-              Name: Милан
+              Name: Milan
               TimeZone: 1
         - Id: ESP
-          Name: Испания
-          Description: В каком городе Испании находится российское посольство?
+          Name: Spain
+          Description: In which city of Spain is the Russian Embassy located?
           Children:
             - Id: MAD
-              Name: Мадрид
+              Name: Madrid
               TimeZone: 1
         - Id: CZE
-          Name: Чехия
-          Description: В каком городе Чехии находится российское посольство?
+          Name: Czech Republic
+          Description: In which city of Czech Republic is the Russian Embassy located?
           Children:
             - Id: PRG
-              Name: Прага
+              Name: Prague
               TimeZone: 1
         - Id: POL
-          Name: Польша
-          Description: В каком городе Польши находится российское посольство?
+          Name: Poland
+          Description: In which city of Poland is the Russian Embassy located?
           Children:
             - Id: WAW
-              Name: Варшава
+              Name: Warsaw
               TimeZone: 1
         - Id: CHE
-          Name: Швейцария
-          Description: В каком городе Швейцарии находится российское посольство?
+          Name: Switzerland
+          Description: In which city of Switzerland is the Russian Embassy located?
           Children:
             - Id: BER
-              Name: Берн
+              Name: Bern
               TimeZone: 1
         - Id: GBR
-          Name: Великобритания
-          Description: В каком городе Великобритании находится российское посольство?
+          Name: Great Britain
+          Description: In which city of Great Britain is the Russian Embassy located?
           Children:
             - Id: LON
-              Name: Лондон
+              Name: London
               TimeZone: 0
         - Id: CHN
-          Name: Китай
-          Description: В каком городе Китая находится российское посольство?
+          Name: China
+          Description: In which city of China is the Russian Embassy located?
           Children:
             - Id: PEK
-              Name: Пекин
+              Name: Beijing
               TimeZone: 8
             - Id: SHA
-              Name: Шанхай
+              Name: Shanghai
               TimeZone: 8
             - Id: CAN
-              Name: Гуанчжоу
+              Name: Guangzhou
               TimeZone: 8
         - Id: USA
-          Name: США
-          Description: В каком городе США находится российское посольство?
+          Name: USA
+          Description: In which city of USA is the Russian Embassy located?
           Children:
             - Id: WAS
-              Name: Вашингтон
+              Name: Washington
               TimeZone: -5
             - Id: NYC
-              Name: Нью-Йорк
+              Name: New York
               TimeZone: -5
         - Id: IND
-          Name: Индия
-          Description: В каком городе Индии находится российское посольство?
+          Name: India
+          Description: In which city of India is the Russian Embassy located?
           Children:
             - Id: DEL
-              Name: Нью-Дели
+              Name: New Delhi
               TimeZone: 5.5
             - Id: BOM
-              Name: Мумбаи
+              Name: Mumbai
               TimeZone: 5.5
         - Id: JPN
-          Name: Япония
-          Description: В каком городе Японии находится российское посольство?
+          Name: Japan
+          Description: In which city of Japan is the Russian Embassy located?
           Children:
             - Id: TYO
-              Name: Токио
+              Name: Tokyo
               TimeZone: 9
         - Id: EGY
-          Name: Египет
-          Description: В каком городе Египта находится российское посольство?
+          Name: Egypt
+          Description: In which city of Egypt is the Russian Embassy located?
           Children:
             - Id: CAI
-              Name: Каир
+              Name: Cairo
               TimeZone: 2
         - Id: BRA
-          Name: Бразилия
-          Description: В каком городе Бразилии находится российское посольство?
+          Name: Brazil
+          Description: In which city of Brazil is the Russian Embassy located?
           Children:
             - Id: BSB
-              Name: Бразилиа
+              Name: Brasilia
               TimeZone: -3
             - Id: SAO
-              Name: Сан-Паулу
+              Name: Sao Paulo
               TimeZone: -3
         - Id: AUS
-          Name: Австралия
-          Description: В каком городе Австралии находится российское посольство?
+          Name: Australia
+          Description: In which city of Australia is the Russian Embassy located?
           Children:
             - Id: CBR
-              Name: Канберра
+              Name: Canberra
               TimeZone: 10
         - Id: KOR
-          Name: Южная Корея
-          Description: В каком городе Южной Кореи находится российское посольство?
+          Name: South Korea
+          Description: In which city of South Korea is the Russian Embassy located?
           Children:
             - Id: SEL
-              Name: Сеул
+              Name: Seoul
               TimeZone: 9
         - Id: THA
-          Name: Таиланд
-          Description: В каком городе Таиланда находится российское посольство?
+          Name: Thailand
+          Description: In which city of Thailand is the Russian Embassy located?
           Children:
             - Id: BKK
-              Name: Бангкок
+              Name: Bangkok
               TimeZone: 7
         - Id: SGP
-          Name: Сингапур
-          Description: В каком городе Сингапура находится российское посольство?
+          Name: Singapore
+          Description: In which city of Singapore is the Russian Embassy located?
           Children:
             - Id: SGP
-              Name: Сингапур
+              Name: Singapore
               TimeZone: 8
         - Id: SAU
-          Name: Саудовская Аравия
-          Description: В каком городе Саудовской Аравии находится российское посольство?
+          Name: Saudi Arabia
+          Description: In which city of Saudi Arabia is the Russian Embassy located?
           Children:
             - Id: RUH
-              Name: Эр-Рияд
+              Name: Riyadh
               TimeZone: 3
         - Id: ZAF
-          Name: Южная Африка
-          Description: В каком городе Южной Африки находится российское посольство?
+          Name: South Africa
+          Description: In which city of South Africa is the Russian Embassy located?
           Children:
             - Id: PTA
-              Name: Претория
+              Name: Pretoria
               TimeZone: 2
     - Id: DEU
-      Name: Немецкое
-      Description: Выберите посольство
+      Name: German
+      Description: Select an embassy
       Children:
         - Id: ESP
-          Name: Испания
-          Description: В каком городе Испании находится немецкое посольство?
+          Name: Spain
+          Description: In which city of Spain is the German embassy located?
           Children:
             - Id: MAD
-              Name: Мадрид
+              Name: Madrid
               TimeZone: 1
         - Id: ITA
-          Name: Италия
-          Description: В каком городе Италии находится немецкое посольство?
+          Name: Italy
+          Description: In which city of Italy is the German embassy located?
           Children:
             - Id: ROM
-              Name: Рим
+              Name: Rome
               TimeZone: 1
     - Id: ITA
-      Name: Итальянское
-      Description: Выберите посольство
+      Name: Italian
+      Description: Select an embassy
       Children:
         - Id: GRC
-          Name: Греция
-          Description: В каком городе Греции находится итальянское посольство?
+          Name: Greece
+          Description: In which city of Greece is the Italian embassy located?
           Children:
             - Id: ATH
-              Name: Афины
+              Name: Athens
               TimeZone: 2
         - Id: UKR
-          Name: Украина
-          Description: В каком городе Украины находится итальянское посольство?
+          Name: Ukraine
+          Description: In which city of Ukraine is the Italian embassy located?
           Children:
             - Id: IEV
-              Name: Киев
+              Name: Kiev
               TimeZone: 2
     - Id: GBR
-      Name: Британское
-      Description: Выберите посольство
+      Name: British
+      Description: Select an embassy
       Children:
         - Id: POL
-          Name: Польша
-          Description: В каком городе Польши находится британское посольство?
+          Name: Poland
+          Description: In which city of Poland is the British embassy located?
           Children:
             - Id: WAW
-              Name: Варшава
+              Name: Warsaw
               TimeZone: 1
         - Id: CZE
-          Name: Чехия
-          Description: В каком городе Чехии находится британское посольство?
+          Name: Czech Republic
+          Description: In which city of Czech Republic is the British embassy located?
           Children:
             - Id: PRG
-              Name: Прага
+              Name: Prague
               TimeZone: 1
     - Id: FRA
-      Name: Французское
-      Description: Выберите посольство
+      Name: French
+      Description: Select an embassy
       Children:
         - Id: BEL
-          Name: Бельгия
-          Description: В каком городе Бельгии находится французское посольство?
+          Name: Belgium
+          Description: In which city of Belgium is the French embassy located?
           Children:
             - Id: BRU
-              Name: Брюссель
+              Name: Brussels
               TimeZone: 1
         - Id: DEU
-          Name: Германия
-          Description: В каком городе Германии находится французское посольство?
+          Name: Germany
+          Description: In which city of Germany is the French embassy located?
           Children:
             - Id: BER
-              Name: Берлин
+              Name: Berlin
               TimeZone: 1
 
 KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
-  Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email после регистрации заявки на сайте, после символа | в вышеуказанную команду и отправьте ее в чат.
+  Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat.
 
 KdmidRussianServices: &KdmidRussianServices
   - Id: "0"
-    Name: Проверить наличие слотов сейчас
+    Name: Check for available slots now
     <<: *KdmidRussianServicesInstructions
   - Id: "1"
-    Name: Получить доступные слоты как только они появятся
+    Name: Get available slots as soon as they appear
     <<: *KdmidRussianServicesInstructions
   - Id: "2"
-    Name: Автоматическая запись и поиск слотов
-    Description: Автоматическая запись и поиск слотов
+    Name: Automatic booking and slot search
+    Description: Automatic booking and slot search
     Children:
       - Id: "0"
-        Name: Автоматически записаться на первый доступный слот
+        Name: Automatically book the first available slot
         <<: *KdmidRussianServicesInstructions
       - Id: "1"
-        Name: Автоматически записаться на последний доступный слот
+        Name: Automatically book the last available slot
         <<: *KdmidRussianServicesInstructions
       - Id: "2"
-        Name: Автоматически записаться на слот в указанный период
-        Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email после регистрации заявки на сайте, после символа | в вышеуказанную команду и отправьте ее в чат. Так же измените дату и время начала и конца периодаю
+        Name: Automatically book a slot in the specified period
+        Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat. Also change the date and time of the beginning and end of the period.
 
 Services:
   Id: SRV
-  Name: Услуги
-  Description: Выберите услугу посольства
+  Name: Services
+  Description: Select an embassy service
   Children:
     - Id: RUS
-      Name: Посольство РФ
-      Description: Выберите услугу посольства РФ
+      Name: Russian Embassy
+      Description: Select a service from the Russian Embassy
       Children:
         - Id: "0"
-          Name: Паспорт
-          Description: Выберите услугу по паспорту посольства РФ
+          Name: Passport
+          Description: Select a passport service from the Russian Embassy
           Children:
             - Id: "0"
-              Name: Выпуск заграничного паспорта
-              Description: Выберите услугу по выпуску заграничного паспорта посольства РФ
+              Name: Issue of international passport
+              Description: Select a service for issuing an international passport from the Russian Embassy
               Children:
                 <<: *KdmidRussianServices
             - Id: "1"
-              Name: Проверка готовности паспорта
-              Instruction: Что бы воспользоваться услугой, добавьте номер справки, которую вы получили после подачи документов, после символа | в вышеуказанную команду и отправьте ее в чат.
+              Name: Check passport readiness
+              Instruction: To use this service, add the reference number you received after submitting your documents, after the | symbol in the above command and send it to the chat.
         - Id: "1"
-          Name: Нотариат
-          Instruction: Что бы воспользоваться услугой, добавьте ссылку, которую вы получили в email при регистрации после символа | в вышеуказанную команду и отправьте ее в чат.
-          Description: Выберите услугу нотариата посольства РФ
+          Name: Notary
+          Instruction: To use this service, add the link you received in your email during registration after the | symbol in the above command and send it to the chat.
+          Description: Select a notary service from the Russian Embassy
           Children:
             - Id: "0"
-              Name: Доверенность
-              Description: Выберите услугу доверенности посольства РФ
+              Name: Power of attorney
+              Description: Select a power of attorney service from the Russian Embassy
               Children:
                 <<: *KdmidRussianServices
         - Id: "2"
-          Name: Гражданство
-          Description: Выберите услугу гражданства посольства РФ
+          Name: Citizenship
+          Description: Select a citizenship service from the Russian Embassy
           Children:
             - Id: "0"
-              Name: Отказ от гражданства
-              Description: Выберите услугу отказа от гражданства посольства РФ
+              Name: Renunciation of citizenship
+              Description: Select a citizenship renunciation service from the Russian Embassy
               Children:
                 <<: *KdmidRussianServices
