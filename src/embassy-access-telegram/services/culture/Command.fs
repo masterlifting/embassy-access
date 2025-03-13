@@ -34,9 +34,13 @@ let translateSeq culture messages =
 let translateRes culture msgRes =
     fun (deps: Culture.Dependencies) ->
         msgRes
-        |> ResultAsync.bindAsync (fun message -> deps |> translate culture message)
+        |> Async.bind (function
+            | Ok message -> deps |> translate culture message
+            | Error error -> deps |> Error.translate culture error |> Async.map Error)
 
-let translateSeqRes culture msgRes =
+let translateSeqRes culture msgSeqRes =
     fun (deps: Culture.Dependencies) ->
-        msgRes
-        |> ResultAsync.bindAsync (fun messages -> deps |> translateSeq culture messages)
+        msgSeqRes
+        |> Async.bind (function
+            | Ok messages -> deps |> translateSeq culture messages
+            | Error error -> deps |> Error.translate culture error |> Async.map Error)

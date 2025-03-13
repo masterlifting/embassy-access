@@ -172,8 +172,8 @@ Embassies:
   Name: Embassies
   Description: Select the embassy you want to visit
   Children:
-    - Id: ENG
-      Name: English
+    - Id: RUS
+      Name: Russian
       Description: In which country is the Russian Embassy located?
       Children:
         - Id: SRB
