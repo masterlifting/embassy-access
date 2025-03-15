@@ -4,11 +4,11 @@ module internal EA.Worker.Dependencies.AIProvider
 open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open AIProvider
+open AIProvider.Domain
 open EA.Worker.Domain.Constants
 
 type Dependencies =
-    { initProvider: unit -> Result<Client.Provider, Error'> }
+    { initProvider: unit -> Result<AIProvider.Client.Provider, Error'> }
 
     static member create() =
         let result = ResultBuilder()
@@ -25,10 +25,10 @@ type Dependencies =
             let! openAiProjectId = getEnv OPENAI_PROJECT_ID
 
             let initProvider () =
-                { AIProvider.OpenAI.Domain.Token = openAiApiKey
-                  AIProvider.OpenAI.Domain.ProjectId = openAiProjectId }
-                |> Client.Connection.OpenAI
-                |> Client.init
+                { Token = openAiApiKey
+                  ProjectId = openAiProjectId }
+                |> AIProvider.Client.Connection.OpenAI
+                |> AIProvider.Client.init
 
             return { initProvider = initProvider }
         }

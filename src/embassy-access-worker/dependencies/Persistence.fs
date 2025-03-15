@@ -6,6 +6,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.FileSystem
 open Persistence.Configuration
+open AIProvider.Services.DataAccess
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
@@ -13,6 +14,7 @@ open EA.Telegram.DataAccess
 type Dependencies =
     { ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
+      initCultureStorage: unit -> Result<Culture.Response.Storage, Error'>
       initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>
       initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>
       resetData: unit -> Async<Result<unit, Error'>> }
@@ -27,6 +29,12 @@ type Dependencies =
                 |> Configuration.getSection<string> "Persistence:FileSystem"
                 |> Option.map Ok
                 |> Option.defaultValue ("Section 'Persistence:FileSystem' in the configuration." |> NotFound |> Error)
+
+            let initCultureStorage () =
+                { FilePath = fileStoragePath
+                  FileName = "Cultures.json" }
+                |> Culture.Response.FileSystem
+                |> Culture.Response.init
 
             let initChatStorage () =
                 { FilePath = fileStoragePath
@@ -76,6 +84,7 @@ type Dependencies =
             return
                 { ChatStorage = chatStorage
                   RequestStorage = requestStorage
+                  initCultureStorage = initCultureStorage
                   initEmbassyGraphStorage = initEmbassyGraphStorage
                   initServiceGraphStorage = initServiceGraphStorage
                   resetData = resetData }

@@ -16,6 +16,7 @@ let create cfg ct =
             { CancellationToken = ct
               TelegramClient = webDeps.TelegramClient
               initAIProvider = aiProviderDeps.initProvider
+              initCultureStorage = persistenceDeps.initCultureStorage
               initChatStorage = fun () -> persistenceDeps.ChatStorage |> Ok
               initRequestStorage = fun () -> persistenceDeps.RequestStorage |> Ok
               initServiceGraphStorage = persistenceDeps.initServiceGraphStorage

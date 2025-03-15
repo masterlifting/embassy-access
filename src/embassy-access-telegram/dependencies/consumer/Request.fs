@@ -32,6 +32,7 @@ type Dependencies =
                 let! chatStorage = deps.initChatStorage ()
                 let! requestStorage = deps.initRequestStorage ()
                 let! aiProvider = deps.initAIProvider ()
+                let! cultureStorage = deps.initCultureStorage ()
 
                 let! cultureDeps =
                     Culture.Dependencies.create
@@ -39,6 +40,7 @@ type Dependencies =
                         payload.MessageId
                         deps.CancellationToken
                         aiProvider
+                        cultureStorage
                         chatStorage
 
                 let getServiceGraph () =

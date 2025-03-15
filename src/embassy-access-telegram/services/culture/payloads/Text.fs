@@ -3,7 +3,7 @@ module EA.Telegram.Services.Culture.Payloads.Text
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open AIProvider.Services.Culture
+open AIProvider.Services.Domain.Culture
 open Web.Telegram.Domain.Producer
 open EA.Telegram.Dependencies.Consumer
 
