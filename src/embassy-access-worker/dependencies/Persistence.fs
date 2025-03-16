@@ -32,7 +32,7 @@ type Dependencies =
 
             let initCultureStorage () =
                 { FilePath = fileStoragePath
-                  FileName = "Cultures.json" }
+                  FileName = "Culture.json" }
                 |> Culture.Response.FileSystem
                 |> Culture.Response.init
 
