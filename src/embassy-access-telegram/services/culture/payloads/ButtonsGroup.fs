@@ -23,7 +23,9 @@ let translate culture (payload: Payload<ButtonsGroup>) =
         deps.translate request
         |> ResultAsync.map (fun response ->
             let responseItemsMap =
-                response.Items |> List.map (fun item -> item.Id, item.Value) |> Map.ofList
+                response.Items
+                |> List.map (fun item -> item.Id, item.Result |> Option.defaultValue item.Value)
+                |> Map.ofList
 
             let buttonsGroupName =
                 responseItemsMap |> Map.tryFind group.Name |> Option.defaultValue group.Name

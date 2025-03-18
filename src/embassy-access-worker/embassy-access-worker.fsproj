@@ -30,6 +30,7 @@
         </Content>
         <Content Include="data\Chats.json" />
         <Content Include="data\Requests.json" />
+        <Content Include="data\Culture.json" />
     </ItemGroup>
 
     <ItemGroup>

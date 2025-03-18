@@ -19,7 +19,7 @@ let translate culture (payload: Payload<string>) =
         deps.translate request
         |> ResultAsync.map (fun response ->
             response.Items
-            |> List.map (fun item -> item.Id, item.Value)
+            |> List.map (fun item -> item.Id, item.Result |> Option.defaultValue item.Value)
             |> Map.ofList
             |> Map.tryFind id
             |> Option.defaultValue text)
