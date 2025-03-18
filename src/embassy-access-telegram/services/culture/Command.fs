@@ -31,16 +31,22 @@ let translateSeq culture messages =
         |> Async.Sequential
         |> Async.map Result.choose
 
+let translateError culture error =
+    fun (deps: Culture.Dependencies) ->
+        deps
+        |> Error.translate culture error
+        |> Async.map (function
+            | Ok error -> error
+            | Error error -> error)
+
 let translateRes culture msgRes =
     fun (deps: Culture.Dependencies) ->
         msgRes
-        |> Async.bind (function
-            | Ok message -> deps |> translate culture message
-            | Error error -> deps |> Error.translate culture error |> Async.map Error)
+        |> ResultAsync.bindAsync (fun message -> deps |> translate culture message)
+        |> ResultAsync.mapErrorAsync (fun error -> deps |> translateError culture error)
 
 let translateSeqRes culture msgSeqRes =
     fun (deps: Culture.Dependencies) ->
         msgSeqRes
-        |> Async.bind (function
-            | Ok messages -> deps |> translateSeq culture messages
-            | Error error -> deps |> Error.translate culture error |> Async.map Error)
+        |> ResultAsync.bindAsync (fun messages -> deps |> translateSeq culture messages)
+        |> ResultAsync.mapErrorAsync (fun error -> deps |> translateError culture error)
