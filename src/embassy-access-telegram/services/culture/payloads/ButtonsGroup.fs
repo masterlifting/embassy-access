@@ -9,7 +9,7 @@ open EA.Telegram.Dependencies.Consumer
 let translate culture (payload: Payload<ButtonsGroup>) =
     fun (deps: Culture.Dependencies) ->
         let group = payload.Value
-        let buttonGroupId = group.Name.GetHashCode()
+        let buttonGroupId = group.Name |> hash
 
         let items =
             { Value = group.Name }
@@ -21,7 +21,7 @@ let translate culture (payload: Payload<ButtonsGroup>) =
         |> ResultAsync.map (fun response ->
             let responseItemsMap =
                 response.Items
-                |> List.map (fun item -> item.Value.GetHashCode(), item.Result |> Option.defaultValue item.Value)
+                |> List.map (fun item -> item.Value |>  hash, item.Result |> Option.defaultValue item.Value)
                 |> Map.ofList
 
             let buttonsGroupName =
