@@ -9,16 +9,16 @@ open EA.Telegram.Dependencies.Consumer
 let translate culture (error: Error') =
     fun (deps: Culture.Dependencies) ->
         let text = error.Message
-        let id = text |> String.toHash
+        let id = text.GetHashCode()
 
         let request =
             { Culture = culture
-              Items = [ { Id = id; Value = text } ] }
+              Items = [ { Value = text } ] }
 
         deps.translate request
         |> ResultAsync.map (fun response ->
             response.Items
-            |> List.map (fun item -> item.Id, item.Result |> Option.defaultValue item.Value)
+            |> List.map (fun item -> item.Value.GetHashCode(), item.Result |> Option.defaultValue item.Value)
             |> Map.ofList
             |> Map.tryFind id
             |> Option.defaultValue text)
