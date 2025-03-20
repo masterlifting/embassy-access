@@ -8,8 +8,7 @@ open EA.Telegram.Dependencies.Consumer
 
 let translate culture (error: Error') =
     fun (deps: Culture.Dependencies) ->
-        let text = error.Message
-        let id = text |> hash
+        let text = error.MessageOnly
 
         let request =
             { Culture = culture
@@ -18,8 +17,8 @@ let translate culture (error: Error') =
         deps.translate request
         |> ResultAsync.map (fun response ->
             response.Items
-            |> List.map (fun item -> item.Value |> hash, item.Result |> Option.defaultValue item.Value)
+            |> List.map (fun item -> item.Value, item.Result |> Option.defaultValue item.Value)
             |> Map.ofList
-            |> Map.tryFind id
+            |> Map.tryFind text
             |> Option.defaultValue text)
         |> ResultAsync.map error.replaceMsg

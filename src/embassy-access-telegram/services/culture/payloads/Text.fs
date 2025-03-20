@@ -10,7 +10,6 @@ open EA.Telegram.Dependencies.Consumer
 let translate culture (payload: Payload<string>) =
     fun (deps: Culture.Dependencies) ->
         let text = payload.Value
-        let id = text |> hash
 
         let request =
             { Culture = culture
@@ -19,8 +18,8 @@ let translate culture (payload: Payload<string>) =
         deps.translate request
         |> ResultAsync.map (fun response ->
             response.Items
-            |> List.map (fun item -> item.Value |> hash, item.Result |> Option.defaultValue item.Value)
+            |> List.map (fun item -> item.Value, item.Result |> Option.defaultValue item.Value)
             |> Map.ofList
-            |> Map.tryFind id
+            |> Map.tryFind text
             |> Option.defaultValue text)
         |> ResultAsync.map (fun value -> { payload with Value = value } |> Text)
