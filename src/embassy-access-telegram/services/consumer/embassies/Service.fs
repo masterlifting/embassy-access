@@ -112,7 +112,7 @@ module internal Query =
                 | AP.Node node ->
                     node.Children
                     |> Seq.map _.Value
-                    |> Response.toEmbassy deps.Chat.Id (Some deps.MessageId) node.Value.Description
+                    |> Response.toEmbassy deps.Chat.Id (Some deps.MessageId) ($"Choose the following for the '{node.Value.ShortName}' embassy of '{deps.Chat.Id}'" |> Some)
                     |> Ok
                     |> async.Return)
 
