@@ -29,6 +29,7 @@
         <Compile Include="endpoints\Request.fs" />
         <Compile Include="data_access\Chat.fs" />
         <Compile Include="dependencies\Culture.fs" />
+        <Compile Include="dependencies\consumer\Culture.fs" />
         <Compile Include="dependencies\consumer\Consumer.fs" />
         <Compile Include="dependencies\consumer\Request.fs" />
         <Compile Include="dependencies\consumer\embassies\russian\Russian.fs" />

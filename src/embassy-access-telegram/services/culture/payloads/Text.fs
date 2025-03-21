@@ -13,7 +13,7 @@ let translate culture (payload: Payload<string>) =
 
         let request =
             { Culture = culture
-              Placeholder = deps.CulturePlaceholder
+              Placeholder = deps.Placeholder
               Items = [ { Value = text } ] }
 
         deps.translate request

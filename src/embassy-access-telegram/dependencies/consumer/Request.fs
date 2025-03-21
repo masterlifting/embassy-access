@@ -6,8 +6,8 @@ open Infrastructure.Prelude
 open Infrastructure.Domain
 open Web.Telegram.Domain
 open EA.Core.Domain
-open EA.Telegram.Domain
 open EA.Core.DataAccess
+open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 
@@ -15,7 +15,7 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       CancellationToken: CancellationToken
-      Culture: Culture.Dependencies
+      Culture: Consumer.Culture.Dependencies
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
@@ -31,18 +31,14 @@ type Dependencies =
 
                 let! chatStorage = deps.initChatStorage ()
                 let! requestStorage = deps.initRequestStorage ()
-                let! aiProvider = deps.initAIProvider ()
-                let! cultureStorage = deps.initCultureStorage ()
 
                 let! cultureDeps =
-                    Culture.Dependencies.create
+                    Consumer.Culture.Dependencies.create
                         payload.ChatId
                         payload.MessageId
                         deps.CancellationToken
-                        aiProvider
                         chatStorage
-                        cultureStorage
-                        deps.CulturePlaceholder
+                        deps.Culture
 
                 let getServiceGraph () =
                     deps.initServiceGraphStorage () |> ResultAsync.wrap ServiceGraph.get

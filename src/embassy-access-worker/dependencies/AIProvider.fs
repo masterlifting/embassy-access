@@ -32,7 +32,7 @@ type Dependencies =
                 |> AIProvider.Client.Connection.OpenAI
                 |> AIProvider.Client.init
 
-            let culturePlaceholder = Placeholder.create '''
+            let culturePlaceholder = Placeholder.create ''' '''
 
             return
                 { CulturePlaceholder = culturePlaceholder

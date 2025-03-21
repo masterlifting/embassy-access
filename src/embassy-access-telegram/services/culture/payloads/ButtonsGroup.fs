@@ -16,7 +16,7 @@ let translate culture (payload: Payload<ButtonsGroup>) =
 
         let request =
             { Culture = culture
-              Placeholder = deps.CulturePlaceholder
+              Placeholder = deps.Placeholder
               Items = items }
 
         deps.translate request
