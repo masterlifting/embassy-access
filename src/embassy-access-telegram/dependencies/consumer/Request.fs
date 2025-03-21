@@ -40,8 +40,9 @@ type Dependencies =
                         payload.MessageId
                         deps.CancellationToken
                         aiProvider
-                        cultureStorage
                         chatStorage
+                        cultureStorage
+                        deps.CulturePlaceholder
 
                 let getServiceGraph () =
                     deps.initServiceGraphStorage () |> ResultAsync.wrap ServiceGraph.get

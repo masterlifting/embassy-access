@@ -16,13 +16,18 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       CancellationToken: CancellationToken
+      CulturePlaceholder: Culture.Placeholder
       tryGetChat: unit -> Async<Result<Chat option, Error'>>
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: Culture -> Async<Result<unit, Error'>>
       translate: Culture.Request -> Async<Result<Culture.Response, Error'>> }
 
     static member create chatId messageId ct =
-        fun (aiProvider: AIProvider) (cultureStorage: Culture.Response.Storage) (chatStorage: Chat.ChatStorage) ->
+        fun
+            (aiProvider: AIProvider)
+            (chatStorage: Chat.ChatStorage)
+            (cultureStorage: Culture.Response.Storage)
+            (culturePlaceholder: Culture.Placeholder) ->
             let result = ResultBuilder()
 
             result {
@@ -45,6 +50,7 @@ type Dependencies =
                     { ChatId = chatId
                       MessageId = messageId
                       CancellationToken = ct
+                      CulturePlaceholder = culturePlaceholder
                       tryGetChat = tryGetChat
                       getAvailableCultures = getAvailableCultures
                       setCurrentCulture = setCurrentCulture

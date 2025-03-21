@@ -12,6 +12,7 @@ let translate culture (error: Error') =
 
         let request =
             { Culture = culture
+              Placeholder = deps.CulturePlaceholder
               Items = [ { Value = text } ] }
 
         deps.translate request

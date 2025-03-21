@@ -14,7 +14,10 @@ let translate culture (payload: Payload<ButtonsGroup>) =
             { Value = group.Name }
             :: (group.Buttons |> Set.map (fun button -> { Value = button.Name }) |> Set.toList)
 
-        let request = { Culture = culture; Items = items }
+        let request =
+            { Culture = culture
+              Placeholder = deps.CulturePlaceholder
+              Items = items }
 
         deps.translate request
         |> ResultAsync.map (fun response ->
