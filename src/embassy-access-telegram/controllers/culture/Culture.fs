@@ -5,7 +5,7 @@ open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Culture
 open EA.Telegram.Endpoints.Culture.Request
 open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Services.Culture
+open EA.Telegram.Services.Consumer.Culture
 
 let respond request entrypoint =
     fun (deps: Request.Dependencies) ->

@@ -5,7 +5,6 @@ open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Services.Culture.Payloads
 
 let setCulture (culture: Culture) =
     fun (deps: Culture.Dependencies) ->

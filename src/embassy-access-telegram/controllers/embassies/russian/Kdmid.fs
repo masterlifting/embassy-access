@@ -4,7 +4,7 @@ module EA.Telegram.Controllers.Consumer.Embassies.Russian.Kdmid
 open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Embassies.Russian.Kdmid
 open EA.Telegram.Dependencies.Consumer.Embassies.Russian
-open EA.Telegram.Services.Culture
+open EA.Telegram.Services
 open EA.Telegram.Services.Consumer.Embassies.Russian.Kdmid
 
 let get request =
@@ -13,7 +13,8 @@ let get request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture |> Command.translateRes deps.Chat.Culture msgRes
+                deps.Culture.Base
+                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes deps.Culture.Placeholder
 
             let sendResult getResponse =
                 deps |> (getResponse >> translate) |> deps.sendResult
@@ -29,10 +30,12 @@ let post request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture |> Command.translateRes deps.Chat.Culture msgRes
+                deps.Culture.Base
+                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes deps.Culture.Placeholder
 
             let translateSeq msgSeqRes =
-                deps.Culture |> Command.translateSeqRes deps.Chat.Culture msgSeqRes
+                deps.Culture.Base
+                |> Producer.Culture.Command.translateSeqRes deps.Chat.Culture msgSeqRes deps.Culture.Placeholder
 
             match request with
             | Post.Subscribe model -> Command.subscribe model >> translate >> deps.sendResult
@@ -47,7 +50,8 @@ let delete request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture |> Command.translateRes deps.Chat.Culture msgRes
+                deps.Culture.Base
+                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes deps.Culture.Placeholder
 
             let sendResult getResponse =
                 deps |> (getResponse >> translate) |> deps.sendResult
