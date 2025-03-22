@@ -43,9 +43,10 @@
         <Compile Include="services\culture\payloads\Error.fs" />
         <Compile Include="services\culture\payloads\ButtonsGroup.fs" />
         <Compile Include="services\culture\payloads\Text.fs" />
-        <Compile Include="services\culture\Query.fs" />
         <Compile Include="services\culture\Command.fs" />
         <Compile Include="services\embassies\russian\Service.fs" />
+        <Compile Include="services\consumer\culture\Query.fs" />
+        <Compile Include="services\consumer\culture\Command.fs" />
         <Compile Include="services\consumer\embassies\russian\kdmid\Query.fs" />
         <Compile Include="services\consumer\embassies\russian\kdmid\Command.fs" />
         <Compile Include="services\consumer\embassies\russian\kdmid\Instruction.fs" />
@@ -53,6 +54,7 @@
         <Compile Include="services\consumer\embassies\russian\Service.fs" />
         <Compile Include="services\consumer\embassies\Service.fs" />
         <Compile Include="services\consumer\users\Service.fs" />
+        <Compile Include="services\producer\culture\Command.fs" />
         <Compile Include="services\producer\embassies\russian\Service.fs" />
         <Compile Include="controllers\culture\Culture.fs" />
         <Compile Include="controllers\users\Users.fs" />

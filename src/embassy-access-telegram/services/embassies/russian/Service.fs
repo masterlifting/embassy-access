@@ -58,9 +58,11 @@ module Kdmid =
                 request.Service.Payload
                 |> Payload.toValue
                 |> Result.map (fun payloadValue ->
-                    $"The subscription '{payloadValue}' for service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}' was successfully applied.\\n\\nThe result is: '{confirmations
-                                                                                                                                                                                      |> Seq.map _.Description
-                                                                                                                                                                                      |> String.concat System.Environment.NewLine}'"
+                    $"The subscription '{payloadValue}' for service '{request.Service.Name}'
+                    at '{request.Service.Embassy.ShortName}' was successfully applied.\\n\\n
+                    The result is: '{confirmations
+                                     |> Seq.map _.Description
+                                     |> String.concat System.Environment.NewLine}'"
                     |> Text.create
                     |> Message.createNew chatId)
 

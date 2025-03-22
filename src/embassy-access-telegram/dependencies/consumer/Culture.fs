@@ -14,11 +14,11 @@ open Web.Telegram.Domain
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
+      Base: AIProvider.Services.Dependencies.Culture.Dependencies
       Placeholder: Culture.Placeholder
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: Culture -> Async<Result<unit, Error'>>
-      tryGetChat: unit -> Async<Result<Chat option, Error'>>
-      translate: Culture.Request -> Async<Result<Culture.Response, Error'>> }
+      tryGetChat: unit -> Async<Result<Chat option, Error'>> }
 
     static member create chatId messageId ct =
         fun (chatStorage: Chat.ChatStorage) (cultureDeps: Culture.Dependencies) ->
@@ -36,15 +36,12 @@ type Dependencies =
                 let tryGetChat () =
                     chatStorage |> Chat.Query.tryFindById chatId
 
-                let translate request =
-                    cultureDeps |> Culture.Service.translate request ct
-
                 return
                     { ChatId = chatId
                       MessageId = messageId
-                      tryGetChat = tryGetChat
+                      Base = cultureDeps
                       Placeholder = Placeholder.create ''' '''
+                      tryGetChat = tryGetChat
                       getAvailableCultures = getAvailableCultures
-                      setCurrentCulture = setCurrentCulture
-                      translate = translate }
+                      setCurrentCulture = setCurrentCulture }
             }

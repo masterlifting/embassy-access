@@ -4,9 +4,9 @@ module EA.Telegram.Services.Culture.Payloads.ButtonsGroup
 open Infrastructure.Prelude
 open AIProvider.Services.Domain
 open Web.Telegram.Domain.Producer
-open EA.Telegram.Dependencies.Consumer
+open AIProvider.Services.Dependencies
 
-let translate culture (payload: Payload<ButtonsGroup>) =
+let translate culture placeholder (payload: Payload<ButtonsGroup>) =
     fun (deps: Culture.Dependencies) ->
         let group = payload.Value
 
@@ -16,7 +16,7 @@ let translate culture (payload: Payload<ButtonsGroup>) =
 
         let request =
             { Culture = culture
-              Placeholder = deps.Placeholder
+              Placeholder = placeholder
               Items = items }
 
         deps.translate request
