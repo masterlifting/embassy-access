@@ -9,7 +9,8 @@ open AIProvider.Services.Dependencies
 open AIProvider.Services
 
 type Dependencies =
-    { translate: Culture.Request -> Async<Result<Culture.Response, Error'>> }
+    { Placeholder: Culture.Placeholder
+      translate: Culture.Request -> Async<Result<Culture.Response, Error'>> }
 
     static member create ct =
         fun (deps: Culture.Dependencies) ->
@@ -21,5 +22,7 @@ type Dependencies =
                 let translate request =
                     deps |> Culture.Service.translate request ct
 
-                return { translate = translate }
+                return
+                    { Placeholder = Placeholder.create ''' '''
+                      translate = translate }
             }

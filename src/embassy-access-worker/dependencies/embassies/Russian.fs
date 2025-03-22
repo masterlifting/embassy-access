@@ -24,8 +24,9 @@ module Kdmid =
 
             result {
                 let! persistenceDeps = Persistence.Dependencies.create cfg
-                let! tgProducerDeps = EA.Worker.Dependencies.Telegram.Producer.create cfg ct
-                let! kdmidDeps = Embassies.Russian.Kdmid.Dependencies.create tgProducerDeps
+                let! producerDeps = EA.Worker.Dependencies.Telegram.Producer.create cfg ct
+                let! requestDeps = Request.Dependencies.create ct producerDeps
+                let! kdmidDeps = Embassies.Russian.Kdmid.Dependencies.create requestDeps
 
                 let notify notification =
                     kdmidDeps

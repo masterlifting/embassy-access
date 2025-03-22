@@ -29,6 +29,6 @@ type Dependencies =
                   ProjectId = openAiProjectId }
                 |> AIProvider.Client.Connection.OpenAI
                 |> AIProvider.Client.init
-
+                
             return { initProvider = initProvider }
         }

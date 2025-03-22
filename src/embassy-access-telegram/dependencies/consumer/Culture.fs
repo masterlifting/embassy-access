@@ -1,7 +1,6 @@
 [<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Consumer.Culture
 
-open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider.Services.Domain
@@ -15,6 +14,7 @@ open Web.Telegram.Domain
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
+      Placeholder: Culture.Placeholder
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: Culture -> Async<Result<unit, Error'>>
       tryGetChat: unit -> Async<Result<Chat option, Error'>>
@@ -43,6 +43,7 @@ type Dependencies =
                     { ChatId = chatId
                       MessageId = messageId
                       tryGetChat = tryGetChat
+                      Placeholder = Placeholder.create ''' '''
                       getAvailableCultures = getAvailableCultures
                       setCurrentCulture = setCurrentCulture
                       translate = translate }

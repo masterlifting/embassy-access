@@ -12,7 +12,6 @@ let create cfg ct =
         let! webDeps = EA.Worker.Dependencies.Web.Dependencies.create ()
         let! persistenceDeps = EA.Worker.Dependencies.Persistence.Dependencies.create cfg
         let! aiProviderDeps = EA.Worker.Dependencies.AIProvider.Dependencies.create ()
-
         let! aiProvider = aiProviderDeps.initProvider ()
         let! cultureStorage = persistenceDeps.initCultureStorage ()
 
