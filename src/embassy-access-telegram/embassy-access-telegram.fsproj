@@ -28,7 +28,6 @@
         <Compile Include="endpoints\embassies\russian\Request.fs" />
         <Compile Include="endpoints\Request.fs" />
         <Compile Include="data_access\Chat.fs" />
-        <Compile Include="dependencies\Culture.fs" />
         <Compile Include="dependencies\consumer\Culture.fs" />
         <Compile Include="dependencies\consumer\Consumer.fs" />
         <Compile Include="dependencies\consumer\Request.fs" />
@@ -37,7 +36,9 @@
         <Compile Include="dependencies\consumer\embassies\russian\Kdmid.fs" />
         <Compile Include="dependencies\consumer\embassies\Embassies.fs" />
         <Compile Include="dependencies\consumer\Users.fs" />
+        <Compile Include="dependencies\producer\Culture.fs" />
         <Compile Include="dependencies\producer\Producer.fs" />
+        <Compile Include="dependencies\producer\Request.fs" />
         <Compile Include="dependencies\producer\embassies\russian\Kdmid.fs" />
         <Compile Include="services\culture\payloads\Error.fs" />
         <Compile Include="services\culture\payloads\ButtonsGroup.fs" />

@@ -15,7 +15,7 @@ type Dependencies =
     { ChatId: ChatId
       MessageId: int
       CancellationToken: CancellationToken
-      Culture: Consumer.Culture.Dependencies
+      Culture: Culture.Dependencies
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
@@ -33,7 +33,7 @@ type Dependencies =
                 let! requestStorage = deps.initRequestStorage ()
 
                 let! cultureDeps =
-                    Consumer.Culture.Dependencies.create
+                    Culture.Dependencies.create
                         payload.ChatId
                         payload.MessageId
                         deps.CancellationToken

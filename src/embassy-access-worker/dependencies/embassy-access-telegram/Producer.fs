@@ -2,7 +2,6 @@
 module internal EA.Worker.Dependencies.Telegram.Producer
 
 open Infrastructure.Prelude
-open AIProvider.Services.Dependencies
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Producer
 
@@ -17,11 +16,10 @@ let create cfg ct =
         let! aiProvider = aiProviderDeps.initProvider ()
         let! cultureStorage = persistenceDeps.initCultureStorage ()
 
-        let! cultureDeps =
-            { Culture.Provider = aiProvider
-              Culture.Storage = cultureStorage
-              Culture.Placeholder = aiProviderDeps.CulturePlaceholder }
-            |> Culture.Dependencies.create ct
+        let cultureDeps: AIProvider.Services.Dependencies.Culture.Dependencies =
+            { Provider = aiProvider
+              Storage = cultureStorage }
+
 
         let result: Producer.Dependencies =
             { CancellationToken = ct

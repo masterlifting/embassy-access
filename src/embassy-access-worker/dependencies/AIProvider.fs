@@ -5,12 +5,10 @@ open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider.Domain
-open AIProvider.Services.Domain
 open EA.Worker.Domain.Constants
 
 type Dependencies =
-    { CulturePlaceholder: Culture.Placeholder
-      initProvider: unit -> Result<AIProvider.Client.Provider, Error'> }
+    { initProvider: unit -> Result<AIProvider.Client.Provider, Error'> }
 
     static member create() =
         let result = ResultBuilder()
@@ -32,9 +30,5 @@ type Dependencies =
                 |> AIProvider.Client.Connection.OpenAI
                 |> AIProvider.Client.init
 
-            let culturePlaceholder = Placeholder.create ''' '''
-
-            return
-                { CulturePlaceholder = culturePlaceholder
-                  initProvider = initProvider }
+            return { initProvider = initProvider }
         }

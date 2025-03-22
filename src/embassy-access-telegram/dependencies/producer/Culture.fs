@@ -1,7 +1,6 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Culture
+module EA.Telegram.Dependencies.Producer.Culture
 
-open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider.Services.Domain
@@ -10,8 +9,7 @@ open AIProvider.Services.Dependencies
 open AIProvider.Services
 
 type Dependencies =
-    { CancellationToken: CancellationToken
-      translate: Culture.Request -> Async<Result<Culture.Response, Error'>> }
+    { translate: Culture.Request -> Async<Result<Culture.Response, Error'>> }
 
     static member create ct =
         fun (deps: Culture.Dependencies) ->
@@ -23,7 +21,5 @@ type Dependencies =
                 let translate request =
                     deps |> Culture.Service.translate request ct
 
-                return
-                    { CancellationToken = ct
-                      translate = translate }
+                return { translate = translate }
             }
