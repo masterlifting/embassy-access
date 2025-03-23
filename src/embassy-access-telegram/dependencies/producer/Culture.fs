@@ -12,3 +12,7 @@ type Dependencies =
     static member create(deps: Culture.Dependencies) =
         { Placeholder = deps.Placeholder
           translate = deps.translate }
+
+    member this.toBase() : Culture.Dependencies =
+        { Placeholder = this.Placeholder
+          translate = this.translate }

@@ -42,9 +42,10 @@
         <Compile Include="dependencies\producer\Request.fs" />
         <Compile Include="dependencies\producer\embassies\russian\Kdmid.fs" />
         <Compile Include="services\culture\payloads\Error.fs" />
-        <Compile Include="services\culture\payloads\ButtonsGroup.fs" />
-        <Compile Include="services\culture\payloads\Text.fs" />
+        <Compile Include="services\culture\Command.fs" />
         <Compile Include="services\embassies\russian\Service.fs" />
+        <Compile Include="services\producer\culture\payloads\Text.fs" />
+        <Compile Include="services\producer\culture\payloads\ButtonsGroup.fs" />
         <Compile Include="services\producer\culture\Command.fs" />
         <Compile Include="services\producer\embassies\russian\Service.fs" />
         <Compile Include="services\consumer\culture\Query.fs" />

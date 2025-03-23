@@ -4,15 +4,15 @@ module EA.Telegram.Services.Culture.Payloads.Error
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider.Services.Domain
-open AIProvider.Services.Dependencies
+open EA.Telegram.Dependencies
 
-let translate culture placeholder (error: Error') =
+let translate culture (error: Error') =
     fun (deps: Culture.Dependencies) ->
         let text = error.MessageOnly
 
         let request =
             { Culture = culture
-              Placeholder = placeholder
+              Placeholder = deps.Placeholder
               Items = [ { Value = text } ] }
 
         deps.translate request

@@ -5,15 +5,15 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider.Services.Domain
 open Web.Telegram.Domain.Producer
-open AIProvider.Services.Dependencies
+open EA.Telegram.Dependencies.Producer
 
-let translate culture placeholder (payload: Payload<string>) =
+let translate culture (payload: Payload<string>) =
     fun (deps: Culture.Dependencies) ->
         let text = payload.Value
 
         let request =
             { Culture = culture
-              Placeholder = placeholder
+              Placeholder = deps.Placeholder
               Items = [ { Value = text } ] }
 
         deps.translate request

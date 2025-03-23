@@ -4,38 +4,31 @@ module EA.Telegram.Services.Producer.Culture.Command
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain.Producer
-open AIProvider.Services.Dependencies
+open EA.Telegram.Dependencies.Producer
+open EA.Telegram.Services.Culture
 open EA.Telegram.Services.Culture.Payloads
 
-let translate culture message placeholder =
+let translate culture message =
     fun (deps: Culture.Dependencies) ->
         match message with
-        | Text payload -> deps |> Text.translate culture placeholder payload
-        | ButtonsGroup payload -> deps |> ButtonsGroup.translate culture placeholder payload
+        | Text payload -> deps |> Text.translate culture payload
+        | ButtonsGroup payload -> deps |> ButtonsGroup.translate culture payload
 
-let translateSeq culture messages placeholder =
+let translateSeq culture messages =
     fun (deps: Culture.Dependencies) ->
         messages
-        |> List.map (fun message -> deps |> translate culture message placeholder)
+        |> List.map (fun message -> deps |> translate culture message)
         |> Async.Sequential
         |> Async.map Result.choose
 
-let translateError culture error placeholder =
-    fun (deps: Culture.Dependencies) ->
-        deps
-        |> Error.translate culture placeholder error
-        |> Async.map (function
-            | Ok error -> error
-            | Error error -> error)
-
-let translateRes culture msgRes placeholder =
+let translateRes culture msgRes =
     fun (deps: Culture.Dependencies) ->
         msgRes
-        |> ResultAsync.bindAsync (fun message -> deps |> translate culture message placeholder)
-        |> ResultAsync.mapErrorAsync (fun error -> deps |> translateError culture error placeholder)
+        |> ResultAsync.bindAsync (fun message -> deps |> translate culture message)
+        |> ResultAsync.mapErrorAsync (fun error -> deps.toBase () |> Command.translateError culture error)
 
-let translateSeqRes culture msgSeqRes placeholder =
+let translateSeqRes culture msgSeqRes =
     fun (deps: Culture.Dependencies) ->
         msgSeqRes
-        |> ResultAsync.bindAsync (fun messages -> deps |> translateSeq culture messages placeholder)
-        |> ResultAsync.mapErrorAsync (fun error -> deps |> translateError culture error placeholder)
+        |> ResultAsync.bindAsync (fun messages -> deps |> translateSeq culture messages)
+        |> ResultAsync.mapErrorAsync (fun error -> deps.toBase () |> Command.translateError culture error)
