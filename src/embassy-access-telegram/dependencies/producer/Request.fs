@@ -6,7 +6,6 @@ open Infrastructure.Domain
 open Web.Telegram.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies
 
 type Dependencies =
     { Culture: Culture.Dependencies
@@ -21,7 +20,11 @@ type Dependencies =
 
             result {
 
-                let! cultureDeps = Culture.Dependencies.create ct deps.Culture
+                let cultureDeps =
+                    Culture.Dependencies.create
+                        { Placeholder = deps.Culture.Placeholder
+                          translate = deps.Culture.translate }
+
                 let! chatStorage = deps.initChatStorage ()
                 let! requestStorage = deps.initRequestStorage ()
 

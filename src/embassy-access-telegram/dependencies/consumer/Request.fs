@@ -4,12 +4,12 @@ module EA.Telegram.Dependencies.Consumer.Request
 open System.Threading
 open Infrastructure.Prelude
 open Infrastructure.Domain
+open AIProvider.Services.Domain
 open Web.Telegram.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies
 
 type Dependencies =
     { ChatId: ChatId
@@ -36,9 +36,10 @@ type Dependencies =
                     Culture.Dependencies.create
                         payload.ChatId
                         payload.MessageId
-                        deps.CancellationToken
                         chatStorage
-                        deps.Culture
+                        { Placeholder = deps.Culture.Placeholder
+                          translate = deps.Culture.translate }
+
 
                 let getServiceGraph () =
                     deps.initServiceGraphStorage () |> ResultAsync.wrap ServiceGraph.get

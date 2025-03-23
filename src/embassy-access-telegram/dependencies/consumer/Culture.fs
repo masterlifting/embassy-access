@@ -4,23 +4,21 @@ module EA.Telegram.Dependencies.Consumer.Culture
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider.Services.Domain
-open AIProvider.Services.DataAccess
-open AIProvider.Services.Dependencies
-open AIProvider.Services
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
+open EA.Telegram.Dependencies
 open Web.Telegram.Domain
 
 type Dependencies =
     { ChatId: ChatId
       MessageId: int
-      Base: AIProvider.Services.Dependencies.Culture.Dependencies
       Placeholder: Culture.Placeholder
+      translate: Culture.Request -> Async<Result<Culture.Response, Error'>>
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: Culture -> Async<Result<unit, Error'>>
       tryGetChat: unit -> Async<Result<Chat option, Error'>> }
 
-    static member create chatId messageId ct =
+    static member create chatId messageId =
         fun (chatStorage: Chat.ChatStorage) (cultureDeps: Culture.Dependencies) ->
 
             let result = ResultBuilder()
@@ -39,8 +37,8 @@ type Dependencies =
                 return
                     { ChatId = chatId
                       MessageId = messageId
-                      Base = cultureDeps
-                      Placeholder = Placeholder.create ''' '''
+                      Placeholder = cultureDeps.Placeholder
+                      translate = cultureDeps.translate
                       tryGetChat = tryGetChat
                       getAvailableCultures = getAvailableCultures
                       setCurrentCulture = setCurrentCulture }
