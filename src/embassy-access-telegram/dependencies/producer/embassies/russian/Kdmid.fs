@@ -10,7 +10,8 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Producer
 
 type Dependencies =
-    { getRequestChats: Request -> Async<Result<Chat list, Error'>>
+    { Culture: Culture.Dependencies
+      getRequestChats: Request -> Async<Result<Chat list, Error'>>
       sendNotifications: Message seq -> Async<Result<unit, Error'>> }
 
     static member create(deps: Request.Dependencies) =
@@ -24,9 +25,8 @@ type Dependencies =
                 |> ResultAsync.bindAsync (fun subscriptionIds ->
                     deps.ChatStorage |> Chat.Query.findManyBySubscriptions subscriptionIds)
 
-            let sendNotifications = deps.sendMessages
-
             return
-                { getRequestChats = getRequestChats
-                  sendNotifications = sendNotifications }
+                { Culture = deps.Culture
+                  getRequestChats = getRequestChats
+                  sendNotifications = deps.sendMessages }
         }

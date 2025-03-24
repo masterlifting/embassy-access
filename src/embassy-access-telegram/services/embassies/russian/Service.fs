@@ -79,7 +79,7 @@ module Kdmid =
                 request
                 |> Notification.tryCreate errorFilter
                 |> Option.map (function
-                    | Successfully(request, msg) -> chatId |> Notification.toSuccessfullyResponse (request, msg) |> Ok
+                    | Empty(request, msg) -> chatId |> Notification.toSuccessfullyResponse (request, msg) |> Ok
                     | Unsuccessfully(request, error) ->
                         chatId |> Notification.toUnsuccessfullyResponse (request, error) |> Ok
                     | HasAppointments(request, appointments) ->

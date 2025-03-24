@@ -11,7 +11,6 @@ type Dependencies =
     { Culture: Culture.Dependencies
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
-      sendMessage: Producer.Message -> Async<Result<unit, Error'>>
       sendMessages: Producer.Message seq -> Async<Result<unit, Error'>> }
 
     static member create() =
@@ -28,11 +27,6 @@ type Dependencies =
                 let! chatStorage = deps.Persistence.initChatStorage ()
                 let! requestStorage = deps.Persistence.initRequestStorage ()
 
-                let sendMessage data =
-                    deps.initTelegramClient ()
-                    |> ResultAsync.wrap (Web.Telegram.Producer.produce data deps.CancellationToken)
-                    |> ResultAsync.map ignore
-
                 let sendMessages data =
                     deps.initTelegramClient ()
                     |> ResultAsync.wrap (Web.Telegram.Producer.produceSeq data deps.CancellationToken)
@@ -42,6 +36,5 @@ type Dependencies =
                     { Culture = cultureDeps
                       ChatStorage = chatStorage
                       RequestStorage = requestStorage
-                      sendMessage = sendMessage
                       sendMessages = sendMessages }
             }

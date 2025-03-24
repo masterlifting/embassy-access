@@ -32,7 +32,7 @@ module private Kdmid =
             match request |> Notification.tryCreate errorFilter with
             | Some notification ->
                 match notification with
-                | Successfully(_, message) -> $"{message} for '{request.Service.Name}'." |> Ok
+                | Empty(_, message) -> $"{message} for '{request.Service.Name}'." |> Ok
                 | Unsuccessfully(_, error) -> error |> Error
                 | HasAppointments(_, appointments) ->
                     $"Appointments found: {appointments.Count} for '{request.Service.Name}'." |> Ok
