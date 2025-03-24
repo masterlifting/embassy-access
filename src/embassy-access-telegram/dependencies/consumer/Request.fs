@@ -4,11 +4,9 @@ module EA.Telegram.Dependencies.Consumer.Request
 open System.Threading
 open Infrastructure.Prelude
 open Infrastructure.Domain
-open AIProvider.Services.Domain
 open Web.Telegram.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 
 type Dependencies =
@@ -29,8 +27,8 @@ type Dependencies =
 
             result {
 
-                let! chatStorage = deps.initChatStorage ()
-                let! requestStorage = deps.initRequestStorage ()
+                let! chatStorage = deps.Persistence.initChatStorage ()
+                let! requestStorage = deps.Persistence.initRequestStorage ()
 
                 let! cultureDeps =
                     Culture.Dependencies.create
@@ -40,12 +38,11 @@ type Dependencies =
                         { Placeholder = deps.Culture.Placeholder
                           translate = deps.Culture.translate }
 
-
                 let getServiceGraph () =
-                    deps.initServiceGraphStorage () |> ResultAsync.wrap ServiceGraph.get
+                    deps.Persistence.initServiceGraphStorage () |> ResultAsync.wrap ServiceGraph.get
 
                 let getEmbassyGraph () =
-                    deps.initEmbassyGraphStorage () |> ResultAsync.wrap EmbassyGraph.get
+                    deps.Persistence.initEmbassyGraphStorage () |> ResultAsync.wrap EmbassyGraph.get
 
                 let sendResult data =
                     deps.TelegramClient

@@ -15,14 +15,15 @@ let create cfg ct =
 
         let result: EA.Telegram.Dependencies.Consumer.Consumer.Dependencies =
             { CancellationToken = ct
+              TelegramClient = webDeps.TelegramClient
               Culture =
                 { Placeholder = cultureDeps.Placeholder
                   translate = cultureDeps.translate }
-              TelegramClient = webDeps.TelegramClient
-              initChatStorage = fun () -> persistenceDeps.ChatStorage |> Ok
-              initRequestStorage = fun () -> persistenceDeps.RequestStorage |> Ok
-              initServiceGraphStorage = persistenceDeps.initServiceGraphStorage
-              initEmbassyGraphStorage = persistenceDeps.initEmbassyGraphStorage }
+              Persistence =
+                { initChatStorage = fun () -> persistenceDeps.ChatStorage |> Ok
+                  initRequestStorage = fun () -> persistenceDeps.RequestStorage |> Ok
+                  initServiceGraphStorage = persistenceDeps.initServiceGraphStorage
+                  initEmbassyGraphStorage = persistenceDeps.initEmbassyGraphStorage } }
 
         return result
     }

@@ -2,15 +2,14 @@
 module EA.Telegram.Dependencies.Consumer.Embassies.Russian.Kdmid
 
 open System.Threading
-open EA.Telegram.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
+open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Dependencies.Consumer.Embassies
 
 type Dependencies =
     { Chat: Chat

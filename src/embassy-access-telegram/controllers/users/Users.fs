@@ -14,8 +14,8 @@ let respond request chat =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture
-                |> Producer.Culture.Command.translateRes chat.Culture msgRes deps.Culture.Placeholder
+                deps.Culture.toProducer ()
+                |> Producer.Culture.Command.translateRes chat.Culture msgRes
 
             let sendResult getResponse =
                 deps |> (getResponse >> translate) |> deps.sendResult

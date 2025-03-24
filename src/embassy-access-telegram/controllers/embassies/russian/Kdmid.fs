@@ -13,8 +13,8 @@ let get request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture.Base
-                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes deps.Culture.Placeholder
+                deps.Culture.toProducer ()
+                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes
 
             let sendResult getResponse =
                 deps |> (getResponse >> translate) |> deps.sendResult
@@ -30,12 +30,12 @@ let post request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture.Base
-                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes deps.Culture.Placeholder
+                deps.Culture.toProducer ()
+                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes
 
             let translateSeq msgSeqRes =
-                deps.Culture.Base
-                |> Producer.Culture.Command.translateSeqRes deps.Chat.Culture msgSeqRes deps.Culture.Placeholder
+                deps.Culture.toProducer ()
+                |> Producer.Culture.Command.translateSeqRes deps.Chat.Culture msgSeqRes
 
             match request with
             | Post.Subscribe model -> Command.subscribe model >> translate >> deps.sendResult
@@ -50,8 +50,8 @@ let delete request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture.Base
-                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes deps.Culture.Placeholder
+                deps.Culture.toProducer ()
+                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes
 
             let sendResult getResponse =
                 deps |> (getResponse >> translate) |> deps.sendResult

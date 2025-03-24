@@ -14,7 +14,7 @@ type Dependencies =
       sendMessage: Producer.Message -> Async<Result<unit, Error'>>
       sendMessages: Producer.Message seq -> Async<Result<unit, Error'>> }
 
-    static member create ct =
+    static member create() =
         fun (deps: Producer.Dependencies) ->
             let result = ResultBuilder()
 
@@ -25,8 +25,8 @@ type Dependencies =
                         { Placeholder = deps.Culture.Placeholder
                           translate = deps.Culture.translate }
 
-                let! chatStorage = deps.initChatStorage ()
-                let! requestStorage = deps.initRequestStorage ()
+                let! chatStorage = deps.Persistence.initChatStorage ()
+                let! requestStorage = deps.Persistence.initRequestStorage ()
 
                 let sendMessage data =
                     deps.initTelegramClient ()

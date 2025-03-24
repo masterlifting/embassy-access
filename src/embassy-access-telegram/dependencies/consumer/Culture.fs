@@ -4,10 +4,10 @@ module EA.Telegram.Dependencies.Consumer.Culture
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider.Services.Domain
+open Web.Telegram.Domain
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
-open Web.Telegram.Domain
 
 type Dependencies =
     { ChatId: ChatId
@@ -43,3 +43,7 @@ type Dependencies =
                       getAvailableCultures = getAvailableCultures
                       setCurrentCulture = setCurrentCulture }
             }
+
+    member this.toProducer() : Producer.Culture.Dependencies =
+        { Placeholder = this.Placeholder
+          translate = this.translate }

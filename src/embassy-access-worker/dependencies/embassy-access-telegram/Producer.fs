@@ -2,7 +2,6 @@
 module internal EA.Worker.Dependencies.Telegram.Producer
 
 open Infrastructure.Prelude
-open EA.Telegram.Dependencies
 open EA.Worker.Dependencies
 
 let create cfg ct =
@@ -16,12 +15,13 @@ let create cfg ct =
 
         let result: EA.Telegram.Dependencies.Producer.Producer.Dependencies =
             { CancellationToken = ct
+              initTelegramClient = fun () -> webDeps.TelegramClient |> Ok
               Culture =
                 { Placeholder = cultureDeps.Placeholder
                   translate = cultureDeps.translate }
-              initTelegramClient = fun () -> webDeps.TelegramClient |> Ok
-              initChatStorage = fun () -> persistenceDeps.ChatStorage |> Ok
-              initRequestStorage = fun () -> persistenceDeps.RequestStorage |> Ok }
+              Persistence =
+                { initChatStorage = fun () -> persistenceDeps.ChatStorage |> Ok
+                  initRequestStorage = fun () -> persistenceDeps.RequestStorage |> Ok } }
 
         return result
     }
