@@ -4,7 +4,7 @@ module EA.Telegram.Services.Culture.Payloads.ButtonsGroup
 open Infrastructure.Prelude
 open AIProvider.Services.Domain
 open Web.Telegram.Domain.Producer
-open EA.Telegram.Dependencies.Producer
+open EA.Telegram.Dependencies
 
 let translate culture (payload: Payload<ButtonsGroup>) =
     fun (deps: Culture.Dependencies) ->

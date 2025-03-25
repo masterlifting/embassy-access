@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Persistence
+module EA.Telegram.Dependencies.Persistence
 
 open Infrastructure.Domain
 open EA.Core.DataAccess

@@ -1,11 +1,11 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Controllers.Consumer.Embassies.Russian.Kdmid
+module EA.Telegram.Controllers.Embassies.Russian.Kdmid
 
 open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Embassies.Russian.Kdmid
-open EA.Telegram.Dependencies.Consumer.Embassies.Russian
-open EA.Telegram.Services
-open EA.Telegram.Services.Consumer.Embassies.Russian.Kdmid
+open EA.Telegram.Dependencies.Embassies.Russian
+open EA.Telegram.Services.Culture
+open EA.Telegram.Services.Embassies.Russian.Kdmid
 
 let get request =
     fun (deps: Russian.Dependencies) ->
@@ -13,11 +13,11 @@ let get request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture.toProducer ()
-                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes
+                deps.Culture
+                |> Message.translateRes deps.Chat.Culture msgRes
 
             let sendResult getResponse =
-                deps |> (getResponse >> translate) |> deps.sendResult
+                deps |> (getResponse >> translate) |> deps.sendMessageRes
 
             match request with
             | Get.Appointments requestId -> Query.getAppointments requestId
@@ -30,18 +30,18 @@ let post request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture.toProducer ()
-                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes
+                deps.Culture
+                |> Message.translateRes deps.Chat.Culture msgRes
 
             let translateSeq msgSeqRes =
-                deps.Culture.toProducer ()
-                |> Producer.Culture.Command.translateSeqRes deps.Chat.Culture msgSeqRes
+                deps.Culture
+                |> Message.translateSeqRes deps.Chat.Culture msgSeqRes
 
             match request with
-            | Post.Subscribe model -> Command.subscribe model >> translate >> deps.sendResult
-            | Post.CheckAppointments model -> Command.checkAppointments model >> translate >> deps.sendResult
-            | Post.SendAppointments model -> Command.sendAppointments model >> translateSeq >> deps.sendResults
-            | Post.ConfirmAppointment model -> Command.confirmAppointment model >> translate >> deps.sendResult
+            | Post.Subscribe model -> Command.subscribe model >> translate >> deps.sendMessageRes
+            | Post.CheckAppointments model -> Command.checkAppointments model >> translate >> deps.sendMessageRes
+            | Post.SendAppointments model -> Command.sendAppointments model >> translateSeq >> deps.sendMessagesRes
+            | Post.ConfirmAppointment model -> Command.confirmAppointment model >> translate >> deps.sendMessageRes
             |> fun send -> deps |> send)
 
 let delete request =
@@ -50,11 +50,11 @@ let delete request =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture.toProducer ()
-                |> Producer.Culture.Command.translateRes deps.Chat.Culture msgRes
+                deps.Culture
+                |> Message.translateRes deps.Chat.Culture msgRes
 
             let sendResult getResponse =
-                deps |> (getResponse >> translate) |> deps.sendResult
+                deps |> (getResponse >> translate) |> deps.sendMessageRes
 
             match request with
             | Delete.Subscription requestId -> Command.deleteSubscription requestId

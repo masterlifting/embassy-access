@@ -29,5 +29,5 @@ let consume data =
 
 let start (deps: Consumer.Dependencies) =
     let handler = fun data -> consume data deps
-    let consumer = Web.Client.Consumer.Telegram(deps.TelegramClient, handler)
+    let consumer = Web.Client.Consumer.Telegram(deps.Web.Telegram.Client, handler)
     Web.Client.consume consumer deps.CancellationToken

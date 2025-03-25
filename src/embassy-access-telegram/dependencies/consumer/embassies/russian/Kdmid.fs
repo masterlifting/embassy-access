@@ -1,15 +1,46 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Embassies.Russian.Kdmid
+module EA.Telegram.Dependencies.Embassies.Russian.Kdmid
 
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Telegram.Domain
+open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Dependencies
+open EA.Embassies.Russian
+open EA.Embassies.Russian.Domain
+open EA.Embassies.Russian.Kdmid.Dependencies
+
+module Notification =
+    open Infrastructure.Prelude
+    open Infrastructure.Domain
+    open Web.Telegram.Domain
+    open EA.Core.DataAccess
+    open EA.Telegram.DataAccess
+
+    type Dependencies =
+        { Culture: Culture.Dependencies
+          getRequestChats: Request -> Async<Result<Chat list, Error'>>
+          sendMessages: Message seq -> Async<Result<unit, Error'>> }
+
+        static member create() =
+            fun (deps: Russian.Dependencies) ->
+                let result = ResultBuilder()
+        
+                result {
+        
+                    let! chatStorage = deps..initChatStorage ()
+                    let! requestStorage = deps.Persistence.initRequestStorage ()
+        
+                    return
+                        { Culture = deps.Culture
+                          ChatStorage = chatStorage
+                          RequestStorage = requestStorage
+                          sendMessages = deps. }
+                }
 
 type Dependencies =
     { Chat: Chat
@@ -17,14 +48,15 @@ type Dependencies =
       CancellationToken: CancellationToken
       Culture: Culture.Dependencies
       RequestStorage: Request.RequestStorage
-      sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-      sendResults: Async<Result<Producer.Message list, Error'>> -> Async<Result<unit, Error'>>
+      sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
+      sendMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<unit, Error'>>
       getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
       getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>>
       getRequest: RequestId -> Async<Result<Request, Error'>>
       createRequest: Request -> Async<Result<Request, Error'>>
-      deleteRequest: RequestId -> Async<Result<unit, Error'>> }
+      deleteRequest: RequestId -> Async<Result<unit, Error'>>
+      getApiService: Request -> Async<Result<Request, Error'>> }
 
     static member create(deps: Russian.Dependencies) =
         let result = ResultBuilder()
@@ -71,18 +103,27 @@ type Dependencies =
                 |> Chat.Command.deleteChatSubscription deps.Chat.Id requestId
                 |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.delete requestId)
 
+            let apiDeps = Order.Dependencies.create deps.RequestStorage deps.CancellationToken
+
+            let getApiService request =
+                { Request = request
+                  Dependencies = apiDeps }
+                |> Kdmid
+                |> API.Service.get
+
             return
                 { Chat = deps.Chat
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
                   Culture = deps.Culture
                   RequestStorage = deps.RequestStorage
-                  sendResult = deps.sendResult
-                  sendResults = deps.sendResults
+                  sendMessageRes = deps.sendMessageRes
+                  sendMessagesRes = deps.sendMessagesRes
                   getRequest = getRequest
                   getService = getService
                   getEmbassy = getEmbassy
                   getChatRequests = deps.getChatRequests
                   createRequest = createRequest
-                  deleteRequest = deleteRequest }
+                  deleteRequest = deleteRequest
+                  getApiService = getApiService }
         }

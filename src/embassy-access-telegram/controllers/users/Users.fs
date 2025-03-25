@@ -5,7 +5,7 @@ open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Users
 open EA.Telegram.Endpoints.Users.Request
 open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Services
+open EA.Telegram.Services.Culture
 open EA.Telegram.Services.Consumer.Users.Service
 
 let respond request chat =
@@ -14,8 +14,8 @@ let respond request chat =
         |> ResultAsync.wrap (fun deps ->
 
             let translate msgRes =
-                deps.Culture.toProducer ()
-                |> Producer.Culture.Command.translateRes chat.Culture msgRes
+                deps.Culture
+                |> Message.translateRes chat.Culture msgRes
 
             let sendResult getResponse =
                 deps |> (getResponse >> translate) |> deps.sendResult

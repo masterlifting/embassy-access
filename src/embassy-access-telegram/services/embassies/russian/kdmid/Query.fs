@@ -8,8 +8,32 @@ open EA.Telegram.Domain
 open EA.Telegram.Endpoints.Request
 open EA.Telegram.Endpoints.Embassies.Russian
 open EA.Telegram.Dependencies.Consumer.Embassies.Russian
-open EA.Telegram.Services.Embassies.Russian.Service.Kdmid
+open EA.Telegram.Services.Embassies.Russian.Kdmid
 open EA.Embassies.Russian.Kdmid.Domain
+
+let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
+    let getRoute =
+        request.Id
+        |> Kdmid.Get.Appointments
+        |> Get.Kdmid
+        |> Request.Get
+        |> RussianEmbassy
+
+    let deleteRoute =
+        request.Id
+        |> Kdmid.Delete.Subscription
+        |> Delete.Kdmid
+        |> Request.Delete
+        |> RussianEmbassy
+
+    match request.Service.Id.Split() with
+    | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
+        Map
+            [ getRoute.Value, "Request available slots"
+              deleteRoute.Value, "Delete subscription" ]
+    | _ -> Map [ deleteRoute.Value, "Delete subscription" ]
+    |> Seq.map (fun x -> x.Key |> CallbackData |> Button.create x.Value)
+    |> Set.ofSeq
 
 let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
     fun (deps: Kdmid.Dependencies) ->
@@ -35,30 +59,6 @@ let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
                     data
                     |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
                     |> Set.ofSeq })
-
-let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
-    let getRoute =
-        request.Id
-        |> Kdmid.Get.Appointments
-        |> Get.Kdmid
-        |> Request.Get
-        |> RussianEmbassy
-
-    let deleteRoute =
-        request.Id
-        |> Kdmid.Delete.Subscription
-        |> Delete.Kdmid
-        |> Request.Delete
-        |> RussianEmbassy
-
-    match request.Service.Id.Split() with
-    | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
-        Map
-            [ getRoute.Value, "Request available slots"
-              deleteRoute.Value, "Delete subscription" ]
-    | _ -> Map [ deleteRoute.Value, "Delete subscription" ]
-    |> Seq.map (fun x -> x.Key |> CallbackData |> Button.create x.Value)
-    |> Set.ofSeq
 
 let getSubscriptionsMenu requestId =
     fun (deps: Kdmid.Dependencies) ->
@@ -96,6 +96,5 @@ let getAppointments requestId =
             | Ready
             | Failed _
             | Completed _ ->
-                deps
-                |> Request.getService request
-                |> ResultAsync.bind (fun result -> deps.Chat.Id |> Request.toResponse result))
+                deps.getApiService request
+                |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result))

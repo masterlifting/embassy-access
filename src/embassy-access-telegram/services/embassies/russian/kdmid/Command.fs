@@ -7,7 +7,7 @@ open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Domain
 open EA.Telegram.Endpoints.Embassies.Russian
 open EA.Telegram.Dependencies.Consumer.Embassies.Russian
-open EA.Telegram.Services.Embassies.Russian.Service.Kdmid
+open EA.Telegram.Services.Embassies.Russian.Kdmid
 
 let subscribe (model: Kdmid.Post.Model.Subscribe) =
     fun (deps: Kdmid.Dependencies) ->
@@ -83,9 +83,8 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                     | Ready
                     | Failed _
                     | Completed _ ->
-                        deps
-                        |> Request.getService request
-                        |> ResultAsync.bind (fun result -> deps.Chat.Id |> Request.toResponse result)
+                        deps.getApiService request
+                        |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result)
                 | None ->
                     resultAsync {
                         let! service = deps.getService model.ServiceId
@@ -104,9 +103,8 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                             |> ResultAsync.wrap deps.createRequest
 
                         return
-                            deps
-                            |> Request.getService request
-                            |> ResultAsync.bind (fun result -> deps.Chat.Id |> Request.toResponse result)
+                            deps.getApiService request
+                            |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result)
                     }
         }
 
@@ -118,17 +116,19 @@ let sendAppointments (model: Kdmid.Post.Model.SendAppointments) =
                 request.Service.Id = model.ServiceId
                 && request.Service.Embassy.Id = model.EmbassyId)
         )
-        |> ResultAsync.bind (Seq.map (fun r -> deps.Chat.Id |> Request.toResponse r) >> Result.choose)
+        |> ResultAsync.bind (
+            Seq.map (fun r -> deps.Chat.Id |> Message.Notification.create r)
+            >> Result.choose
+        )
 
 let confirmAppointment (model: Kdmid.Post.Model.ConfirmAppointment) =
     fun (deps: Kdmid.Dependencies) ->
         deps.getRequest model.RequestId
         |> ResultAsync.bindAsync (fun request ->
-            deps
-            |> Request.getService
+            deps.getApiService
                 { request with
                     ConfirmationState = ConfirmationState.Manual model.AppointmentId })
-        |> ResultAsync.bind (fun r -> deps.Chat.Id |> Request.toResponse r)
+        |> ResultAsync.bind (fun r -> deps.Chat.Id |> Message.Notification.create r)
 
 let deleteSubscription requestId =
     fun (deps: Kdmid.Dependencies) ->
