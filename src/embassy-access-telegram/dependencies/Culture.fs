@@ -11,7 +11,7 @@ type Dependencies =
     { Placeholder: Culture.Placeholder
       translate: Request -> Async<Result<Response, Error'>> }
 
-    static member create ct placeholder =
+    static member create ct =
         fun (deps: Culture.Dependencies) ->
-            { Placeholder = placeholder
+            { Placeholder = Placeholder.create ''' '''
               translate = fun request -> deps |> AIProvider.Services.Culture.Service.translate request ct }

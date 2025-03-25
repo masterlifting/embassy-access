@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Consumer.Embassies.Russian.Kdmid.Query
+﻿module EA.Telegram.Services.Embassies.Russian.Kdmid.Query
 
 open Infrastructure.Prelude
 open Web.Telegram.Producer
@@ -7,7 +7,7 @@ open EA.Core.Domain
 open EA.Telegram.Domain
 open EA.Telegram.Endpoints.Request
 open EA.Telegram.Endpoints.Embassies.Russian
-open EA.Telegram.Dependencies.Consumer.Embassies.Russian
+open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian.Kdmid
 open EA.Embassies.Russian.Kdmid.Domain
 

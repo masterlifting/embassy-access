@@ -4,10 +4,10 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
-open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Dependencies
 
 let setCulture (culture: Culture) =
-    fun (deps: Culture.Dependencies) ->
+    fun (deps: Request.Dependencies) ->
         culture
         |> deps.setCurrentCulture
         |> ResultAsync.map (fun _ ->
@@ -15,5 +15,4 @@ let setCulture (culture: Culture) =
             |> Text.create $"The language has been changed to {culture.Name}")
 
 let setCultureCallback (culture: Culture) =
-    fun (deps: Culture.Dependencies) -> culture |> deps.setCurrentCulture
-
+    fun (deps: Request.Dependencies) -> culture |> deps.setCurrentCulture

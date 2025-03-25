@@ -4,7 +4,7 @@ module EA.Telegram.Controllers.Consumer.Culture.Culture
 open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Culture
 open EA.Telegram.Endpoints.Culture.Request
-open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Dependencies
 open EA.Telegram.Services.Culture
 
 let respond request entrypoint =
@@ -12,12 +12,12 @@ let respond request entrypoint =
         match request with
         | Get get ->
             match get with
-            | Get.Cultures -> deps.Culture |> Query.getCultures () |> deps.sendResult
+            | Get.Cultures -> deps |> Query.getCultures () |> deps.sendMessageRes
         | Post post ->
             match post with
-            | Post.SetCulture culture -> deps.Culture |> Command.setCulture culture |> deps.sendResult
+            | Post.SetCulture culture -> deps |> Command.setCulture culture |> deps.sendMessageRes
             | Post.SetCultureCallback(callback, culture) ->
-                deps.Culture
+                deps
                 |> Command.setCultureCallback culture
                 |> ResultAsync.bindAsync (fun _ ->
                     EA.Telegram.Endpoints.Request.Request.parse callback
@@ -25,7 +25,7 @@ let respond request entrypoint =
 
 let apply (request: EA.Telegram.Endpoints.Request.Request) callback =
     fun (deps: Request.Dependencies) ->
-        deps.Culture.tryGetChat ()
+        deps.tryGetChat ()
         |> ResultAsync.bindAsync (function
             | Some chat -> deps |> callback chat
-            | None -> deps.Culture |> Query.getCulturesCallback request.Value |> deps.sendResult)
+            | None -> deps |> Query.getCulturesCallback request.Value |> deps.sendMessageRes)

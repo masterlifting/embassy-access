@@ -1,11 +1,11 @@
-﻿module EA.Telegram.Services.Consumer.Embassies.Russian.Service
+﻿module EA.Telegram.Services.Embassies.Russian.Service
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Dependencies.Consumer.Embassies.Russian
-open EA.Telegram.Services.Consumer.Embassies.Russian
+open EA.Telegram.Dependencies.Embassies.Russian
+open EA.Telegram.Services.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian.Kdmid.
 
 let get embassyId (service: ServiceNode) =

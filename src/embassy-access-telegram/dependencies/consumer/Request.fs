@@ -18,6 +18,7 @@ type Dependencies =
       Culture: Culture.Dependencies
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
+      getRequestChats: Request -> Async<Result<Chat list, Error'>>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
@@ -34,23 +35,14 @@ type Dependencies =
 
             result {
 
-                let! chatStorage = deps.Persistence.initChatStorage ()
-                let! requestStorage = deps.Persistence.initRequestStorage ()
-
                 let tryGetChat () =
-                    chatStorage |> Chat.Query.tryFindById payload.ChatId
+                    deps.Persistence.ChatStorage |> Chat.Query.tryFindById payload.ChatId
 
                 let getAvailableCultures () =
                     [ English, "English"; Russian, "Русский" ] |> Map |> Ok |> async.Return
 
                 let setCurrentCulture culture =
-                    chatStorage |> Chat.Command.setCulture payload.ChatId culture
-
-                let getServiceGraph () =
-                    deps.Persistence.initServiceGraphStorage () |> ResultAsync.wrap ServiceGraph.get
-
-                let getEmbassyGraph () =
-                    deps.Persistence.initEmbassyGraphStorage () |> ResultAsync.wrap EmbassyGraph.get
+                    deps.Persistence.ChatStorage |> Chat.Command.setCulture payload.ChatId culture
 
                 let sendMessageRes data =
                     deps.Web.Telegram.sendMessageRes data payload.ChatId
@@ -63,10 +55,11 @@ type Dependencies =
                       MessageId = payload.MessageId
                       CancellationToken = deps.CancellationToken
                       Culture = deps.Culture
-                      ChatStorage = chatStorage
+                      ChatStorage = deps.Persistence.ChatStorage
                       RequestStorage = requestStorage
-                      getServiceGraph = getServiceGraph
-                      getEmbassyGraph = getEmbassyGraph
+                      getRequestChats = deps.Persistence.getRequestChats
+                      getServiceGraph = deps.Persistence.getServiceGraph
+                      getEmbassyGraph = deps.Persistence.getEmbassyGraph
                       tryGetChat = tryGetChat
                       getAvailableCultures = getAvailableCultures
                       setCurrentCulture = setCurrentCulture

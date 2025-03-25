@@ -18,10 +18,12 @@ type Dependencies =
       Culture: Culture.Dependencies
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
+      sendMessages: Producer.Message seq -> Async<Result<unit, Error'>>
       sendMessageRes: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
       sendMessagesRes: Async<Result<Producer.Message seq, Error'>> -> Async<Result<unit, Error'>>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+      getRequestChats: Request -> Async<Result<Chat list, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>> }
 
     static member create chat (deps: Request.Dependencies) =

@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Consumer.Embassies.Service
+﻿module EA.Telegram.Services.Embassies.Service
 
 open EA.Telegram.Domain
 open Infrastructure.Domain
@@ -9,8 +9,8 @@ open EA.Core.Domain
 open EA.Telegram.Endpoints
 open EA.Telegram.Endpoints.Embassies
 open EA.Telegram.Endpoints.Embassies.Request
-open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Dependencies.Consumer.Embassies
+open EA.Telegram.Dependencies
+open EA.Telegram.Dependencies.Embassies
 
 module private Response =
     let private createMessage chatId msgIdOpt nameOpt columns data =

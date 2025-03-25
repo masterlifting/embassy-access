@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Consumer.Users.Service
+﻿module EA.Telegram.Services.Users.Service
 
 open Infrastructure.Prelude
 open Web.Telegram.Producer
@@ -7,7 +7,7 @@ open EA.Core.Domain
 open EA.Telegram.Endpoints
 open EA.Telegram.Endpoints.Users
 open EA.Telegram.Endpoints.Users.Request
-open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Dependencies
 
 let private createMessage chatId msgIdOpt nameOpt data =
     let name = nameOpt |> Option.defaultValue "Choose from the list"

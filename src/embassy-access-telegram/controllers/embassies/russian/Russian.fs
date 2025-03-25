@@ -4,8 +4,8 @@ module EA.Telegram.Controllers.Consumer.Embassies.Russian.Russian
 open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Embassies.Russian
 open EA.Telegram.Endpoints.Embassies.Russian.Request
-open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Dependencies.Consumer.Embassies.Russian
+open EA.Telegram.Dependencies
+open EA.Telegram.Dependencies.Embassies.Russian
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->

@@ -15,7 +15,6 @@ module Notification =
 
     open Infrastructure.Prelude
     open EA.Telegram.Services.Culture
-    open EA.Telegram.Dependencies.Producer.Embassies.Russian
 
     let toSuccessfully (request: EA.Core.Domain.Request.Request, msg: string) =
         fun chatId ->
@@ -23,7 +22,7 @@ module Notification =
             |> Text.create
             |> Message.createNew chatId
 
-    let toUnsuccessfully (request: EA.Core.Domain.Request.Request, error: Error') =
+    let toUnsuccessfully (_: EA.Core.Domain.Request.Request, error: Error') =
         fun chatId -> chatId |> Text.createError error
 
     let toHasAppointments (request: EA.Core.Domain.Request.Request, appointments: Appointment.Appointment Set) =

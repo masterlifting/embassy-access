@@ -1,20 +1,20 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer.Embassies.Embassies
+module EA.Telegram.Dependencies.Embassies.Embassies
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain
 open EA.Core.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Dependencies.Consumer
-open EA.Telegram.Dependencies.Consumer.Embassies.Russian
+open EA.Telegram.Dependencies
+open EA.Telegram.Dependencies.Embassies.Russian
 
 type Dependencies =
     { Chat: Chat
       MessageId: int
       Culture: Culture.Dependencies
       Russian: Russian.Dependencies
-      sendResult: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
+      sendMessageRes: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
       getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
@@ -79,7 +79,7 @@ type Dependencies =
                   MessageId = deps.MessageId
                   Culture = deps.Culture
                   Russian = russianDeps
-                  sendResult = deps.sendResult
+                  sendMessageRes = deps.sendMessageRes
                   getEmbassiesGraph = deps.getEmbassyGraph
                   getEmbassyNode = getEmbassyNode
                   getServiceNode = getServiceNode

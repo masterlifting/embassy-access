@@ -9,6 +9,7 @@
         <Compile Include="domain\Aliases.fs" />
         <Compile Include="domain\Constants.fs" />
         <Compile Include="domain\Chat.fs" />
+        <Compile Include="data_access\Chat.fs" />
         <Compile Include="endpoints\culture\Get.fs" />
         <Compile Include="endpoints\culture\Post.fs" />
         <Compile Include="endpoints\culture\Request.fs" />
@@ -27,15 +28,9 @@
         <Compile Include="endpoints\embassies\russian\Delete.fs" />
         <Compile Include="endpoints\embassies\russian\Request.fs" />
         <Compile Include="endpoints\Request.fs" />
-        <Compile Include="data_access\Chat.fs" />
         <Compile Include="dependencies\Culture.fs" />
         <Compile Include="dependencies\Web.fs" />
         <Compile Include="dependencies\Persistence.fs" />
-        <Compile Include="dependencies\producer\Culture.fs" />
-        <Compile Include="dependencies\producer\Persistence.fs" />
-        <Compile Include="dependencies\producer\Producer.fs" />
-        <Compile Include="dependencies\producer\Request.fs" />
-        <Compile Include="dependencies\producer\embassies\russian\Kdmid.fs" />
         <Compile Include="dependencies\consumer\Consumer.fs" />
         <Compile Include="dependencies\consumer\Request.fs" />
         <Compile Include="dependencies\consumer\embassies\russian\Russian.fs" />

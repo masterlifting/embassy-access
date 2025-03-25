@@ -4,9 +4,9 @@ module EA.Telegram.Controllers.Consumer.Users.Users
 open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Users
 open EA.Telegram.Endpoints.Users.Request
-open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Dependencies
 open EA.Telegram.Services.Culture
-open EA.Telegram.Services.Consumer.Users.Service
+open EA.Telegram.Services.Users.Service
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->
@@ -17,8 +17,8 @@ let respond request chat =
                 deps.Culture
                 |> Message.translateRes chat.Culture msgRes
 
-            let sendResult getResponse =
-                deps |> (getResponse >> translate) |> deps.sendResult
+            let sendMessage getResponse =
+                deps |> (getResponse >> translate) |> deps.sendMessageRes
 
             match request with
             | Get get ->
@@ -27,4 +27,4 @@ let respond request chat =
                 | Get.UserEmbassy embassyId -> Query.getUserEmbassy embassyId
                 | Get.UserEmbassyServices embassyId -> Query.getUserEmbassyServices embassyId
                 | Get.UserEmbassyService(embassyId, serviceId) -> Query.getUserEmbassyService embassyId serviceId
-                |> sendResult)
+                |> sendMessage)

@@ -15,11 +15,6 @@ open EA.Embassies.Russian.Domain
 open EA.Embassies.Russian.Kdmid.Dependencies
 
 module Notification =
-    open Infrastructure.Prelude
-    open Infrastructure.Domain
-    open Web.Telegram.Domain
-    open EA.Core.DataAccess
-    open EA.Telegram.DataAccess
 
     type Dependencies =
         { Culture: Culture.Dependencies
@@ -28,19 +23,9 @@ module Notification =
 
         static member create() =
             fun (deps: Russian.Dependencies) ->
-                let result = ResultBuilder()
-        
-                result {
-        
-                    let! chatStorage = deps..initChatStorage ()
-                    let! requestStorage = deps.Persistence.initRequestStorage ()
-        
-                    return
-                        { Culture = deps.Culture
-                          ChatStorage = chatStorage
-                          RequestStorage = requestStorage
-                          sendMessages = deps. }
-                }
+                { Culture = deps.Culture
+                  getRequestChats = deps.getRequestChats
+                  sendMessages = deps.sendMessages }
 
 type Dependencies =
     { Chat: Chat

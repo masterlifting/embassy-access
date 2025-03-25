@@ -5,7 +5,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain.Consumer
 open EA.Telegram.Endpoints.Request
-open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Dependencies
 open EA.Telegram.Controllers.Consumer
 
 let private respond payload =

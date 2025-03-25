@@ -5,7 +5,7 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Telegram.Endpoints.Request
 open EA.Telegram.Endpoints.Culture
-open EA.Telegram.Dependencies.Consumer
+open EA.Telegram.Dependencies
 
 let private createMessage chatId msgIdOpt nameOpt data =
     let name = nameOpt |> Option.defaultValue "Choose from the list"
@@ -23,7 +23,7 @@ let private createMessage chatId msgIdOpt nameOpt data =
     |> Message.tryReplace msgIdOpt chatId
 
 let getCultures () =
-    fun (deps: Culture.Dependencies) ->
+    fun (deps: Request.Dependencies) ->
         deps.getAvailableCultures ()
         |> ResultAsync.map (
             Seq.map (fun culture ->
@@ -35,7 +35,7 @@ let getCultures () =
         |> ResultAsync.map (createMessage deps.ChatId None (Some "Choose the language"))
 
 let getCulturesCallback callback =
-    fun (deps: Culture.Dependencies) ->
+    fun (deps: Request.Dependencies) ->
         deps.getAvailableCultures ()
         |> ResultAsync.map (
             Seq.map (fun culture ->
