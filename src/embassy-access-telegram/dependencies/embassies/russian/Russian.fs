@@ -4,7 +4,7 @@ module EA.Telegram.Dependencies.Embassies.Russian.Russian
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Telegram.Domain
+open Web.Clients.Domain.Telegram
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain

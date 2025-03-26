@@ -7,7 +7,7 @@ open AIProvider.Services.Domain
 open AIProvider.Services.DataAccess
 open AIProvider.Services.Dependencies
 open AIProvider.Services
-open Web.Telegram.Domain.Producer
+open Web.Clients.Domain.Telegram.Producer
 
 module private Payload =
     module Error =

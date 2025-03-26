@@ -1,8 +1,8 @@
 ﻿module EA.Telegram.Services.Embassies.Russian.Kdmid.Query
 
 open Infrastructure.Prelude
-open Web.Telegram.Producer
-open Web.Telegram.Domain.Producer
+open Web.Clients.Telegram.Producer
+open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Telegram.Domain
 open EA.Telegram.Router

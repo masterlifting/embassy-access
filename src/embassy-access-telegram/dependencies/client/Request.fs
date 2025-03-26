@@ -5,12 +5,12 @@ open System.Threading
 open EA.Telegram.Domain
 open Infrastructure.Prelude
 open Infrastructure.Domain
-open Web.Telegram.Domain
+open Web.Clients.Domain.Telegram
+open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
-open Web.Telegram.Domain.Producer
 
 type Dependencies =
     { ChatId: ChatId

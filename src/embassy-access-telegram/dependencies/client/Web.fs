@@ -3,39 +3,37 @@ module EA.Telegram.Dependencies.Web
 
 open Infrastructure.Prelude
 open Infrastructure.Domain
-open EA.Telegram.Domain
+open Web.Clients.Domain.Telegram
 
 module Telegram =
-    open Web.Telegram.Domain
-    open Web.Telegram.Domain.Producer
+    open Web.Clients.Telegram
+    open Web.Clients.Domain.Telegram.Producer
 
     type Dependencies =
-        { Client: TelegramClient
+        { Client: Telegram.Client
           sendMessage: Message -> Async<Result<unit, Error'>>
           sendMessageRes: Async<Result<Message, Error'>> -> ChatId -> Async<Result<unit, Error'>>
           sendMessages: Message seq -> Async<Result<unit, Error'>>
           sendMessagesRes: Async<Result<Message seq, Error'>> -> ChatId -> Async<Result<unit, Error'>> }
 
         static member create ct =
-            fun (client: TelegramClient) ->
+            fun (client: Telegram.Client) ->
                 let result = ResultBuilder()
 
                 result {
 
                     let sendMessage message =
-                        client |> Web.Telegram.Producer.produce message ct |> ResultAsync.map ignore
+                        client |> Producer.produce message ct |> ResultAsync.map ignore
 
                     let sendMessageRes messageRes chatId =
-                        client
-                        |> Web.Telegram.Producer.produceResult messageRes chatId ct
-                        |> ResultAsync.map ignore
+                        client |> Producer.produceResult messageRes chatId ct |> ResultAsync.map ignore
 
                     let sendMessages messages =
-                        client |> Web.Telegram.Producer.produceSeq messages ct |> ResultAsync.map ignore
+                        client |> Producer.produceSeq messages ct |> ResultAsync.map ignore
 
                     let sendMessagesRes messagesRes chatId =
                         client
-                        |> Web.Telegram.Producer.produceResultSeq messagesRes chatId ct
+                        |> Producer.produceResultSeq messagesRes chatId ct
                         |> ResultAsync.map ignore
 
                     return
@@ -50,7 +48,7 @@ type Dependencies =
     { Telegram: Telegram.Dependencies }
 
     static member create ct =
-        fun (client: TelegramClient) ->
+        fun (client: Telegram.Client) ->
             let result = ResultBuilder()
 
             result {

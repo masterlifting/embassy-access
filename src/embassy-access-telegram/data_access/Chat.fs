@@ -5,7 +5,7 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence
-open Web.Telegram.Domain
+open Web.Clients.Domain.Telegram
 open EA.Core.Domain
 open EA.Telegram.Domain
 

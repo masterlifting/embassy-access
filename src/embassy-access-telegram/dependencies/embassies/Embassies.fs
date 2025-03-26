@@ -7,7 +7,7 @@ open EA.Core.Domain
 open EA.Telegram.Domain
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Embassies.Russian
-open Web.Telegram.Domain.Producer
+open Web.Clients.Domain.Telegram.Producer
 
 type Dependencies =
     { Chat: Chat

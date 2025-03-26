@@ -3,9 +3,8 @@ module EA.Telegram.Dependencies.Embassies.Russian.Midpass
 
 open System.Threading
 open Infrastructure.Domain
+open Web.Clients.Domain.Telegram.Producer
 open EA.Telegram.Domain
-open EA.Telegram.Dependencies
-open Web.Telegram.Domain.Producer
 
 type Dependencies =
     { Chat: Chat

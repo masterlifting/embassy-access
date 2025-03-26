@@ -3,7 +3,7 @@ module EA.Telegram.Domain.Chat
 
 open Infrastructure.Domain
 open EA.Core.Domain
-open Web.Telegram.Domain
+open Web.Clients.Domain.Telegram
 
 type Chat =
     { Id: ChatId
