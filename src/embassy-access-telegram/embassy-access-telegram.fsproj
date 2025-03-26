@@ -31,17 +31,13 @@
         <Compile Include="dependencies\Culture.fs" />
         <Compile Include="dependencies\Web.fs" />
         <Compile Include="dependencies\Persistence.fs" />
-        <Compile Include="dependencies\consumer\Consumer.fs" />
+        <Compile Include="dependencies\consumer\Client.fs" />
         <Compile Include="dependencies\consumer\Request.fs" />
         <Compile Include="dependencies\consumer\embassies\russian\Russian.fs" />
         <Compile Include="dependencies\consumer\embassies\russian\Midpass.fs" />
         <Compile Include="dependencies\consumer\embassies\russian\Kdmid.fs" />
         <Compile Include="dependencies\consumer\embassies\Embassies.fs" />
         <Compile Include="dependencies\consumer\Users.fs" />
-        <Compile Include="services\culture\payloads\Error.fs" />
-        <Compile Include="services\culture\payloads\Text.fs" />
-        <Compile Include="services\culture\payloads\ButtonsGroup.fs" />
-        <Compile Include="services\culture\Message.fs" />
         <Compile Include="services\culture\Query.fs" />
         <Compile Include="services\culture\Command.fs" />
         <Compile Include="services\embassies\russian\kdmid\Message.fs" />
@@ -58,7 +54,7 @@
         <Compile Include="controllers\embassies\russian\Midpass.fs" />
         <Compile Include="controllers\embassies\russian\Russian.fs" />
         <Compile Include="controllers\Controller.fs" />
-        <Compile Include="Consumer.fs" />
+        <Compile Include="Client.fs" />
     </ItemGroup>
 
     <ItemGroup>

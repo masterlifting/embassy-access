@@ -40,9 +40,11 @@ type Dependencies =
                   Culture = deps.Culture
                   ChatStorage = deps.ChatStorage
                   RequestStorage = deps.RequestStorage
+                  sendMessages = deps.sendMessages
                   sendMessageRes = deps.sendMessageRes
                   sendMessagesRes = deps.sendMessagesRes
                   getEmbassyGraph = deps.getEmbassyGraph
                   getServiceGraph = deps.getServiceGraph
+                  getRequestChats = deps.getRequestChats
                   getChatRequests = getChatRequests }
         }

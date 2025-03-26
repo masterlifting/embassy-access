@@ -96,5 +96,5 @@ let getAppointments requestId =
             | Ready
             | Failed _
             | Completed _ ->
-                deps.getApiService request
+                deps.getApi request
                 |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result))

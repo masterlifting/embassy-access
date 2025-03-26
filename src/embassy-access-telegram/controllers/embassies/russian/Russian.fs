@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Controllers.Consumer.Embassies.Russian.Russian
+module EA.Telegram.Controllers.Embassies.Russian.Russian
 
 open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Embassies.Russian

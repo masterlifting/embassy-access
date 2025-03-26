@@ -7,7 +7,6 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Embassies.Russian
 open EA.Worker.Dependencies
-open EA.Telegram.Dependencies.Producer
 open Worker.Domain
 
 module Kdmid =
@@ -24,13 +23,16 @@ module Kdmid =
 
             result {
                 let! persistenceDeps = Persistence.Dependencies.create cfg
-                let! producerDeps = EA.Worker.Dependencies.Telegram.Producer.create cfg ct
-                let! requestDeps = Request.Dependencies.create () producerDeps
-                let! kdmidDeps = Embassies.Russian.Kdmid.Dependencies.create requestDeps
+                let! tgDeps = EA.Worker.Dependencies.Telegram.Dependencies.create cfg ct
+
+                let notificationDeps: EA.Telegram.Dependencies.Embassies.Russian.Kdmid.Notification.Dependencies =
+                    { translateMessages = tgDeps.Culture.translateSeq
+                      getRequestChats = tgDeps.Persistence.getRequestChats
+                      sendMessages = tgDeps.Web.Telegram.sendMessages }
 
                 let notify notification =
-                    kdmidDeps
-                    |> Services.Producer.Embassies.Russian.Service.Kdmid.sendNotification notification
+                    notificationDeps
+                    |> EA.Telegram.Services.Embassies.Russian.Kdmid.Message.Notification.send notification
                     |> ResultAsync.mapError (_.Message >> Log.critical)
                     |> Async.Ignore
 

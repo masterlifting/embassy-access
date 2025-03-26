@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Consumer
+module EA.Telegram.Dependencies.Client
 
 open System.Threading
 open EA.Telegram.Dependencies

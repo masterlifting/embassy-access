@@ -6,7 +6,6 @@ open EA.Core.Domain
 open EA.Telegram.Domain
 open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian
-open EA.Telegram.Services.Embassies.Russian.Kdmid.
 
 let get embassyId (service: ServiceNode) =
     fun (deps: Russian.Dependencies) ->
@@ -14,23 +13,23 @@ let get embassyId (service: ServiceNode) =
         | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
             deps
             |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Message.Instruction.toCheckAppointments embassyId service)
+            |> ResultAsync.wrap (Kdmid.Message.Instruction.toCheckAppointments embassyId service)
         | [ _; Constants.RUSSIAN_NODE_ID; _; _; "1" ] ->
             deps
             |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Message.Instruction.toStandardSubscribe embassyId service)
+            |> ResultAsync.wrap (Kdmid.Message.Instruction.toStandardSubscribe embassyId service)
         | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "0" ] ->
             deps
             |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Message.Instruction.toFirstAvailableAutoSubscribe embassyId service)
+            |> ResultAsync.wrap (Kdmid.Message.Instruction.toFirstAvailableAutoSubscribe embassyId service)
         | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "1" ] ->
             deps
             |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Message.Instruction.toLastAvailableAutoSubscribe embassyId service)
+            |> ResultAsync.wrap (Kdmid.Message.Instruction.toLastAvailableAutoSubscribe embassyId service)
         | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "2" ] ->
             deps
             |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Message.Instruction.toDateRangeAutoSubscribe embassyId service)
+            |> ResultAsync.wrap (Kdmid.Message.Instruction.toDateRangeAutoSubscribe embassyId service)
         | _ -> service.ShortName |> NotSupported |> Error |> async.Return
 
 let userGet embassyId (service: ServiceNode) =

@@ -10,18 +10,20 @@ open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Embassies
+open Web.Telegram.Domain.Producer
 
 type Dependencies =
     { Chat: Chat
       MessageId: int
       Culture: Culture.Dependencies
       Embassies: Embassies.Dependencies
-      sendMessageRes: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
+      sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
       getUserEmbassies: unit -> Async<Result<string option * EmbassyNode list, Error'>>
       getUserEmbassyChildren: Graph.NodeId -> Async<Result<string option * EmbassyNode list, Error'>>
       getUserEmbassyServices: Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
       getUserEmbassyServiceChildren:
-          Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>> }
+          Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
+      translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>> }
 
     static member create chat (deps: Request.Dependencies) =
         let result = ResultBuilder()
@@ -120,6 +122,8 @@ type Dependencies =
                              |> List.map _.Value)
                             |> Ok))
 
+            let translateMessageRes = deps.Culture.translateRes chat.Culture
+
             return
                 { Chat = chat
                   MessageId = deps.MessageId
@@ -129,5 +133,6 @@ type Dependencies =
                   getUserEmbassies = getUserEmbassies
                   getUserEmbassyServices = getUserEmbassyServices
                   getUserEmbassyChildren = getUserEmbassyChildren
-                  getUserEmbassyServiceChildren = getUserEmbassyServiceChildren }
+                  getUserEmbassyServiceChildren = getUserEmbassyServiceChildren
+                  translateMessageRes = translateMessageRes }
         }

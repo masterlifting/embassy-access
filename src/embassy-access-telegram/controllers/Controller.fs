@@ -1,11 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Controllers.Consumer.Controller
+module EA.Telegram.Controllers.Controller
 
 open EA.Telegram.Endpoints.Request
-open EA.Telegram.Controllers.Consumer.Culture
-open EA.Telegram.Controllers.Consumer.Users
-open EA.Telegram.Controllers.Consumer.Embassies
-open EA.Telegram.Controllers.Consumer.Embassies.Russian
+open EA.Telegram.Controllers.Embassies
+open EA.Telegram.Controllers.Embassies.Russian
 
 let rec respond request =
 

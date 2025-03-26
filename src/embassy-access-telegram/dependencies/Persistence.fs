@@ -10,6 +10,7 @@ open Infrastructure.Prelude
 
 type Dependencies =
     { ChatStorage: Chat.ChatStorage
+      RequestStorage: Request.RequestStorage
       getRequestChats: Request -> Async<Result<Chat list, Error'>>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
@@ -43,6 +44,7 @@ type Dependencies =
 
                 return
                     { ChatStorage = chatStorage
+                      RequestStorage = requestStorage
                       getRequestChats = getRequestChats
                       getEmbassyGraph = getEmbassyGraph
                       getServiceGraph = getServiceGraph }

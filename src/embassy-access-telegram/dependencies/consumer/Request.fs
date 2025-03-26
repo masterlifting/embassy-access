@@ -10,6 +10,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
+open Web.Telegram.Domain.Producer
 
 type Dependencies =
     { ChatId: ChatId
@@ -21,16 +22,16 @@ type Dependencies =
       getRequestChats: Request -> Async<Result<Chat list, Error'>>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+      tryGetChat: unit -> Async<Result<Chat option, Error'>>
       getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
       setCurrentCulture: Culture -> Async<Result<unit, Error'>>
-      tryGetChat: unit -> Async<Result<Chat option, Error'>>
-      sendMessage: Producer.Message -> Async<Result<unit, Error'>>
-      sendMessageRes: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-      sendMessages: Producer.Message seq -> Async<Result<unit, Error'>>
-      sendMessagesRes: Async<Result<Producer.Message seq, Error'>> -> Async<Result<unit, Error'>> }
+      sendMessage: Message -> Async<Result<unit, Error'>>
+      sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
+      sendMessages: Message seq -> Async<Result<unit, Error'>>
+      sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>> }
 
     static member create(payload: Consumer.Payload<_>) =
-        fun (deps: Consumer.Dependencies) ->
+        fun (deps: Client.Dependencies) ->
             let result = ResultBuilder()
 
             result {
@@ -56,7 +57,7 @@ type Dependencies =
                       CancellationToken = deps.CancellationToken
                       Culture = deps.Culture
                       ChatStorage = deps.Persistence.ChatStorage
-                      RequestStorage = requestStorage
+                      RequestStorage = deps.Persistence.RequestStorage
                       getRequestChats = deps.Persistence.getRequestChats
                       getServiceGraph = deps.Persistence.getServiceGraph
                       getEmbassyGraph = deps.Persistence.getEmbassyGraph

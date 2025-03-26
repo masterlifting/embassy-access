@@ -17,13 +17,13 @@ open EA.Embassies.Russian.Kdmid.Dependencies
 module Notification =
 
     type Dependencies =
-        { Culture: Culture.Dependencies
-          getRequestChats: Request -> Async<Result<Chat list, Error'>>
+        { getRequestChats: Request -> Async<Result<Chat list, Error'>>
+          translateMessages: Culture -> Message seq -> Async<Result<Message list, Error'>>
           sendMessages: Message seq -> Async<Result<unit, Error'>> }
 
         static member create() =
             fun (deps: Russian.Dependencies) ->
-                { Culture = deps.Culture
+                { translateMessages = deps.Culture.translateSeq
                   getRequestChats = deps.getRequestChats
                   sendMessages = deps.sendMessages }
 
@@ -31,17 +31,18 @@ type Dependencies =
     { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
-      Culture: Culture.Dependencies
       RequestStorage: Request.RequestStorage
       sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-      sendMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<unit, Error'>>
+      sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
       getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
       getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
       getChatRequests: unit -> Async<Result<Request list, Error'>>
       getRequest: RequestId -> Async<Result<Request, Error'>>
       createRequest: Request -> Async<Result<Request, Error'>>
       deleteRequest: RequestId -> Async<Result<unit, Error'>>
-      getApiService: Request -> Async<Result<Request, Error'>> }
+      getApi: Request -> Async<Result<Request, Error'>>
+      translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
+      translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>> }
 
     static member create(deps: Russian.Dependencies) =
         let result = ResultBuilder()
@@ -90,17 +91,23 @@ type Dependencies =
 
             let apiDeps = Order.Dependencies.create deps.RequestStorage deps.CancellationToken
 
-            let getApiService request =
+            let getApi request =
                 { Request = request
                   Dependencies = apiDeps }
                 |> Kdmid
                 |> API.Service.get
 
+            let translateMessageRes = deps.Culture.translateRes deps.Chat.Culture
+
+            let translateMessagesRes =
+                ResultAsync.map Seq.ofList
+                >> deps.Culture.translateSeqRes deps.Chat.Culture
+                >> ResultAsync.map Seq.ofList
+
             return
                 { Chat = deps.Chat
                   MessageId = deps.MessageId
                   CancellationToken = deps.CancellationToken
-                  Culture = deps.Culture
                   RequestStorage = deps.RequestStorage
                   sendMessageRes = deps.sendMessageRes
                   sendMessagesRes = deps.sendMessagesRes
@@ -110,5 +117,7 @@ type Dependencies =
                   getChatRequests = deps.getChatRequests
                   createRequest = createRequest
                   deleteRequest = deleteRequest
-                  getApiService = getApiService }
+                  getApi = getApi
+                  translateMessageRes = translateMessageRes
+                  translateMessagesRes = translateMessagesRes }
         }

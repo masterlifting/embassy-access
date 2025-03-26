@@ -14,7 +14,6 @@ module Notification =
     open EA.Telegram.Endpoints.Embassies.Russian.Kdmid.Post.Model
 
     open Infrastructure.Prelude
-    open EA.Telegram.Services.Culture
 
     let toSuccessfully (request: EA.Core.Domain.Request.Request, msg: string) =
         fun chatId ->
@@ -86,8 +85,7 @@ module Notification =
     let send notification =
         fun (deps: Kdmid.Notification.Dependencies) ->
 
-            let translate (culture, messages) =
-                deps.Culture |> Message.translateSeq culture messages
+            let translate (culture, messages) = deps.translateMessages culture messages
 
             let spreadMessages data =
                 data

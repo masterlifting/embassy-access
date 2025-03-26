@@ -7,8 +7,8 @@ open EA.Worker.Dependencies
 
 let run (_, cfg, ct) =
     async {
-        Telegram.Consumer.create cfg ct
-        |> ResultAsync.wrap EA.Telegram.Consumer.start
+        Telegram.Dependencies.create cfg ct
+        |> ResultAsync.wrap EA.Telegram.Client.listen
         |> ResultAsync.mapError (_.Message >> Log.critical)
         |> Async.Ignore
         |> Async.Start

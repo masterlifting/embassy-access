@@ -3,20 +3,20 @@ module EA.Telegram.Dependencies.Embassies.Russian.Midpass
 
 open System.Threading
 open Infrastructure.Domain
-open Web.Telegram.Domain
 open EA.Telegram.Domain
 open EA.Telegram.Dependencies
+open Web.Telegram.Domain.Producer
 
 type Dependencies =
     { Chat: Chat
       MessageId: int
       CancellationToken: CancellationToken
-      Culture: Culture.Dependencies
-      sendMessageRes: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>> }
+      translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
+      sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>> }
 
     static member create(deps: Russian.Dependencies) =
         { Chat = deps.Chat
           MessageId = deps.MessageId
           CancellationToken = deps.CancellationToken
-          Culture = deps.Culture
+          translateMessageRes = deps.Culture.translateRes deps.Chat.Culture
           sendMessageRes = deps.sendMessageRes }

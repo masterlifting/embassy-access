@@ -83,7 +83,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                     | Ready
                     | Failed _
                     | Completed _ ->
-                        deps.getApiService request
+                        deps.getApi request
                         |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result)
                 | None ->
                     resultAsync {
@@ -103,7 +103,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                             |> ResultAsync.wrap deps.createRequest
 
                         return
-                            deps.getApiService request
+                            deps.getApi request
                             |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result)
                     }
         }
@@ -125,7 +125,7 @@ let confirmAppointment (model: Kdmid.Post.Model.ConfirmAppointment) =
     fun (deps: Kdmid.Dependencies) ->
         deps.getRequest model.RequestId
         |> ResultAsync.bindAsync (fun request ->
-            deps.getApiService
+            deps.getApi
                 { request with
                     ConfirmationState = ConfirmationState.Manual model.AppointmentId })
         |> ResultAsync.bind (fun r -> deps.Chat.Id |> Message.Notification.create r)

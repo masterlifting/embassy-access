@@ -36,7 +36,7 @@ let private toUserEmbassyServicesResponse chatId messageId buttonGroupName embas
     |> createMessage chatId messageId buttonGroupName
 
 module internal Query =
-    open EA.Telegram.Services.Consumer
+    open EA.Telegram.Services
 
     let getUserEmbassies () =
         fun (deps: Users.Dependencies) ->

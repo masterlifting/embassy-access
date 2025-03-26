@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Controllers.Consumer.Culture.Culture
+module EA.Telegram.Controllers.Culture
 
 open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Culture

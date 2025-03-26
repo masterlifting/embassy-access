@@ -1,4 +1,5 @@
-﻿module EA.Telegram.Consumer
+﻿[<RequireQualifiedAccess>]
+module EA.Telegram.Client
 
 open System
 open Infrastructure.Domain
@@ -6,7 +7,7 @@ open Infrastructure.Prelude
 open Web.Telegram.Domain.Consumer
 open EA.Telegram.Endpoints.Request
 open EA.Telegram.Dependencies
-open EA.Telegram.Controllers.Consumer
+open EA.Telegram.Controllers
 
 let private respond payload =
     fun deps ->
@@ -17,7 +18,7 @@ let private respond payload =
             |> ResultAsync.wrap (fun request -> deps |> Controller.respond request))
         |> ResultAsync.mapError (fun error -> error.extendMsg $"{payload.ChatId}")
 
-let consume data =
+let private consume data =
     fun deps ->
         match data with
         | Message msg ->
@@ -27,7 +28,7 @@ let consume data =
         | CallbackQuery payload -> deps |> respond payload
         | _ -> $"Telegram '%A{data}'" |> NotSupported |> Error |> async.Return
 
-let start (deps: Consumer.Dependencies) =
+let listen (deps: Client.Dependencies) =
     let handler = fun data -> consume data deps
     let consumer = Web.Client.Consumer.Telegram(deps.Web.Telegram.Client, handler)
     Web.Client.consume consumer deps.CancellationToken

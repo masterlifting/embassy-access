@@ -17,12 +17,10 @@ module Telegram =
           sendMessagesRes: Async<Result<Message seq, Error'>> -> ChatId -> Async<Result<unit, Error'>> }
 
         static member create ct =
-            fun (initClient: unit -> Result<TelegramClient, Error'>) ->
+            fun (client: TelegramClient) ->
                 let result = ResultBuilder()
 
                 result {
-
-                    let! client = initClient ()
 
                     let sendMessage message =
                         client |> Web.Telegram.Producer.produce message ct |> ResultAsync.map ignore
@@ -52,12 +50,12 @@ type Dependencies =
     { Telegram: Telegram.Dependencies }
 
     static member create ct =
-        fun (initClient: unit -> Result<TelegramClient, Error'>) ->
+        fun (client: TelegramClient) ->
             let result = ResultBuilder()
 
             result {
 
-                let! telegramDeps = Telegram.Dependencies.create ct initClient
+                let! telegramDeps = Telegram.Dependencies.create ct client
 
                 return { Telegram = telegramDeps }
             }
