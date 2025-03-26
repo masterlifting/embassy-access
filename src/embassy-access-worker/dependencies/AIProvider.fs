@@ -4,7 +4,7 @@ module internal EA.Worker.Dependencies.AIProvider
 open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open AIProvider.Domain
+open AIProvider.Clients.Domain.OpenAI
 open EA.Worker.Domain.Constants
 
 type Dependencies =

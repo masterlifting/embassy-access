@@ -6,7 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="domain\Aliases.fs" />
         <Compile Include="domain\Constants.fs" />
         <Compile Include="domain\Chat.fs" />
         <Compile Include="data_access\Chat.fs" />

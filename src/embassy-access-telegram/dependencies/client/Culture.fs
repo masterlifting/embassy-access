@@ -3,10 +3,10 @@ module EA.Telegram.Dependencies.Culture
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open AIProvider.Services
 open AIProvider.Services.Domain
 open AIProvider.Services.DataAccess
 open AIProvider.Services.Dependencies
-open AIProvider.Services
 open Web.Clients.Domain.Telegram.Producer
 
 module private Payload =
@@ -98,7 +98,7 @@ type Dependencies =
             let placeholder = Placeholder.create ''' '''
 
             let translate request =
-                deps |> AIProvider.Services.Culture.Service.translate request ct
+                deps |> Culture.Service.translate request ct
 
             let translateError culture error =
                 (translate, placeholder)
