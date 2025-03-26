@@ -1,12 +1,13 @@
-﻿module EA.Telegram.Endpoints.Culture.Request
+﻿[<RequireQualifiedAccess>]
+module EA.Telegram.Router.Culture.Method
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Endpoints.Culture
+open EA.Telegram.Router.Culture
 
-type Request =
-    | Get of Get.Request
-    | Post of Post.Request
+type Method =
+    | Get of Get.Route
+    | Post of Post.Route
 
     member this.Value =
         match this with
@@ -19,6 +20,6 @@ type Request =
         let remaining = parts[1..] |> String.concat Constants.Endpoint.DELIMITER
 
         match parts[0] with
-        | "0" -> remaining |> Get.Request.parse |> Result.map Get
-        | "1" -> remaining |> Post.Request.parse |> Result.map Post
+        | "0" -> remaining |> Get.Route.parse |> Result.map Get
+        | "1" -> remaining |> Post.Route.parse |> Result.map Post
         | _ -> $"'{input}' of Culture endpoint" |> NotSupported |> Error

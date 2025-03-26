@@ -5,7 +5,7 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Telegram.Domain.Consumer
-open EA.Telegram.Endpoints.Request
+open EA.Telegram.Router
 open EA.Telegram.Dependencies
 open EA.Telegram.Controllers
 
@@ -14,7 +14,7 @@ let private respond payload =
         deps
         |> Request.Dependencies.create payload
         |> ResultAsync.wrap (fun deps ->
-            Request.parse payload.Value
+            Router.Route.parse payload.Value
             |> ResultAsync.wrap (fun request -> deps |> Controller.respond request))
         |> ResultAsync.mapError (fun error -> error.extendMsg $"{payload.ChatId}")
 

@@ -1,10 +1,10 @@
-﻿module EA.Telegram.Endpoints.Embassies.Russian.Kdmid.Delete
+﻿module EA.Telegram.Router.Embassies.Russian.Kdmid.Delete
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
 open EA.Core.Domain
 
-type Request =
+type Route =
     | Subscription of RequestId
 
     member this.Value =

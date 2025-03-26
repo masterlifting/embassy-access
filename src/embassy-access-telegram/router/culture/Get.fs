@@ -1,9 +1,9 @@
-﻿module EA.Telegram.Endpoints.Culture.Get
+﻿module EA.Telegram.Router.Culture.Get
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
 
-type Request =
+type Route =
     | Cultures
 
     member this.Value =

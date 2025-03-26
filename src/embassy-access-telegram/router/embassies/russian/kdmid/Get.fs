@@ -1,10 +1,10 @@
-﻿module EA.Telegram.Endpoints.Embassies.Russian.Kdmid.Get
+﻿module EA.Telegram.Router.Embassies.Russian.Kdmid.Get
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
 open EA.Core.Domain
 
-type Request =
+type Route =
     | Appointments of RequestId
     | SubscriptionsMenu of RequestId
 

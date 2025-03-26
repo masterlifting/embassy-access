@@ -1,13 +1,14 @@
-﻿module EA.Telegram.Endpoints.Embassies.Russian.Request
+﻿[<RequireQualifiedAccess>]
+module EA.Telegram.Router.Embassies.Russian.Method
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Endpoints.Embassies.Russian
+open EA.Telegram.Router.Embassies.Russian
 
-type Request =
-    | Get of Get.Request
-    | Post of Post.Request
-    | Delete of Delete.Request
+type Method =
+    | Get of Get.Route
+    | Post of Post.Route
+    | Delete of Delete.Route
 
     member this.Value =
         match this with
@@ -21,7 +22,7 @@ type Request =
         let remaining = parts[1..] |> String.concat Constants.Endpoint.DELIMITER
 
         match parts[0] with
-        | "0" -> remaining |> Get.Request.parse |> Result.map Get
-        | "1" -> remaining |> Post.Request.parse |> Result.map Post
-        | "2" -> remaining |> Delete.Request.parse |> Result.map Delete
+        | "0" -> remaining |> Get.Route.parse |> Result.map Get
+        | "1" -> remaining |> Post.Route.parse |> Result.map Post
+        | "2" -> remaining |> Delete.Route.parse |> Result.map Delete
         | _ -> $"'{input}' of Embassies.Russian endpoint" |> NotSupported |> Error

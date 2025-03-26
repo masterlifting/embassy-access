@@ -2,7 +2,7 @@
 module EA.Telegram.Controllers.Embassies.Russian.Kdmid
 
 open Infrastructure.Prelude
-open EA.Telegram.Endpoints.Embassies.Russian.Kdmid
+open EA.Telegram.Router.Embassies.Russian.Kdmid
 open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian.Kdmid
 

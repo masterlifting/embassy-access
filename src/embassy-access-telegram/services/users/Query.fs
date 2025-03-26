@@ -4,9 +4,8 @@ open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
-open EA.Telegram.Endpoints
-open EA.Telegram.Endpoints.Users
-open EA.Telegram.Endpoints.Users.Request
+open EA.Telegram.Router
+open EA.Telegram.Router.Users
 open EA.Telegram.Dependencies
 open EA.Telegram.Services
 
@@ -27,13 +26,13 @@ let private createMessage chatId msgIdOpt nameOpt data =
 
 let private toUserEmbassiesResponse chatId messageId buttonGroupName (embassies: EmbassyNode seq) =
     embassies
-    |> Seq.map (fun embassy -> Request.Users(Get(Get.UserEmbassy(embassy.Id))).Value, embassy.ShortName)
+    |> Seq.map (fun embassy -> Router.Users(Method.Get(Get.UserEmbassy(embassy.Id))).Value, embassy.ShortName)
     |> createMessage chatId messageId buttonGroupName
 
 let private toUserEmbassyServicesResponse chatId messageId buttonGroupName embassyId (services: ServiceNode seq) =
     services
     |> Seq.map (fun service ->
-        Request.Users(Get(Get.UserEmbassyService(embassyId, service.Id))).Value, service.ShortName)
+        Router.Users(Method.Get(Get.UserEmbassyService(embassyId, service.Id))).Value, service.ShortName)
     |> createMessage chatId messageId buttonGroupName
 
 let getUserEmbassies () =

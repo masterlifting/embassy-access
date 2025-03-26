@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Endpoints.Culture.Post
+﻿module EA.Telegram.Router.Culture.Post
 
 open Infrastructure.Domain
 
@@ -6,7 +6,7 @@ open Infrastructure.Domain
 [<Literal>]
 let DELIMITER = "'"
 
-type Request =
+type Route =
     | SetCulture of Culture
     | SetCultureCallback of string * Culture
 

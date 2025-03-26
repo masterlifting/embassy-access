@@ -1,7 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Controllers.Embassies.Russian.Midpass
 
-open EA.Telegram.Endpoints.Embassies.Russian.Midpass
+open EA.Telegram.Router.Embassies.Russian.Midpass
 open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian.Midpass
 

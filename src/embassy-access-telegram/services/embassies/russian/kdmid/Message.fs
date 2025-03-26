@@ -9,9 +9,9 @@ open EA.Embassies.Russian.Kdmid.Domain
 open EA.Telegram.Dependencies.Embassies.Russian
 
 module Notification =
-    open EA.Telegram.Endpoints.Request
-    open EA.Telegram.Endpoints.Embassies.Russian
-    open EA.Telegram.Endpoints.Embassies.Russian.Kdmid.Post.Model
+    open EA.Telegram.Router
+    open EA.Telegram.Router.Embassies.Russian
+    open EA.Telegram.Router.Embassies.Russian.Kdmid.Post.Model
 
     open Infrastructure.Prelude
 
@@ -36,8 +36,8 @@ module Notification =
                           AppointmentId = appointment.Id }
                         |> Kdmid.Post.ConfirmAppointment
                         |> Post.Kdmid
-                        |> Request.Post
-                        |> RussianEmbassy
+                        |> Method.Post
+                        |> Router.RussianEmbassy
 
                     route.Value, appointment.Description)
                 |> fun data ->
@@ -130,9 +130,9 @@ module Instruction =
     open System
     open Infrastructure.Prelude
     open EA.Embassies.Russian
-    open EA.Telegram.Endpoints.Request
-    open EA.Telegram.Endpoints.Embassies.Russian
-    open EA.Telegram.Endpoints.Embassies.Russian.Kdmid.Post.Model
+    open EA.Telegram.Router
+    open EA.Telegram.Router.Embassies.Russian
+    open EA.Telegram.Router.Embassies.Russian.Kdmid.Post.Model
 
     let private toResponse instruction route =
         fun (chatId, messageId) ->
@@ -153,8 +153,8 @@ module Instruction =
                   Payload = "The link should be inserted here" }
                 |> Kdmid.Post.Subscribe
                 |> Post.Kdmid
-                |> Request.Post
-                |> RussianEmbassy
+                |> Method.Post
+                |> Router.RussianEmbassy
 
             (chatId, messageId)
             |> toResponse service.Instruction request.Value
@@ -169,8 +169,8 @@ module Instruction =
                   Payload = "The link should be inserted here" }
                 |> Kdmid.Post.CheckAppointments
                 |> Post.Kdmid
-                |> Request.Post
-                |> RussianEmbassy
+                |> Method.Post
+                |> Router.RussianEmbassy
 
             (deps.Chat.Id, deps.MessageId)
             |> toResponse service.Instruction request.Value

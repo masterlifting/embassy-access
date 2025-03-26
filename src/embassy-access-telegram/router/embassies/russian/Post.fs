@@ -1,11 +1,11 @@
-﻿module EA.Telegram.Endpoints.Embassies.Russian.Post
+﻿module EA.Telegram.Router.Embassies.Russian.Post
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Endpoints.Embassies.Russian
+open EA.Telegram.Router.Embassies.Russian
 
-type Request =
-    | Kdmid of Kdmid.Post.Request
+type Route =
+    | Kdmid of Kdmid.Post.Route
 
     member this.Value =
         match this with
@@ -17,5 +17,5 @@ type Request =
         let remaining = parts[1..] |> String.concat Constants.Endpoint.DELIMITER
 
         match parts[0] with
-        | "0" -> remaining |> Kdmid.Post.Request.parse |> Result.map Kdmid
+        | "0" -> remaining |> Kdmid.Post.Route.parse |> Result.map Kdmid
         | _ -> $"'{parts}' of Embassies.Russian.Post endpoint" |> NotSupported |> Error

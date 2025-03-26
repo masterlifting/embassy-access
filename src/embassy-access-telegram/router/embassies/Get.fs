@@ -1,9 +1,9 @@
-﻿module EA.Telegram.Endpoints.Embassies.Get
+﻿module EA.Telegram.Router.Embassies.Get
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
 
-type Request =
+type Route =
     | Embassies
     | Embassy of Graph.NodeId
     | EmbassyServices of Graph.NodeId

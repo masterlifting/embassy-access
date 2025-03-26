@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Endpoints.Embassies.Russian.Kdmid.Post
+﻿module EA.Telegram.Router.Embassies.Russian.Kdmid.Post
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -28,7 +28,7 @@ module Model =
 
 open Model
 
-type Request =
+type Route =
     | Subscribe of Subscribe
     | CheckAppointments of CheckAppointments
     | SendAppointments of SendAppointments

@@ -5,8 +5,8 @@ open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
 open EA.Core.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Endpoints.Request
-open EA.Telegram.Endpoints.Embassies.Russian
+open EA.Telegram.Router
+open EA.Telegram.Router.Embassies.Russian
 open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian.Kdmid
 open EA.Embassies.Russian.Kdmid.Domain
@@ -16,15 +16,15 @@ let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
         request.Id
         |> Kdmid.Get.Appointments
         |> Get.Kdmid
-        |> Request.Get
-        |> RussianEmbassy
+        |> Method.Get
+        |> Router.RussianEmbassy
 
     let deleteRoute =
         request.Id
         |> Kdmid.Delete.Subscription
         |> Delete.Kdmid
-        |> Request.Delete
-        |> RussianEmbassy
+        |> Method.Delete
+        |> Router.RussianEmbassy
 
     match request.Service.Id.Split() with
     | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
@@ -43,8 +43,8 @@ let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
                 request.Id
                 |> Kdmid.Get.SubscriptionsMenu
                 |> Get.Kdmid
-                |> Request.Get
-                |> RussianEmbassy
+                |> Method.Get
+                |> Router.RussianEmbassy
 
             request.Service.Payload
             |> Payload.toValue

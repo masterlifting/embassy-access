@@ -1,12 +1,12 @@
-﻿module EA.Telegram.Endpoints.Embassies.Russian.Get
+﻿module EA.Telegram.Router.Embassies.Russian.Get
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Endpoints.Embassies.Russian
+open EA.Telegram.Router.Embassies.Russian
 
-type Request =
-    | Kdmid of Kdmid.Get.Request
-    | Midpass of Midpass.Get.Request
+type Route =
+    | Kdmid of Kdmid.Get.Route
+    | Midpass of Midpass.Get.Route
 
     member this.Value =
         match this with
@@ -19,6 +19,6 @@ type Request =
         let remaining = parts[1..] |> String.concat Constants.Endpoint.DELIMITER
 
         match parts[0] with
-        | "0" -> remaining |> Kdmid.Get.Request.parse |> Result.map Kdmid
-        | "1" -> remaining |> Midpass.Get.Request.parse |> Result.map Midpass
+        | "0" -> remaining |> Kdmid.Get.Route.parse |> Result.map Kdmid
+        | "1" -> remaining |> Midpass.Get.Route.parse |> Result.map Midpass
         | _ -> $"'{parts}' of Embassies.Russian.Get endpoint" |> NotSupported |> Error

@@ -3,8 +3,8 @@
 open Infrastructure.Prelude
 open Web.Telegram.Producer
 open Web.Telegram.Domain.Producer
-open EA.Telegram.Endpoints.Request
-open EA.Telegram.Endpoints.Culture
+open EA.Telegram.Router
+open EA.Telegram.Router.Culture
 open EA.Telegram.Dependencies
 
 let private createMessage chatId msgIdOpt nameOpt data =
@@ -27,7 +27,7 @@ let getCultures () =
         deps.getAvailableCultures ()
         |> ResultAsync.map (
             Seq.map (fun culture ->
-                let route = culture.Key |> Post.SetCulture |> Request.Post |> Culture
+                let route = culture.Key |> Post.SetCulture |> Method.Post |> Router.Culture
                 let name = culture.Value
 
                 route.Value, name)
@@ -40,7 +40,10 @@ let getCulturesCallback callback =
         |> ResultAsync.map (
             Seq.map (fun culture ->
                 let route =
-                    (callback, culture.Key) |> Post.SetCultureCallback |> Request.Post |> Culture
+                    (callback, culture.Key)
+                    |> Post.SetCultureCallback
+                    |> Method.Post
+                    |> Router.Culture
 
                 let name = culture.Value
 

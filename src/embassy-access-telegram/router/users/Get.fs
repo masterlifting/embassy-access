@@ -1,9 +1,9 @@
-﻿module EA.Telegram.Endpoints.Users.Get
+﻿module EA.Telegram.Router.Users.Get
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
 
-type Request =
+type Route =
     | UserEmbassies
     | UserEmbassy of embassyId: Graph.NodeId
     | UserEmbassyServices of embassyId: Graph.NodeId

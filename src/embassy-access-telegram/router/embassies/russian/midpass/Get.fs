@@ -1,9 +1,9 @@
-﻿module EA.Telegram.Endpoints.Embassies.Russian.Midpass.Get
+﻿module EA.Telegram.Router.Embassies.Russian.Midpass.Get
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
 
-type Request =
+type Route =
     | Status of string
 
     member this.Value =

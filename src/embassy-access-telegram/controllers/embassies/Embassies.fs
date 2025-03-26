@@ -2,8 +2,7 @@
 module EA.Telegram.Controllers.Embassies.Embassies
 
 open Infrastructure.Prelude
-open EA.Telegram.Endpoints.Embassies
-open EA.Telegram.Endpoints.Embassies.Request
+open EA.Telegram.Router.Embassies
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Embassies
 open EA.Telegram.Services.Embassies
@@ -13,7 +12,7 @@ let respond request chat =
         Embassies.Dependencies.create chat deps
         |> ResultAsync.wrap (fun deps ->
             match request with
-            | Get get ->
+            | Method.Get get ->
                 match get with
                 | Get.Embassies -> Query.getEmbassies ()
                 | Get.Embassy embassyId -> Query.getEmbassy embassyId
