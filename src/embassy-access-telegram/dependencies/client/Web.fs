@@ -3,7 +3,7 @@ module EA.Telegram.Dependencies.Web
 
 open Infrastructure.Prelude
 open Infrastructure.Domain
-open Web.Clients.Domain.Telegram
+open Web.Clients.Domain
 
 module Telegram =
     open Web.Clients.Telegram

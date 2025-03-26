@@ -5,7 +5,7 @@ open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients
-open Web.Clients.Domain.Telegram
+open Web.Clients.Domain
 open EA.Worker.Domain.Constants
 
 type Dependencies =
