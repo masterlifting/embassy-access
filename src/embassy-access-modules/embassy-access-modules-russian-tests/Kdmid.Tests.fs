@@ -9,7 +9,7 @@ open EA.Embassies.Russian.Domain
 open EA.Embassies.Russian.Kdmid.Domain
 
 module private Fixture =
-    open Web.Http.Domain.Response
+    open Web.Clients.Domain.Http
     open Persistence.FileSystem
     open EA.Embassies.Russian.Kdmid.Dependencies
 

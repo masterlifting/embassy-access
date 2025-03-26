@@ -36,7 +36,7 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
 
                         let! request =
                             model.Payload
-                            |> Web.Http.Route.toUri
+                            |> Web.Clients.Http.Route.toUri
                             |> Result.map (fun uri ->
                                 { Uri = uri
                                   Service = service
@@ -92,7 +92,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
 
                         let! request =
                             model.Payload
-                            |> Web.Http.Route.toUri
+                            |> Web.Clients.Http.Route.toUri
                             |> Result.map (fun uri ->
                                 { Uri = uri
                                   Service = service

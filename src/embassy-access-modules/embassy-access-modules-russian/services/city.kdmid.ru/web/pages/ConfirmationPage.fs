@@ -4,7 +4,7 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
-open Web.Http.Domain
+open Web.Clients.Domain.Http
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Dependencies

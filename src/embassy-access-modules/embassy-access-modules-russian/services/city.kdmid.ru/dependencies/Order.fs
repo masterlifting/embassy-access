@@ -4,7 +4,7 @@ module EA.Embassies.Russian.Kdmid.Dependencies.Order
 open System
 open Infrastructure.Domain
 open Web.Clients
-open Web.Clients.Domain.Http
+open Web.Clients.Domain
 
 type Dependencies =
     { RestartAttempts: int
@@ -19,10 +19,8 @@ type Dependencies =
     static member create requestStorage ct =
         { RestartAttempts = 3
           updateRequest = fun request -> requestStorage |> EA.Core.DataAccess.Request.Command.update request
-          getInitialPage =
-            fun request client -> client |> Http.Request.get request ct |> Http.Response.String.read ct
-          getCaptcha =
-            fun request client -> client |> Http.Request.get request ct |> Http.Response.Bytes.read ct
+          getInitialPage = fun request client -> client |> Http.Request.get request ct |> Http.Response.String.read ct
+          getCaptcha = fun request client -> client |> Http.Request.get request ct |> Http.Response.Bytes.read ct
           solveIntCaptcha = Web.Captcha.solveToInt ct
           postValidationPage =
             fun request content client ->
