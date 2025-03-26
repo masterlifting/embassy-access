@@ -6,7 +6,7 @@ open EA.Telegram.Endpoints.Embassies
 open EA.Telegram.Endpoints.Embassies.Request
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Embassies
-open EA.Telegram.Services.Embassies.Service
+open EA.Telegram.Services.Embassies
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->

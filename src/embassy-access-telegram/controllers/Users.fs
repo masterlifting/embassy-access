@@ -5,7 +5,7 @@ open Infrastructure.Prelude
 open EA.Telegram.Endpoints.Users
 open EA.Telegram.Endpoints.Users.Request
 open EA.Telegram.Dependencies
-open EA.Telegram.Services.Users.Service
+open EA.Telegram.Services.Users
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->

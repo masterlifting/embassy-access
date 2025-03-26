@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Embassies.Russian.Service
+﻿module EA.Telegram.Services.Embassies.Russian.Query
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
