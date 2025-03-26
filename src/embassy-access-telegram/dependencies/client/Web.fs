@@ -7,6 +7,7 @@ open Web.Clients.Domain
 
 module Telegram =
     open Web.Clients.Telegram
+    open Web.Clients.Domain.Telegram
     open Web.Clients.Domain.Telegram.Producer
 
     type Dependencies =
