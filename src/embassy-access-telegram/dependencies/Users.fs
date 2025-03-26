@@ -3,7 +3,6 @@ module EA.Telegram.Dependencies.Users
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Telegram.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
