@@ -2,10 +2,10 @@
 
 Logging:
   LogLevel:
-    Default: Information
+    Default: Debug
 
 Persistence:
-  FileSystem: /usr/src/embassy-access-data
+  FileSystem: ../../../data
 
 SearchAppointments: &SearchAppointments
   - Id: SA
@@ -25,12 +25,12 @@ Worker:
       Name: Russian
       Parallel: true
       Schedule:
-        Workdays: mon,tue,wed,thu,fri
+        Workdays: mon,tue,wed,thu,fri,sat
       Tasks:
         - Id: SRB
           Name: Serbia
           Parallel: true
-          Recursively: 00:30:00
+          Recursively: 00:01:00
           Tasks:
             - Id: BEG
               Name: Belgrade
@@ -40,13 +40,12 @@ Worker:
                   Enabled: true
                   Duration: 00:01:00
               Schedule:
-                StartTime: 08:30:00
-                StopTime: 17:00:00
+                StartTime: 00:55:00
+                StopTime: 16:55:20
                 TimeZone: 1
         - Id: DEU
           Name: Germany
           Parallel: true
-          Recursively: 00:30:00
           Tasks:
             - Id: BER
               Name: Berlin
@@ -56,8 +55,6 @@ Worker:
                   Enabled: false
                   Duration: 00:01:00
               Schedule:
-                StartTime: 08:30:00
-                StopTime: 17:00:00
                 TimeZone: 1
         - Id: FRA
           Name: France
@@ -447,11 +444,11 @@ KdmidRussianServices: &KdmidRussianServices
 Services:
   Id: SRV
   Name: Services
-  Description: Choose embassy service
+  Description: Choose the service you need
   Children:
     - Id: RUS
       Name: Russian Embassy
-      Description: Choose Russian service
+      Description: Choose the service of the Russian Embassy
       Children:
         - Id: "0"
           Name: Passport
