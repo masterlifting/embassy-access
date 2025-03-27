@@ -6,13 +6,9 @@ open Worker.Domain
 open EA.Worker.Dependencies
 
 let run (_, cfg, ct) =
-    let inline startTelegramBotConsumer client =
-        EA.Telegram.Consumer.start client cfg ct
-
     async {
-        Web.Dependencies.create ()
-        |> Result.bind _.initTelegramClient()
-        |> ResultAsync.wrap startTelegramBotConsumer
+        Telegram.Dependencies.create cfg ct
+        |> ResultAsync.wrap EA.Telegram.Client.listen
         |> ResultAsync.mapError (_.Message >> Log.critical)
         |> Async.Ignore
         |> Async.Start

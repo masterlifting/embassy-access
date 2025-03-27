@@ -11,6 +11,9 @@
         <Compile Include="domain\RouteNode.fs" />
         <Compile Include="dependencies\Web.fs" />
         <Compile Include="dependencies\Persistence.fs" />
+        <Compile Include="dependencies\AIProvider.fs" />
+        <Compile Include="dependencies\Culture.fs" />
+        <Compile Include="dependencies\embassy-access-telegram\Telegram.fs" />
         <Compile Include="dependencies\embassies\Russian.fs" />
         <Compile Include="embassies\Russian.fs"/>
         <Compile Include="Initializer.fs"/>
@@ -27,6 +30,7 @@
         </Content>
         <Content Include="data\Chats.json" />
         <Content Include="data\Requests.json" />
+        <Content Include="data\Culture.json" />
     </ItemGroup>
 
     <ItemGroup>

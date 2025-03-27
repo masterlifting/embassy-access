@@ -7,7 +7,6 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Embassies.Russian
 open EA.Worker.Dependencies
-open EA.Telegram.Dependencies.Producer
 open Worker.Domain
 
 module Kdmid =
@@ -19,33 +18,26 @@ module Kdmid =
         { getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
           pickOrder: Request list -> Async<Result<Request, Error' list>> }
 
-        static member create
-            ct
-            (task: WorkerTask)
-            (persistenceDeps: Persistence.Dependencies)
-            (webDeps: Web.Dependencies)
-            =
+        static member create (task: WorkerTask) cfg ct =
             let result = ResultBuilder()
 
             result {
-                let! requestStorage = persistenceDeps.initRequestStorage ()
+                let! persistenceDeps = Persistence.Dependencies.create cfg
+                let! tgDeps = EA.Worker.Dependencies.Telegram.Dependencies.create cfg ct
 
-                let telegramProducerDeps: Producer.Dependencies =
-                    { CancellationToken = ct
-                      initTelegramClient = webDeps.initTelegramClient
-                      initChatStorage = persistenceDeps.initChatStorage
-                      initRequestStorage = fun _ -> requestStorage |> Ok }
-
-                let! telegramProducerKdmidDeps = Embassies.Russian.Kdmid.Dependencies.create telegramProducerDeps
+                let notificationDeps: EA.Telegram.Dependencies.Embassies.Russian.Kdmid.Notification.Dependencies =
+                    { translateMessages = tgDeps.Culture.translateSeq
+                      getRequestChats = tgDeps.Persistence.getRequestChats
+                      sendMessages = tgDeps.Web.Telegram.sendMessages }
 
                 let notify notification =
-                    telegramProducerKdmidDeps
-                    |> Services.Producer.Embassies.Russian.Service.Kdmid.sendNotification notification
+                    notificationDeps
+                    |> EA.Telegram.Services.Embassies.Russian.Kdmid.Message.Notification.send notification
                     |> ResultAsync.mapError (_.Message >> Log.critical)
                     |> Async.Ignore
 
                 let getRequests embassyId =
-                    requestStorage
+                    persistenceDeps.RequestStorage
                     |> Request.Query.findManyByEmbassyId embassyId
                     |> ResultAsync.map (
                         List.filter (fun request ->
@@ -56,7 +48,7 @@ module Kdmid =
                     )
 
                 let pickOrder requests =
-                    (requestStorage, ct)
+                    (persistenceDeps.RequestStorage, ct)
                     ||> Order.Dependencies.create
                     |> API.Order.Kdmid.pick requests notify
 

@@ -3,12 +3,14 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Core.Domain
 open Persistence
+open Persistence.Storages
+open Persistence.Storages.Domain
+open EA.Core.Domain
 
-type ServiceGraphStorage = ServiceGraphStorage of Storage.Type
+type ServiceGraphStorage = ServiceGraphStorage of Storage.Provider
 
-type StorageType = Configuration of Configuration.Domain.Client
+type StorageType = Configuration of Configuration.Connection
 
 type ServiceGraphEntity() =
     member val Id: string = String.Empty with get, set
@@ -35,12 +37,12 @@ type ServiceGraphEntity() =
                 )))
 
 module private Configuration =
-    open Persistence.Configuration
+    open Persistence.Storages.Configuration
 
-    let private loadData = Query.get<ServiceGraphEntity>
+    let private loadData = Read.section<ServiceGraphEntity>
 
-    let get section client =
-        client |> loadData section |> Result.bind _.ToDomain() |> async.Return
+    let get client =
+        client |> loadData |> Result.bind _.ToDomain() |> async.Return
 
 let private toPersistenceStorage storage =
     storage
@@ -57,5 +59,5 @@ let init storageType =
 
 let get storage =
     match storage |> toPersistenceStorage with
-    | Storage.Configuration client -> client.Configuration |> Configuration.get client.SectionName
-    | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+    | Storage.Configuration client -> client |> Configuration.get
+    | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return

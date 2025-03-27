@@ -17,7 +17,7 @@ type RequestId =
     static member create value =
         match value with
         | AP.IsGuid id -> RequestId id |> Ok
-        | _ -> $"RequestId value: {value}" |> NotSupported |> Error
+        | _ -> $"RequestId value '{value}'" |> NotSupported |> Error
 
     static member New = RequestId <| Guid.NewGuid()
 

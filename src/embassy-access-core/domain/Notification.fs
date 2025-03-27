@@ -4,7 +4,7 @@ module EA.Core.Domain.Notification
 open Infrastructure.Domain
 
 type Notification =
-    | Successfully of Request * string
+    | Empty of Request * string
     | Unsuccessfully of Request * Error'
     | HasAppointments of Request * Set<Appointment>
     | HasConfirmations of Request * Set<Confirmation>
@@ -20,7 +20,7 @@ type Notification =
             match request.ProcessState with
             | Completed msg ->
                 match request.Appointments.IsEmpty with
-                | true -> Successfully(request, msg) |> Some
+                | true -> Empty(request, msg) |> Some
                 | false ->
                     match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
                     | [] -> (request, request.Appointments) |> HasAppointments |> Some

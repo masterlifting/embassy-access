@@ -19,7 +19,7 @@ type SubscriptionStateEntity() =
         | MANUAL -> SubscriptionState.Manual |> Ok
         | AUTO -> SubscriptionState.Auto |> Ok
         | _ ->
-            $"The %s{this.Type} of {nameof SubscriptionStateEntity}"
+            $"The '%s{this.Type}' of '{nameof SubscriptionStateEntity}'"
             |> NotSupported
             |> Error
 

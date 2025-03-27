@@ -17,7 +17,7 @@ type AppointmentId =
     static member create value =
         match value with
         | AP.IsGuid id -> AppointmentId id |> Ok
-        | _ -> $"AppointmentId value: {value}" |> NotSupported |> Error
+        | _ -> $"AppointmentId value '{value}'" |> NotSupported |> Error
 
     static member New = AppointmentId <| Guid.NewGuid()
 

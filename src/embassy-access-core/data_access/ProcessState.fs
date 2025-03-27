@@ -38,9 +38,12 @@ type ProcessStateEntity() =
         | FAILED ->
             match this.Error with
             | Some error -> error.ToDomain() |> Result.map Failed
-            | None -> "Failed state without error" |> NotSupported |> Result.Error
+            | None ->
+                $"Failed state of '{nameof ProcessStateEntity}' without error"
+                |> NotSupported
+                |> Result.Error
         | _ ->
-            $"The %s{this.Type} of {nameof ProcessStateEntity}"
+            $"The '%s{this.Type}' of '{nameof ProcessStateEntity}'"
             |> NotSupported
             |> Result.Error
 

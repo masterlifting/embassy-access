@@ -6,7 +6,6 @@ open Infrastructure.Prelude
 open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Domain
-open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies.Russian
 
 let private createEmbassyId (task: WorkerTask) =
@@ -17,7 +16,7 @@ let private createEmbassyId (task: WorkerTask) =
     |> Option.defaultValue (
         Error
         <| Operation
-            { Message = $"Creating embassy Id failed."
+            { Message = "Creating embassy Id failed."
               Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
     )
 
@@ -33,7 +32,7 @@ module private Kdmid =
             match request |> Notification.tryCreate errorFilter with
             | Some notification ->
                 match notification with
-                | Successfully(_, message) -> $"{message} for '{request.Service.Name}'." |> Ok
+                | Empty(_, message) -> $"{message} for '{request.Service.Name}'." |> Ok
                 | Unsuccessfully(_, error) -> error |> Error
                 | HasAppointments(_, appointments) ->
                     $"Appointments found: {appointments.Count} for '{request.Service.Name}'." |> Ok
@@ -99,9 +98,7 @@ module private Kdmid =
             let result = ResultBuilder()
 
             result {
-                let! persistenceDeps = Persistence.Dependencies.create cfg
-                let! webDeps = Web.Dependencies.create ()
-                let! deps = Kdmid.Dependencies.create ct task persistenceDeps webDeps
+                let! deps = Kdmid.Dependencies.create task cfg ct
                 let! embassyId = task |> createEmbassyId
                 return startOrder embassyId deps
             }

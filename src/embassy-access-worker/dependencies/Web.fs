@@ -1,12 +1,15 @@
 ﻿[<RequireQualifiedAccess>]
 module internal EA.Worker.Dependencies.Web
 
+open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Telegram.Domain.Client
+open Web.Clients
+open Web.Clients.Domain
+open EA.Worker.Domain.Constants
 
 type Dependencies =
-    { initTelegramClient: unit -> Result<TelegramBot, Error'> }
+    { TelegramClient: Telegram.Client }
 
     static member create() =
         let result = ResultBuilder()
@@ -14,9 +17,12 @@ type Dependencies =
         result {
 
             let initTelegramClient () =
-                EA.Worker.Domain.Constants.EMBASSY_ACCESS_TELEGRAM_BOT_TOKEN_KEY
-                |> EnvKey
-                |> Web.Telegram.Client.init
+                Configuration.getEnvVar TELEGRAM_BOT_TOKEN_KEY
+                |> Result.bind (function
+                    | Some token -> { Telegram.Token = token } |> Telegram.Client.init
+                    | None -> $"The environment '{TELEGRAM_BOT_TOKEN_KEY}'" |> NotFound |> Error)
 
-            return { initTelegramClient = initTelegramClient }
+            let! telegramClient = initTelegramClient ()
+
+            return { TelegramClient = telegramClient }
         }

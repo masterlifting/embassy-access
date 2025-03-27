@@ -16,7 +16,7 @@ let private validateCity (request: Request) (payload: Payload) =
     | false ->
         Error
         <| NotSupported
-            $"The subdomain '{payload.SubDomain}' of the requested embassy '{request.Service.Embassy.ShortName}'."
+            $"The subdomain '{payload.SubDomain}' of the requested embassy '{request.Service.Embassy.ShortName}'"
 
 let private parsePayload =
     ResultAsync.bind (fun (request: Request) ->
@@ -43,7 +43,7 @@ let private setAttemptCore (request: Request) =
     match modified.DayOfYear = today.DayOfYear, attempt > attemptLimit with
     | true, true ->
         Error
-        <| Canceled $"Number of attempts reached the limit for today: %i{attemptLimit}."
+        <| Canceled $"Number of attempts reached the limit '%i{attemptLimit}' for today. The operation"
     | true, false ->
         { request with
             Attempt = DateTime.UtcNow, attempt + 1 }
@@ -79,7 +79,7 @@ let private handleFailedState error (deps: Order.Dependencies) restart request =
     | Operation { Code = Some(Custom Web.Captcha.ERROR_CODE) } ->
         match deps.RestartAttempts <= 0 with
         | true ->
-            "Limit of restarting request due to captcha error reached."
+            "Limit of restarting request due to captcha error reached. The request"
             |> Canceled
             |> Error
             |> async.Return

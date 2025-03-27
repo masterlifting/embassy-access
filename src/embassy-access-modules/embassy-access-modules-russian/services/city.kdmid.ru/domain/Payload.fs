@@ -4,6 +4,7 @@ module EA.Embassies.Russian.Kdmid.Domain.Payload
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Web.Clients
 
 type Payload =
     { EmbassyId: Graph.NodeId
@@ -26,30 +27,30 @@ type Payload =
                     | Some id -> id |> Graph.NodeIdValue |> Ok
                     | None -> subDomain |> NotSupported |> Error
 
-                let! queryParams = uri |> Web.Http.Route.toQueryParams
+                let! queryParams = uri |> Http.Route.toQueryParams
 
                 let! id =
                     queryParams
                     |> Map.tryFind "id"
                     |> Option.map (function
                         | AP.IsInt id when id > 1000 -> id |> Ok
-                        | _ -> "id query parameter" |> NotSupported |> Error)
-                    |> Option.defaultValue ("id query parameter" |> NotFound |> Error)
+                        | _ -> "Kdmid payload 'ID' query parameter" |> NotSupported |> Error)
+                    |> Option.defaultValue ("Kdmid payload 'ID' query parameter" |> NotFound |> Error)
 
                 let! cd =
                     queryParams
                     |> Map.tryFind "cd"
                     |> Option.map (function
                         | AP.IsLettersOrNumbers cd -> cd |> Ok
-                        | _ -> "cd query parameter" |> NotSupported |> Error)
-                    |> Option.defaultValue ("cd query parameter" |> NotFound |> Error)
+                        | _ -> "Kdmid payload 'CD' query parameter" |> NotSupported |> Error)
+                    |> Option.defaultValue ("Kdmid payload 'CD' query parameter" |> NotFound |> Error)
 
                 let! ems =
                     queryParams
                     |> Map.tryFind "ems"
                     |> Option.map (function
                         | AP.IsLettersOrNumbers ems -> ems |> Some |> Ok
-                        | _ -> "ems query parameter" |> NotSupported |> Error)
+                        | _ -> "Kdmid payload 'EMS' query parameter" |> NotSupported |> Error)
                     |> Option.defaultValue (None |> Ok)
 
                 return
@@ -62,6 +63,6 @@ type Payload =
 
     static member toValue(payload: string) =
         payload
-        |> Web.Http.Route.toUri
-        |> Result.bind Web.Http.Route.toQueryParams
+        |> Http.Route.toUri
+        |> Result.bind Http.Route.toQueryParams
         |> Result.map (Seq.rev >> Seq.map (fun x -> x.Key + "=" + x.Value) >> String.concat " ")

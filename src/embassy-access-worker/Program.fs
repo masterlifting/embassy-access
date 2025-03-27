@@ -1,8 +1,7 @@
 ﻿open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Persistence.Configuration
-open Worker
+open Persistence.Storages.Domain
 open Worker.DataAccess
 open Worker.Domain
 open EA.Worker
@@ -25,15 +24,15 @@ let main _ =
 
     let getTaskNode handlers =
         fun nodeId ->
-            { SectionName = APP_NAME
-              Configuration = configuration }
+            { Configuration.Connection.SectionName = APP_NAME
+              Configuration.Connection.Provider = configuration }
             |> TaskGraph.Configuration
             |> TaskGraph.init
             |> ResultAsync.wrap (TaskGraph.create handlers)
             |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
             |> ResultAsync.bind (function
                 | Some node -> Ok node
-                | None -> $"Task Id '%s{nodeId.Value}' in the configuration" |> NotFound |> Error)
+                | None -> $"Task handler Id '%s{nodeId.Value}'" |> NotFound |> Error)
 
     let workerConfig =
         { Name = rootHandler.Name
@@ -41,6 +40,6 @@ let main _ =
           TaskNodeRootId = rootHandler.Id
           getTaskNode = getTaskNode appHandlers }
 
-    workerConfig |> Worker.start |> Async.RunSynchronously
+    workerConfig |> Worker.Client.start |> Async.RunSynchronously
 
     0

@@ -4,15 +4,17 @@ module EA.Core.DataAccess.EmbassyGraph
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Core.Domain
 open Persistence
+open Persistence.Storages
+open Persistence.Storages.Domain
+open EA.Core.Domain
 
 [<Literal>]
 let private Name = "Embassies"
 
-type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Type
+type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Provider
 
-type StorageType = Configuration of Configuration.Domain.Client
+type StorageType = Configuration of Configuration.Connection
 
 type EmbassyGraphEntity() =
     member val Id = String.Empty with get, set
@@ -39,12 +41,12 @@ type EmbassyGraphEntity() =
                 )))
 
 module private Configuration =
-    open Persistence.Configuration
+    open Persistence.Storages.Configuration
 
-    let private loadData = Query.get<EmbassyGraphEntity>
+    let private loadData = Read.section<EmbassyGraphEntity>
 
-    let get section client =
-        client |> loadData section |> Result.bind _.ToDomain() |> async.Return
+    let get client =
+        client |> loadData |> Result.bind _.ToDomain() |> async.Return
 
 let private toPersistenceStorage storage =
     storage
@@ -61,5 +63,5 @@ let init storageType =
 
 let get storage =
     match storage |> toPersistenceStorage with
-    | Storage.Configuration client -> client.Configuration |> Configuration.get client.SectionName
-    | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+    | Storage.Configuration client -> client |> Configuration.get
+    | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return

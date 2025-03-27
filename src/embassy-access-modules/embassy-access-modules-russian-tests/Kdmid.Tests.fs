@@ -9,8 +9,9 @@ open EA.Embassies.Russian.Domain
 open EA.Embassies.Russian.Kdmid.Domain
 
 module private Fixture =
-    open Web.Http.Domain.Response
-    open Persistence.FileSystem
+    open Web.Clients.Domain.Http
+    open Persistence.Storages
+    open Persistence.Storages.Domain.FileSystem
     open EA.Embassies.Russian.Kdmid.Dependencies
 
     let httpRequestHeaders =
@@ -20,8 +21,8 @@ module private Fixture =
     let httpGetStringRequest fileName =
         { FilePath = "./test_data/"
           FileName = $"{fileName}.html" }
-        |> Storage.init
-        |> ResultAsync.wrap Read.string
+        |> FileSystem.Client.init
+        |> ResultAsync.wrap FileSystem.Read.string
         |> ResultAsync.map (Option.defaultValue "")
         |> ResultAsync.map (fun data ->
             { Content = data
@@ -31,8 +32,8 @@ module private Fixture =
     let httpGetBytesRequest fileName =
         { FilePath = "./test_data/"
           FileName = fileName }
-        |> Storage.init
-        |> ResultAsync.wrap Read.bytes
+        |> FileSystem.Client.init
+        |> ResultAsync.wrap FileSystem.Read.bytes
         |> ResultAsync.map (Option.defaultValue [||])
         |> ResultAsync.map (fun data ->
             { Content = data
@@ -42,8 +43,8 @@ module private Fixture =
     let httpPostStringRequest fileName =
         { FilePath = "./test_data/"
           FileName = $"{fileName}.html" }
-        |> Storage.init
-        |> ResultAsync.wrap Read.string
+        |> FileSystem.Client.init
+        |> ResultAsync.wrap FileSystem.Read.string
         |> ResultAsync.map (Option.defaultValue "")
 
     let Dependencies: Order.Dependencies =

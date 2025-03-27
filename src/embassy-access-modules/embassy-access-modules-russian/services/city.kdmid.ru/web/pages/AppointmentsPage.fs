@@ -4,7 +4,7 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
-open Web.Http.Domain
+open Web.Clients.Domain.Http
 open EA.Core.Domain
 open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Dependencies
@@ -57,8 +57,8 @@ let private parseHttpResponse page =
                 |> Map.forall (fun _ value -> value |> Seq.tryHead |> Option.isSome)
             with
             | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
-            | false -> Error <| NotFound "AppointmentsPage Page headers."
-        | false -> Error <| NotFound "AppointmentsPage Page headers.")
+            | false -> Error <| NotFound "Kdmid 'Appointments Page' headers"
+        | false -> Error <| NotFound "Kdmid 'Appointments Page' headers")
 
 let private prepareHttpFormData data =
     let requiredKeys =
@@ -105,8 +105,8 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
                      Confirmation = None
                      Description = window }
 
-            | _ -> Error <| NotSupported $"Appointment date: %s{dateTime}."
-        | _ -> Error <| NotSupported $"Appointment row: %s{value}."
+            | _ -> Error <| NotSupported $"Kdmid 'Appointment Page' date '%s{dateTime}'"
+        | _ -> Error <| NotSupported $"Kdmid 'Appointment Page' row '%s{value}'"
 
     match appointments.IsEmpty with
     | true -> Ok(formData, Set.empty)
