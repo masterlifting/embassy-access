@@ -13,7 +13,6 @@
 [submodule "submodules/fsharp-infrastructure"]
 	path = submodules/fsharp-infrastructure
 	url = https://github.com/masterlifting/fsharp-infrastructure.git
-	branch = main
 	branch = dev
 [submodule "submodules/fsharp-ai-provider"]
 	path = submodules/fsharp-ai-provider
