@@ -2,10 +2,10 @@
 
 Logging:
   LogLevel:
-    Default: Debug
+    Default: Information
 
 Persistence:
-  FileSystem: ../../../data
+  FileSystem: /usr/src/embassy-access-data
 
 SearchAppointments: &SearchAppointments
   - Id: SA
@@ -25,12 +25,12 @@ Worker:
       Name: Russian
       Parallel: true
       Schedule:
-        Workdays: mon,tue,wed,thu,fri,sat
+        Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
           Name: Serbia
           Parallel: true
-          Recursively: 00:01:00
+          Recursively: 00:30:00
           Tasks:
             - Id: BEG
               Name: Belgrade
@@ -40,12 +40,13 @@ Worker:
                   Enabled: true
                   Duration: 00:01:00
               Schedule:
-                StartTime: 00:55:00
-                StopTime: 16:55:20
+                StartTime: 08:30:00
+                StopTime: 17:00:00
                 TimeZone: 1
         - Id: DEU
           Name: Germany
           Parallel: true
+          Recursively: 00:30:00
           Tasks:
             - Id: BER
               Name: Berlin
@@ -54,6 +55,8 @@ Worker:
                   Name: Search appointments
                   Enabled: false
                   Duration: 00:01:00
+                  StartTime: 08:30:00
+                  StopTime: 17:00:00
               Schedule:
                 TimeZone: 1
         - Id: FRA
