@@ -97,8 +97,7 @@ type Dependencies =
         fun (deps: Culture.Dependencies) ->
             let placeholder = Placeholder.create ''' '''
 
-            let translate request =
-                deps |> Culture.Service.translate request ct
+            let translate request = deps |> Culture.translate request ct
 
             let translateError culture error =
                 (translate, placeholder)
@@ -127,7 +126,6 @@ type Dependencies =
                 msgSeqRes
                 |> ResultAsync.bindAsync (translateSeq culture)
                 |> ResultAsync.mapErrorAsync (translateError culture)
-
 
             { translate = translate
               translateSeq = translateSeq

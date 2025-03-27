@@ -22,7 +22,7 @@ type Dependencies =
                       Storage = cultureStorage }
 
                 let translate request =
-                    cultureDeps |> AIProvider.Services.Culture.Service.translate request ct
+                    cultureDeps |> AIProvider.Services.Culture.translate request ct
 
                 return
                     { Placeholder = Placeholder.create ''' '''
