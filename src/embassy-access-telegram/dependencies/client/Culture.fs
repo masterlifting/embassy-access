@@ -17,7 +17,7 @@ module private Payload =
 
                 let request =
                     { Culture = culture
-                      Placeholder = placeholder
+                      Shield = placeholder
                       Items = [ { Value = text } ] }
 
                 translate request
@@ -36,7 +36,7 @@ module private Payload =
 
                 let request =
                     { Culture = culture
-                      Placeholder = placeholder
+                      Shield = placeholder
                       Items = [ { Value = text } ] }
 
                 translate request
@@ -59,7 +59,7 @@ module private Payload =
 
                 let request =
                     { Culture = culture
-                      Placeholder = placeholder
+                      Shield = placeholder
                       Items = items }
 
                 translate request
@@ -95,7 +95,7 @@ type Dependencies =
 
     static member create ct =
         fun (deps: Culture.Dependencies) ->
-            let placeholder = Placeholder.create ''' '''
+            let placeholder = Shield.create ''' '''
 
             let translate request = deps |> Culture.translate request ct
 
