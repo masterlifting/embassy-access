@@ -12,12 +12,12 @@ open Web.Clients.Domain.Telegram.Producer
 module private Payload =
     module Error =
         let translate culture (error: Error') =
-            fun (translate, placeholder) ->
+            fun (translate, shield) ->
                 let text = error.MessageOnly
 
                 let request =
                     { Culture = culture
-                      Shield = placeholder
+                      Shield = shield
                       Items = [ { Value = text } ] }
 
                 translate request
@@ -31,12 +31,12 @@ module private Payload =
 
     module Text =
         let translate culture (payload: Payload<string>) =
-            fun (translate, placeholder) ->
+            fun (translate, shield) ->
                 let text = payload.Value
 
                 let request =
                     { Culture = culture
-                      Shield = placeholder
+                      Shield = shield
                       Items = [ { Value = text } ] }
 
                 translate request
@@ -50,7 +50,7 @@ module private Payload =
 
     module ButtonsGroup =
         let translate culture (payload: Payload<ButtonsGroup>) =
-            fun (translate, placeholder) ->
+            fun (translate, shield) ->
                 let group = payload.Value
 
                 let items =
@@ -59,7 +59,7 @@ module private Payload =
 
                 let request =
                     { Culture = culture
-                      Shield = placeholder
+                      Shield = shield
                       Items = items }
 
                 translate request
@@ -95,12 +95,12 @@ type Dependencies =
 
     static member create ct =
         fun (deps: Culture.Dependencies) ->
-            let placeholder = Shield.create ''' '''
+            let shield = Shield.create ''' '''
 
             let translate request = deps |> Culture.translate request ct
 
             let translateError culture error =
-                (translate, placeholder)
+                (translate, shield)
                 |> Payload.Error.translate culture error
                 |> Async.map (function
                     | Ok error -> error
@@ -108,8 +108,8 @@ type Dependencies =
 
             let translate culture message =
                 match message with
-                | Text payload -> (translate, placeholder) |> Payload.Text.translate culture payload
-                | ButtonsGroup payload -> (translate, placeholder) |> Payload.ButtonsGroup.translate culture payload
+                | Text payload -> (translate, shield) |> Payload.Text.translate culture payload
+                | ButtonsGroup payload -> (translate, shield) |> Payload.ButtonsGroup.translate culture payload
 
             let translateSeq culture messages =
                 messages

@@ -141,7 +141,7 @@ module Instruction =
     let private toResponse instruction route =
         fun (chatId, messageId) ->
 
-            let message = $"{route}{String.addLines 2}"
+            let message = $"'{route}'{String.addLines 2}"
 
             instruction
             |> Option.map (fun instr -> message + $"Instruction:{String.addLines 2}{instr}")
@@ -154,7 +154,7 @@ module Instruction =
                 { ConfirmationState = confirmation
                   ServiceId = service.Id
                   EmbassyId = embassyId
-                  Payload = "Your link should be inserted here" }
+                  Payload = "<link>" }
                 |> Kdmid.Post.Subscribe
                 |> Post.Kdmid
                 |> Method.Post
@@ -170,7 +170,7 @@ module Instruction =
             let request =
                 { ServiceId = service.Id
                   EmbassyId = embassyId
-                  Payload = "Your link should be inserted here" }
+                  Payload = "<link>" }
                 |> Kdmid.Post.CheckAppointments
                 |> Post.Kdmid
                 |> Method.Post

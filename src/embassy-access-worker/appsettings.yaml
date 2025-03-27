@@ -418,7 +418,7 @@ Embassies:
               TimeZone: 1
 
 KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
-  Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat.
+  Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat. Without apostrophes.
 
 KdmidRussianServices: &KdmidRussianServices
   - Id: "0"
@@ -439,7 +439,7 @@ KdmidRussianServices: &KdmidRussianServices
         <<: *KdmidRussianServicesInstructions
       - Id: "2"
         Name: Book in period
-        Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat. Also change the date and time of the beginning and end of the period.
+        Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat. Without apostrophes. Also change the date and time of the beginning and end of the period.
 
 Services:
   Id: SRV
@@ -461,10 +461,9 @@ Services:
                 <<: *KdmidRussianServices
             - Id: "1"
               Name: Passport status
-              Instruction: To use this service, add the reference number you received after submitting your documents, after the | symbol in the above command and send it to the chat.
+              <<: *KdmidRussianServicesInstructions
         - Id: "1"
           Name: Notary
-          Instruction: To use this service, add the link you received in your email during registration after the | symbol in the above command and send it to the chat.
           Description: Notary services
           Children:
             - Id: "0"
