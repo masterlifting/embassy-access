@@ -4,7 +4,8 @@ module internal EA.Worker.Dependencies.Persistence
 open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Persistence.FileSystem
+open Persistence.Storages
+open Persistence.Storages.Domain
 open Persistence.Configuration
 open AIProvider.Services.DataAccess
 open EA.Core.Domain
@@ -31,20 +32,20 @@ type Dependencies =
                 |> Option.defaultValue ("Section 'Persistence:FileSystem' in the configuration." |> NotFound |> Error)
 
             let initCultureStorage () =
-                { FilePath = fileStoragePath
-                  FileName = "Culture.json" }
+                { FileSystem.FilePath = fileStoragePath
+                  FileSystem.FileName = "Culture.json" }
                 |> Culture.Response.FileSystem
                 |> Culture.Response.init
 
             let initChatStorage () =
-                { FilePath = fileStoragePath
-                  FileName = "Chats.json" }
+                { FileSystem.FilePath = fileStoragePath
+                  FileSystem.FileName = "Chats.json" }
                 |> Chat.FileSystem
                 |> Chat.init
 
             let initRequestStorage () =
-                { FilePath = fileStoragePath
-                  FileName = "Requests.json" }
+                { FileSystem.FilePath = fileStoragePath
+                  FileSystem.FileName = "Requests.json" }
                 |> Request.FileSystem
                 |> Request.init
 

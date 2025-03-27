@@ -6,6 +6,8 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
 open Persistence
+open Persistence.Storages
+open Persistence.Storages.Domain
 open EA.Core.DataAccess.RequestService
 open EA.Core.DataAccess.ProcessState
 open EA.Core.DataAccess.SubscriptionState
@@ -19,7 +21,7 @@ type RequestStorage = RequestStorage of Storage.Provider
 
 type StorageType =
     | InMemory
-    | FileSystem of Persistence.FileSystem.Domain.Connection
+    | FileSystem of FileSystem.Connection
 
 type RequestEntity() =
     member val Id = Guid.Empty with get, set
@@ -178,7 +180,7 @@ module private InMemory =
             |> async.Return
 
 module private FileSystem =
-    open Persistence.FileSystem
+    open Persistence.Storages.FileSystem
 
     let private loadData = Query.Json.get<RequestEntity>
 

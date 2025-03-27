@@ -5,6 +5,8 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence
+open Persistence.Storages
+open Persistence.Storages.Domain
 open Web.Clients.Domain.Telegram
 open EA.Core.Domain
 open EA.Telegram.Domain
@@ -16,7 +18,7 @@ type ChatStorage = ChatStorage of Storage.Provider
 
 type StorageType =
     | InMemory
-    | FileSystem of Persistence.FileSystem.Domain.Connection
+    | FileSystem of FileSystem.Connection
 
 type ChatEntity() =
     member val Id = 0L with get, set
@@ -205,7 +207,7 @@ module private InMemory =
             |> async.Return
 
 module private FileSystem =
-    open Persistence.FileSystem
+    open Persistence.Storages.FileSystem
 
     let private loadData = Query.Json.get<ChatEntity>
 
