@@ -4,15 +4,17 @@ module EA.Core.DataAccess.EmbassyGraph
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Core.Domain
 open Persistence
+open Persistence.Storages
+open Persistence.Storages.Domain
+open EA.Core.Domain
 
 [<Literal>]
 let private Name = "Embassies"
 
 type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Provider
 
-type StorageType = Configuration of Configuration.Domain.Connection
+type StorageType = Configuration of Configuration.Connection
 
 type EmbassyGraphEntity() =
     member val Id = String.Empty with get, set
@@ -39,7 +41,7 @@ type EmbassyGraphEntity() =
                 )))
 
 module private Configuration =
-    open Persistence.Configuration
+    open Persistence.Storages.Configuration
 
     let private loadData = Read.section<EmbassyGraphEntity>
 

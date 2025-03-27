@@ -1,7 +1,7 @@
 ﻿open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Persistence.Configuration
+open Persistence.Storages.Domain
 open Worker
 open Worker.DataAccess
 open Worker.Domain
@@ -25,8 +25,8 @@ let main _ =
 
     let getTaskNode handlers =
         fun nodeId ->
-            { SectionName = APP_NAME
-              Configuration = configuration }
+            { Configuration.Connection.SectionName = APP_NAME
+              Configuration.Connection.Provider = configuration }
             |> TaskGraph.Configuration
             |> TaskGraph.init
             |> ResultAsync.wrap (TaskGraph.create handlers)

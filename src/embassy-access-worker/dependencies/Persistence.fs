@@ -6,7 +6,6 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Storages
 open Persistence.Storages.Domain
-open Persistence.Configuration
 open AIProvider.Services.DataAccess
 open EA.Core.Domain
 open EA.Core.DataAccess
@@ -32,32 +31,32 @@ type Dependencies =
                 |> Option.defaultValue ("Section 'Persistence:FileSystem' in the configuration." |> NotFound |> Error)
 
             let initCultureStorage () =
-                { FileSystem.FilePath = fileStoragePath
-                  FileSystem.FileName = "Culture.json" }
+                { FileSystem.Connection.FilePath = fileStoragePath
+                  FileSystem.Connection.FileName = "Culture.json" }
                 |> Culture.Response.FileSystem
                 |> Culture.Response.init
 
             let initChatStorage () =
-                { FileSystem.FilePath = fileStoragePath
-                  FileSystem.FileName = "Chats.json" }
+                { FileSystem.Connection.FilePath = fileStoragePath
+                  FileSystem.Connection.FileName = "Chats.json" }
                 |> Chat.FileSystem
                 |> Chat.init
 
             let initRequestStorage () =
-                { FileSystem.FilePath = fileStoragePath
-                  FileSystem.FileName = "Requests.json" }
+                { FileSystem.Connection.FilePath = fileStoragePath
+                  FileSystem.Connection.FileName = "Requests.json" }
                 |> Request.FileSystem
                 |> Request.init
 
             let initEmbassyGraphStorage () =
-                { SectionName = "Embassies"
-                  Configuration = cfg }
+                { Configuration.Connection.SectionName = "Embassies"
+                  Configuration.Connection.Provider = cfg }
                 |> EmbassyGraph.Configuration
                 |> EmbassyGraph.init
 
             let initServiceGraphStorage () =
-                { SectionName = "Services"
-                  Configuration = cfg }
+                { Configuration.Connection.SectionName = "Services"
+                  Configuration.Connection.Provider = cfg }
                 |> ServiceGraph.Configuration
                 |> ServiceGraph.init
 

@@ -87,7 +87,7 @@ module private Common =
         | None -> $"{id}" |> NotFound |> Error
 
 module private InMemory =
-    open Persistence.InMemory
+    open Persistence.Storages.InMemory
 
     let private loadData = Query.Json.get<RequestEntity> Name
 

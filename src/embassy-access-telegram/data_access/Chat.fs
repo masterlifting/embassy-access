@@ -73,7 +73,7 @@ module private Common =
         | None -> $"{chatId}" |> NotFound |> Error
 
 module private InMemory =
-    open Persistence.InMemory
+    open Persistence.Storages.InMemory
 
     let private loadData = Query.Json.get<ChatEntity> Name
 
