@@ -18,7 +18,7 @@ The project is structured into several components, including core functionality,
   - `fsharp-persistence`: Handles data persistence.
   - `fsharp-worker`: Manages background tasks and processing.
   - `fsharp-web`: Web-related functionalities.
-  - `fharp-ai-provider`: Provides AI services.
+  - `fharp-ai-provider`: Provides AI clients and services.
 
 - **Sources**
 
