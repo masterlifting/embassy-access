@@ -2,7 +2,6 @@
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Storages.Domain
-open Worker
 open Worker.DataAccess
 open Worker.Domain
 open EA.Worker
@@ -41,6 +40,6 @@ let main _ =
           TaskNodeRootId = rootHandler.Id
           getTaskNode = getTaskNode appHandlers }
 
-    workerConfig |> Worker.start |> Async.RunSynchronously
+    workerConfig |> Worker.Client.start |> Async.RunSynchronously
 
     0
