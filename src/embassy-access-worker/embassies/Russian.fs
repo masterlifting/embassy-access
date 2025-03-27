@@ -16,7 +16,7 @@ let private createEmbassyId (task: WorkerTask) =
     |> Option.defaultValue (
         Error
         <| Operation
-            { Message = $"Creating embassy Id failed."
+            { Message = "Creating embassy Id failed."
               Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
     )
 

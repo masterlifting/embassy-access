@@ -20,7 +20,7 @@ type Dependencies =
                 Configuration.getEnvVar TELEGRAM_BOT_TOKEN_KEY
                 |> Result.bind (function
                     | Some token -> { Telegram.Token = token } |> Telegram.Client.init
-                    | None -> $"'{TELEGRAM_BOT_TOKEN_KEY}' in the configuration." |> NotFound |> Error)
+                    | None -> $"The environment '{TELEGRAM_BOT_TOKEN_KEY}'" |> NotFound |> Error)
 
             let! telegramClient = initTelegramClient ()
 

@@ -34,23 +34,23 @@ type Payload =
                     |> Map.tryFind "id"
                     |> Option.map (function
                         | AP.IsInt id when id > 1000 -> id |> Ok
-                        | _ -> "id query parameter" |> NotSupported |> Error)
-                    |> Option.defaultValue ("id query parameter" |> NotFound |> Error)
+                        | _ -> "Kdmid payload 'ID' query parameter" |> NotSupported |> Error)
+                    |> Option.defaultValue ("Kdmid payload 'ID' query parameter" |> NotFound |> Error)
 
                 let! cd =
                     queryParams
                     |> Map.tryFind "cd"
                     |> Option.map (function
                         | AP.IsLettersOrNumbers cd -> cd |> Ok
-                        | _ -> "cd query parameter" |> NotSupported |> Error)
-                    |> Option.defaultValue ("cd query parameter" |> NotFound |> Error)
+                        | _ -> "Kdmid payload 'CD' query parameter" |> NotSupported |> Error)
+                    |> Option.defaultValue ("Kdmid payload 'CD' query parameter" |> NotFound |> Error)
 
                 let! ems =
                     queryParams
                     |> Map.tryFind "ems"
                     |> Option.map (function
                         | AP.IsLettersOrNumbers ems -> ems |> Some |> Ok
-                        | _ -> "ems query parameter" |> NotSupported |> Error)
+                        | _ -> "Kdmid payload 'EMS' query parameter" |> NotSupported |> Error)
                     |> Option.defaultValue (None |> Ok)
 
                 return

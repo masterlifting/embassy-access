@@ -4,4 +4,4 @@ open Infrastructure.Domain
 open EA.Telegram.Dependencies.Embassies.Russian
 
 let checkStatus (_: string) =
-    fun (_: Midpass.Dependencies) -> "checkStatus" |> NotImplemented |> Error |> async.Return
+    fun (_: Midpass.Dependencies) -> "Midpass checkStatus" |> NotImplemented |> Error |> async.Return

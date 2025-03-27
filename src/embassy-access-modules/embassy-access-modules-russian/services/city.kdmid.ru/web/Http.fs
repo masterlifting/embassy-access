@@ -48,7 +48,7 @@ let getQueryParamsId queryParams =
     |> Result.map (Map.tryFind "id")
     |> Result.bind (function
         | Some id -> Ok id
-        | None -> Error <| NotFound "Query parameter 'id'.")
+        | None -> Error <| NotFound "Kdmid query parameter 'id'.")
 
 let private setCookie cookie httpClient =
     let headers = Map [ "Cookie", cookie ] |> Some

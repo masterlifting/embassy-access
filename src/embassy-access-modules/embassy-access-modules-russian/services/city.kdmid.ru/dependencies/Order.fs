@@ -5,10 +5,11 @@ open System
 open Infrastructure.Domain
 open Web.Clients
 open Web.Clients.Domain
+open EA.Core.Domain.Request
 
 type Dependencies =
     { RestartAttempts: int
-      updateRequest: EA.Core.Domain.Request.Request -> Async<Result<EA.Core.Domain.Request.Request, Error'>>
+      updateRequest: Request -> Async<Result<Request, Error'>>
       getCaptcha: Http.Request -> Http.Client -> Async<Result<Http.Response<byte array>, Error'>>
       solveIntCaptcha: byte array -> Async<Result<int, Error'>>
       getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>

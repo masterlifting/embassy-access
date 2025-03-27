@@ -17,7 +17,7 @@ type Dependencies =
             Configuration.getEnvVar name
             |> Result.bind (function
                 | Some value -> Ok value
-                | None -> $"'{name}' in the configuration." |> NotFound |> Error)
+                | None -> $"Environment configuration '{name}'" |> NotFound |> Error)
 
         result {
 

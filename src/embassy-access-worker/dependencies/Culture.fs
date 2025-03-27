@@ -6,7 +6,7 @@ open Infrastructure.Domain
 open AIProvider.Services.Domain
 
 type Dependencies =
-    { Placeholder: Culture.Shield
+    { Shield: Culture.Shield
       translate: Request -> Async<Result<Response, Error'>> }
 
     static member create ct =
@@ -25,6 +25,6 @@ type Dependencies =
                     cultureDeps |> AIProvider.Services.Culture.translate request ct
 
                 return
-                    { Placeholder = Shield.create ''' '''
+                    { Shield = Shield.create ''' '''
                       translate = translate }
             }

@@ -63,7 +63,7 @@ let private parseHttpResponse page =
     |> Result.bind httpResponseHasInconsistentState
     |> Result.bind (Html.getNodes "//input")
     |> Result.bind (function
-        | None -> Error <| NotFound "Nodes on the Validation Page."
+        | None -> Error <| NotFound "Kdmid data on the 'Validation Page'"
         | Some nodes ->
             nodes
             |> Seq.choose (fun node ->
@@ -85,7 +85,7 @@ let private parseHttpResponse page =
 
         match requiredKeys.Count = requiredResult.Count with
         | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
-        | false -> Error <| NotFound "Validation Page headers.")
+        | false -> Error <| NotFound "Kdmid headers of the 'Validation Page headers'")
 
 let private prepareHttpFormData data =
     data

@@ -54,7 +54,7 @@ type Dependencies =
                 |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                 |> ResultAsync.bind (function
                     | None ->
-                        $"Service '%s{serviceId.Value}' for user chat '%s{deps.Chat.Id.ValueStr}'"
+                        $"Service '%s{serviceId.Value}' for the chat '%s{deps.Chat.Id.ValueStr}'"
                         |> NotFound
                         |> Error
                     | Some serviceNode -> serviceNode.Value |> Ok)
@@ -64,7 +64,7 @@ type Dependencies =
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bind (function
                     | None ->
-                        $"Embassy '%s{embassyId.Value}' for user chat '%s{deps.Chat.Id.ValueStr}'"
+                        $"Embassy '%s{embassyId.Value}' for the chat '%s{deps.Chat.Id.ValueStr}'"
                         |> NotFound
                         |> Error
                     | Some embassyNode -> embassyNode.Value |> Ok)
@@ -74,7 +74,7 @@ type Dependencies =
                 |> Request.Query.tryFindById requestId
                 |> ResultAsync.bind (function
                     | None ->
-                        $"Request '%s{requestId.ValueStr}' for user chat '%s{deps.Chat.Id.ValueStr}'"
+                        $"Request '%s{requestId.ValueStr}' for the chat '%s{deps.Chat.Id.ValueStr}'"
                         |> NotFound
                         |> Error
                     | Some request -> request |> Ok)

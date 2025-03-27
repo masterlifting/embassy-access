@@ -55,7 +55,7 @@ let private parseHttpResponse page =
 
         match requiredKeys.Count = requiredResult.Count with
         | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
-        | false -> Error <| NotFound "Initial Page headers.")
+        | false -> Error <| NotFound "Headers of 'Kdmid Initial Page'")
 
 let private createCaptchaRequest urlPath =
     { Path = $"/queue/%s{urlPath}"
@@ -64,7 +64,7 @@ let private createCaptchaRequest urlPath =
 let private prepareCaptchaImage (image: byte array) =
     try
         if image.Length = 0 then
-            Error <| NotFound "Captcha image is empty."
+            Error <| NotFound "Kdmid 'captcha image'"
         else
             let bitmap = image |> SKBitmap.Decode
             let bitmapInfo = bitmap.Info
@@ -111,7 +111,7 @@ let private handlePage (deps: Order.Dependencies, httpClient, queryParams) =
     |> parseResponse
     |> ResultAsync.bindAsync (fun pageData ->
         match pageData |> Map.tryFind "captchaUrlPath" with
-        | None -> async { return Error <| NotFound "Captcha information on the Initial Page." }
+        | None -> async { return Error <| NotFound "Kdmid 'captcha' information on the 'Initial Page'" }
         | Some urlPath ->
 
             // define

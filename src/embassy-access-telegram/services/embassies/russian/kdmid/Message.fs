@@ -1,10 +1,17 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Services.Embassies.Russian.Kdmid.Message
 
+open System
 open Infrastructure.Domain
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
-open EA.Core.Domain
+open EA.Core.Domain.Request
+open EA.Core.Domain.Appointment
+open EA.Core.Domain.Confirmation
+open EA.Core.Domain.Notification
+open EA.Core.Domain.ServiceNode
+open EA.Core.Domain.ConfirmationOption
+open EA.Core.Domain.ConfirmationState
 open EA.Embassies.Russian.Kdmid.Domain
 open EA.Telegram.Dependencies.Embassies.Russian
 
@@ -15,16 +22,16 @@ module Notification =
 
     open Infrastructure.Prelude
 
-    let toSuccessfully (request: EA.Core.Domain.Request.Request, msg: string) =
+    let toSuccessfully (request: Request, msg: string) =
         fun chatId ->
             $"{msg} for '{request.Service.Name}' of '{request.Service.Embassy.ShortName}'."
             |> Text.create
             |> Message.createNew chatId
 
-    let toUnsuccessfully (_: EA.Core.Domain.Request.Request, error: Error') =
+    let toUnsuccessfully (_: Request, error: Error') =
         fun chatId -> chatId |> Text.createError error
 
-    let toHasAppointments (request: EA.Core.Domain.Request.Request, appointments: Appointment.Appointment Set) =
+    let toHasAppointments (request: Request, appointments: Appointment Set) =
         fun chatId ->
             request.Service.Payload
             |> Payload.toValue
@@ -51,16 +58,14 @@ module Notification =
                             |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
                             |> Set.ofSeq })
 
-    let toHasConfirmations (request: EA.Core.Domain.Request.Request, confirmations: Confirmation.Confirmation Set) =
+    let toHasConfirmations (request: Request, confirmations: Confirmation Set) =
         fun chatId ->
             request.Service.Payload
             |> Payload.toValue
             |> Result.map (fun payloadValue ->
-                $"The subscription '{payloadValue}' for service '{request.Service.Name}'
-                at '{request.Service.Embassy.ShortName}' was successfully applied.\\n\\n
-                The result is: '{confirmations
-                                 |> Seq.map _.Description
-                                 |> String.concat System.Environment.NewLine}'"
+                $"The subscription '{payloadValue}' for service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}' was successfully applied.
+                {Environment.NewLine}The response:{Environment.NewLine}
+                '{confirmations |> Seq.map _.Description |> String.concat Environment.NewLine}'"
                 |> Text.create
                 |> Message.createNew chatId)
 
@@ -127,7 +132,6 @@ module Notification =
 
 module Instruction =
 
-    open System
     open Infrastructure.Prelude
     open EA.Embassies.Russian
     open EA.Telegram.Router
@@ -150,7 +154,7 @@ module Instruction =
                 { ConfirmationState = confirmation
                   ServiceId = service.Id
                   EmbassyId = embassyId
-                  Payload = "The link should be inserted here" }
+                  Payload = "Your link should be inserted here" }
                 |> Kdmid.Post.Subscribe
                 |> Post.Kdmid
                 |> Method.Post
@@ -166,7 +170,7 @@ module Instruction =
             let request =
                 { ServiceId = service.Id
                   EmbassyId = embassyId
-                  Payload = "The link should be inserted here" }
+                  Payload = "Your link should be inserted here" }
                 |> Kdmid.Post.CheckAppointments
                 |> Post.Kdmid
                 |> Method.Post
@@ -183,17 +187,14 @@ module Instruction =
     let toFirstAvailableAutoSubscribe embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
-            |> toSubscribe embassyId service (ConfirmationState.Auto <| FirstAvailable)
+            |> toSubscribe embassyId service (Auto <| FirstAvailable)
 
     let toLastAvailableAutoSubscribe embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
-            |> toSubscribe embassyId service (ConfirmationState.Auto <| LastAvailable)
+            |> toSubscribe embassyId service (Auto <| LastAvailable)
 
     let toDateRangeAutoSubscribe embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
-            |> toSubscribe
-                embassyId
-                service
-                (ConfirmationState.Auto <| DateTimeRange(DateTime.MinValue, DateTime.MaxValue))
+            |> toSubscribe embassyId service (Auto <| DateTimeRange(DateTime.MinValue, DateTime.MaxValue))

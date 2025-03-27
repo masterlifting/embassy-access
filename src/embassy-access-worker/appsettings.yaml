@@ -422,62 +422,62 @@ KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
 
 KdmidRussianServices: &KdmidRussianServices
   - Id: "0"
-    Name: Check for available slots now
+    Name: Check slots now
     <<: *KdmidRussianServicesInstructions
   - Id: "1"
-    Name: Get available slots as soon as they appear
+    Name: Slot notifications
     <<: *KdmidRussianServicesInstructions
   - Id: "2"
-    Name: Automatic booking and slot search
-    Description: Automatic booking and slot search
+    Name: Auto booking
+    Description: Auto slot booking
     Children:
       - Id: "0"
-        Name: Automatically book the first available slot
+        Name: Book first slot
         <<: *KdmidRussianServicesInstructions
       - Id: "1"
-        Name: Automatically book the last available slot
+        Name: Book last slot
         <<: *KdmidRussianServicesInstructions
       - Id: "2"
-        Name: Automatically book a slot in the specified period
+        Name: Book in period
         Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat. Also change the date and time of the beginning and end of the period.
 
 Services:
   Id: SRV
   Name: Services
-  Description: Select an embassy service
+  Description: Choose embassy service
   Children:
     - Id: RUS
       Name: Russian Embassy
-      Description: Select a service from the Russian Embassy
+      Description: Choose Russian service
       Children:
         - Id: "0"
           Name: Passport
-          Description: Select a passport service from the Russian Embassy
+          Description: Passport services
           Children:
             - Id: "0"
-              Name: Issue of international passport
-              Description: Select a service for issuing an international passport from the Russian Embassy
+              Name: International passport
+              Description: International passport options
               Children:
                 <<: *KdmidRussianServices
             - Id: "1"
-              Name: Check passport readiness
+              Name: Passport status
               Instruction: To use this service, add the reference number you received after submitting your documents, after the | symbol in the above command and send it to the chat.
         - Id: "1"
           Name: Notary
           Instruction: To use this service, add the link you received in your email during registration after the | symbol in the above command and send it to the chat.
-          Description: Select a notary service from the Russian Embassy
+          Description: Notary services
           Children:
             - Id: "0"
               Name: Power of attorney
-              Description: Select a power of attorney service from the Russian Embassy
+              Description: POA options
               Children:
                 <<: *KdmidRussianServices
         - Id: "2"
           Name: Citizenship
-          Description: Select a citizenship service from the Russian Embassy
+          Description: Citizenship services
           Children:
             - Id: "0"
-              Name: Renunciation of citizenship
-              Description: Select a citizenship renunciation service from the Russian Embassy
+              Name: Citizenship renunciation
+              Description: Renunciation options
               Children:
                 <<: *KdmidRussianServices

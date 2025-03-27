@@ -13,7 +13,7 @@ let private createMessage chatId msgIdOpt nameOpt data =
     let name = nameOpt |> Option.defaultValue "Choose from the list"
 
     match data |> Seq.length with
-    | 0 -> Text.create $"No data for the {name}"
+    | 0 -> Text.create $"No data for the '{name}'"
     | _ ->
         ButtonsGroup.create
             { Name = name

@@ -26,9 +26,12 @@ type ConfirmationOptionEntity() =
         | DATE_TIME_RANGE ->
             match this.DateStart |> Option.ofNullable, this.DateEnd |> Option.ofNullable with
             | Some min, Some max -> DateTimeRange(min, max) |> Ok
-            | _ -> $"{nameof this.DateStart} or {nameof this.DateEnd}" |> NotFound |> Error
+            | _ ->
+                $"'{nameof this.DateStart}' or '{nameof this.DateEnd}' of '{nameof ConfirmationOptionEntity}'"
+                |> NotFound
+                |> Error
         | _ ->
-            $"The %s{this.Type} of {nameof ConfirmationOptionEntity} "
+            $"The '%s{this.Type}' of '{nameof ConfirmationOptionEntity}'"
             |> NotSupported
             |> Error
 

@@ -60,4 +60,4 @@ let init storageType =
 let get storage =
     match storage |> toPersistenceStorage with
     | Storage.Configuration client -> client |> Configuration.get
-    | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+    | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return

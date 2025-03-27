@@ -15,7 +15,7 @@ let private createMessage chatId msgIdOpt nameOpt columns data =
     let name = nameOpt |> Option.defaultValue "Choose from the list"
 
     match data |> Seq.length with
-    | 0 -> Text.create $"No data for the {name}"
+    | 0 -> Text.create $"No data for the '{name}'"
     | _ ->
         ButtonsGroup.create
             { Name = name
@@ -107,11 +107,7 @@ let getEmbassy embassyId =
             | AP.Node node ->
                 node.Children
                 |> Seq.map _.Value
-                |> toEmbassy
-                    deps.Chat.Id
-                    (Some deps.MessageId)
-                    ($"Choose the following for the '{node.Value.ShortName}' embassy of '{deps.Chat.Id}'"
-                     |> Some)
+                |> toEmbassy deps.Chat.Id (Some deps.MessageId) node.Value.Description
                 |> Ok
                 |> async.Return)
 

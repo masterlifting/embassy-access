@@ -32,7 +32,7 @@ let main _ =
             |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
             |> ResultAsync.bind (function
                 | Some node -> Ok node
-                | None -> $"Task Id '%s{nodeId.Value}' in the configuration" |> NotFound |> Error)
+                | None -> $"Task handler Id '%s{nodeId.Value}'" |> NotFound |> Error)
 
     let workerConfig =
         { Name = rootHandler.Name

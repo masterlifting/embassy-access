@@ -11,7 +11,7 @@ let private createMessage chatId msgIdOpt nameOpt data =
     let name = nameOpt |> Option.defaultValue "Choose from the list"
 
     match data |> Seq.length with
-    | 0 -> Text.create $"No data for the {name}"
+    | 0 -> Text.create $"No data for the '{name}'"
     | _ ->
         ButtonsGroup.create
             { Name = name
@@ -32,7 +32,7 @@ let getCultures () =
 
                 route.Value, name)
         )
-        |> ResultAsync.map (createMessage deps.ChatId None (Some "Choose the language"))
+        |> ResultAsync.map (createMessage deps.ChatId None (Some "Choose your language"))
 
 let getCulturesCallback callback =
     fun (deps: Request.Dependencies) ->
@@ -49,4 +49,4 @@ let getCulturesCallback callback =
 
                 (route.Value, name))
         )
-        |> ResultAsync.map (createMessage deps.ChatId None (Some "Choose the language"))
+        |> ResultAsync.map (createMessage deps.ChatId None (Some "Choose your language"))

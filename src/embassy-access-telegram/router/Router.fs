@@ -31,4 +31,4 @@ type Route =
         | "/culture" -> Culture(Culture.Method.Get(Culture.Get.Route.Cultures)) |> Ok
         | "/mine" -> Users(Users.Method.Get(Users.Get.Route.UserEmbassies)) |> Ok
         | "/start" -> Embassies(Embassies.Method.Get(Embassies.Get.Route.Embassies)) |> Ok
-        | _ -> $"'{input}' of Endpoints" |> NotSupported |> Error
+        | _ -> $"'{input}' for the application" |> NotSupported |> Error

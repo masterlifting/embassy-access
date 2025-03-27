@@ -3,7 +3,8 @@
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
-open EA.Core.Domain
+open EA.Core.Domain.Request
+open EA.Core.Domain.ProcessState
 open EA.Telegram.Domain
 open EA.Telegram.Router
 open EA.Telegram.Router.Embassies.Russian
@@ -11,7 +12,7 @@ open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian.Kdmid
 open EA.Embassies.Russian.Kdmid.Domain
 
-let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
+let private buildSubscriptionMenu (request: Request) =
     let getRoute =
         request.Id
         |> Kdmid.Get.Appointments
@@ -35,7 +36,7 @@ let private buildSubscriptionMenu (request: EA.Core.Domain.Request.Request) =
     |> Seq.map (fun x -> x.Key |> CallbackData |> Button.create x.Value)
     |> Set.ofSeq
 
-let getSubscriptions (requests: EA.Core.Domain.Request.Request list) =
+let getSubscriptions (requests: Request list) =
     fun (deps: Kdmid.Dependencies) ->
         requests
         |> Seq.map (fun request ->

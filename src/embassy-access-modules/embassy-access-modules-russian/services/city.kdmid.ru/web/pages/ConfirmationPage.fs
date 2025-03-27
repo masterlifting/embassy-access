@@ -22,11 +22,11 @@ let private handleRequestConfirmation (request: Request) =
         | true, FirstAvailable ->
             match request.Appointments |> Seq.tryHead with
             | Some appointment -> Ok <| Some appointment
-            | None -> Error <| NotFound "First available appointment."
+            | None -> Error <| NotFound "First available appointment"
         | true, LastAvailable ->
             match request.Appointments |> Seq.tryLast with
             | Some appointment -> Ok <| Some appointment
-            | None -> Error <| NotFound "Last available appointment."
+            | None -> Error <| NotFound "Last available appointment"
         | true, DateTimeRange(min, max) ->
 
             let minDate = DateOnly.FromDateTime(min)
@@ -45,7 +45,7 @@ let private handleRequestConfirmation (request: Request) =
             | Some appointment -> Ok <| Some appointment
             | None ->
                 Error
-                <| NotFound $"Appointment in range '{min.ToShortDateString()}' - '{max.ToShortDateString()}'."
+                <| NotFound $"Appointment in the range '{min.ToShortDateString()}' - '{max.ToShortDateString()}'."
 
 let private createHttpRequest formData queryParamsId =
 

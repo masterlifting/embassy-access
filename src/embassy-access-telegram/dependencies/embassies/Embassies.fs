@@ -47,7 +47,7 @@ type Dependencies =
                         // try to get the countryId from the embassyId. It should be the second part of the embassyId
                         match node.Id.TryGetPart 1 with
                         | None ->
-                            $"Services of Embassy '%s{embassyId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
+                            $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}'"
                             |> NotFound
                             |> Error
                             |> async.Return
@@ -60,7 +60,7 @@ type Dependencies =
                             |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                             |> ResultAsync.bind (function
                                 | None ->
-                                    $"Services of Embassy '%s{embassyId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
+                                    $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}'"
                                     |> NotFound
                                     |> Error
                                 | Some serviceNode -> serviceNode |> Ok))
@@ -70,7 +70,7 @@ type Dependencies =
                 |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                 |> ResultAsync.bind (function
                     | None ->
-                        $"Service '%s{serviceId.Value}' for user chat '%s{deps.ChatId.ValueStr}'"
+                        $"Service '%s{serviceId.Value}' for the chat '%s{deps.ChatId.ValueStr}'"
                         |> NotFound
                         |> Error
                     | Some serviceNode -> serviceNode |> Ok)

@@ -147,5 +147,5 @@ let deleteSubscription requestId =
                 deps.deleteRequest requestId
                 |> ResultAsync.bind (fun _ ->
                     (deps.Chat.Id, New)
-                    |> Text.create $"Subscription for '{request.Service.Name}' has been deleted"
+                    |> Text.create $"Subscription '{requestId}' for '{request.Service.Name}' has been deleted."
                     |> Ok))

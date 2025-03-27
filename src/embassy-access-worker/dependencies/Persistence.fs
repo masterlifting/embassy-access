@@ -28,7 +28,7 @@ type Dependencies =
                 cfg
                 |> Configuration.getSection<string> "Persistence:FileSystem"
                 |> Option.map Ok
-                |> Option.defaultValue ("Section 'Persistence:FileSystem' in the configuration." |> NotFound |> Error)
+                |> Option.defaultValue ("The configuration section 'Persistence:FileSystem'" |> NotFound |> Error)
 
             let initCultureStorage () =
                 { FileSystem.Connection.FilePath = fileStoragePath

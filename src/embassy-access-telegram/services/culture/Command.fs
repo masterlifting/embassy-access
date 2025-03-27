@@ -12,7 +12,7 @@ let setCulture (culture: Culture) =
         |> deps.setCurrentCulture
         |> ResultAsync.map (fun _ ->
             (deps.ChatId, Replace deps.MessageId)
-            |> Text.create $"The language has been changed to {culture.Name}")
+            |> Text.create $"The language has been changed to the '{culture.Name}'")
 
 let setCultureCallback (culture: Culture) =
     fun (deps: Request.Dependencies) -> culture |> deps.setCurrentCulture
