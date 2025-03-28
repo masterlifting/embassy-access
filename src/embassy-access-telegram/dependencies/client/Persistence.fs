@@ -11,6 +11,7 @@ open Infrastructure.Prelude
 type Dependencies =
     { ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
+      setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
       getRequestChats: Request -> Async<Result<Chat list, Error'>>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>> }
@@ -41,11 +42,18 @@ type Dependencies =
 
                 let getEmbassyGraph () =
                     initEmbassyGraphStorage () |> ResultAsync.wrap EmbassyGraph.get
-
+                    
+                let setRequestAppointments serviceId appointments =
+                    requestStorage
+                    |> Request.Query.findManyByServiceId serviceId
+                    |> ResultAsync.map(fun requests -> requests |> Seq.map(fun request -> { request with Appointments = appointments }))
+                    |> ResultAsync.bindAsync (fun requests -> requestStorage |> Request.Command.updateSeq requests)
+                    
                 return
                     { ChatStorage = chatStorage
                       RequestStorage = requestStorage
                       getRequestChats = getRequestChats
+                      setRequestAppointments = setRequestAppointments
                       getEmbassyGraph = getEmbassyGraph
                       getServiceGraph = getServiceGraph }
             }

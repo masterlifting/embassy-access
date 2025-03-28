@@ -332,6 +332,13 @@ module Command =
         | Storage.FileSystem client -> client |> FileSystem.Command.update request
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
 
+    //TODO: Optimize this
+    let updateSeq requests storage =
+        requests
+        |> Seq.map (fun request -> storage |> update request)
+        |> Async.Sequential
+        |> Async.map Result.choose
+
     let createOrUpdate request storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.createOrUpdate request

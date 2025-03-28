@@ -87,7 +87,7 @@ module Notification =
                 |> Ok
             )
 
-    let send notification =
+    let spread notification =
         fun (deps: Kdmid.Notification.Dependencies) ->
 
             let translate (culture, messages) = deps.translateMessages culture messages
@@ -95,7 +95,7 @@ module Notification =
             let spreadMessages data =
                 data
                 |> ResultAsync.map (Seq.groupBy fst)
-                |> ResultAsync.map (Seq.map (fun (culture, group) -> (culture, group |> Seq.map snd |> List.ofSeq)))
+                |> ResultAsync.map (Seq.map (fun (culture, group) -> culture, group |> Seq.map snd |> List.ofSeq))
                 |> ResultAsync.bindAsync (Seq.map translate >> Async.Parallel >> Async.map Result.choose)
                 |> ResultAsync.map (Seq.collect id)
                 |> ResultAsync.bindAsync deps.sendMessages
@@ -108,8 +108,9 @@ module Notification =
                 |> ResultAsync.map (Seq.map (fun chat -> chat.Culture, chat.Id |> toUnsuccessfully (request, error)))
                 |> spreadMessages
             | HasAppointments(request, appointments) ->
-                request
-                |> deps.getRequestChats
+                appointments
+                |> deps.setRequestAppointments request.Service.Id
+                |> ResultAsync.bindAsync (fun _ -> request |> deps.getRequestChats)
                 |> ResultAsync.bind (
                     Seq.map (fun chat ->
                         chat.Id

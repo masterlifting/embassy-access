@@ -20,6 +20,7 @@ type Dependencies =
       ChatStorage: Chat.ChatStorage
       RequestStorage: Request.RequestStorage
       getRequestChats: Request -> Async<Result<Chat list, Error'>>
+      setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       tryGetChat: unit -> Async<Result<Chat option, Error'>>
@@ -73,6 +74,7 @@ type Dependencies =
                       ChatStorage = deps.Persistence.ChatStorage
                       RequestStorage = deps.Persistence.RequestStorage
                       getRequestChats = deps.Persistence.getRequestChats
+                      setRequestAppointments = deps.Persistence.setRequestAppointments
                       getServiceGraph = deps.Persistence.getServiceGraph
                       getEmbassyGraph = deps.Persistence.getEmbassyGraph
                       tryGetChat = tryGetChat

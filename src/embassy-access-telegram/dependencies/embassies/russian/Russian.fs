@@ -24,7 +24,8 @@ type Dependencies =
       getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
       getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
       getRequestChats: Request -> Async<Result<Chat list, Error'>>
-      getChatRequests: unit -> Async<Result<Request list, Error'>> }
+      getChatRequests: unit -> Async<Result<Request list, Error'>>
+      setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>> }
 
     static member create chat (deps: Request.Dependencies) =
         let result = ResultBuilder()
@@ -46,5 +47,6 @@ type Dependencies =
                   getEmbassyGraph = deps.getEmbassyGraph
                   getServiceGraph = deps.getServiceGraph
                   getRequestChats = deps.getRequestChats
+                  setRequestAppointments = deps.setRequestAppointments
                   getChatRequests = getChatRequests }
         }

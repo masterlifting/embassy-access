@@ -18,12 +18,14 @@ module Notification =
 
     type Dependencies =
         { getRequestChats: Request -> Async<Result<Chat list, Error'>>
+          setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
           translateMessages: Culture -> Message seq -> Async<Result<Message list, Error'>>
           sendMessages: Message seq -> Async<Result<unit, Error'>> }
 
         static member create() =
             fun (deps: Russian.Dependencies) ->
                 { translateMessages = deps.Culture.translateSeq
+                  setRequestAppointments = deps.setRequestAppointments
                   getRequestChats = deps.getRequestChats
                   sendMessages = deps.sendMessages }
 
