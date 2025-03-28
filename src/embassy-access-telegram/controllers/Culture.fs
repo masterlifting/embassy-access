@@ -27,4 +27,12 @@ let apply (request: EA.Telegram.Router.Router.Route) callback =
         deps.tryGetChat ()
         |> ResultAsync.bindAsync (function
             | Some chat -> deps |> callback chat
-            | None -> deps |> Query.getCulturesCallback request.Value |> deps.sendMessageRes)
+            | None ->
+                deps
+                |> Query.getCulturesCallback request.Value
+                |> deps.sendMessageRes
+                |> ResultAsync.mapErrorAsync (fun error ->
+                    deps
+                    |> Query.getCultures ()
+                    |> deps.sendMessageRes
+                    |> Async.map (fun _ -> error)))

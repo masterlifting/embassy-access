@@ -18,14 +18,14 @@ type ConfirmationStateEntity() =
 
     member val Type = String.Empty with get, set
     member val ConfirmationOption: ConfirmationOptionEntity option = None with get, set
-    member val AppointmentId: Guid option = None with get, set
+    member val AppointmentId: string option = None with get, set
 
     member this.ToDomain() =
         match this.Type with
         | DISABLED -> Disabled |> Ok
         | MANUAL ->
             match this.AppointmentId with
-            | Some id -> id |> AppointmentId |> Manual |> Ok
+            | Some id -> id |> AppointmentId.parse |> Result.map Manual
             | None -> nameof AppointmentId |> NotFound |> Error
         | AUTO ->
             match this.ConfirmationOption with
@@ -44,7 +44,7 @@ type internal ConfirmationState with
         | Disabled -> result.Type <- DISABLED
         | Manual appointmentId ->
             result.Type <- MANUAL
-            result.AppointmentId <- Some appointmentId.Value
+            result.AppointmentId <- Some appointmentId.ValueStr
         | Auto option ->
             result.Type <- AUTO
             result.ConfirmationOption <- Some option |> Option.map _.ToEntity()

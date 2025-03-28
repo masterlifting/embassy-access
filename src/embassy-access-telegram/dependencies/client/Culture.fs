@@ -13,90 +13,79 @@ module private Payload =
     module Error =
         let translate culture (error: Error') =
             fun (translate, shield) ->
-                match culture with
-                | English -> error |> Ok |> async.Return
-                | _ ->
+                let text = error.MessageOnly
 
-                    let text = error.MessageOnly
+                let request =
+                    { Culture = culture
+                      Shield = shield
+                      Items = [ { Value = text } ] }
 
-                    let request =
-                        { Culture = culture
-                          Shield = shield
-                          Items = [ { Value = text } ] }
-
-                    translate request
-                    |> ResultAsync.map (fun response ->
-                        response.Items
-                        |> List.map (fun item -> item.Value, item.Result |> Option.defaultValue item.Value)
-                        |> Map.ofList
-                        |> Map.tryFind text
-                        |> Option.defaultValue text)
-                    |> ResultAsync.map error.replaceMsg
+                translate request
+                |> ResultAsync.map (fun response ->
+                    response.Items
+                    |> List.map (fun item -> item.Value, item.Result |> Option.defaultValue item.Value)
+                    |> Map.ofList
+                    |> Map.tryFind text
+                    |> Option.defaultValue text)
+                |> ResultAsync.map error.replaceMsg
 
     module Text =
         let translate culture (payload: Payload<string>) =
             fun (translate, shield) ->
-                match culture with
-                | English -> payload |> Text |> Ok |> async.Return
-                | _ ->
-                    let text = payload.Value
+                let text = payload.Value
 
-                    let request =
-                        { Culture = culture
-                          Shield = shield
-                          Items = [ { Value = text } ] }
+                let request =
+                    { Culture = culture
+                      Shield = shield
+                      Items = [ { Value = text } ] }
 
-                    translate request
-                    |> ResultAsync.map (fun response ->
-                        response.Items
-                        |> List.map (fun item -> item.Value, item.Result |> Option.defaultValue item.Value)
-                        |> Map.ofList
-                        |> Map.tryFind text
-                        |> Option.defaultValue text)
-                    |> ResultAsync.map (fun value -> { payload with Value = value } |> Text)
+                translate request
+                |> ResultAsync.map (fun response ->
+                    response.Items
+                    |> List.map (fun item -> item.Value, item.Result |> Option.defaultValue item.Value)
+                    |> Map.ofList
+                    |> Map.tryFind text
+                    |> Option.defaultValue text)
+                |> ResultAsync.map (fun value -> { payload with Value = value } |> Text)
 
     module ButtonsGroup =
         let translate culture (payload: Payload<ButtonsGroup>) =
             fun (translate, shield) ->
-                match culture with
-                | English -> payload |> ButtonsGroup |> Ok |> async.Return
-                | _ ->
+                let group = payload.Value
 
-                    let group = payload.Value
+                let items =
+                    { Value = group.Name }
+                    :: (group.Buttons |> Set.map (fun button -> { Value = button.Name }) |> Set.toList)
 
-                    let items =
-                        { Value = group.Name }
-                        :: (group.Buttons |> Set.map (fun button -> { Value = button.Name }) |> Set.toList)
+                let request =
+                    { Culture = culture
+                      Shield = shield
+                      Items = items }
 
-                    let request =
-                        { Culture = culture
-                          Shield = shield
-                          Items = items }
+                translate request
+                |> ResultAsync.map (fun response ->
+                    let responseItemsMap =
+                        response.Items
+                        |> List.map (fun item -> item.Value, item.Result |> Option.defaultValue item.Value)
+                        |> Map.ofList
 
-                    translate request
-                    |> ResultAsync.map (fun response ->
-                        let responseItemsMap =
-                            response.Items
-                            |> List.map (fun item -> item.Value, item.Result |> Option.defaultValue item.Value)
-                            |> Map.ofList
+                    let buttonsGroupName =
+                        responseItemsMap |> Map.tryFind group.Name |> Option.defaultValue group.Name
 
-                        let buttonsGroupName =
-                            responseItemsMap |> Map.tryFind group.Name |> Option.defaultValue group.Name
+                    let buttons =
+                        group.Buttons
+                        |> Seq.map (fun button ->
+                            let buttonName =
+                                responseItemsMap |> Map.tryFind button.Name |> Option.defaultValue button.Name
 
-                        let buttons =
-                            group.Buttons
-                            |> Seq.map (fun button ->
-                                let buttonName =
-                                    responseItemsMap |> Map.tryFind button.Name |> Option.defaultValue button.Name
+                            { button with Name = buttonName })
+                        |> Seq.sortBy _.Name
+                        |> Set.ofSeq
 
-                                { button with Name = buttonName })
-                            |> Seq.sortBy _.Name
-                            |> Set.ofSeq
-
-                        { group with
-                            Name = buttonsGroupName
-                            Buttons = buttons })
-                    |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
+                    { group with
+                        Name = buttonsGroupName
+                        Buttons = buttons })
+                |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
 
 type Dependencies =
     { translate: Culture -> Message -> Async<Result<Message, Error'>>

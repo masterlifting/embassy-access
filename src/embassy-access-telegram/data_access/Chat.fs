@@ -29,14 +29,14 @@ type ChatEntity() =
         this.Subscriptions
         |> Seq.map (fun x ->
             match x with
-            | AP.IsGuid id -> Ok <| RequestId id
+            | AP.IsUUID16 id -> Ok <| RequestId id
             | _ -> $"The subscription '{x}'" |> NotSupported |> Error)
         |> Result.choose
         |> Result.map Set.ofList
         |> Result.map (fun subscriptions ->
             { Id = this.Id |> ChatId
               Subscriptions = subscriptions
-              Culture = this.Culture |> Culture.create })
+              Culture = this.Culture |> Culture.parse })
 
 type private Chat with
     member private this.ToEntity() =
@@ -83,7 +83,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.map (Seq.collect _.Subscriptions)
-            |> Result.map (Seq.map RequestId.create)
+            |> Result.map (Seq.map RequestId.parse)
             |> Result.bind Result.choose
             |> async.Return
 
@@ -217,7 +217,7 @@ module private FileSystem =
             client
             |> loadData
             |> ResultAsync.map (Seq.collect _.Subscriptions)
-            |> ResultAsync.map (Seq.map RequestId.create)
+            |> ResultAsync.map (Seq.map RequestId.parse)
             |> ResultAsync.bind Result.choose
 
         let tryFindById (id: ChatId) client =

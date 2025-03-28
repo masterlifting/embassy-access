@@ -6,20 +6,20 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 
 type AppointmentId =
-    | AppointmentId of Guid
+    | AppointmentId of UUID16
 
     member this.Value =
         match this with
         | AppointmentId id -> id
 
-    member this.ValueStr = this.Value |> string
+    member this.ValueStr = this.Value.Value
 
-    static member create value =
+    static member parse value =
         match value with
-        | AP.IsGuid id -> AppointmentId id |> Ok
-        | _ -> $"AppointmentId value '{value}'" |> NotSupported |> Error
+        | AP.IsUUID16 id -> AppointmentId id |> Ok
+        | _ -> $"AppointmentId '{value}'" |> NotSupported |> Error
 
-    static member New = AppointmentId <| Guid.NewGuid()
+    static member createNew() = AppointmentId <| UUID16.createNew ()
 
 type Appointment =
     { Id: AppointmentId

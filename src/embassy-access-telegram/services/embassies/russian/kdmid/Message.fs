@@ -46,7 +46,7 @@ module Notification =
                         |> Method.Post
                         |> Router.RussianEmbassy
 
-                    route.Value, appointment.Description)
+                    route.Value, appointment.Value)
                 |> fun data ->
                     (chatId, New)
                     |> ButtonsGroup.create

@@ -18,6 +18,6 @@ type Route =
         let parts = input.Split Constants.Endpoint.DELIMITER
 
         match parts with
-        | [| "0"; requestId |] -> RequestId.create requestId |> Result.map Appointments
-        | [| "1"; requestId |] -> RequestId.create requestId |> Result.map SubscriptionsMenu
+        | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Appointments
+        | [| "1"; requestId |] -> RequestId.parse requestId |> Result.map SubscriptionsMenu
         | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Get endpoint" |> NotSupported |> Error

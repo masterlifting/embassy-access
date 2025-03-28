@@ -40,7 +40,21 @@ type Dependencies =
                     deps.Persistence.ChatStorage |> Chat.Query.tryFindById payload.ChatId
 
                 let getAvailableCultures () =
-                    [ English, "English"; Russian, "Русский" ] |> Map |> Ok |> async.Return
+                    [ English, "English"
+                      Russian, "Русский"
+                      Chinese, "中文"
+                      Spanish, "Español"
+                      Hindi, "हिन्दी"
+                      Arabic, "العربية"
+                      Serbian, "Српски"
+                      Portuguese, "Português"
+                      French, "Français"
+                      German, "Deutsch"
+                      Japanese, "日本語"
+                      Korean, "한국어" ]
+                    |> Map
+                    |> Ok
+                    |> async.Return
 
                 let setCurrentCulture culture =
                     deps.Persistence.ChatStorage |> Chat.Command.setCulture payload.ChatId culture
