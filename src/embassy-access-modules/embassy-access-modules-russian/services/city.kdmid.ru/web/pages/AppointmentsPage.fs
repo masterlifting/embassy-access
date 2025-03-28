@@ -1,6 +1,8 @@
 ﻿module internal EA.Embassies.Russian.Kdmid.Web.AppointmentsPage
 
 open System
+open System.Text.RegularExpressions
+open EA.Embassies.Russian.Kdmid.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
@@ -25,9 +27,34 @@ let private createHttpRequest formData queryParams =
 
     request, content
 
+let private httpResponseHasInconsistentState page =
+    page
+    |> Html.getNode "//span[@id='ctl00_MainContent_Label_Message']"
+    |> Result.bind (function
+        | None -> Ok page
+        | Some node ->
+            match node.InnerHtml with
+            | AP.IsString text ->
+                let text = Regex.Replace(text, @"<[^>]*>", Environment.NewLine)
+                let text = Regex.Replace(text, @"\s+", " ")
+
+                let has (pattern: string) (node: string) =
+                    node.Contains(pattern, StringComparison.OrdinalIgnoreCase)
+
+                match text with
+                | text when text |> has "Ваша заявка заблокирована" ->
+                    Error
+                    <| Operation {
+                        Message = text
+                        Code = Constants.ErrorCode.REQUEST_BLOCKED |> Custom |> Some
+                    }
+                | _ -> Ok page
+            | _ -> Ok page)
+    
 let private parseHttpResponse page =
     Html.load page
     |> Result.bind Html.pageHasError
+    |> Result.bind httpResponseHasInconsistentState
     |> Result.bind (Html.getNodes "//input")
     |> Result.bind (function
         | None -> Ok Map.empty
