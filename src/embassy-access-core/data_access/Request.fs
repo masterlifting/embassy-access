@@ -24,7 +24,7 @@ type StorageType =
     | FileSystem of FileSystem.Connection
 
 type RequestEntity() =
-    member val Id = Guid.Empty with get, set
+    member val Id = String.Empty with get, set
     member val Service = RequestServiceEntity() with get, set
     member val Attempt = 0 with get, set
     member val AttemptModified = DateTime.UtcNow with get, set
@@ -39,25 +39,27 @@ type RequestEntity() =
 
         result {
 
+            let! requestId = RequestId.parse this.Id
             let! processState = this.ProcessState.ToDomain()
             let! subscriptionState = this.SubscriptionState.ToDomain()
             let! confirmationState = this.ConfirmationState.ToDomain()
+            let! appointments = this.Appointments |> Seq.map _.ToDomain() |> Result.choose
 
             return
-                { Id = this.Id |> RequestId
+                { Id = requestId
                   Service = this.Service.ToDomain()
                   Attempt = this.AttemptModified, this.Attempt
                   ProcessState = processState
                   SubscriptionState = subscriptionState
                   ConfirmationState = confirmationState
-                  Appointments = this.Appointments |> Seq.map _.ToDomain() |> Set.ofSeq
+                  Appointments = appointments |> Set.ofSeq
                   Modified = this.Modified }
         }
 
 type private Request with
     member private this.ToEntity() =
         let result = RequestEntity()
-        result.Id <- this.Id.Value
+        result.Id <- this.Id.ValueStr
         result.Service <- this.Service.ToEntity()
         result.Attempt <- this.Attempt |> snd
         result.AttemptModified <- this.Attempt |> fst
@@ -70,19 +72,19 @@ type private Request with
 
 module private Common =
     let create (request: Request) (data: RequestEntity array) =
-        match data |> Array.exists (fun x -> x.Id = request.Id.Value) with
+        match data |> Array.exists (fun x -> x.Id = request.Id.ValueStr) with
         | true -> $"The '{request.Id}'" |> AlreadyExists |> Error
         | false -> data |> Array.append [| request.ToEntity() |] |> Ok
 
     let update (request: Request) (data: RequestEntity array) =
-        match data |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
+        match data |> Array.tryFindIndex (fun x -> x.Id = request.Id.ValueStr) with
         | Some index ->
             data[index] <- request.ToEntity()
             Ok data
         | None -> $"The '{request.Id}'" |> NotFound |> Error
 
     let delete (id: RequestId) (data: RequestEntity array) =
-        match data |> Array.tryFindIndex (fun x -> x.Id = id.Value) with
+        match data |> Array.tryFindIndex (fun x -> x.Id = id.ValueStr) with
         | Some index -> data |> Array.removeAt index |> Ok
         | None -> $"The '{id}'" |> NotFound |> Error
 
@@ -96,13 +98,13 @@ module private InMemory =
         let getIdentifiers client =
             client
             |> loadData
-            |> Result.map (Seq.map (fun x -> x.Id |> RequestId))
+            |> Result.bind (Seq.map (fun x -> x.Id |> RequestId.parse) >> Result.choose)
             |> async.Return
 
         let tryFindById (id: RequestId) client =
             client
             |> loadData
-            |> Result.map (Seq.tryFind (fun x -> x.Id = id.Value))
+            |> Result.map (Seq.tryFind (fun x -> x.Id = id.ValueStr))
             |> Result.bind (Option.toResult _.ToDomain())
             |> async.Return
 
@@ -128,7 +130,7 @@ module private InMemory =
             |> async.Return
 
         let findManyByIds (ids: RequestId seq) client =
-            let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
+            let requestIds = ids |> Seq.map _.ValueStr |> Set.ofSeq
 
             client
             |> loadData
@@ -158,7 +160,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (fun data ->
-                match data |> Seq.exists (fun x -> x.Id = request.Id.Value) with
+                match data |> Seq.exists (fun x -> x.Id = request.Id.ValueStr) with
                 | true -> data |> Common.update request
                 | false -> data |> Common.create request)
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
@@ -173,9 +175,11 @@ module private InMemory =
             |> async.Return
 
         let deleteMany (ids: RequestId Set) client =
+            let idSet = ids |> Set.map _.ValueStr
+
             client
             |> loadData
-            |> Result.map (Array.filter (fun request -> not (ids.Contains(request.Id |> RequestId))))
+            |> Result.map (Array.filter (fun request -> not (idSet.Contains(request.Id))))
             |> Result.bind (fun data -> client |> Command.Json.save Name data)
             |> async.Return
 
@@ -187,12 +191,14 @@ module private FileSystem =
     module Query =
 
         let getIdentifiers client =
-            client |> loadData |> ResultAsync.map (Seq.map (fun x -> x.Id |> RequestId))
+            client
+            |> loadData
+            |> ResultAsync.bind (Seq.map (fun x -> x.Id |> RequestId.parse) >> Result.choose)
 
         let tryFindById (id: RequestId) client =
             client
             |> loadData
-            |> ResultAsync.map (Seq.tryFind (fun x -> x.Id = id.Value))
+            |> ResultAsync.map (Seq.tryFind (fun x -> x.Id = id.ValueStr))
             |> ResultAsync.bind (Option.toResult _.ToDomain())
 
         let findManyByEmbassyId (embassyId: Graph.NodeId) client =
@@ -214,7 +220,7 @@ module private FileSystem =
             |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
 
         let findManyByIds (ids: RequestId seq) client =
-            let requestIds = ids |> Seq.map _.Value |> Set.ofSeq
+            let requestIds = ids |> Seq.map _.ValueStr |> Set.ofSeq
 
             client
             |> loadData
@@ -242,7 +248,7 @@ module private FileSystem =
             client
             |> loadData
             |> ResultAsync.bind (fun data ->
-                match data |> Seq.exists (fun x -> x.Id = request.Id.Value) with
+                match data |> Seq.exists (fun x -> x.Id = request.Id.ValueStr) with
                 | true -> data |> Common.update request
                 | false -> data |> Common.create request)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
@@ -255,9 +261,11 @@ module private FileSystem =
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
 
         let deleteMany (ids: RequestId Set) client =
+            let idSet = ids |> Set.map _.ValueStr
+
             client
             |> loadData
-            |> ResultAsync.map (Array.filter (fun request -> not (ids.Contains(request.Id |> RequestId))))
+            |> ResultAsync.map (Array.filter (fun request -> not (idSet.Contains(request.Id))))
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
 
 let private toPersistenceStorage storage =

@@ -80,7 +80,7 @@ type Route =
         | [| "0"; serviceId; embassyId; payload |] -> createSubscription serviceId embassyId payload Disabled
         | [| "1"; serviceId; embassyId; appointmentId; payload |] ->
             appointmentId
-            |> AppointmentId.create
+            |> AppointmentId.parse
             |> Result.bind (fun appointmentId ->
                 createSubscription serviceId embassyId payload (ConfirmationState.Manual appointmentId))
         | [| "2"; serviceId; embassyId; payload |] ->
@@ -103,7 +103,7 @@ type Route =
             |> Ok
         | [| "6"; serviceId; embassyId; appointmentIds |] ->
             appointmentIds.Split ','
-            |> Array.map AppointmentId.create
+            |> Array.map AppointmentId.parse
             |> Result.choose
             |> Result.map (fun appointmentIds ->
                 { ServiceId = serviceId |> Graph.NodeIdValue
@@ -111,9 +111,9 @@ type Route =
                   AppointmentIds = appointmentIds |> Set.ofList })
             |> Result.map SendAppointments
         | [| "7"; requestId; appointmentId |] ->
-            RequestId.create requestId
+            RequestId.parse requestId
             |> Result.bind (fun requestId ->
-                AppointmentId.create appointmentId
+                AppointmentId.parse appointmentId
                 |> Result.map (fun appointmentId ->
                     { RequestId = requestId
                       AppointmentId = appointmentId }))

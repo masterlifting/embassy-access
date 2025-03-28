@@ -12,7 +12,7 @@ type KdmidRequest =
       ConfirmationState: ConfirmationState }
 
     member this.ToRequest() =
-        { Id = RequestId.New
+        { Id = RequestId.createNew ()
           Service =
             { Id = this.Service.Id
               Name = this.Service.Name

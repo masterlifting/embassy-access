@@ -10,7 +10,7 @@ type MidpassRequest =
       Service: ServiceNode }
 
     member internal this.ToRequest() =
-        { Id = RequestId.New
+        { Id = RequestId.createNew ()
           Service =
             { Id = this.Service.Id
               Name = this.Service.Name

@@ -6,20 +6,20 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 
 type RequestId =
-    | RequestId of Guid
+    | RequestId of UUID16
 
     member this.Value =
         match this with
         | RequestId id -> id
 
-    member this.ValueStr = this.Value |> string
+    member this.ValueStr = this.Value.Value
 
-    static member create value =
+    static member parse value =
         match value with
-        | AP.IsGuid id -> RequestId id |> Ok
-        | _ -> $"RequestId value '{value}'" |> NotSupported |> Error
+        | AP.IsUUID16 id -> RequestId id |> Ok
+        | _ -> $"RequestId '{value}'" |> NotSupported |> Error
 
-    static member New = RequestId <| Guid.NewGuid()
+    static member createNew() = RequestId <| UUID16.createNew ()
 
 type Request =
     { Id: RequestId

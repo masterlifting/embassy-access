@@ -20,6 +20,6 @@ type Route =
         let parts = input.Split DELIMITER
 
         match parts with
-        | [| "0"; code |] -> code |> Culture.create |> SetCulture |> Ok
-        | [| "1"; route; code |] -> (route, code |> Culture.create) |> SetCultureCallback |> Ok
+        | [| "0"; code |] -> code |> Culture.parse |> SetCulture |> Ok
+        | [| "1"; route; code |] -> (route, code |> Culture.parse) |> SetCultureCallback |> Ok
         | _ -> $"'{parts}' of Culture.Post endpoint" |> NotSupported |> Error

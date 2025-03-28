@@ -98,7 +98,7 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
             match date, time with
             | (true, date), (true, time) ->
                 Ok
-                <| { Id = AppointmentId.New
+                <| { Id = AppointmentId.createNew ()
                      Value = value
                      Date = date
                      Time = time
