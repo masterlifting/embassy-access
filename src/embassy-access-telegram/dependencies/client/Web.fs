@@ -10,12 +10,13 @@ module Telegram =
     open Web.Clients.Domain.Telegram
     open Web.Clients.Domain.Telegram.Producer
 
-    type Dependencies =
-        { Client: Telegram.Client
-          sendMessage: Message -> Async<Result<unit, Error'>>
-          sendMessageRes: Async<Result<Message, Error'>> -> ChatId -> Async<Result<unit, Error'>>
-          sendMessages: Message seq -> Async<Result<unit, Error'>>
-          sendMessagesRes: Async<Result<Message seq, Error'>> -> ChatId -> Async<Result<unit, Error'>> }
+    type Dependencies = {
+        Client: Telegram.Client
+        sendMessage: Message -> Async<Result<unit, Error'>>
+        sendMessageRes: Async<Result<Message, Error'>> -> ChatId -> Async<Result<unit, Error'>>
+        sendMessages: Message seq -> Async<Result<unit, Error'>>
+        sendMessagesRes: Async<Result<Message seq, Error'>> -> ChatId -> Async<Result<unit, Error'>>
+    } with
 
         static member create ct =
             fun (client: Telegram.Client) ->
@@ -37,16 +38,18 @@ module Telegram =
                         |> Producer.produceResultSeq messagesRes chatId ct
                         |> ResultAsync.map ignore
 
-                    return
-                        { Client = client
-                          sendMessage = sendMessage
-                          sendMessageRes = sendMessageRes
-                          sendMessages = sendMessages
-                          sendMessagesRes = sendMessagesRes }
+                    return {
+                        Client = client
+                        sendMessage = sendMessage
+                        sendMessageRes = sendMessageRes
+                        sendMessages = sendMessages
+                        sendMessagesRes = sendMessagesRes
+                    }
                 }
 
-type Dependencies =
-    { Telegram: Telegram.Dependencies }
+type Dependencies = {
+    Telegram: Telegram.Dependencies
+} with
 
     static member create ct =
         fun (client: Telegram.Client) ->

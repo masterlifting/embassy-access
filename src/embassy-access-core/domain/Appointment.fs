@@ -21,10 +21,11 @@ type AppointmentId =
 
     static member createNew() = AppointmentId <| UUID16.createNew ()
 
-type Appointment =
-    { Id: AppointmentId
-      Value: string
-      Date: DateOnly
-      Time: TimeOnly
-      Confirmation: Confirmation option
-      Description: string }
+type Appointment = {
+    Id: AppointmentId
+    Value: string
+    Date: DateOnly
+    Time: TimeOnly
+    Confirmation: Confirmation option
+    Description: string
+}

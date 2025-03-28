@@ -33,10 +33,11 @@ type ChatEntity() =
             | _ -> $"The subscription '{x}'" |> NotSupported |> Error)
         |> Result.choose
         |> Result.map Set.ofList
-        |> Result.map (fun subscriptions ->
-            { Id = this.Id |> ChatId
-              Subscriptions = subscriptions
-              Culture = this.Culture |> Culture.parse })
+        |> Result.map (fun subscriptions -> {
+            Id = this.Id |> ChatId
+            Subscriptions = subscriptions
+            Culture = this.Culture |> Culture.parse
+        })
 
 type private Chat with
     member private this.ToEntity() =
@@ -196,10 +197,11 @@ module private InMemory =
                 match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
                 | None ->
                     data
-                    |> Common.create
-                        { Id = chatId
-                          Subscriptions = Set.empty
-                          Culture = culture }
+                    |> Common.create {
+                        Id = chatId
+                        Subscriptions = Set.empty
+                        Culture = culture
+                    }
                 | Some index ->
                     data[index].Culture <- culture.Code
                     data |> Ok)
@@ -322,15 +324,15 @@ module private FileSystem =
                 match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
                 | None ->
                     data
-                    |> Common.create
-                        { Id = chatId
-                          Subscriptions = Set.empty
-                          Culture = culture }
+                    |> Common.create {
+                        Id = chatId
+                        Subscriptions = Set.empty
+                        Culture = culture
+                    }
                 | Some index ->
                     data[index].Culture <- culture.Code
                     data |> Ok)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
-
 
 let private toPersistenceStorage storage =
     storage

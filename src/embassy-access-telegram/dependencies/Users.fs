@@ -11,18 +11,19 @@ open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Embassies
 open Web.Clients.Domain.Telegram.Producer
 
-type Dependencies =
-    { Chat: Chat
-      MessageId: int
-      Culture: Culture.Dependencies
-      Embassies: Embassies.Dependencies
-      sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-      getUserEmbassies: unit -> Async<Result<string option * EmbassyNode list, Error'>>
-      getUserEmbassyChildren: Graph.NodeId -> Async<Result<string option * EmbassyNode list, Error'>>
-      getUserEmbassyServices: Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
-      getUserEmbassyServiceChildren:
-          Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
-      translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>> }
+type Dependencies = {
+    Chat: Chat
+    MessageId: int
+    Culture: Culture.Dependencies
+    Embassies: Embassies.Dependencies
+    sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
+    getUserEmbassies: unit -> Async<Result<string option * EmbassyNode list, Error'>>
+    getUserEmbassyChildren: Graph.NodeId -> Async<Result<string option * EmbassyNode list, Error'>>
+    getUserEmbassyServices: Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
+    getUserEmbassyServiceChildren:
+        Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
+    translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
+} with
 
     static member create chat (deps: Request.Dependencies) =
         let result = ResultBuilder()
@@ -123,15 +124,16 @@ type Dependencies =
 
             let translateMessageRes = deps.Culture.translateRes chat.Culture
 
-            return
-                { Chat = chat
-                  MessageId = deps.MessageId
-                  Culture = deps.Culture
-                  Embassies = embassiesDeps
-                  sendMessageRes = deps.sendMessageRes
-                  getUserEmbassies = getUserEmbassies
-                  getUserEmbassyServices = getUserEmbassyServices
-                  getUserEmbassyChildren = getUserEmbassyChildren
-                  getUserEmbassyServiceChildren = getUserEmbassyServiceChildren
-                  translateMessageRes = translateMessageRes }
+            return {
+                Chat = chat
+                MessageId = deps.MessageId
+                Culture = deps.Culture
+                Embassies = embassiesDeps
+                sendMessageRes = deps.sendMessageRes
+                getUserEmbassies = getUserEmbassies
+                getUserEmbassyServices = getUserEmbassyServices
+                getUserEmbassyChildren = getUserEmbassyChildren
+                getUserEmbassyServiceChildren = getUserEmbassyServiceChildren
+                translateMessageRes = translateMessageRes
+            }
         }

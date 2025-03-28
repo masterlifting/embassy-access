@@ -29,9 +29,10 @@ let private buildSubscriptionMenu (request: Request) =
 
     match request.Service.Id.Split() with
     | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
-        Map
-            [ getRoute.Value, "Request available slots"
-              deleteRoute.Value, "Delete subscription" ]
+        Map [
+            getRoute.Value, "Request available slots"
+            deleteRoute.Value, "Delete subscription"
+        ]
     | _ -> Map [ deleteRoute.Value, "Delete subscription" ]
     |> Seq.map (fun x -> x.Key |> CallbackData |> Button.create x.Value)
     |> Set.ofSeq
@@ -53,13 +54,14 @@ let getSubscriptions (requests: Request list) =
         |> Result.choose
         |> Result.map (fun data ->
             (deps.Chat.Id, Replace deps.MessageId)
-            |> ButtonsGroup.create
-                { Name = "Select the subscription"
-                  Columns = 1
-                  Buttons =
+            |> ButtonsGroup.create {
+                Name = "Select the subscription"
+                Columns = 1
+                Buttons =
                     data
                     |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
-                    |> Set.ofSeq })
+                    |> Set.ofSeq
+            })
 
 let getSubscriptionsMenu requestId =
     fun (deps: Kdmid.Dependencies) ->
@@ -78,10 +80,11 @@ let getSubscriptionsMenu requestId =
                 |> Payload.toValue
                 |> Result.map (fun payloadValue ->
                     (deps.Chat.Id, Replace deps.MessageId)
-                    |> ButtonsGroup.create
-                        { Name = $"What do you want to do with the subscription '{payloadValue}'?"
-                          Columns = 1
-                          Buttons = buildSubscriptionMenu request }))
+                    |> ButtonsGroup.create {
+                        Name = $"What do you want to do with the subscription '{payloadValue}'?"
+                        Columns = 1
+                        Buttons = buildSubscriptionMenu request
+                    }))
 
 let getAppointments requestId =
     fun (deps: Kdmid.Dependencies) ->

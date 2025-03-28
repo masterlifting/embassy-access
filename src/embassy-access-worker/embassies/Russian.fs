@@ -15,9 +15,10 @@ let private createEmbassyId (task: WorkerTask) =
     |> Option.map (Graph.Node.Id.combine >> Ok)
     |> Option.defaultValue (
         Error
-        <| Operation
-            { Message = "Creating embassy Id failed."
-              Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
+        <| Operation {
+            Message = "Creating embassy Id failed."
+            Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
+        }
     )
 
 module private Kdmid =
@@ -82,8 +83,10 @@ module private Kdmid =
                             |> Ok
                         | Some validResults, None -> validResults |> Info |> Ok
                         | None, Some invalidResults ->
-                            { Message = invalidResults
-                              Code = None }
+                            {
+                                Message = invalidResults
+                                Code = None
+                            }
                             |> Operation
                             |> Error
                         | None, None -> "No results found." |> Debug |> Ok))
@@ -111,18 +114,20 @@ let private Router =
 
     Graph.Node(
         Id("RUS" |> Graph.NodeIdValue),
-        [ createNode "SRB" "BEG"
-          createNode "DEU" "BER"
-          createNode "FRA" "PAR"
-          createNode "MNE" "POD"
-          createNode "IRL" "DUB"
-          createNode "CHE" "BER"
-          createNode "FIN" "HEL"
-          createNode "NLD" "HAG"
-          createNode "ALB" "TIA"
-          createNode "SVN" "LJU"
-          createNode "BIH" "SJJ"
-          createNode "HUN" "BUD" ]
+        [
+            createNode "SRB" "BEG"
+            createNode "DEU" "BER"
+            createNode "FRA" "PAR"
+            createNode "MNE" "POD"
+            createNode "IRL" "DUB"
+            createNode "CHE" "BER"
+            createNode "FIN" "HEL"
+            createNode "NLD" "HAG"
+            createNode "ALB" "TIA"
+            createNode "SVN" "LJU"
+            createNode "BIH" "SJJ"
+            createNode "HUN" "BUD"
+        ]
     )
 
 let register () =

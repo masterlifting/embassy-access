@@ -19,14 +19,15 @@ type RouteNode =
     static member register(nodeId, handler) =
         fun router ->
             let rec innerLoop (node: Graph.Node<RouteNode>) =
-                let handler =
-                    { Id = node.ShortId
-                      Name = node.ShortName
-                      Handler =
+                let handler = {
+                    Id = node.ShortId
+                    Name = node.ShortName
+                    Handler =
                         match node.Children.IsEmpty, node.ShortId = nodeId with
                         | false, _ -> None
                         | true, false -> None
-                        | true, true -> handler |> Some }
+                        | true, true -> handler |> Some
+                }
 
                 Graph.Node(handler, node.Children |> List.map innerLoop)
 

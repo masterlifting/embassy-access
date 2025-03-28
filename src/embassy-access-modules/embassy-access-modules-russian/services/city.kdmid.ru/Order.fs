@@ -27,10 +27,11 @@ let private parsePayload =
         |> Result.map (fun payload -> payload, request))
 
 let private setInProcessState (deps: Order.Dependencies) request =
-    deps.updateRequest
-        { request with
+    deps.updateRequest {
+        request with
             ProcessState = InProcess
-            Modified = DateTime.UtcNow }
+            Modified = DateTime.UtcNow
+    }
 
 let private setAttemptCore (request: Request) =
     let attemptLimit = 20
@@ -45,12 +46,16 @@ let private setAttemptCore (request: Request) =
         Error
         <| Canceled $"Number of attempts reached the limit '%i{attemptLimit}' for today. The operation"
     | true, false ->
-        { request with
-            Attempt = DateTime.UtcNow, attempt + 1 }
+        {
+            request with
+                Attempt = DateTime.UtcNow, attempt + 1
+        }
         |> Ok
     | _ ->
-        { request with
-            Attempt = DateTime.UtcNow, 1 }
+        {
+            request with
+                Attempt = DateTime.UtcNow, 1
+        }
         |> Ok
 
 let private setAttempt (deps: Order.Dependencies) =
@@ -69,14 +74,17 @@ let private setCompletedState (deps: Order.Dependencies) request =
             | [] -> $"Found appointments: %i{request.Appointments.Count}"
             | confirmations -> $"Found confirmations: %i{confirmations.Length}"
 
-    deps.updateRequest
-        { request with
+    deps.updateRequest {
+        request with
             ProcessState = Completed message
-            Modified = DateTime.UtcNow }
+            Modified = DateTime.UtcNow
+    }
 
 let private handleFailedState error (deps: Order.Dependencies) restart request =
     match error with
-    | Operation { Code = Some(Custom Web.Captcha.ERROR_CODE) } ->
+    | Operation {
+                    Code = Some(Custom Web.Captcha.ERROR_CODE)
+                } ->
         match deps.RestartAttempts <= 0 with
         | true ->
             "Limit of restarting request due to captcha error reached. The request"
@@ -84,13 +92,17 @@ let private handleFailedState error (deps: Order.Dependencies) restart request =
             |> Error
             |> async.Return
         | false ->
-            { deps with
-                RestartAttempts = deps.RestartAttempts - 1 }
+            {
+                deps with
+                    RestartAttempts = deps.RestartAttempts - 1
+            }
             |> restart request
     | _ ->
-        { request with
-            ProcessState = Failed error
-            Modified = DateTime.UtcNow }
+        {
+            request with
+                ProcessState = Failed error
+                Modified = DateTime.UtcNow
+        }
         |> setAttemptCore
         |> ResultAsync.wrap deps.updateRequest
         |> ResultAsync.bind (fun _ -> Error <| error.extendMsg $"{Environment.NewLine}%s{request.Service.Payload}")

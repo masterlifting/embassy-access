@@ -6,25 +6,29 @@ open EA.Telegram.Domain
 open EA.Core.Domain
 
 module Model =
-    type Subscribe =
-        { ServiceId: Graph.NodeId
-          EmbassyId: Graph.NodeId
-          ConfirmationState: ConfirmationState
-          Payload: string }
+    type Subscribe = {
+        ServiceId: Graph.NodeId
+        EmbassyId: Graph.NodeId
+        ConfirmationState: ConfirmationState
+        Payload: string
+    }
 
-    type CheckAppointments =
-        { ServiceId: Graph.NodeId
-          EmbassyId: Graph.NodeId
-          Payload: string }
+    type CheckAppointments = {
+        ServiceId: Graph.NodeId
+        EmbassyId: Graph.NodeId
+        Payload: string
+    }
 
-    type SendAppointments =
-        { ServiceId: Graph.NodeId
-          EmbassyId: Graph.NodeId
-          AppointmentIds: Set<AppointmentId> }
+    type SendAppointments = {
+        ServiceId: Graph.NodeId
+        EmbassyId: Graph.NodeId
+        AppointmentIds: Set<AppointmentId>
+    }
 
-    type ConfirmAppointment =
-        { RequestId: RequestId
-          AppointmentId: AppointmentId }
+    type ConfirmAppointment = {
+        RequestId: RequestId
+        AppointmentId: AppointmentId
+    }
 
 open Model
 
@@ -39,29 +43,32 @@ type Route =
         | Subscribe model ->
             match model.ConfirmationState with
             | ConfirmationState.Disabled -> [ "0"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
-            | ConfirmationState.Manual appointmentId ->
-                [ "1"
-                  model.ServiceId.Value
-                  model.EmbassyId.Value
-                  appointmentId.ValueStr
-                  model.Payload ]
+            | ConfirmationState.Manual appointmentId -> [
+                "1"
+                model.ServiceId.Value
+                model.EmbassyId.Value
+                appointmentId.ValueStr
+                model.Payload
+              ]
             | ConfirmationState.Auto option ->
                 match option with
                 | FirstAvailable -> [ "2"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
                 | LastAvailable -> [ "3"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
-                | DateTimeRange(start, finish) ->
-                    [ "4"
-                      model.ServiceId.Value
-                      model.EmbassyId.Value
-                      start |> string
-                      finish |> string
-                      model.Payload ]
+                | DateTimeRange(start, finish) -> [
+                    "4"
+                    model.ServiceId.Value
+                    model.EmbassyId.Value
+                    start |> string
+                    finish |> string
+                    model.Payload
+                  ]
         | CheckAppointments model -> [ "5"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
-        | SendAppointments model ->
-            [ "6"
-              model.ServiceId.Value
-              model.EmbassyId.Value
-              model.AppointmentIds |> Set.map _.ValueStr |> Set.toArray |> String.concat "," ]
+        | SendAppointments model -> [
+            "6"
+            model.ServiceId.Value
+            model.EmbassyId.Value
+            model.AppointmentIds |> Set.map _.ValueStr |> Set.toArray |> String.concat ","
+          ]
         | ConfirmAppointment model -> [ "7"; model.RequestId.ValueStr; model.AppointmentId.ValueStr ]
         |> String.concat Constants.Endpoint.DELIMITER
 
@@ -69,10 +76,12 @@ type Route =
         let parts = input.Split Constants.Endpoint.DELIMITER
 
         let inline createSubscription serviceId embassyId payload confirmation =
-            { ServiceId = serviceId |> Graph.NodeIdValue
-              EmbassyId = embassyId |> Graph.NodeIdValue
-              ConfirmationState = confirmation
-              Payload = payload }
+            {
+                ServiceId = serviceId |> Graph.NodeIdValue
+                EmbassyId = embassyId |> Graph.NodeIdValue
+                ConfirmationState = confirmation
+                Payload = payload
+            }
             |> Subscribe
             |> Ok
 
@@ -96,26 +105,30 @@ type Route =
                 |> NotSupported
                 |> Error
         | [| "5"; serviceId; embassyId; payload |] ->
-            { ServiceId = serviceId |> Graph.NodeIdValue
-              EmbassyId = embassyId |> Graph.NodeIdValue
-              Payload = payload }
+            {
+                ServiceId = serviceId |> Graph.NodeIdValue
+                EmbassyId = embassyId |> Graph.NodeIdValue
+                Payload = payload
+            }
             |> CheckAppointments
             |> Ok
         | [| "6"; serviceId; embassyId; appointmentIds |] ->
             appointmentIds.Split ','
             |> Array.map AppointmentId.parse
             |> Result.choose
-            |> Result.map (fun appointmentIds ->
-                { ServiceId = serviceId |> Graph.NodeIdValue
-                  EmbassyId = embassyId |> Graph.NodeIdValue
-                  AppointmentIds = appointmentIds |> Set.ofList })
+            |> Result.map (fun appointmentIds -> {
+                ServiceId = serviceId |> Graph.NodeIdValue
+                EmbassyId = embassyId |> Graph.NodeIdValue
+                AppointmentIds = appointmentIds |> Set.ofList
+            })
             |> Result.map SendAppointments
         | [| "7"; requestId; appointmentId |] ->
             RequestId.parse requestId
             |> Result.bind (fun requestId ->
                 AppointmentId.parse appointmentId
-                |> Result.map (fun appointmentId ->
-                    { RequestId = requestId
-                      AppointmentId = appointmentId }))
+                |> Result.map (fun appointmentId -> {
+                    RequestId = requestId
+                    AppointmentId = appointmentId
+                }))
             |> Result.map ConfirmAppointment
         | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Post endpoint" |> NotSupported |> Error

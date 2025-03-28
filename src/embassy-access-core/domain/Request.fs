@@ -21,12 +21,13 @@ type RequestId =
 
     static member createNew() = RequestId <| UUID16.createNew ()
 
-type Request =
-    { Id: RequestId
-      Service: RequestService
-      Attempt: DateTime * int
-      ProcessState: ProcessState
-      SubscriptionState: SubscriptionState
-      ConfirmationState: ConfirmationState
-      Appointments: Set<Appointment>
-      Modified: DateTime }
+type Request = {
+    Id: RequestId
+    Service: RequestService
+    Attempt: DateTime * int
+    ProcessState: ProcessState
+    SubscriptionState: SubscriptionState
+    ConfirmationState: ConfirmationState
+    Appointments: Set<Appointment>
+    Modified: DateTime
+}

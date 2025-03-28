@@ -39,8 +39,10 @@ module Notification =
                 appointments
                 |> Seq.map (fun appointment ->
                     let route =
-                        { RequestId = request.Id
-                          AppointmentId = appointment.Id }
+                        {
+                            RequestId = request.Id
+                            AppointmentId = appointment.Id
+                        }
                         |> Kdmid.Post.ConfirmAppointment
                         |> Post.Kdmid
                         |> Method.Post
@@ -49,14 +51,15 @@ module Notification =
                     route.Value, appointment.Value)
                 |> fun data ->
                     (chatId, New)
-                    |> ButtonsGroup.create
-                        { Name =
+                    |> ButtonsGroup.create {
+                        Name =
                             $"Choose the appointment for subscription '{payloadValue}' of service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}'"
-                          Columns = 1
-                          Buttons =
+                        Columns = 1
+                        Buttons =
                             data
                             |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
-                            |> Set.ofSeq })
+                            |> Set.ofSeq
+                    })
 
     let toHasConfirmations (request: Request, confirmations: Confirmation Set) =
         fun chatId ->
@@ -87,7 +90,7 @@ module Notification =
                 |> Ok
             )
 
-    let send notification =
+    let spread notification =
         fun (deps: Kdmid.Notification.Dependencies) ->
 
             let translate (culture, messages) = deps.translateMessages culture messages
@@ -95,7 +98,7 @@ module Notification =
             let spreadMessages data =
                 data
                 |> ResultAsync.map (Seq.groupBy fst)
-                |> ResultAsync.map (Seq.map (fun (culture, group) -> (culture, group |> Seq.map snd |> List.ofSeq)))
+                |> ResultAsync.map (Seq.map (fun (culture, group) -> culture, group |> Seq.map snd |> List.ofSeq))
                 |> ResultAsync.bindAsync (Seq.map translate >> Async.Parallel >> Async.map Result.choose)
                 |> ResultAsync.map (Seq.collect id)
                 |> ResultAsync.bindAsync deps.sendMessages
@@ -108,8 +111,9 @@ module Notification =
                 |> ResultAsync.map (Seq.map (fun chat -> chat.Culture, chat.Id |> toUnsuccessfully (request, error)))
                 |> spreadMessages
             | HasAppointments(request, appointments) ->
-                request
-                |> deps.getRequestChats
+                appointments
+                |> deps.setRequestAppointments request.Service.Id
+                |> ResultAsync.bindAsync (fun _ -> request |> deps.getRequestChats)
                 |> ResultAsync.bind (
                     Seq.map (fun chat ->
                         chat.Id
@@ -151,10 +155,12 @@ module Instruction =
     let private toSubscribe embassyId (service: ServiceNode) confirmation =
         fun (chatId, messageId) ->
             let request =
-                { ConfirmationState = confirmation
-                  ServiceId = service.Id
-                  EmbassyId = embassyId
-                  Payload = "<link>" }
+                {
+                    ConfirmationState = confirmation
+                    ServiceId = service.Id
+                    EmbassyId = embassyId
+                    Payload = "<link>"
+                }
                 |> Kdmid.Post.Subscribe
                 |> Post.Kdmid
                 |> Method.Post
@@ -168,9 +174,11 @@ module Instruction =
     let toCheckAppointments embassyId (service: ServiceNode) =
         fun (deps: Kdmid.Dependencies) ->
             let request =
-                { ServiceId = service.Id
-                  EmbassyId = embassyId
-                  Payload = "<link>" }
+                {
+                    ServiceId = service.Id
+                    EmbassyId = embassyId
+                    Payload = "<link>"
+                }
                 |> Kdmid.Post.CheckAppointments
                 |> Post.Kdmid
                 |> Method.Post

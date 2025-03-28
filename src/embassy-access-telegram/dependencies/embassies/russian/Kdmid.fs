@@ -16,33 +16,38 @@ open EA.Embassies.Russian.Kdmid.Dependencies
 
 module Notification =
 
-    type Dependencies =
-        { getRequestChats: Request -> Async<Result<Chat list, Error'>>
-          translateMessages: Culture -> Message seq -> Async<Result<Message list, Error'>>
-          sendMessages: Message seq -> Async<Result<unit, Error'>> }
+    type Dependencies = {
+        getRequestChats: Request -> Async<Result<Chat list, Error'>>
+        setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
+        translateMessages: Culture -> Message seq -> Async<Result<Message list, Error'>>
+        sendMessages: Message seq -> Async<Result<unit, Error'>>
+    } with
 
         static member create() =
-            fun (deps: Russian.Dependencies) ->
-                { translateMessages = deps.Culture.translateSeq
-                  getRequestChats = deps.getRequestChats
-                  sendMessages = deps.sendMessages }
+            fun (deps: Russian.Dependencies) -> {
+                translateMessages = deps.Culture.translateSeq
+                setRequestAppointments = deps.setRequestAppointments
+                getRequestChats = deps.getRequestChats
+                sendMessages = deps.sendMessages
+            }
 
-type Dependencies =
-    { Chat: Chat
-      MessageId: int
-      CancellationToken: CancellationToken
-      RequestStorage: Request.RequestStorage
-      sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-      sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
-      getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
-      getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
-      getChatRequests: unit -> Async<Result<Request list, Error'>>
-      getRequest: RequestId -> Async<Result<Request, Error'>>
-      createRequest: Request -> Async<Result<Request, Error'>>
-      deleteRequest: RequestId -> Async<Result<unit, Error'>>
-      getApi: Request -> Async<Result<Request, Error'>>
-      translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
-      translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>> }
+type Dependencies = {
+    Chat: Chat
+    MessageId: int
+    CancellationToken: CancellationToken
+    RequestStorage: Request.RequestStorage
+    sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
+    sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
+    getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
+    getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
+    getChatRequests: unit -> Async<Result<Request list, Error'>>
+    getRequest: RequestId -> Async<Result<Request, Error'>>
+    createRequest: Request -> Async<Result<Request, Error'>>
+    deleteRequest: RequestId -> Async<Result<unit, Error'>>
+    getApi: Request -> Async<Result<Request, Error'>>
+    translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
+    translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>>
+} with
 
     static member create(deps: Russian.Dependencies) =
         let result = ResultBuilder()
@@ -92,8 +97,10 @@ type Dependencies =
             let apiDeps = Order.Dependencies.create deps.RequestStorage deps.CancellationToken
 
             let getApi request =
-                { Request = request
-                  Dependencies = apiDeps }
+                {
+                    Request = request
+                    Dependencies = apiDeps
+                }
                 |> Kdmid
                 |> API.Service.get
 
@@ -104,20 +111,21 @@ type Dependencies =
                 >> deps.Culture.translateSeqRes deps.Chat.Culture
                 >> ResultAsync.map Seq.ofList
 
-            return
-                { Chat = deps.Chat
-                  MessageId = deps.MessageId
-                  CancellationToken = deps.CancellationToken
-                  RequestStorage = deps.RequestStorage
-                  sendMessageRes = deps.sendMessageRes
-                  sendMessagesRes = deps.sendMessagesRes
-                  getRequest = getRequest
-                  getService = getService
-                  getEmbassy = getEmbassy
-                  getChatRequests = deps.getChatRequests
-                  createRequest = createRequest
-                  deleteRequest = deleteRequest
-                  getApi = getApi
-                  translateMessageRes = translateMessageRes
-                  translateMessagesRes = translateMessagesRes }
+            return {
+                Chat = deps.Chat
+                MessageId = deps.MessageId
+                CancellationToken = deps.CancellationToken
+                RequestStorage = deps.RequestStorage
+                sendMessageRes = deps.sendMessageRes
+                sendMessagesRes = deps.sendMessagesRes
+                getRequest = getRequest
+                getService = getService
+                getEmbassy = getEmbassy
+                getChatRequests = deps.getChatRequests
+                createRequest = createRequest
+                deleteRequest = deleteRequest
+                getApi = getApi
+                translateMessageRes = translateMessageRes
+                translateMessagesRes = translateMessagesRes
+            }
         }

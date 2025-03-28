@@ -12,15 +12,17 @@ open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private createHttpRequest formData queryParams =
 
-    let request =
-        { Path = $"/queue/orderinfo.aspx?%s{queryParams}"
-          Headers = None }
+    let request = {
+        Path = $"/queue/orderinfo.aspx?%s{queryParams}"
+        Headers = None
+    }
 
     let content: RequestContent =
-        String
-            {| Data = formData
-               Encoding = Text.Encoding.ASCII
-               MediaType = "application/x-www-form-urlencoded" |}
+        String {|
+            Data = formData
+            Encoding = Text.Encoding.ASCII
+            MediaType = "application/x-www-form-urlencoded"
+        |}
 
     request, content
 
@@ -41,19 +43,22 @@ let private httpResponseHasInconsistentState page =
                 match text with
                 | text when text |> has "Вы записаны" && not (text |> has "список ожидания") ->
                     Error
-                    <| Operation
-                        { Message = text
-                          Code = Constants.ErrorCode.CONFIRMATION_EXISTS |> Custom |> Some }
+                    <| Operation {
+                        Message = text
+                        Code = Constants.ErrorCode.CONFIRMATION_EXISTS |> Custom |> Some
+                    }
                 | text when text |> has "Ваша заявка требует подтверждения" ->
                     Error
-                    <| Operation
-                        { Message = text
-                          Code = Constants.ErrorCode.NOT_CONFIRMED |> Custom |> Some }
+                    <| Operation {
+                        Message = text
+                        Code = Constants.ErrorCode.NOT_CONFIRMED |> Custom |> Some
+                    }
                 | text when text |> has "Заявка удалена" ->
                     Error
-                    <| Operation
-                        { Message = text
-                          Code = Constants.ErrorCode.REQUEST_DELETED |> Custom |> Some }
+                    <| Operation {
+                        Message = text
+                        Code = Constants.ErrorCode.REQUEST_DELETED |> Custom |> Some
+                    }
                 | _ -> Ok page
             | _ -> Ok page)
 

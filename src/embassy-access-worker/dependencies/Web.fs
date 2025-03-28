@@ -8,8 +8,9 @@ open Web.Clients
 open Web.Clients.Domain
 open EA.Worker.Domain.Constants
 
-type Dependencies =
-    { TelegramClient: Telegram.Client }
+type Dependencies = {
+    TelegramClient: Telegram.Client
+} with
 
     static member create() =
         let result = ResultBuilder()

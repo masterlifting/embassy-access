@@ -14,13 +14,14 @@ type AppointmentEntity() =
     member this.ToDomain() =
         this.Id
         |> AppointmentId.parse
-        |> Result.map (fun id ->
-            { Id = id
-              Value = this.Value
-              Confirmation = this.Confirmation |> Option.map _.ToDomain()
-              Date = DateOnly.FromDateTime this.DateTime
-              Time = TimeOnly.FromDateTime this.DateTime
-              Description = this.Description })
+        |> Result.map (fun id -> {
+            Id = id
+            Value = this.Value
+            Confirmation = this.Confirmation |> Option.map _.ToDomain()
+            Date = DateOnly.FromDateTime this.DateTime
+            Time = TimeOnly.FromDateTime this.DateTime
+            Description = this.Description
+        })
 
 type internal Appointment with
     member internal this.ToEntity() =

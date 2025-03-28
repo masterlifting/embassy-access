@@ -45,15 +45,16 @@ type RequestEntity() =
             let! confirmationState = this.ConfirmationState.ToDomain()
             let! appointments = this.Appointments |> Seq.map _.ToDomain() |> Result.choose
 
-            return
-                { Id = requestId
-                  Service = this.Service.ToDomain()
-                  Attempt = this.AttemptModified, this.Attempt
-                  ProcessState = processState
-                  SubscriptionState = subscriptionState
-                  ConfirmationState = confirmationState
-                  Appointments = appointments |> Set.ofSeq
-                  Modified = this.Modified }
+            return {
+                Id = requestId
+                Service = this.Service.ToDomain()
+                Attempt = this.AttemptModified, this.Attempt
+                ProcessState = processState
+                SubscriptionState = subscriptionState
+                ConfirmationState = confirmationState
+                Appointments = appointments |> Set.ofSeq
+                Modified = this.Modified
+            }
         }
 
 type private Request with
@@ -279,7 +280,6 @@ let init storageType =
     | InMemory -> Storage.Connection.InMemory |> Storage.init
     |> Result.map RequestStorage
 
-
 module Query =
 
     let getIdentifiers storage =
@@ -331,6 +331,13 @@ module Command =
         | Storage.InMemory client -> client |> InMemory.Command.update request
         | Storage.FileSystem client -> client |> FileSystem.Command.update request
         | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+
+    //TODO: Optimize this
+    let updateSeq requests storage =
+        requests
+        |> Seq.map (fun request -> storage |> update request)
+        |> Async.Sequential
+        |> Async.map Result.choose
 
     let createOrUpdate request storage =
         match storage |> toPersistenceStorage with

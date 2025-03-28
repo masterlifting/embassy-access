@@ -15,17 +15,20 @@ let main _ =
     let configuration = Configuration.getYaml "appsettings"
     Logging.useConsole configuration
 
-    let rootHandler =
-        { Id = "WRK" |> Graph.NodeIdValue
-          Name = APP_NAME
-          Handler = Initializer.run |> Some }
+    let rootHandler = {
+        Id = "WRK" |> Graph.NodeIdValue
+        Name = APP_NAME
+        Handler = Initializer.run |> Some
+    }
 
     let appHandlers = Graph.Node(rootHandler, [ Embassies.Russian.register () ])
 
     let getTaskNode handlers =
         fun nodeId ->
-            { Configuration.Connection.SectionName = APP_NAME
-              Configuration.Connection.Provider = configuration }
+            {
+                Configuration.Connection.SectionName = APP_NAME
+                Configuration.Connection.Provider = configuration
+            }
             |> TaskGraph.Configuration
             |> TaskGraph.init
             |> ResultAsync.wrap (TaskGraph.create handlers)
@@ -34,11 +37,12 @@ let main _ =
                 | Some node -> Ok node
                 | None -> $"Task handler Id '%s{nodeId.Value}'" |> NotFound |> Error)
 
-    let workerConfig =
-        { Name = rootHandler.Name
-          Configuration = configuration
-          TaskNodeRootId = rootHandler.Id
-          getTaskNode = getTaskNode appHandlers }
+    let workerConfig = {
+        Name = rootHandler.Name
+        Configuration = configuration
+        TaskNodeRootId = rootHandler.Id
+        getTaskNode = getTaskNode appHandlers
+    }
 
     workerConfig |> Worker.Client.start |> Async.RunSynchronously
 

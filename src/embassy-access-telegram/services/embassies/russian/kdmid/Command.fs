@@ -37,12 +37,13 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                         let! request =
                             model.Payload
                             |> Web.Clients.Http.Route.toUri
-                            |> Result.map (fun uri ->
-                                { Uri = uri
-                                  Service = service
-                                  Embassy = embassy
-                                  SubscriptionState = Auto
-                                  ConfirmationState = model.ConfirmationState })
+                            |> Result.map (fun uri -> {
+                                Uri = uri
+                                Service = service
+                                Embassy = embassy
+                                SubscriptionState = Auto
+                                ConfirmationState = model.ConfirmationState
+                            })
                             |> Result.map _.ToRequest()
                             |> ResultAsync.wrap deps.createRequest
 
@@ -93,12 +94,13 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                         let! request =
                             model.Payload
                             |> Web.Clients.Http.Route.toUri
-                            |> Result.map (fun uri ->
-                                { Uri = uri
-                                  Service = service
-                                  Embassy = embassy
-                                  SubscriptionState = Manual
-                                  ConfirmationState = Disabled })
+                            |> Result.map (fun uri -> {
+                                Uri = uri
+                                Service = service
+                                Embassy = embassy
+                                SubscriptionState = Manual
+                                ConfirmationState = Disabled
+                            })
                             |> Result.map _.ToRequest()
                             |> ResultAsync.wrap deps.createRequest
 
@@ -125,9 +127,10 @@ let confirmAppointment (model: Kdmid.Post.Model.ConfirmAppointment) =
     fun (deps: Kdmid.Dependencies) ->
         deps.getRequest model.RequestId
         |> ResultAsync.bindAsync (fun request ->
-            deps.getApi
-                { request with
-                    ConfirmationState = ConfirmationState.Manual model.AppointmentId })
+            deps.getApi {
+                request with
+                    ConfirmationState = ConfirmationState.Manual model.AppointmentId
+            })
         |> ResultAsync.bind (fun r -> deps.Chat.Id |> Message.Notification.create r)
 
 let deleteSubscription requestId =
