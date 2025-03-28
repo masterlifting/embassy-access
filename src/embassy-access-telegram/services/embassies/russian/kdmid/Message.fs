@@ -39,8 +39,10 @@ module Notification =
                 appointments
                 |> Seq.map (fun appointment ->
                     let route =
-                        { RequestId = request.Id
-                          AppointmentId = appointment.Id }
+                        {
+                            RequestId = request.Id
+                            AppointmentId = appointment.Id
+                        }
                         |> Kdmid.Post.ConfirmAppointment
                         |> Post.Kdmid
                         |> Method.Post
@@ -49,14 +51,15 @@ module Notification =
                     route.Value, appointment.Value)
                 |> fun data ->
                     (chatId, New)
-                    |> ButtonsGroup.create
-                        { Name =
+                    |> ButtonsGroup.create {
+                        Name =
                             $"Choose the appointment for subscription '{payloadValue}' of service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}'"
-                          Columns = 1
-                          Buttons =
+                        Columns = 1
+                        Buttons =
                             data
                             |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
-                            |> Set.ofSeq })
+                            |> Set.ofSeq
+                    })
 
     let toHasConfirmations (request: Request, confirmations: Confirmation Set) =
         fun chatId ->
@@ -152,10 +155,12 @@ module Instruction =
     let private toSubscribe embassyId (service: ServiceNode) confirmation =
         fun (chatId, messageId) ->
             let request =
-                { ConfirmationState = confirmation
-                  ServiceId = service.Id
-                  EmbassyId = embassyId
-                  Payload = "<link>" }
+                {
+                    ConfirmationState = confirmation
+                    ServiceId = service.Id
+                    EmbassyId = embassyId
+                    Payload = "<link>"
+                }
                 |> Kdmid.Post.Subscribe
                 |> Post.Kdmid
                 |> Method.Post
@@ -169,9 +174,11 @@ module Instruction =
     let toCheckAppointments embassyId (service: ServiceNode) =
         fun (deps: Kdmid.Dependencies) ->
             let request =
-                { ServiceId = service.Id
-                  EmbassyId = embassyId
-                  Payload = "<link>" }
+                {
+                    ServiceId = service.Id
+                    EmbassyId = embassyId
+                    Payload = "<link>"
+                }
                 |> Kdmid.Post.CheckAppointments
                 |> Post.Kdmid
                 |> Method.Post

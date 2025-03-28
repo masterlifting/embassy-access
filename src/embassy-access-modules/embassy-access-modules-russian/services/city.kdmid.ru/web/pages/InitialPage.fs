@@ -10,9 +10,10 @@ open EA.Embassies.Russian.Kdmid.Web
 open EA.Embassies.Russian.Kdmid.Domain
 open EA.Embassies.Russian.Kdmid.Dependencies
 
-let private createHttpRequest queryParams =
-    { Path = "/queue/orderinfo.aspx?" + queryParams
-      Headers = None }
+let private createHttpRequest queryParams = {
+    Path = "/queue/orderinfo.aspx?" + queryParams
+    Headers = None
+}
 
 let private parseHttpResponse page =
     Html.load page
@@ -58,9 +59,10 @@ let private parseHttpResponse page =
         | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
         | false -> Error <| NotFound "Headers of 'Kdmid Initial Page'")
 
-let private createCaptchaRequest urlPath =
-    { Path = $"/queue/%s{urlPath}"
-      Headers = None }
+let private createCaptchaRequest urlPath = {
+    Path = $"/queue/%s{urlPath}"
+    Headers = None
+}
 
 let private prepareCaptchaImage (image: byte array) =
     try

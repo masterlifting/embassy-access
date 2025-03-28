@@ -14,7 +14,8 @@ let pageHasError page =
             match node.InnerText with
             | AP.IsString text ->
                 Error
-                <| Operation
-                    { Message = text
-                      Code = Constants.ErrorCode.PAGE_HAS_ERROR |> Custom |> Some }
+                <| Operation {
+                    Message = text
+                    Code = Constants.ErrorCode.PAGE_HAS_ERROR |> Custom |> Some
+                }
             | _ -> Ok page)

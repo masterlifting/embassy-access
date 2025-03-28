@@ -49,15 +49,17 @@ let private handleRequestConfirmation (request: Request) =
 
 let private createHttpRequest formData queryParamsId =
 
-    let request =
-        { Path = $"/queue/SPCalendar.aspx?bjo=%s{queryParamsId}"
-          Headers = None }
+    let request = {
+        Path = $"/queue/SPCalendar.aspx?bjo=%s{queryParamsId}"
+        Headers = None
+    }
 
     let content: RequestContent =
-        String
-            {| Data = formData
-               Encoding = Text.Encoding.ASCII
-               MediaType = "application/x-www-form-urlencoded" |}
+        String {|
+            Data = formData
+            Encoding = Text.Encoding.ASCII
+            MediaType = "application/x-www-form-urlencoded"
+        |}
 
     request, content
 
@@ -83,18 +85,21 @@ let private createRequestConfirmation =
     | Some data -> Ok { Description = data }
 
 let private setConfirmation request (appointment: Appointment) (confirmation: Confirmation) =
-    let appointment =
-        { appointment with
-            Confirmation = Some confirmation }
+    let appointment = {
+        appointment with
+            Confirmation = Some confirmation
+    }
 
     let appointments =
         request.Appointments
         |> Set.filter (fun x -> x.Id <> appointment.Id)
         |> Set.add appointment
 
-    { request with
-        Appointments = appointments
-        ConfirmationState = Disabled }
+    {
+        request with
+            Appointments = appointments
+            ConfirmationState = Disabled
+    }
 
 let private handlePage (deps: Order.Dependencies, httpClient, queryParamsId, formData, request) =
     request

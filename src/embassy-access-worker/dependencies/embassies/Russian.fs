@@ -15,9 +15,10 @@ module Kdmid =
     open EA.Telegram.Services.Embassies.Russian.Kdmid
     open EA.Telegram.Dependencies.Embassies.Russian
 
-    type Dependencies =
-        { getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
-          pickOrder: Request list -> Async<Result<Request, Error' list>> }
+    type Dependencies = {
+        getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
+        pickOrder: Request list -> Async<Result<Request, Error' list>>
+    } with
 
         static member create (task: WorkerTask) cfg ct =
             let result = ResultBuilder()
@@ -26,11 +27,12 @@ module Kdmid =
                 let! persistenceDeps = Persistence.Dependencies.create cfg
                 let! tgDeps = Telegram.Dependencies.create cfg ct
 
-                let notificationDeps: Kdmid.Notification.Dependencies =
-                    { translateMessages = tgDeps.Culture.translateSeq
-                      setRequestAppointments = tgDeps.Persistence.setRequestAppointments
-                      getRequestChats = tgDeps.Persistence.getRequestChats
-                      sendMessages = tgDeps.Web.Telegram.sendMessages }
+                let notificationDeps: Kdmid.Notification.Dependencies = {
+                    translateMessages = tgDeps.Culture.translateSeq
+                    setRequestAppointments = tgDeps.Persistence.setRequestAppointments
+                    getRequestChats = tgDeps.Persistence.getRequestChats
+                    sendMessages = tgDeps.Web.Telegram.sendMessages
+                }
 
                 let notify notification =
                     notificationDeps
@@ -54,7 +56,8 @@ module Kdmid =
                     ||> Order.Dependencies.create
                     |> API.Order.Kdmid.pick requests notify
 
-                return
-                    { getRequests = getRequests
-                      pickOrder = pickOrder }
+                return {
+                    getRequests = getRequests
+                    pickOrder = pickOrder
+                }
             }

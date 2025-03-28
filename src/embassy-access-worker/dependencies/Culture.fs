@@ -5,9 +5,10 @@ open Infrastructure.Prelude
 open Infrastructure.Domain
 open AIProvider.Services.Domain
 
-type Dependencies =
-    { Shield: Culture.Shield
-      translate: Request -> Async<Result<Response, Error'>> }
+type Dependencies = {
+    Shield: Culture.Shield
+    translate: Request -> Async<Result<Response, Error'>>
+} with
 
     static member create ct =
         fun (persistence: Persistence.Dependencies) (aiProvider: AIProvider.Dependencies) ->
@@ -17,14 +18,16 @@ type Dependencies =
                 let! aiProvider = aiProvider.initProvider ()
                 let! cultureStorage = persistence.initCultureStorage ()
 
-                let cultureDeps: AIProvider.Services.Dependencies.Culture.Dependencies =
-                    { Provider = aiProvider
-                      Storage = cultureStorage }
+                let cultureDeps: AIProvider.Services.Dependencies.Culture.Dependencies = {
+                    Provider = aiProvider
+                    Storage = cultureStorage
+                }
 
                 let translate request =
                     cultureDeps |> AIProvider.Services.Culture.translate request ct
 
-                return
-                    { Shield = Shield.create ''' '''
-                      translate = translate }
+                return {
+                    Shield = Shield.create ''' '''
+                    translate = translate
+                }
             }

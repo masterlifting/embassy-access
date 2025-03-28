@@ -17,13 +17,14 @@ let private createMessage chatId msgIdOpt nameOpt columns data =
     match data |> Seq.length with
     | 0 -> Text.create $"No data for the '{name}'"
     | _ ->
-        ButtonsGroup.create
-            { Name = name
-              Columns = columns
-              Buttons =
+        ButtonsGroup.create {
+            Name = name
+            Columns = columns
+            Buttons =
                 data
                 |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
-                |> Set.ofSeq }
+                |> Set.ofSeq
+        }
     |> Message.tryReplace msgIdOpt chatId
 
 let private toEmbassy chatId messageId buttonGroupName (embassies: EmbassyNode seq) =

@@ -9,17 +9,18 @@ open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Embassies.Russian
 open Web.Clients.Domain.Telegram.Producer
 
-type Dependencies =
-    { Chat: Chat
-      MessageId: int
-      Culture: Culture.Dependencies
-      Russian: Russian.Dependencies
-      sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-      getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
-      getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-      getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-      getEmbassyServiceGraph: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
-      translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>> }
+type Dependencies = {
+    Chat: Chat
+    MessageId: int
+    Culture: Culture.Dependencies
+    Russian: Russian.Dependencies
+    sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
+    getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+    getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
+    getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
+    getEmbassyServiceGraph: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+    translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
+} with
 
     static member create chat (deps: Request.Dependencies) =
         let result = ResultBuilder()
@@ -77,15 +78,16 @@ type Dependencies =
 
             let translateMessageRes = deps.Culture.translateRes chat.Culture
 
-            return
-                { Chat = chat
-                  MessageId = deps.MessageId
-                  Culture = deps.Culture
-                  Russian = russianDeps
-                  sendMessageRes = deps.sendMessageRes
-                  getEmbassiesGraph = deps.getEmbassyGraph
-                  getEmbassyNode = getEmbassyNode
-                  getServiceNode = getServiceNode
-                  getEmbassyServiceGraph = getEmbassyServiceGraph
-                  translateMessageRes = translateMessageRes }
+            return {
+                Chat = chat
+                MessageId = deps.MessageId
+                Culture = deps.Culture
+                Russian = russianDeps
+                sendMessageRes = deps.sendMessageRes
+                getEmbassiesGraph = deps.getEmbassyGraph
+                getEmbassyNode = getEmbassyNode
+                getServiceNode = getServiceNode
+                getEmbassyServiceGraph = getEmbassyServiceGraph
+                translateMessageRes = translateMessageRes
+            }
         }

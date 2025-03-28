@@ -45,15 +45,16 @@ type RequestEntity() =
             let! confirmationState = this.ConfirmationState.ToDomain()
             let! appointments = this.Appointments |> Seq.map _.ToDomain() |> Result.choose
 
-            return
-                { Id = requestId
-                  Service = this.Service.ToDomain()
-                  Attempt = this.AttemptModified, this.Attempt
-                  ProcessState = processState
-                  SubscriptionState = subscriptionState
-                  ConfirmationState = confirmationState
-                  Appointments = appointments |> Set.ofSeq
-                  Modified = this.Modified }
+            return {
+                Id = requestId
+                Service = this.Service.ToDomain()
+                Attempt = this.AttemptModified, this.Attempt
+                ProcessState = processState
+                SubscriptionState = subscriptionState
+                ConfirmationState = confirmationState
+                Appointments = appointments |> Set.ofSeq
+                Modified = this.Modified
+            }
         }
 
 type private Request with

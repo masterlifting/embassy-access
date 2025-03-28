@@ -15,10 +15,11 @@ module private Payload =
             fun (translate, shield) ->
                 let text = error.MessageOnly
 
-                let request =
-                    { Culture = culture
-                      Shield = shield
-                      Items = [ { Value = text } ] }
+                let request = {
+                    Culture = culture
+                    Shield = shield
+                    Items = [ { Value = text } ]
+                }
 
                 translate request
                 |> ResultAsync.map (fun response ->
@@ -34,10 +35,11 @@ module private Payload =
             fun (translate, shield) ->
                 let text = payload.Value
 
-                let request =
-                    { Culture = culture
-                      Shield = shield
-                      Items = [ { Value = text } ] }
+                let request = {
+                    Culture = culture
+                    Shield = shield
+                    Items = [ { Value = text } ]
+                }
 
                 translate request
                 |> ResultAsync.map (fun response ->
@@ -57,10 +59,11 @@ module private Payload =
                     { Value = group.Name }
                     :: (group.Buttons |> Set.map (fun button -> { Value = button.Name }) |> Set.toList)
 
-                let request =
-                    { Culture = culture
-                      Shield = shield
-                      Items = items }
+                let request = {
+                    Culture = culture
+                    Shield = shield
+                    Items = items
+                }
 
                 translate request
                 |> ResultAsync.map (fun response ->
@@ -82,16 +85,19 @@ module private Payload =
                         |> Seq.sortBy _.Name
                         |> Set.ofSeq
 
-                    { group with
-                        Name = buttonsGroupName
-                        Buttons = buttons })
+                    {
+                        group with
+                            Name = buttonsGroupName
+                            Buttons = buttons
+                    })
                 |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
 
-type Dependencies =
-    { translate: Culture -> Message -> Async<Result<Message, Error'>>
-      translateSeq: Culture -> Message seq -> Async<Result<Message list, Error'>>
-      translateRes: Culture -> Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
-      translateSeqRes: Culture -> Async<Result<Message seq, Error'>> -> Async<Result<Message list, Error'>> }
+type Dependencies = {
+    translate: Culture -> Message -> Async<Result<Message, Error'>>
+    translateSeq: Culture -> Message seq -> Async<Result<Message list, Error'>>
+    translateRes: Culture -> Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
+    translateSeqRes: Culture -> Async<Result<Message seq, Error'>> -> Async<Result<Message list, Error'>>
+} with
 
     static member create ct =
         fun (deps: Culture.Dependencies) ->
@@ -127,7 +133,9 @@ type Dependencies =
                 |> ResultAsync.bindAsync (translateSeq culture)
                 |> ResultAsync.mapErrorAsync (translateError culture)
 
-            { translate = translate
-              translateSeq = translateSeq
-              translateRes = translateRes
-              translateSeqRes = translateSeqRes }
+            {
+                translate = translate
+                translateSeq = translateSeq
+                translateRes = translateRes
+                translateSeqRes = translateSeqRes
+            }

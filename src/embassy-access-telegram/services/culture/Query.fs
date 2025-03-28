@@ -13,13 +13,14 @@ let private createMessage chatId msgIdOpt nameOpt data =
     match data |> Seq.length with
     | 0 -> Text.create $"No data for the '{name}'"
     | _ ->
-        ButtonsGroup.create
-            { Name = name
-              Columns = 1
-              Buttons =
+        ButtonsGroup.create {
+            Name = name
+            Columns = 1
+            Buttons =
                 data
                 |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
-                |> Set.ofSeq }
+                |> Set.ofSeq
+        }
     |> Message.tryReplace msgIdOpt chatId
 
 let getCultures () =

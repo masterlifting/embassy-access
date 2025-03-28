@@ -15,17 +15,19 @@ type RequestServiceEntity() =
     member val EmbassyDescription: string option = None with get, set
     member val EmbassyTimeZone: float option = None with get, set
 
-    member this.ToDomain() =
-        { Id = this.ServiceId |> Graph.NodeIdValue
-          Name = this.ServiceName
-          Payload = this.Payload
-          Description = this.ServiceDescription
-          Embassy =
-            { Id = this.EmbassyId |> Graph.NodeIdValue
-              Name = this.EmbassyName
-              ShortName = this.EmbassyName |> Graph.Node.Name.split |> Seq.last
-              Description = this.EmbassyDescription
-              TimeZone = this.EmbassyTimeZone } }
+    member this.ToDomain() = {
+        Id = this.ServiceId |> Graph.NodeIdValue
+        Name = this.ServiceName
+        Payload = this.Payload
+        Description = this.ServiceDescription
+        Embassy = {
+            Id = this.EmbassyId |> Graph.NodeIdValue
+            Name = this.EmbassyName
+            ShortName = this.EmbassyName |> Graph.Node.Name.split |> Seq.last
+            Description = this.EmbassyDescription
+            TimeZone = this.EmbassyTimeZone
+        }
+    }
 
 type internal RequestService with
     member internal this.ToEntity() =

@@ -15,9 +15,10 @@ let create cfg ct =
         let! aiProvider = aiProvider.initProvider ()
         let! cultureStorage = persistence.initCultureStorage ()
 
-        let aiCulture: AIProvider.Services.Dependencies.Culture.Dependencies =
-            { Provider = aiProvider
-              Storage = cultureStorage }
+        let aiCulture: AIProvider.Services.Dependencies.Culture.Dependencies = {
+            Provider = aiProvider
+            Storage = cultureStorage
+        }
 
         let tgCulture = EA.Telegram.Dependencies.Culture.Dependencies.create ct aiCulture
 
@@ -31,11 +32,12 @@ let create cfg ct =
                 persistence.initServiceGraphStorage
                 persistence.initEmbassyGraphStorage
 
-        let result: EA.Telegram.Dependencies.Client.Dependencies =
-            { CancellationToken = ct
-              Culture = tgCulture
-              Web = tgWeb
-              Persistence = tgPersistence }
+        let result: EA.Telegram.Dependencies.Client.Dependencies = {
+            CancellationToken = ct
+            Culture = tgCulture
+            Web = tgWeb
+            Persistence = tgPersistence
+        }
 
         return result
     }

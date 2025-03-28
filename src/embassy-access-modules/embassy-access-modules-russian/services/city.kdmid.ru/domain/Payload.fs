@@ -6,12 +6,13 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients
 
-type Payload =
-    { EmbassyId: Graph.NodeId
-      SubDomain: string
-      Id: int
-      Cd: string
-      Ems: string option }
+type Payload = {
+    EmbassyId: Graph.NodeId
+    SubDomain: string
+    Id: int
+    Cd: string
+    Ems: string option
+} with
 
     static member create(uri: Uri) =
         match uri.Host.Split '.' with
@@ -53,12 +54,13 @@ type Payload =
                         | _ -> "Kdmid payload 'EMS' query parameter" |> NotSupported |> Error)
                     |> Option.defaultValue (None |> Ok)
 
-                return
-                    { EmbassyId = embassyId
-                      SubDomain = subDomain
-                      Id = id
-                      Cd = cd
-                      Ems = ems }
+                return {
+                    EmbassyId = embassyId
+                    SubDomain = subDomain
+                    Id = id
+                    Cd = cd
+                    Ems = ems
+                }
             }
 
     static member toValue(payload: string) =

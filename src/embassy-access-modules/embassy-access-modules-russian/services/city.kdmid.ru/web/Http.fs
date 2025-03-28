@@ -17,7 +17,9 @@ let private createKdmidClient subDomain =
             "Host", [ hostName ]
             "Origin", [ host ]
             "Accept",
-            [ "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8" ]
+            [
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8"
+            ]
             "Accept-Language", [ "en-US,en;q=0.9,ru;q=0.8" ]
             "Connection", [ "keep-alive" ]
             "Sec-Fetch-Dest", [ "document" ]
@@ -25,7 +27,10 @@ let private createKdmidClient subDomain =
             "Sec-Fetch-Site", [ "same-origin" ]
             "Sec-Fetch-User", [ "?1" ]
             "Upgrade-Insecure-Requests", [ "1" ]
-            "User-Agent", [ "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0" ]
+            "User-Agent",
+            [
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0"
+            ]
         ]
         |> Some
 

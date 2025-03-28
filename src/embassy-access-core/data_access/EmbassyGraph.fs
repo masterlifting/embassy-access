@@ -32,11 +32,13 @@ type EmbassyGraphEntity() =
             | children -> children |> Seq.map _.ToDomain() |> Result.choose
             |> Result.map (fun children ->
                 Graph.Node(
-                    { Id = nodeId
-                      Name = this.Name
-                      ShortName = this.Name |> Graph.Node.Name.split |> Seq.last
-                      Description = this.Description
-                      TimeZone = this.TimeZone },
+                    {
+                        Id = nodeId
+                        Name = this.Name
+                        ShortName = this.Name |> Graph.Node.Name.split |> Seq.last
+                        Description = this.Description
+                        TimeZone = this.TimeZone
+                    },
                     children
                 )))
 

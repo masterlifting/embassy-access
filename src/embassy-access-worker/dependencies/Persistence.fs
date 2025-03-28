@@ -11,13 +11,14 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 
-type Dependencies =
-    { ChatStorage: Chat.ChatStorage
-      RequestStorage: Request.RequestStorage
-      initCultureStorage: unit -> Result<Culture.Response.Storage, Error'>
-      initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>
-      initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>
-      resetData: unit -> Async<Result<unit, Error'>> }
+type Dependencies = {
+    ChatStorage: Chat.ChatStorage
+    RequestStorage: Request.RequestStorage
+    initCultureStorage: unit -> Result<Culture.Response.Storage, Error'>
+    initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>
+    initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>
+    resetData: unit -> Async<Result<unit, Error'>>
+} with
 
     static member create cfg =
         let result = ResultBuilder()
@@ -31,32 +32,42 @@ type Dependencies =
                 |> Option.defaultValue ("The configuration section 'Persistence:FileSystem'" |> NotFound |> Error)
 
             let initCultureStorage () =
-                { FileSystem.Connection.FilePath = fileStoragePath
-                  FileSystem.Connection.FileName = "Culture.json" }
+                {
+                    FileSystem.Connection.FilePath = fileStoragePath
+                    FileSystem.Connection.FileName = "Culture.json"
+                }
                 |> Culture.Response.FileSystem
                 |> Culture.Response.init
 
             let initChatStorage () =
-                { FileSystem.Connection.FilePath = fileStoragePath
-                  FileSystem.Connection.FileName = "Chats.json" }
+                {
+                    FileSystem.Connection.FilePath = fileStoragePath
+                    FileSystem.Connection.FileName = "Chats.json"
+                }
                 |> Chat.FileSystem
                 |> Chat.init
 
             let initRequestStorage () =
-                { FileSystem.Connection.FilePath = fileStoragePath
-                  FileSystem.Connection.FileName = "Requests.json" }
+                {
+                    FileSystem.Connection.FilePath = fileStoragePath
+                    FileSystem.Connection.FileName = "Requests.json"
+                }
                 |> Request.FileSystem
                 |> Request.init
 
             let initEmbassyGraphStorage () =
-                { Configuration.Connection.SectionName = "Embassies"
-                  Configuration.Connection.Provider = cfg }
+                {
+                    Configuration.Connection.SectionName = "Embassies"
+                    Configuration.Connection.Provider = cfg
+                }
                 |> EmbassyGraph.Configuration
                 |> EmbassyGraph.init
 
             let initServiceGraphStorage () =
-                { Configuration.Connection.SectionName = "Services"
-                  Configuration.Connection.Provider = cfg }
+                {
+                    Configuration.Connection.SectionName = "Services"
+                    Configuration.Connection.Provider = cfg
+                }
                 |> ServiceGraph.Configuration
                 |> ServiceGraph.init
 
@@ -81,11 +92,12 @@ type Dependencies =
                     return requestStorage |> Request.Command.deleteMany requestIdsToRemove
                 }
 
-            return
-                { ChatStorage = chatStorage
-                  RequestStorage = requestStorage
-                  initCultureStorage = initCultureStorage
-                  initEmbassyGraphStorage = initEmbassyGraphStorage
-                  initServiceGraphStorage = initServiceGraphStorage
-                  resetData = resetData }
+            return {
+                ChatStorage = chatStorage
+                RequestStorage = requestStorage
+                initCultureStorage = initCultureStorage
+                initEmbassyGraphStorage = initEmbassyGraphStorage
+                initServiceGraphStorage = initServiceGraphStorage
+                resetData = resetData
+            }
         }

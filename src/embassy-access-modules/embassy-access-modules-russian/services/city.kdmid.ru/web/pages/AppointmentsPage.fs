@@ -11,15 +11,17 @@ open EA.Embassies.Russian.Kdmid.Dependencies
 
 let private createHttpRequest formData queryParams =
 
-    let request =
-        { Path = $"/queue/orderinfo.aspx?%s{queryParams}"
-          Headers = None }
+    let request = {
+        Path = $"/queue/orderinfo.aspx?%s{queryParams}"
+        Headers = None
+    }
 
     let content: RequestContent =
-        String
-            {| Data = formData
-               Encoding = Text.Encoding.ASCII
-               MediaType = "application/x-www-form-urlencoded" |}
+        String {|
+            Data = formData
+            Encoding = Text.Encoding.ASCII
+            MediaType = "application/x-www-form-urlencoded"
+        |}
 
     request, content
 
@@ -99,12 +101,14 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
             match date, time with
             | (true, date), (true, time) ->
                 Ok
-                <| { Id = AppointmentId.createNew ()
-                     Value = value
-                     Date = date
-                     Time = time
-                     Confirmation = None
-                     Description = window }
+                <| {
+                       Id = AppointmentId.createNew ()
+                       Value = value
+                       Date = date
+                       Time = time
+                       Confirmation = None
+                       Description = window
+                   }
 
             | _ -> Error <| NotSupported $"Kdmid 'Appointment Page' date '%s{dateTime}'"
         | _ -> Error <| NotSupported $"Kdmid 'Appointment Page' row '%s{value}'"
@@ -119,9 +123,10 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
         |> Result.map (fun appointments -> formData, appointments)
 
 let private createResult (request: Request) (formData, appointments) =
-    let request =
-        { request with
-            Appointments = appointments }
+    let request = {
+        request with
+            Appointments = appointments
+    }
 
     formData, request
 
