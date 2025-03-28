@@ -13,9 +13,12 @@ let private handleRequestConfirmation (request: Request) =
     match request.ConfirmationState with
     | ConfirmationState.Disabled -> Ok <| None
     | ConfirmationState.Manual appointmentId ->
-        match request.Appointments |> Seq.tryFind (fun x -> x.Id = appointmentId) with
+        match
+            request.Appointments
+            |> Seq.tryFind (fun x -> x.Id.ValueStr = appointmentId.ValueStr)
+        with
         | Some appointment -> Ok <| Some appointment
-        | None -> Error <| NotFound $"%A{appointmentId}."
+        | None -> Error <| NotFound $"%A{appointmentId}"
     | ConfirmationState.Auto confirmationOption ->
         match request.Appointments.Count > 0, confirmationOption with
         | false, _ -> Ok None
@@ -29,11 +32,11 @@ let private handleRequestConfirmation (request: Request) =
             | None -> Error <| NotFound "Last available appointment"
         | true, DateTimeRange(min, max) ->
 
-            let minDate = DateOnly.FromDateTime(min)
-            let maxDate = DateOnly.FromDateTime(max)
+            let minDate = DateOnly.FromDateTime min
+            let maxDate = DateOnly.FromDateTime max
 
-            let minTime = TimeOnly.FromDateTime(min)
-            let maxTime = TimeOnly.FromDateTime(max)
+            let minTime = TimeOnly.FromDateTime min
+            let maxTime = TimeOnly.FromDateTime max
 
             let appointment =
                 request.Appointments

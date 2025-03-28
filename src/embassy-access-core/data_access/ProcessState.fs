@@ -41,11 +41,8 @@ type ProcessStateEntity() =
             | None ->
                 $"Failed state of '{nameof ProcessStateEntity}' without error"
                 |> NotSupported
-                |> Result.Error
-        | _ ->
-            $"The '%s{this.Type}' of '{nameof ProcessStateEntity}'"
-            |> NotSupported
-            |> Result.Error
+                |> Error
+        | _ -> $"The '%s{this.Type}' of '{nameof ProcessStateEntity}'" |> NotSupported |> Error
 
 type internal ProcessState with
     member internal this.ToEntity() =
