@@ -1,7 +1,6 @@
 ﻿module internal EA.Embassies.Russian.Kdmid.Web.ValidationPage
 
 open System
-open System.Text.RegularExpressions
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
@@ -26,46 +25,33 @@ let private createHttpRequest formData queryParams =
 
     request, content
 
-let private httpResponseHasInconsistentState page =
+let private pageHasInconsistentState page =
     page
-    |> Html.getNode "//span[@id='ctl00_MainContent_Content'] | //span[@id='ctl00_MainContent_Label_Message']"
-    |> Result.bind (function
-        | None -> Ok page
-        | Some node ->
-            match node.InnerHtml with
-            | AP.IsString text ->
-                let text = Regex.Replace(text, @"<[^>]*>", Environment.NewLine)
-                let text = Regex.Replace(text, @"\s+", " ")
-
-                let has (pattern: string) (node: string) =
-                    node.Contains(pattern, StringComparison.OrdinalIgnoreCase)
-
-                match text with
-                | text when text |> has "Вы записаны" && not (text |> has "список ожидания") ->
-                    Error
-                    <| Operation {
-                        Message = text
-                        Code = Constants.ErrorCode.CONFIRMATION_EXISTS |> Custom |> Some
-                    }
-                | text when text |> has "Ваша заявка требует подтверждения" ->
-                    Error
-                    <| Operation {
-                        Message = text
-                        Code = Constants.ErrorCode.NOT_CONFIRMED |> Custom |> Some
-                    }
-                | text when text |> has "Заявка удалена" ->
-                    Error
-                    <| Operation {
-                        Message = text
-                        Code = Constants.ErrorCode.REQUEST_DELETED |> Custom |> Some
-                    }
-                | _ -> Ok page
-            | _ -> Ok page)
+    |> Html.pageHasInconsistentState (function
+        | text when text |> String.has "Вы записаны" && not (text |> String.has "список ожидания") ->
+            Error
+            <| Operation {
+                Message = text
+                Code = Constants.ErrorCode.CONFIRMATION_EXISTS |> Custom |> Some
+            }
+        | text when text |> String.has "Ваша заявка требует подтверждения" ->
+            Error
+            <| Operation {
+                Message = text
+                Code = Constants.ErrorCode.NOT_CONFIRMED |> Custom |> Some
+            }
+        | text when text |> String.has "Заявка удалена" ->
+            Error
+            <| Operation {
+                Message = text
+                Code = Constants.ErrorCode.REQUEST_DELETED |> Custom |> Some
+            }
+        | _ -> Ok page)
 
 let private parseHttpResponse page =
     Html.load page
     |> Result.bind Html.pageHasError
-    |> Result.bind httpResponseHasInconsistentState
+    |> Result.bind pageHasInconsistentState
     |> Result.bind (Html.getNodes "//input")
     |> Result.bind (function
         | None -> Error <| NotFound "Kdmid data on the 'Validation Page'"

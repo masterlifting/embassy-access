@@ -31,6 +31,6 @@ module ErrorCode =
 
     [<Literal>]
     let REQUEST_DELETED = "RequestDeleted"
-    
+
     [<Literal>]
     let REQUEST_BLOCKED = "RequestBlocked"
