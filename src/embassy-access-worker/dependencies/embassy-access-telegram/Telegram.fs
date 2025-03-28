@@ -31,7 +31,6 @@ let create cfg ct =
                 persistence.initServiceGraphStorage
                 persistence.initEmbassyGraphStorage
 
-
         let result: EA.Telegram.Dependencies.Client.Dependencies =
             { CancellationToken = ct
               Culture = tgCulture

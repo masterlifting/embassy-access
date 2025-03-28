@@ -279,7 +279,6 @@ let init storageType =
     | InMemory -> Storage.Connection.InMemory |> Storage.init
     |> Result.map RequestStorage
 
-
 module Query =
 
     let getIdentifiers storage =

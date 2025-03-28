@@ -331,7 +331,6 @@ module private FileSystem =
                     data |> Ok)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
 
-
 let private toPersistenceStorage storage =
     storage
     |> function
