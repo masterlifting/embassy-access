@@ -15,7 +15,7 @@ type Method =
         | Post r -> [ "1"; r.Value ]
         |> String.concat Constants.Endpoint.DELIMITER
 
-let parse(input: string) =
+let parse (input: string) =
     let parts = input.Split Constants.Endpoint.DELIMITER
     let remaining = parts[1..] |> String.concat Constants.Endpoint.DELIMITER
 
