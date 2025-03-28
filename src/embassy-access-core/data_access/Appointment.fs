@@ -18,8 +18,8 @@ type AppointmentEntity() =
             { Id = id
               Value = this.Value
               Confirmation = this.Confirmation |> Option.map _.ToDomain()
-              Date = DateOnly.FromDateTime(this.DateTime)
-              Time = TimeOnly.FromDateTime(this.DateTime)
+              Date = DateOnly.FromDateTime this.DateTime
+              Time = TimeOnly.FromDateTime this.DateTime
               Description = this.Description })
 
 type internal Appointment with
@@ -28,6 +28,6 @@ type internal Appointment with
         result.Id <- this.Id.ValueStr
         result.Value <- this.Value
         result.Confirmation <- this.Confirmation |> Option.map _.ToEntity()
-        result.DateTime <- this.Date.ToDateTime(this.Time)
+        result.DateTime <- this.Date.ToDateTime this.Time
         result.Description <- this.Description
         result
