@@ -29,9 +29,10 @@ let private buildSubscriptionMenu (request: Request) =
 
     match request.Service.Id.Split() with
     | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
-        Map
-            [ getRoute.Value, "Request available slots"
-              deleteRoute.Value, "Delete subscription" ]
+        Map [
+            getRoute.Value, "Request available slots"
+            deleteRoute.Value, "Delete subscription"
+        ]
     | _ -> Map [ deleteRoute.Value, "Delete subscription" ]
     |> Seq.map (fun x -> x.Key |> CallbackData |> Button.create x.Value)
     |> Set.ofSeq

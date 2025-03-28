@@ -229,13 +229,11 @@ let private ``confirmation page should have a valid result`` =
         }
 
 let list =
-    testList
-        "Kdmid"
-        [ //``validation page should have an error``
-          //``validation page should have a confirmed request``
-          //``validation page should have a confirmation``
-          //``validation page should have a deleted request``
-          ``appointments page should not have data``
-          //``appointments page should have data``
-          //``confirmation page should have a valid result``
-          ]
+    testList "Kdmid" [ //``validation page should have an error``
+        //``validation page should have a confirmed request``
+        //``validation page should have a confirmation``
+        //``validation page should have a deleted request``
+        ``appointments page should not have data``
+    //``appointments page should have data``
+    //``confirmation page should have a valid result``
+    ]

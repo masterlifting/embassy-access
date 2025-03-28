@@ -62,11 +62,12 @@ let private parseHttpResponse page =
 
 let private prepareHttpFormData data =
     let requiredKeys =
-        Set
-            [ "__VIEWSTATE"
-              "__EVENTVALIDATION"
-              "__VIEWSTATEGENERATOR"
-              "ctl00$MainContent$Button1" ]
+        Set [
+            "__VIEWSTATE"
+            "__EVENTVALIDATION"
+            "__VIEWSTATEGENERATOR"
+            "ctl00$MainContent$Button1"
+        ]
 
     let formData =
         data

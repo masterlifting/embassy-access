@@ -38,13 +38,14 @@ let private parseHttpResponse page =
             |> Ok)
     |> Result.bind (fun result ->
         let requiredKeys =
-            Set
-                [ "captchaUrlPath"
-                  "__VIEWSTATE"
-                  "__EVENTVALIDATION"
-                  "ctl00$MainContent$txtID"
-                  "ctl00$MainContent$txtUniqueID"
-                  "ctl00$MainContent$ButtonA" ]
+            Set [
+                "captchaUrlPath"
+                "__VIEWSTATE"
+                "__EVENTVALIDATION"
+                "ctl00$MainContent$txtID"
+                "ctl00$MainContent$txtUniqueID"
+                "ctl00$MainContent$ButtonA"
+            ]
 
         let notRequiredKeys = Set [ "__VIEWSTATEGENERATOR" ]
 
