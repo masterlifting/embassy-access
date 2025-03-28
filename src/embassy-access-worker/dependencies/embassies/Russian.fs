@@ -13,6 +13,7 @@ module Kdmid =
     open Infrastructure.Logging
     open EA.Embassies.Russian.Kdmid.Dependencies
     open EA.Telegram.Services.Embassies.Russian.Kdmid
+    open EA.Telegram.Dependencies.Embassies.Russian
 
     type Dependencies =
         { getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
@@ -25,8 +26,9 @@ module Kdmid =
                 let! persistenceDeps = Persistence.Dependencies.create cfg
                 let! tgDeps = Telegram.Dependencies.create cfg ct
 
-                let notificationDeps: EA.Telegram.Dependencies.Embassies.Russian.Kdmid.Notification.Dependencies =
+                let notificationDeps: Kdmid.Notification.Dependencies =
                     { translateMessages = tgDeps.Culture.translateSeq
+                      setRequestAppointments = tgDeps.Persistence.setRequestAppointments
                       getRequestChats = tgDeps.Persistence.getRequestChats
                       sendMessages = tgDeps.Web.Telegram.sendMessages }
 

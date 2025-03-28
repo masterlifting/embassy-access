@@ -42,13 +42,17 @@ type Dependencies =
 
                 let getEmbassyGraph () =
                     initEmbassyGraphStorage () |> ResultAsync.wrap EmbassyGraph.get
-                    
+
                 let setRequestAppointments serviceId appointments =
                     requestStorage
                     |> Request.Query.findManyByServiceId serviceId
-                    |> ResultAsync.map(fun requests -> requests |> Seq.map(fun request -> { request with Appointments = appointments }))
+                    |> ResultAsync.map (fun requests ->
+                        requests
+                        |> Seq.map (fun request ->
+                            { request with
+                                Appointments = appointments }))
                     |> ResultAsync.bindAsync (fun requests -> requestStorage |> Request.Command.updateSeq requests)
-                    
+
                 return
                     { ChatStorage = chatStorage
                       RequestStorage = requestStorage

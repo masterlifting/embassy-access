@@ -13,10 +13,7 @@ let private handleRequestConfirmation (request: Request) =
     match request.ConfirmationState with
     | ConfirmationState.Disabled -> Ok <| None
     | ConfirmationState.Manual appointmentId ->
-        match
-            request.Appointments
-            |> Seq.tryFind (fun x -> x.Id = appointmentId)
-        with
+        match request.Appointments |> Seq.tryFind (fun x -> x.Id = appointmentId) with
         | Some appointment -> Ok <| Some appointment
         | None -> Error <| NotFound $"AppointmentId '{appointmentId.ValueStr}'"
     | ConfirmationState.Auto confirmationOption ->
