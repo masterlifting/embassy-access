@@ -12,8 +12,9 @@ open EA.Core.Domain.Notification
 open EA.Core.Domain.ServiceNode
 open EA.Core.Domain.ConfirmationOption
 open EA.Core.Domain.ConfirmationState
-open EA.Embassies.Russian.Kdmid.Domain
+open EA.Telegram.Router
 open EA.Telegram.Dependencies.Embassies.Russian
+open EA.Embassies.Russian.Kdmid.Domain
 
 module Notification =
     open EA.Telegram.Router
@@ -138,7 +139,7 @@ module Instruction =
 
     open Infrastructure.Prelude
     open EA.Embassies.Russian
-    open EA.Telegram.Router
+    open EA.Telegram
     open EA.Telegram.Router.Embassies.Russian
     open EA.Telegram.Router.Embassies.Russian.Kdmid.Post.Model
 

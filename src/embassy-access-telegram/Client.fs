@@ -14,7 +14,7 @@ let private respond payload =
         deps
         |> Request.Dependencies.create payload
         |> ResultAsync.wrap (fun deps ->
-            Router.Route.parse payload.Value
+            Router.parse payload.Value
             |> ResultAsync.wrap (fun request -> deps |> Controller.respond request))
         |> ResultAsync.mapError (fun error -> error.extendMsg $"{payload.ChatId}")
 
