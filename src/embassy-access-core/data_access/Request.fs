@@ -82,12 +82,12 @@ module private Common =
         | Some index ->
             data[index] <- request.ToEntity()
             Ok data
-        | None -> $"The '{request.Id}'" |> NotFound |> Error
+        | None -> $"The '{request.Id}' not found." |> NotFound |> Error
 
     let delete (id: RequestId) (data: RequestEntity array) =
         match data |> Array.tryFindIndex (fun x -> x.Id = id.ValueStr) with
         | Some index -> data |> Array.removeAt index |> Ok
-        | None -> $"The '{id}'" |> NotFound |> Error
+        | None -> $"The '{id}' not found." |> NotFound |> Error
 
 module private InMemory =
     open Persistence.Storages.InMemory

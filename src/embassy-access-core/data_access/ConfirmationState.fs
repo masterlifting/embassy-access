@@ -26,7 +26,7 @@ type ConfirmationStateEntity() =
         | MANUAL ->
             match this.AppointmentId with
             | Some id -> id |> AppointmentId.parse |> Result.map Manual
-            | None -> nameof AppointmentId + " not found." |> NotFound |> Error
+            | None -> $"{nameof AppointmentId} not found." |> NotFound |> Error
         | AUTO ->
             match this.ConfirmationOption with
             | Some option -> option.ToDomain() |> Result.map Auto

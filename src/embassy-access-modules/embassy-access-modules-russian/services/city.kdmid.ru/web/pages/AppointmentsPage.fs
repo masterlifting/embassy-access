@@ -78,8 +78,8 @@ let private parseHttpResponse page =
                 |> Map.forall (fun _ value -> value |> Seq.tryHead |> Option.isSome)
             with
             | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
-            | false -> Error <| NotFound "Kdmid 'Appointments Page' headers"
-        | false -> Error <| NotFound "Kdmid 'Appointments Page' headers")
+            | false -> Error <| NotFound "Kdmid 'Appointments Page' headers not found."
+        | false -> Error <| NotFound "Kdmid 'Appointments Page' headers not found.")
 
 let private prepareHttpFormData data =
     let requiredKeys =
