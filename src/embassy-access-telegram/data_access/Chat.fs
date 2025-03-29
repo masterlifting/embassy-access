@@ -66,12 +66,12 @@ module private Common =
         | Some index ->
             data[index] <- chat.ToEntity()
             Ok data
-        | None -> $"The '{chat.Id}'" |> NotFound |> Error
+        | None -> $"The '{chat.Id}' not found." |> NotFound |> Error
 
     let delete (chatId: ChatId) (data: ChatEntity array) =
         match data |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
         | Some index -> data |> Array.removeAt index |> Ok
-        | None -> $"The '{chatId}'" |> NotFound |> Error
+        | None -> $"The '{chatId}' not found." |> NotFound |> Error
 
 module private InMemory =
     open Persistence.Storages.InMemory
@@ -135,7 +135,7 @@ module private InMemory =
             |> loadData
             |> Result.bind (fun data ->
                 match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
-                | None -> $"The '{chatId}'" |> NotFound |> Error
+                | None -> $"The '{chatId}' not found." |> NotFound |> Error
                 | Some index ->
                     data[index].Subscriptions <-
                         data[index].Subscriptions |> Set |> Set.add subscription.ValueStr |> Seq.toList
@@ -149,7 +149,7 @@ module private InMemory =
             |> loadData
             |> Result.bind (fun data ->
                 match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
-                | None -> $"The '{chatId}'" |> NotFound |> Error
+                | None -> $"The '{chatId}' not found." |> NotFound |> Error
                 | Some index ->
                     data[index].Subscriptions <-
                         data[index].Subscriptions
@@ -164,7 +164,7 @@ module private InMemory =
             |> loadData
             |> Result.bind (fun data ->
                 match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
-                | None -> $"The '{chatId.ValueStr}'" |> NotFound |> Error
+                | None -> $"The '{chatId.ValueStr}' not found." |> NotFound |> Error
                 | Some index ->
                     data[index].Subscriptions <-
                         data[index].Subscriptions
@@ -266,7 +266,7 @@ module private FileSystem =
             |> loadData
             |> ResultAsync.bind (fun data ->
                 match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
-                | None -> $"The '{chatId}'" |> NotFound |> Error
+                | None -> $"The '{chatId}' not found." |> NotFound |> Error
                 | Some index ->
                     data[index].Subscriptions <-
                         data[index].Subscriptions |> Set |> Set.add subscription.ValueStr |> Seq.toList
@@ -279,7 +279,7 @@ module private FileSystem =
             |> loadData
             |> ResultAsync.bind (fun data ->
                 match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
-                | None -> $"The '{chatId}'" |> NotFound |> Error
+                | None -> $"The '{chatId}' not found." |> NotFound |> Error
                 | Some index ->
                     data[index].Subscriptions <-
                         data[index].Subscriptions
@@ -293,7 +293,7 @@ module private FileSystem =
             |> loadData
             |> ResultAsync.bind (fun data ->
                 match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
-                | None -> $"The '{chatId}'" |> NotFound |> Error
+                | None -> $"The '{chatId.ValueStr}' not found." |> NotFound |> Error
                 | Some index ->
                     data[index].Subscriptions <-
                         data[index].Subscriptions
