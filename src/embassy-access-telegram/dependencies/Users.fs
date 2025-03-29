@@ -35,7 +35,11 @@ type Dependencies = {
                 deps.ChatStorage
                 |> Chat.Query.tryFindById deps.ChatId
                 |> ResultAsync.bindAsync (function
-                    | None -> $"User chat '%s{deps.ChatId.ValueStr}' not found." |> NotFound |> Error |> async.Return
+                    | None ->
+                        $"User chat '%s{deps.ChatId.ValueStr}' not found."
+                        |> NotFound
+                        |> Error
+                        |> async.Return
                     | Some chat -> deps.RequestStorage |> Request.Query.findManyByIds chat.Subscriptions)
 
             let getUserEmbassies () =

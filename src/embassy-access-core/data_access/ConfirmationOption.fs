@@ -30,7 +30,10 @@ type ConfirmationOptionEntity() =
                 $"'{nameof this.DateStart}' or '{nameof this.DateEnd}' of '{nameof ConfirmationOptionEntity}' not found."
                 |> NotFound
                 |> Error
-        | _ -> $"The '%s{this.Type}' of '{nameof ConfirmationOptionEntity}' is not supported." |> NotSupported |> Error
+        | _ ->
+            $"The '%s{this.Type}' of '{nameof ConfirmationOptionEntity}' is not supported."
+            |> NotSupported
+            |> Error
 
 type internal ConfirmationOption with
     member internal this.ToEntity() =
