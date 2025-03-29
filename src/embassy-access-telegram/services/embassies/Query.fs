@@ -46,7 +46,7 @@ let getEmbassyService embassyId serviceId =
             | [] ->
                 match serviceNode.Id.TryGetPart 1 with
                 | None ->
-                    $"Embassy service '{serviceNode.ShortName}'"
+                    $"Embassy service '{serviceNode.ShortName}' is not supported."
                     |> NotSupported
                     |> Error
                     |> async.Return
@@ -54,8 +54,8 @@ let getEmbassyService embassyId serviceId =
                     match countryId.Value with
                     | Constants.RUSSIAN_NODE_ID -> deps.Russian |> Russian.Query.get embassyId serviceNode.Value
                     | _ ->
-                        $"Embassy service '{serviceNode.ShortName}'"
-                        |> NotSupported
+                        $"Embassy service '{serviceNode.ShortName}' is not implemented. " + Constants.NOT_IMPLEMENTED
+                        |> NotImplemented
                         |> Error
                         |> async.Return
             | children ->
@@ -73,7 +73,7 @@ let getUserEmbassyService embassyId serviceId =
             | [] ->
                 match serviceNode.Id.TryGetPart 1 with
                 | None ->
-                    $"Embassy service '{serviceNode.ShortName}'"
+                    $"Embassy service '{serviceNode.ShortName}' is not supported."
                     |> NotSupported
                     |> Error
                     |> async.Return
@@ -81,8 +81,8 @@ let getUserEmbassyService embassyId serviceId =
                     match countryId.Value with
                     | Constants.RUSSIAN_NODE_ID -> deps.Russian |> Russian.Query.userGet embassyId serviceNode.Value
                     | _ ->
-                        $"Embassy service '{serviceNode.ShortName}'"
-                        |> NotSupported
+                        $"Embassy service '{serviceNode.ShortName}' is not implemented. " + Constants.NOT_IMPLEMENTED
+                        |> NotImplemented
                         |> Error
                         |> async.Return
             | children ->

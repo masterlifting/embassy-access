@@ -13,13 +13,13 @@ type Route =
         match this with
         | Get r -> [ "0"; r.Value ]
         | Post r -> [ "1"; r.Value ]
-        |> String.concat Constants.Endpoint.DELIMITER
+        |> String.concat Constants.Router.DELIMITER
 
 let parse (input: string) =
-    let parts = input.Split Constants.Endpoint.DELIMITER
-    let remaining = parts[1..] |> String.concat Constants.Endpoint.DELIMITER
+    let parts = input.Split Constants.Router.DELIMITER
+    let remaining = parts[1..] |> String.concat Constants.Router.DELIMITER
 
     match parts[0] with
     | "0" -> remaining |> Get.Route.parse |> Result.map Get
     | "1" -> remaining |> Post.Route.parse |> Result.map Post
-    | _ -> $"'{input}' of Culture endpoint" |> NotSupported |> Error
+    | _ -> $"'{input}' of Culture endpoint is not supported." |> NotSupported |> Error

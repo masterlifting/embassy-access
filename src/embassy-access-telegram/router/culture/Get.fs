@@ -9,11 +9,11 @@ type Route =
     member this.Value =
         match this with
         | Cultures -> [ "0" ]
-        |> String.concat Constants.Endpoint.DELIMITER
+        |> String.concat Constants.Router.DELIMITER
 
     static member parse(input: string) =
-        let parts = input.Split Constants.Endpoint.DELIMITER
+        let parts = input.Split Constants.Router.DELIMITER
 
         match parts with
         | [| "0" |] -> Cultures |> Ok
-        | _ -> $"'{parts}' of Culture.Get endpoint" |> NotSupported |> Error
+        | _ -> $"'{parts}' of Culture.Get endpoint is not supported." |> NotSupported |> Error

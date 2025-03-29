@@ -31,7 +31,7 @@ type ConfirmationOptionEntity() =
                 |> NotFound
                 |> Error
         | _ ->
-            $"The '%s{this.Type}' of '{nameof ConfirmationOptionEntity}'"
+            $"The '%s{this.Type}' of '{nameof ConfirmationOptionEntity}' is not supported."
             |> NotSupported
             |> Error
 

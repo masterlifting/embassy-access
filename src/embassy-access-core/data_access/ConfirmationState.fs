@@ -32,7 +32,7 @@ type ConfirmationStateEntity() =
             | Some option -> option.ToDomain() |> Result.map Auto
             | None -> $"The '%s{nameof ConfirmationOptionEntity}'" |> NotFound |> Error
         | _ ->
-            $"The '%s{this.Type}' of '{nameof ConfirmationStateEntity}'"
+            $"The '%s{this.Type}' of '{nameof ConfirmationStateEntity}' is not supported."
             |> NotSupported
             |> Error
 

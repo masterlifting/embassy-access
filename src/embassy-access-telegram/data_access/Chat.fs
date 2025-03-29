@@ -30,7 +30,7 @@ type ChatEntity() =
         |> Seq.map (fun x ->
             match x with
             | AP.IsUUID16 id -> Ok <| RequestId id
-            | _ -> $"The subscription '{x}'" |> NotSupported |> Error)
+            | _ -> $"The subscription '{x}' is not supported." |> NotSupported |> Error)
         |> Result.choose
         |> Result.map Set.ofList
         |> Result.map (fun subscriptions -> {
@@ -351,65 +351,65 @@ module Query =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.getSubscriptions
         | Storage.FileSystem client -> client |> FileSystem.Query.getSubscriptions
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let tryFindById chatId storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.tryFindById chatId
         | Storage.FileSystem client -> client |> FileSystem.Query.tryFindById chatId
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyBySubscription subscriptionId storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyBySubscription subscriptionId
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyBySubscription subscriptionId
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyBySubscriptions subscriptionIds storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyBySubscriptions subscriptionIds
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyBySubscriptions subscriptionIds
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
 module Command =
     let create chat storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.create chat
         | Storage.FileSystem client -> client |> FileSystem.Command.create chat
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let update chat storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.update chat
         | Storage.FileSystem client -> client |> FileSystem.Command.update chat
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let createChatSubscription chatId subscription storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.createChatSubscription chatId subscription
         | Storage.FileSystem client -> client |> FileSystem.Command.createChatSubscription chatId subscription
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let deleteChatSubscription chatId subscription storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.deleteChatSubscription chatId subscription
         | Storage.FileSystem client -> client |> FileSystem.Command.deleteChatSubscription chatId subscription
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let deleteChatSubscriptions chatId subscriptions storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.deleteChatSubscriptions chatId subscriptions
         | Storage.FileSystem client -> client |> FileSystem.Command.deleteChatSubscriptions chatId subscriptions
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let deleteSubscriptions subscriptions storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.deleteSubscriptions subscriptions
         | Storage.FileSystem client -> client |> FileSystem.Command.deleteSubscriptions subscriptions
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let setCulture chatId culture storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.setCulture chatId culture
         | Storage.FileSystem client -> client |> FileSystem.Command.setCulture chatId culture
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return

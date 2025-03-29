@@ -17,7 +17,7 @@ type RequestId =
     static member parse value =
         match value with
         | AP.IsUUID16 id -> RequestId id |> Ok
-        | _ -> $"RequestId '{value}'" |> NotSupported |> Error
+        | _ -> $"RequestId '{value}' is not supported." |> NotSupported |> Error
 
     static member createNew() = RequestId <| UUID16.createNew ()
 

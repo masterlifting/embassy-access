@@ -88,7 +88,11 @@ let private prepareCaptchaImage (image: byte array) =
 
                 Ok <| data.ToArray()
     with ex ->
-        Error <| NotSupported ex.Message
+        Error
+        <| Operation {
+            Message = "Kdmid 'captcha image' error. " + (ex |> Exception.toMessage)
+            Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
+        }
 
 let private prepareHttpFormData pageData captcha =
     pageData

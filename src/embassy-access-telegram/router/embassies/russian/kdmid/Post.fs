@@ -70,10 +70,10 @@ type Route =
             model.AppointmentIds |> Set.map _.ValueStr |> Set.toArray |> String.concat ","
           ]
         | ConfirmAppointment model -> [ "7"; model.RequestId.ValueStr; model.AppointmentId.ValueStr ]
-        |> String.concat Constants.Endpoint.DELIMITER
+        |> String.concat Constants.Router.DELIMITER
 
     static member parse(input: string) =
-        let parts = input.Split Constants.Endpoint.DELIMITER
+        let parts = input.Split Constants.Router.DELIMITER
 
         let inline createSubscription serviceId embassyId payload confirmation =
             {
@@ -101,7 +101,7 @@ type Route =
             | AP.IsDateTime start, AP.IsDateTime finish ->
                 createSubscription serviceId embassyId payload (ConfirmationState.Auto(DateTimeRange(start, finish)))
             | _ ->
-                $"start: {start} or finish: {finish} of Embassies.Russian.Kdmid.Post.KdmidSubscribe endpoint"
+                $"start: {start} or finish: {finish} of Embassies.Russian.Kdmid.Post.KdmidSubscribe endpoint is not supported."
                 |> NotSupported
                 |> Error
         | [| "5"; serviceId; embassyId; payload |] ->
@@ -131,4 +131,4 @@ type Route =
                     AppointmentId = appointmentId
                 }))
             |> Result.map ConfirmAppointment
-        | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Post endpoint" |> NotSupported |> Error
+        | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Post endpoint is not supported." |> NotSupported |> Error

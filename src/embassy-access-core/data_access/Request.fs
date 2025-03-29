@@ -286,37 +286,37 @@ module Query =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.getIdentifiers
         | Storage.FileSystem client -> client |> FileSystem.Query.getIdentifiers
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let tryFindById id storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.tryFindById id
         | Storage.FileSystem client -> client |> FileSystem.Query.tryFindById id
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyByEmbassyId embassyId storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyId embassyId
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyId embassyId
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyByEmbassyName name storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyName name
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyName name
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyByServiceId id storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByServiceId id
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByServiceId id
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyByIds ids storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByIds ids
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByIds ids
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
 module Command =
 
@@ -324,13 +324,13 @@ module Command =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.create request
         | Storage.FileSystem client -> client |> FileSystem.Command.create request
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let update request storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.update request
         | Storage.FileSystem client -> client |> FileSystem.Command.update request
-        | _ -> $"Storage {storage}" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     //TODO: Optimize this
     let updateSeq requests storage =
@@ -343,16 +343,16 @@ module Command =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.createOrUpdate request
         | Storage.FileSystem client -> client |> FileSystem.Command.createOrUpdate request
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let delete id storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.delete id
         | Storage.FileSystem client -> client |> FileSystem.Command.delete id
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let deleteMany ids storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.deleteMany ids
         | Storage.FileSystem client -> client |> FileSystem.Command.deleteMany ids
-        | _ -> $"The '{storage}'" |> NotSupported |> Error |> async.Return
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
