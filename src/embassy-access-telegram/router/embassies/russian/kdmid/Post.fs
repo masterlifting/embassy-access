@@ -131,4 +131,7 @@ type Route =
                     AppointmentId = appointmentId
                 }))
             |> Result.map ConfirmAppointment
-        | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Post endpoint is not supported." |> NotSupported |> Error
+        | _ ->
+            $"'{parts}' of Embassies.Russian.Kdmid.Post endpoint is not supported."
+            |> NotSupported
+            |> Error

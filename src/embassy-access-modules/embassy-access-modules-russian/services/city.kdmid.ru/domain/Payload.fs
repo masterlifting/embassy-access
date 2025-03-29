@@ -16,7 +16,8 @@ type Payload = {
 
     static member create(uri: Uri) =
         match uri.Host.Split '.' with
-        | hostParts when hostParts.Length < 3 -> $"Kdmid host: '%s{uri.Host}' is not supported." |> NotSupported |> Error
+        | hostParts when hostParts.Length < 3 ->
+            $"Kdmid host: '%s{uri.Host}' is not supported." |> NotSupported |> Error
         | hostParts ->
             let payload = ResultBuilder()
 

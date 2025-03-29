@@ -16,4 +16,7 @@ type Route =
 
         match parts with
         | [| "0"; number |] -> Status number |> Ok
-        | _ -> $"'{parts}' of Embassies.Russian.Midpass.Get endpoint is not supported." |> NotSupported |> Error
+        | _ ->
+            $"'{parts}' of Embassies.Russian.Midpass.Get endpoint is not supported."
+            |> NotSupported
+            |> Error

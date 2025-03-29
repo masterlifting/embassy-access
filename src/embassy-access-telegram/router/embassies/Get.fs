@@ -28,4 +28,7 @@ type Route =
             (embassyId |> Graph.NodeIdValue, serviceId |> Graph.NodeIdValue)
             |> EmbassyService
             |> Ok
-        | _ -> $"'{parts}' of Embassies.Get endpoint is not supported." |> NotSupported |> Error
+        | _ ->
+            $"'{parts}' of Embassies.Get endpoint is not supported."
+            |> NotSupported
+            |> Error

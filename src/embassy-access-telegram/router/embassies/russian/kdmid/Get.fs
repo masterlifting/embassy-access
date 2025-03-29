@@ -20,4 +20,7 @@ type Route =
         match parts with
         | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Appointments
         | [| "1"; requestId |] -> RequestId.parse requestId |> Result.map SubscriptionsMenu
-        | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Get endpoint is not supported." |> NotSupported |> Error
+        | _ ->
+            $"'{parts}' of Embassies.Russian.Kdmid.Get endpoint is not supported."
+            |> NotSupported
+            |> Error

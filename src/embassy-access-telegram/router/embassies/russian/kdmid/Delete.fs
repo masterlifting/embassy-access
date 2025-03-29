@@ -17,4 +17,7 @@ type Route =
 
         match parts with
         | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Subscription
-        | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Delete endpoint is not supported." |> NotSupported |> Error
+        | _ ->
+            $"'{parts}' of Embassies.Russian.Kdmid.Delete endpoint is not supported."
+            |> NotSupported
+            |> Error

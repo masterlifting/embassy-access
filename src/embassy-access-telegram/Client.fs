@@ -23,9 +23,17 @@ let private consume data =
         | Message msg ->
             match msg with
             | Text payload -> deps |> respond payload
-            | _ -> $"Telegram message: '%A{msg}' is not supported." |> NotSupported |> Error |> async.Return
+            | _ ->
+                $"Telegram message: '%A{msg}' is not supported."
+                |> NotSupported
+                |> Error
+                |> async.Return
         | CallbackQuery payload -> deps |> respond payload
-        | _ -> $"Telegram message: '%A{data}' is not supported." |> NotSupported |> Error |> async.Return
+        | _ ->
+            $"Telegram message: '%A{data}' is not supported."
+            |> NotSupported
+            |> Error
+            |> async.Return
 
 let listen (deps: Client.Dependencies) =
     let handler = fun data -> consume data deps

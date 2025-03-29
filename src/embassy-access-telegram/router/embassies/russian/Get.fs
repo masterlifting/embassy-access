@@ -21,4 +21,7 @@ type Route =
         match parts[0] with
         | "0" -> remaining |> Kdmid.Get.Route.parse |> Result.map Kdmid
         | "1" -> remaining |> Midpass.Get.Route.parse |> Result.map Midpass
-        | _ -> $"'{parts}' of Embassies.Russian.Get endpoint is not supported." |> NotSupported |> Error
+        | _ ->
+            $"'{parts}' of Embassies.Russian.Get endpoint is not supported."
+            |> NotSupported
+            |> Error

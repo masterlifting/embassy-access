@@ -129,8 +129,12 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
                        Description = window
                    }
 
-            | _ -> Error <| NotSupported $"Kdmid 'Appointments page' date '%s{dateTime}' is not supported."
-        | _ -> Error <| NotSupported $"Kdmid 'Appointments page' row '%s{value}' is not supported."
+            | _ ->
+                Error
+                <| NotSupported $"Kdmid 'Appointments page' date '%s{dateTime}' is not supported."
+        | _ ->
+            Error
+            <| NotSupported $"Kdmid 'Appointments page' row '%s{value}' is not supported."
 
     match appointments.IsEmpty with
     | true -> Ok(formData, Set.empty)

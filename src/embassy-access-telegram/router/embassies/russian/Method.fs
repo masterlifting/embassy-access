@@ -25,4 +25,7 @@ let parse (input: string) =
     | "0" -> remaining |> Get.Route.parse |> Result.map Get
     | "1" -> remaining |> Post.Route.parse |> Result.map Post
     | "2" -> remaining |> Delete.Route.parse |> Result.map Delete
-    | _ -> $"'{input}' of Embassies.Russian endpoint is not supported." |> NotSupported |> Error
+    | _ ->
+        $"'{input}' of Embassies.Russian endpoint is not supported."
+        |> NotSupported
+        |> Error

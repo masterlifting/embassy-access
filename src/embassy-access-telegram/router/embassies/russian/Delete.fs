@@ -18,4 +18,7 @@ type Route =
 
         match parts[0] with
         | "0" -> remaining |> Kdmid.Delete.Route.parse |> Result.map Kdmid
-        | _ -> $"'{parts}' of Embassies.Russian.Delete endpoint is not supported." |> NotSupported |> Error
+        | _ ->
+            $"'{parts}' of Embassies.Russian.Delete endpoint is not supported."
+            |> NotSupported
+            |> Error

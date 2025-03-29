@@ -30,7 +30,11 @@ let get embassyId (service: ServiceNode) =
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Message.Instruction.toDateRangeAutoSubscribe embassyId service)
-        | _ -> $"The '%s{service.ShortName}' is not supported." |> NotSupported |> Error |> async.Return
+        | _ ->
+            $"The '%s{service.ShortName}' is not supported."
+            |> NotSupported
+            |> Error
+            |> async.Return
 
 let userGet embassyId (service: ServiceNode) =
     fun (deps: Russian.Dependencies) ->

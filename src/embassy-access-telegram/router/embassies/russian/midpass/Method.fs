@@ -18,4 +18,7 @@ type Method =
 
         match parts[0] with
         | "0" -> remaining |> Get.Route.parse |> Result.map Get
-        | _ -> $"'{input}' of Embassies.Russian.Midpass endpoint is not supported." |> NotSupported |> Error
+        | _ ->
+            $"'{input}' of Embassies.Russian.Midpass endpoint is not supported."
+            |> NotSupported
+            |> Error
