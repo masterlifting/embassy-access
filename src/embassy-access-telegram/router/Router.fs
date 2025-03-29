@@ -6,10 +6,10 @@ open EA.Telegram.Domain
 open EA.Telegram.Router
 
 type Route =
-    | Culture of Culture.Method.Method
-    | Users of Users.Method.Method
-    | Embassies of Embassies.Method.Method
-    | RussianEmbassy of Embassies.Russian.Method.Method
+    | Culture of Culture.Method.Route
+    | Users of Users.Method.Route
+    | Embassies of Embassies.Method.Route
+    | RussianEmbassy of Embassies.Russian.Method.Route
 
     member this.Value =
         match this with

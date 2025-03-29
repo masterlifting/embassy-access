@@ -5,7 +5,7 @@ open Infrastructure.Domain
 open EA.Telegram.Domain
 open EA.Telegram.Router.Users
 
-type Method =
+type Route =
     | Get of Get.Route
 
     member this.Value =
