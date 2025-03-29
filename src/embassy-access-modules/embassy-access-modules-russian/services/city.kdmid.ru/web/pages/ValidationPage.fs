@@ -32,13 +32,13 @@ let private pageHasInconsistentState page =
             Error
             <| Operation {
                 Message = text
-                Code = Constants.ErrorCode.CONFIRMATION_EXISTS |> Custom |> Some
+                Code = Constants.ErrorCode.REQUEST_AWAITING_LIST |> Custom |> Some
             }
         | text when text |> String.has "Ваша заявка требует подтверждения" ->
             Error
             <| Operation {
                 Message = text
-                Code = Constants.ErrorCode.NOT_CONFIRMED |> Custom |> Some
+                Code = Constants.ErrorCode.REQUEST_NOT_CONFIRMED |> Custom |> Some
             }
         | text when text |> String.has "Заявка удалена" ->
             Error

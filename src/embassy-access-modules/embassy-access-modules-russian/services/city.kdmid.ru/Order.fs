@@ -149,8 +149,8 @@ let pick (requests: Request seq) notify =
             match error with
             | Operation reason ->
                 match reason.Code with
-                | Some(Custom Constants.ErrorCode.CONFIRMATION_EXISTS)
-                | Some(Custom Constants.ErrorCode.NOT_CONFIRMED)
+                | Some(Custom Constants.ErrorCode.REQUEST_AWAITING_LIST)
+                | Some(Custom Constants.ErrorCode.REQUEST_NOT_CONFIRMED)
                 | Some(Custom Constants.ErrorCode.REQUEST_DELETED) -> true
                 | _ -> false
             | _ -> false

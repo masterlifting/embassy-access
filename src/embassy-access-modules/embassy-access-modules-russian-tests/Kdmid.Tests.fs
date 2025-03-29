@@ -138,9 +138,9 @@ let private ``validation page should have a confirmed request`` =
 
         match error with
         | Operation {
-                        Code = Some(Custom Constants.ErrorCode.NOT_CONFIRMED)
+                        Code = Some(Custom Constants.ErrorCode.REQUEST_NOT_CONFIRMED)
                     } -> ()
-        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.NOT_CONFIRMED}"
+        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.REQUEST_NOT_CONFIRMED}"
     }
 
 let private ``validation page should have a confirmation`` =
@@ -163,9 +163,9 @@ let private ``validation page should have a confirmation`` =
 
         match error with
         | Operation {
-                        Code = Some(Custom Constants.ErrorCode.CONFIRMATION_EXISTS)
+                        Code = Some(Custom Constants.ErrorCode.REQUEST_AWAITING_LIST)
                     } -> ()
-        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.CONFIRMATION_EXISTS}"
+        | _ -> Expect.isTrue false $"Error code should be {Constants.ErrorCode.REQUEST_AWAITING_LIST}"
     }
 
 let private ``validation page should have a deleted request`` =

@@ -35,6 +35,12 @@ let private pageHasInconsistentState page =
                 Message = text
                 Code = Constants.ErrorCode.REQUEST_BLOCKED |> Custom |> Some
             }
+        | text when text |> String.has "Защитный код заявки задан неверно" ->
+            Error
+            <| Operation {
+                Message = text
+                Code = Constants.ErrorCode.REQUEST_NOT_FOUND |> Custom |> Some
+            }
         | _ -> Ok page)
 
 let private parseHttpResponse page =
