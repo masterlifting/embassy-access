@@ -29,7 +29,7 @@ type Dependencies = {
                 cfg
                 |> Configuration.getSection<string> "Persistence:FileSystem"
                 |> Option.map Ok
-                |> Option.defaultValue ("The configuration section 'Persistence:FileSystem'" |> NotFound |> Error)
+                |> Option.defaultValue ("The configuration section 'Persistence:FileSystem' not found." |> NotFound |> Error)
 
             let initCultureStorage () =
                 {

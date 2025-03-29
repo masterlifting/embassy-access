@@ -15,18 +15,18 @@ let private handleRequestConfirmation (request: Request) =
     | ConfirmationState.Manual appointmentId ->
         match request.Appointments |> Seq.tryFind (fun x -> x.Id = appointmentId) with
         | Some appointment -> Ok <| Some appointment
-        | None -> Error <| NotFound $"AppointmentId '{appointmentId.ValueStr}'"
+        | None -> Error <| NotFound $"AppointmentId '{appointmentId.ValueStr}' not found."
     | ConfirmationState.Auto confirmationOption ->
         match request.Appointments.Count > 0, confirmationOption with
         | false, _ -> Ok None
         | true, FirstAvailable ->
             match request.Appointments |> Seq.tryHead with
             | Some appointment -> Ok <| Some appointment
-            | None -> Error <| NotFound "First available appointment"
+            | None -> Error <| NotFound "First available appointment not found."
         | true, LastAvailable ->
             match request.Appointments |> Seq.tryLast with
             | Some appointment -> Ok <| Some appointment
-            | None -> Error <| NotFound "Last available appointment"
+            | None -> Error <| NotFound "Last available appointment not found."
         | true, DateTimeRange(min, max) ->
 
             let minDate = DateOnly.FromDateTime min
@@ -45,7 +45,7 @@ let private handleRequestConfirmation (request: Request) =
             | Some appointment -> Ok <| Some appointment
             | None ->
                 Error
-                <| NotFound $"Appointment in the range '{min.ToShortDateString()}' - '{max.ToShortDateString()}'."
+                <| NotFound $"Appointment in the range '{min.ToShortDateString()}' - '{max.ToShortDateString()}' not found."
 
 let private createHttpRequest formData queryParamsId =
 

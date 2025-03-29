@@ -20,7 +20,7 @@ let private parseHttpResponse page =
     |> Result.bind Html.pageHasError
     |> Result.bind (Html.getNodes "//input | //img")
     |> Result.bind (function
-        | None -> Error <| NotFound "Nodes on the Initial Page."
+        | None -> Error <| NotFound "Nodes on the Initial Page not found."
         | Some nodes ->
             nodes
             |> Seq.choose (fun node ->
@@ -57,7 +57,7 @@ let private parseHttpResponse page =
 
         match requiredKeys.Count = requiredResult.Count with
         | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
-        | false -> Error <| NotFound "Headers of 'Kdmid Initial Page'")
+        | false -> Error <| NotFound "Headers of 'Kdmid Initial Page' not found.")
 
 let private createCaptchaRequest urlPath = {
     Path = $"/queue/%s{urlPath}"
@@ -67,7 +67,7 @@ let private createCaptchaRequest urlPath = {
 let private prepareCaptchaImage (image: byte array) =
     try
         if image.Length = 0 then
-            Error <| NotFound "Kdmid 'captcha image'"
+            Error <| NotFound "Kdmid 'captcha image' not found."
         else
             let bitmap = image |> SKBitmap.Decode
             let bitmapInfo = bitmap.Info

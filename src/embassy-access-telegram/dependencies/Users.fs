@@ -35,7 +35,7 @@ type Dependencies = {
                 deps.ChatStorage
                 |> Chat.Query.tryFindById deps.ChatId
                 |> ResultAsync.bindAsync (function
-                    | None -> $"User chat '%s{deps.ChatId.ValueStr}'" |> NotFound |> Error |> async.Return
+                    | None -> $"User chat '%s{deps.ChatId.ValueStr}' not found." |> NotFound |> Error |> async.Return
                     | Some chat -> deps.RequestStorage |> Request.Query.findManyByIds chat.Subscriptions)
 
             let getUserEmbassies () =
@@ -54,7 +54,7 @@ type Dependencies = {
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
                     | None ->
-                        $"Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}'"
+                        $"Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' not found."
                         |> NotFound
                         |> Error
                         |> async.Return
@@ -74,7 +74,7 @@ type Dependencies = {
                     // try to get the countryId from the embassyId. It should be the second part of the embassyId
                     match embassyId.TryGetPart 1 with
                     | None ->
-                        $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}'"
+                        $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' not found."
                         |> NotFound
                         |> Error
                         |> async.Return
@@ -87,7 +87,7 @@ type Dependencies = {
                         |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                         |> ResultAsync.bind (function
                             | None ->
-                                $"Service '%s{serviceId.Value}' of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}'"
+                                $"Service '%s{serviceId.Value}' of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' not found."
                                 |> NotFound
                                 |> Error
                             | Some node ->
@@ -109,7 +109,7 @@ type Dependencies = {
                     |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                     |> ResultAsync.bind (function
                         | None ->
-                            $"Service '%s{serviceId.Value}' of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}'"
+                            $"Service '%s{serviceId.Value}' of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' not found."
                             |> NotFound
                             |> Error
                         | Some node ->
