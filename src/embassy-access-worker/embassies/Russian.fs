@@ -70,7 +70,7 @@ module private Kdmid =
 
                         let invalidResults =
                             errors
-                            |> List.map (fun error -> $" - {error.MessageOnly}")
+                            |> List.map (fun error -> $" - {error.Message}")
                             |> String.concat Environment.NewLine
                             |> function
                                 | AP.IsString x -> Environment.NewLine + x |> Some

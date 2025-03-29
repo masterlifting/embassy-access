@@ -12,12 +12,15 @@ type Route =
         match this with
         | Appointments requestId -> [ "0"; requestId.ValueStr ]
         | SubscriptionsMenu requestId -> [ "1"; requestId.ValueStr ]
-        |> String.concat Constants.Endpoint.DELIMITER
+        |> String.concat Constants.Router.DELIMITER
 
     static member parse(input: string) =
-        let parts = input.Split Constants.Endpoint.DELIMITER
+        let parts = input.Split Constants.Router.DELIMITER
 
         match parts with
         | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Appointments
         | [| "1"; requestId |] -> RequestId.parse requestId |> Result.map SubscriptionsMenu
-        | _ -> $"'{parts}' of Embassies.Russian.Kdmid.Get endpoint" |> NotSupported |> Error
+        | _ ->
+            $"'{parts}' of Embassies.Russian.Kdmid.Get endpoint is not supported."
+            |> NotSupported
+            |> Error

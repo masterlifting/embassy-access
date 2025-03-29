@@ -15,10 +15,10 @@ type Route =
         | Embassy id -> [ "1"; id.Value ]
         | EmbassyServices id -> [ "2"; id.Value ]
         | EmbassyService(embassyId, serviceId) -> [ "3"; embassyId.Value; serviceId.Value ]
-        |> String.concat Constants.Endpoint.DELIMITER
+        |> String.concat Constants.Router.DELIMITER
 
     static member parse(input: string) =
-        let parts = input.Split Constants.Endpoint.DELIMITER
+        let parts = input.Split Constants.Router.DELIMITER
 
         match parts with
         | [| "0" |] -> Embassies |> Ok
@@ -28,4 +28,7 @@ type Route =
             (embassyId |> Graph.NodeIdValue, serviceId |> Graph.NodeIdValue)
             |> EmbassyService
             |> Ok
-        | _ -> $"'{parts}' of Embassies.Get endpoint" |> NotSupported |> Error
+        | _ ->
+            $"'{parts}' of Embassies.Get endpoint is not supported."
+            |> NotSupported
+            |> Error

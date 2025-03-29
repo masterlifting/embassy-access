@@ -16,7 +16,7 @@ let private validateCity (request: Request) (payload: Payload) =
     | false ->
         Error
         <| NotSupported
-            $"The subdomain '{payload.SubDomain}' of the requested embassy '{request.Service.Embassy.ShortName}'"
+            $"The subdomain '{payload.SubDomain}' of the requested embassy '{request.Service.Embassy.ShortName}' is not supported."
 
 let private parsePayload =
     ResultAsync.bind (fun (request: Request) ->
@@ -44,7 +44,7 @@ let private setAttemptCore (request: Request) =
     match modified.DayOfYear = today.DayOfYear, attempt > attemptLimit with
     | true, true ->
         Error
-        <| Canceled $"Number of attempts reached the limit '%i{attemptLimit}' for today. The operation"
+        <| Canceled $"Number of attempts reached the limit '%i{attemptLimit}' for today. The operation cancelled."
     | true, false ->
         {
             request with
@@ -87,7 +87,7 @@ let private handleFailedState error (deps: Order.Dependencies) restart request =
                 } ->
         match deps.RestartAttempts <= 0 with
         | true ->
-            "Limit of restarting request due to captcha error reached. The request"
+            "Limit of Captcha retries reached. The operation cancelled."
             |> Canceled
             |> Error
             |> async.Return
@@ -105,7 +105,7 @@ let private handleFailedState error (deps: Order.Dependencies) restart request =
         }
         |> setAttemptCore
         |> ResultAsync.wrap deps.updateRequest
-        |> ResultAsync.bind (fun _ -> Error <| error.extendMsg $"{Environment.NewLine}%s{request.Service.Payload}")
+        |> ResultAsync.bind (fun _ -> Error <| error.ExtendMsg $"{Environment.NewLine}%s{request.Service.Payload}")
 
 let private setProcessedState deps request restart confirmation =
     async {
@@ -149,8 +149,8 @@ let pick (requests: Request seq) notify =
             match error with
             | Operation reason ->
                 match reason.Code with
-                | Some(Custom Constants.ErrorCode.CONFIRMATION_EXISTS)
-                | Some(Custom Constants.ErrorCode.NOT_CONFIRMED)
+                | Some(Custom Constants.ErrorCode.REQUEST_AWAITING_LIST)
+                | Some(Custom Constants.ErrorCode.REQUEST_NOT_CONFIRMED)
                 | Some(Custom Constants.ErrorCode.REQUEST_DELETED) -> true
                 | _ -> false
             | _ -> false

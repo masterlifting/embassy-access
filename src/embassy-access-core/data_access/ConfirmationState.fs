@@ -26,13 +26,13 @@ type ConfirmationStateEntity() =
         | MANUAL ->
             match this.AppointmentId with
             | Some id -> id |> AppointmentId.parse |> Result.map Manual
-            | None -> nameof AppointmentId |> NotFound |> Error
+            | None -> $"{nameof AppointmentId} not found." |> NotFound |> Error
         | AUTO ->
             match this.ConfirmationOption with
             | Some option -> option.ToDomain() |> Result.map Auto
-            | None -> $"The '%s{nameof ConfirmationOptionEntity}'" |> NotFound |> Error
+            | None -> $"The '{nameof ConfirmationOptionEntity}' not found." |> NotFound |> Error
         | _ ->
-            $"The '%s{this.Type}' of '{nameof ConfirmationStateEntity}'"
+            $"The '%s{this.Type}' of '{nameof ConfirmationStateEntity}' is not supported."
             |> NotSupported
             |> Error
 

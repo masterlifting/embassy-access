@@ -13,7 +13,7 @@ module private Payload =
     module Error =
         let translate culture (error: Error') =
             fun (translate, shield) ->
-                let text = error.MessageOnly
+                let text = error.Message
 
                 let request = {
                     Culture = culture
@@ -28,7 +28,7 @@ module private Payload =
                     |> Map.ofList
                     |> Map.tryFind text
                     |> Option.defaultValue text)
-                |> ResultAsync.map error.replaceMsg
+                |> ResultAsync.map error.ReplaceMsg
 
     module Text =
         let translate culture (payload: Payload<string>) =

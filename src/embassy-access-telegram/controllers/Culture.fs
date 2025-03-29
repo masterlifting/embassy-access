@@ -2,6 +2,7 @@
 module EA.Telegram.Controllers.Culture
 
 open Infrastructure.Prelude
+open EA.Telegram.Router
 open EA.Telegram.Router.Culture
 open EA.Telegram.Dependencies
 open EA.Telegram.Services.Culture
@@ -19,10 +20,10 @@ let respond request entrypoint =
                 deps
                 |> Command.setCultureCallback culture
                 |> ResultAsync.bindAsync (fun _ ->
-                    EA.Telegram.Router.Router.Route.parse callback
+                    Router.parse callback
                     |> ResultAsync.wrap (fun route -> deps |> entrypoint route))
 
-let apply (request: EA.Telegram.Router.Router.Route) callback =
+let apply (request: Router.Route) callback =
     fun (deps: Request.Dependencies) ->
         deps.tryGetChat ()
         |> ResultAsync.bindAsync (function

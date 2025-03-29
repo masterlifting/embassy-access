@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitmodules = .gitmodules
 		README.md = README.md
 		.docker-compose\docker-compose.yaml = .docker-compose\docker-compose.yaml
+		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Submodules", "Submodules", "{1F2E46CB-3305-404D-8B70-D0EF6763D44F}"

@@ -10,7 +10,11 @@ module Service =
     let get service =
         match service with
         | Kdmid service -> service.Dependencies |> Kdmid.Order.start service.Request
-        | Midpass _ -> "Midpass service" |> NotSupported |> Error |> async.Return
+        | Midpass _ ->
+            "Midpass service is not implemented yet. If you want to use it, please contact @ponkorn71 on Telegram."
+            |> NotImplemented
+            |> Error
+            |> async.Return
 
 module Order =
     module Kdmid =

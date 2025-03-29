@@ -24,13 +24,16 @@ module ErrorCode =
     let PAGE_HAS_ERROR = "PageHasError"
 
     [<Literal>]
-    let NOT_CONFIRMED = "RequestNotConfirmed"
+    let REQUEST_NOT_CONFIRMED = "RequestNotConfirmed"
 
     [<Literal>]
-    let CONFIRMATION_EXISTS = "ConfirmationExists"
+    let REQUEST_AWAITING_LIST = "RequestAwaitingList"
 
     [<Literal>]
     let REQUEST_DELETED = "RequestDeleted"
-    
+
     [<Literal>]
     let REQUEST_BLOCKED = "RequestBlocked"
+
+    [<Literal>]
+    let REQUEST_NOT_FOUND = "RequestNotFound"

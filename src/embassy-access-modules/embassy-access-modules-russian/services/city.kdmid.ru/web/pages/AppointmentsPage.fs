@@ -1,7 +1,6 @@
 ﻿module internal EA.Embassies.Russian.Kdmid.Web.AppointmentsPage
 
 open System
-open System.Text.RegularExpressions
 open EA.Embassies.Russian.Kdmid.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -27,34 +26,27 @@ let private createHttpRequest formData queryParams =
 
     request, content
 
-let private httpResponseHasInconsistentState page =
+let private pageHasInconsistentState page =
     page
-    |> Html.getNode "//span[@id='ctl00_MainContent_Label_Message']"
-    |> Result.bind (function
-        | None -> Ok page
-        | Some node ->
-            match node.InnerHtml with
-            | AP.IsString text ->
-                let text = Regex.Replace(text, @"<[^>]*>", Environment.NewLine)
-                let text = Regex.Replace(text, @"\s+", " ")
+    |> Html.pageHasInconsistentState (function
+        | text when text |> String.has "Ваша заявка заблокирована" ->
+            Error
+            <| Operation {
+                Message = text
+                Code = Constants.ErrorCode.REQUEST_BLOCKED |> Custom |> Some
+            }
+        | text when text |> String.has "Защитный код заявки задан неверно" ->
+            Error
+            <| Operation {
+                Message = text
+                Code = Constants.ErrorCode.REQUEST_NOT_FOUND |> Custom |> Some
+            }
+        | _ -> Ok page)
 
-                let has (pattern: string) (node: string) =
-                    node.Contains(pattern, StringComparison.OrdinalIgnoreCase)
-
-                match text with
-                | text when text |> has "Ваша заявка заблокирована" ->
-                    Error
-                    <| Operation {
-                        Message = text
-                        Code = Constants.ErrorCode.REQUEST_BLOCKED |> Custom |> Some
-                    }
-                | _ -> Ok page
-            | _ -> Ok page)
-    
 let private parseHttpResponse page =
     Html.load page
     |> Result.bind Html.pageHasError
-    |> Result.bind httpResponseHasInconsistentState
+    |> Result.bind pageHasInconsistentState
     |> Result.bind (Html.getNodes "//input")
     |> Result.bind (function
         | None -> Ok Map.empty
@@ -86,8 +78,8 @@ let private parseHttpResponse page =
                 |> Map.forall (fun _ value -> value |> Seq.tryHead |> Option.isSome)
             with
             | true -> Ok(requiredResult |> Map.combine <| notRequiredResult)
-            | false -> Error <| NotFound "Kdmid 'Appointments Page' headers"
-        | false -> Error <| NotFound "Kdmid 'Appointments Page' headers")
+            | false -> Error <| NotFound "Kdmid 'Appointments Page' headers not found."
+        | false -> Error <| NotFound "Kdmid 'Appointments Page' headers not found.")
 
 let private prepareHttpFormData data =
     let requiredKeys =
@@ -137,8 +129,12 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
                        Description = window
                    }
 
-            | _ -> Error <| NotSupported $"Kdmid 'Appointment Page' date '%s{dateTime}'"
-        | _ -> Error <| NotSupported $"Kdmid 'Appointment Page' row '%s{value}'"
+            | _ ->
+                Error
+                <| NotSupported $"Kdmid 'Appointments page' date '%s{dateTime}' is not supported."
+        | _ ->
+            Error
+            <| NotSupported $"Kdmid 'Appointments page' row '%s{value}' is not supported."
 
     match appointments.IsEmpty with
     | true -> Ok(formData, Set.empty)

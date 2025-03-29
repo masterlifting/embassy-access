@@ -14,9 +14,8 @@ let private respond payload =
         deps
         |> Request.Dependencies.create payload
         |> ResultAsync.wrap (fun deps ->
-            Router.Route.parse payload.Value
+            Router.parse payload.Value
             |> ResultAsync.wrap (fun request -> deps |> Controller.respond request))
-        |> ResultAsync.mapError (fun error -> error.extendMsg $"{payload.ChatId}")
 
 let private consume data =
     fun deps ->
@@ -24,9 +23,17 @@ let private consume data =
         | Message msg ->
             match msg with
             | Text payload -> deps |> respond payload
-            | _ -> $"Telegram '%A{msg}'" |> NotSupported |> Error |> async.Return
+            | _ ->
+                $"Telegram message: '%A{msg}' is not supported."
+                |> NotSupported
+                |> Error
+                |> async.Return
         | CallbackQuery payload -> deps |> respond payload
-        | _ -> $"Telegram '%A{data}'" |> NotSupported |> Error |> async.Return
+        | _ ->
+            $"Telegram message: '%A{data}' is not supported."
+            |> NotSupported
+            |> Error
+            |> async.Return
 
 let listen (deps: Client.Dependencies) =
     let handler = fun data -> consume data deps
