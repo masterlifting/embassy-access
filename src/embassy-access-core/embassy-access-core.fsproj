@@ -4,6 +4,7 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="domain\Constants.fs" />
         <Compile Include="domain\EmbassyNode.fs" />
         <Compile Include="domain\Confirmation.fs" />
         <Compile Include="domain\Appointment.fs" />
