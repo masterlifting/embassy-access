@@ -6,6 +6,7 @@ open Infrastructure.Prelude
 open Web.Clients
 open EA.Core.Domain
 open EA.Russian.Clients.Kdmid
+open EA.Russian.Clients.Kdmid.Web
 open EA.Russian.Clients.Domain.Kdmid
 
 let private setInProcessState request =
@@ -17,7 +18,7 @@ let private setInProcessState request =
         }
         |> client.updateRequest
 
-let private createPayload (request: Request) =
+let private createPayload request =
 
     let create (uri: Uri) =
         match uri.Host.Split '.' with
@@ -82,7 +83,7 @@ let private createPayload (request: Request) =
     |> Result.bind create
     |> Result.bind validate
 
-let private setAttemptCore (request: Request) =
+let private setAttempt request =
     let attemptLimit = 20
     let timeZone = request.Service.Embassy.TimeZone |> Option.defaultValue 0.
 
@@ -107,93 +108,115 @@ let private setAttemptCore (request: Request) =
         }
         |> Ok
 
-let private setAttempt (deps: Order.Dependencies) =
-    ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
-        request
-        |> setAttemptCore
-        |> ResultAsync.wrap deps.updateRequest
-        |> ResultAsync.map (fun request -> httpClient, queryParams, formData, request))
+let private setCompletedState request =
+    fun updateRequest ->
+        let message =
+            match request.Appointments.IsEmpty with
+            | true -> "No appointments found"
+            | false ->
+                match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
+                | [] -> $"Found appointments: %i{request.Appointments.Count}"
+                | confirmations -> $"Found confirmations: %i{confirmations.Length}"
 
-let private setCompletedState (deps: Order.Dependencies) request =
-    let message =
-        match request.Appointments.IsEmpty with
-        | true -> "No appointments found"
-        | false ->
-            match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
-            | [] -> $"Found appointments: %i{request.Appointments.Count}"
-            | confirmations -> $"Found confirmations: %i{confirmations.Length}"
-
-    deps.updateRequest {
-        request with
-            ProcessState = Completed message
-            Modified = DateTime.UtcNow
-    }
-
-let private handleFailedState error (deps: Order.Dependencies) restart request =
-    match error with
-    | Operation {
-                    Code = Some(Custom Web.Captcha.ERROR_CODE)
-                } ->
-        match deps.RestartAttempts <= 0 with
-        | true ->
-            "Limit of Captcha retries reached. The operation cancelled."
-            |> Canceled
-            |> Error
-            |> async.Return
-        | false ->
-            {
-                deps with
-                    RestartAttempts = deps.RestartAttempts - 1
-            }
-            |> restart request
-    | _ ->
-        {
+        updateRequest {
             request with
-                ProcessState = Failed error
+                ProcessState = Completed message
                 Modified = DateTime.UtcNow
         }
-        |> setAttemptCore
-        |> ResultAsync.wrap deps.updateRequest
-        |> ResultAsync.bind (fun _ -> Error <| error.ExtendMsg $"{Environment.NewLine}%s{request.Service.Payload}")
 
-let private setProcessedState deps request restart confirmation =
-    async {
-        match! confirmation with
-        | Error error -> return! request |> handleFailedState error deps restart
-        | Ok request -> return! request |> setCompletedState deps
-    }
+let private setFailedState error request =
+    fun (updateRequest, restart, attempts) ->
+        match error with
+        | Operation {
+                        Code = Some(Custom Web.Captcha.ERROR_CODE)
+                    } ->
+            match attempts <= 0 with
+            | true ->
+                "Limit of Captcha retries reached. The operation cancelled."
+                |> Canceled
+                |> Error
+                |> async.Return
+            | false -> restart request
+        | _ ->
+            {
+                request with
+                    ProcessState = Failed error
+                    Modified = DateTime.UtcNow
+            }
+            |> setAttempt
+            |> ResultAsync.wrap updateRequest
+            |> ResultAsync.bind (fun _ ->
+                $"{Environment.NewLine}%s{request.Service.Payload}" |> error.ExtendMsg |> Error)
 
 let rec start (request: Request) =
     fun (client: Client) ->
 
         // define
         let setInProcessState r = client |> setInProcessState r
+
         let createPayload =
             ResultAsync.bind (fun r -> r |> createPayload |> Result.map (fun payload -> r, payload))
-        let createHttpClient = Http.createClient
-        let processInitialPage = InitialPage.handle deps
-        let setAttempt = setAttempt client
-        let processValidationPage = ValidationPage.handle deps
-        let processAppointmentsPage = AppointmentsPage.handle deps
-        let processConfirmationPage = ConfirmationPage.handle deps
-        let setProcessedState = setProcessedState client request start
+
+        let createHttpClient =
+            ResultAsync.bind (fun (r, p) ->
+                p.Subdomain
+                |> client.initHttpClient
+                |> Result.map (fun httpClient -> httpClient, r, p))
+
+        let parseInitialPage =
+            ResultAsync.bindAsync (fun (httpClient, r, p) ->
+                let queryParams = p |> Http.createQueryParams
+                (httpClient, client.getInitialPage, client.getCaptcha, client.solveIntCaptcha)
+                |> Html.InitialPage.parse queryParams
+                |> ResultAsync.map (fun formData -> httpClient, r, queryParams, formData))
+
+        let setAttempt =
+            ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
+                r
+                |> setAttempt
+                |> ResultAsync.wrap client.updateRequest
+                |> ResultAsync.map (fun r -> httpClient, r, qp, fd))
+
+        let parseValidationPage =
+            ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
+                (httpClient, client.postValidationPage)
+                |> Html.ValidationPage.parse qp fd
+                |> ResultAsync.map (fun formDataMap -> httpClient, r, qp, formDataMap))
+
+        let parseAppointmentsPage =
+            ResultAsync.bindAsync (fun (httpClient, r, qp, fdm) ->
+                (httpClient, client.postAppointmentsPage)
+                |> Html.AppointmentsPage.parse qp fdm r
+                |> ResultAsync.map (fun (fdm, r) -> httpClient, r, qp, fdm))
+
+        let parseConfirmationPage =
+            ResultAsync.bindAsync (fun (httpClient, r, qp, fdm) ->
+                (httpClient, client.postConfirmationPage)
+                |> Html.ConfirmationPage.parse qp fdm r)
+
+        let setProcessState =
+            Async.bind (function
+                | Ok r -> client.updateRequest |> setCompletedState r
+                | Error error ->
+                    let inline restart request = client |> start request
+                    (client.updateRequest, restart, 3) |> setFailedState error request)
 
         // pipe
         let run =
             setInProcessState
             >> createPayload
             >> createHttpClient
-            >> processInitialPage
+            >> parseInitialPage
             >> setAttempt
-            >> processValidationPage
-            >> processAppointmentsPage
-            >> processConfirmationPage
-            >> setProcessedState
+            >> parseValidationPage
+            >> parseAppointmentsPage
+            >> parseConfirmationPage
+            >> setProcessState
 
         request |> run
 
-let startSeq (requests: Request seq) notify =
-    fun (client: Client) ->
+let startSeq (requests: Request seq) =
+    fun ((client: Client), notify) ->
 
         let inline errorFilter error =
             match error with
@@ -201,6 +224,8 @@ let startSeq (requests: Request seq) notify =
                 match reason.Code with
                 | Some(Custom Constants.ErrorCode.REQUEST_AWAITING_LIST)
                 | Some(Custom Constants.ErrorCode.REQUEST_NOT_CONFIRMED)
+                | Some(Custom Constants.ErrorCode.REQUEST_BLOCKED)
+                | Some(Custom Constants.ErrorCode.REQUEST_NOT_FOUND)
                 | Some(Custom Constants.ErrorCode.REQUEST_DELETED) -> true
                 | _ -> false
             | _ -> false

@@ -22,7 +22,12 @@
         <Compile Include="API.fs"/>
         <Compile Include="clients\kdmid\Domain.fs" />
         <Compile Include="clients\kdmid\Client.fs" />
-        <Compile Include="clients\kdmid\Http.fs" />
+        <Compile Include="clients\kdmid\Web.Http.fs" />
+        <Compile Include="clients\kdmid\Web.Html.Common.fs" />
+        <Compile Include="clients\kdmid\Web.Html.InitialPage.fs" />
+        <Compile Include="clients\kdmid\Web.Html.ValidationPage.fs" />
+        <Compile Include="clients\kdmid\Web.Html.AppointmentsPage.fs" />
+        <Compile Include="clients\kdmid\Web.Html.ConfirmationPage.fs" />
         <Compile Include="clients\kdmid\Service.fs" />
         <Compile Include="clients\midpass\Domain.fs" />
         <Compile Include="clients\midpass\Client.fs" />
