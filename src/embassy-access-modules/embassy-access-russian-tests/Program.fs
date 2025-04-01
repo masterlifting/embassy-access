@@ -1,8 +1,8 @@
 ﻿open System
 open Expecto
+open EA.Russian.Tests
 
-let private tests =
-    testList "EA.Embassies.Russian.Tests" [ EA.Embassies.Russian.Kdmid.Tests.list ]
+let private tests = testList "EA.Russian.Tests" [ Kdmid.tests ]
 
 [<EntryPoint>]
 let main args =

@@ -6,7 +6,6 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
 open Web.Clients.Domain.Http
-open EA.Embassies.Russian.Kdmid.Web
 open EA.Russian.Clients.Domain.Kdmid
 
 let private createHttpRequest queryParams formData =
@@ -27,7 +26,7 @@ let private createHttpRequest queryParams formData =
 
 let private pageHasInconsistentState page =
     page
-    |> Html.pageHasInconsistentState (function
+    |> Common.pageHasInconsistentState (function
         | text when text |> String.has "Вы записаны" && not (text |> String.has "список ожидания") ->
             Error
             <| Operation {
@@ -50,7 +49,7 @@ let private pageHasInconsistentState page =
 
 let private parseHttpResponse page =
     Html.load page
-    |> Result.bind Html.pageHasError
+    |> Result.bind Common.pageHasError
     |> Result.bind pageHasInconsistentState
     |> Result.bind (Html.getNodes "//input")
     |> Result.bind (function

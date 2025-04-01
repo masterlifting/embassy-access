@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
+    <ProjectReference Include="..\embassy-access-russian\embassy-access-russian.fsproj" />
   </ItemGroup>
 
 </Project>

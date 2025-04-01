@@ -10,9 +10,8 @@ open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
-open EA.Embassies.Russian
-open EA.Embassies.Russian.Domain
-open EA.Embassies.Russian.Kdmid.Dependencies
+open EA.Russian.Clients.Kdmid
+open EA.Russian.Clients.Domain.Kdmid
 
 module Notification =
 
@@ -44,7 +43,7 @@ type Dependencies = {
     getRequest: RequestId -> Async<Result<Request, Error'>>
     createRequest: Request -> Async<Result<Request, Error'>>
     deleteRequest: RequestId -> Async<Result<unit, Error'>>
-    getApi: Request -> Async<Result<Request, Error'>>
+    processRequest: Request -> Async<Result<Request, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
     translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>>
 } with
@@ -94,15 +93,13 @@ type Dependencies = {
                 |> Chat.Command.deleteChatSubscription deps.Chat.Id requestId
                 |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.delete requestId)
 
-            let apiDeps = Order.Dependencies.create deps.RequestStorage deps.CancellationToken
-
-            let getApi request =
+            let processRequest request =
                 {
-                    Request = request
-                    Dependencies = apiDeps
+                    CancellationToken = deps.CancellationToken
+                    RequestStorage = deps.RequestStorage
                 }
-                |> Kdmid
-                |> API.Service.get
+                |> Client.init
+                |> ResultAsync.wrap (Service.tryProcess request)
 
             let translateMessageRes = deps.Culture.translateRes deps.Chat.Culture
 
@@ -124,7 +121,7 @@ type Dependencies = {
                 getChatRequests = deps.getChatRequests
                 createRequest = createRequest
                 deleteRequest = deleteRequest
-                getApi = getApi
+                processRequest = processRequest
                 translateMessageRes = translateMessageRes
                 translateMessagesRes = translateMessagesRes
             }

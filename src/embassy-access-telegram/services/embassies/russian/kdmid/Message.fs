@@ -3,6 +3,7 @@ module EA.Telegram.Services.Embassies.Russian.Kdmid.Message
 
 open System
 open Infrastructure.Domain
+open Web.Clients
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain.Request
@@ -14,7 +15,7 @@ open EA.Core.Domain.ConfirmationOption
 open EA.Core.Domain.ConfirmationState
 open EA.Telegram.Router
 open EA.Telegram.Dependencies.Embassies.Russian
-open EA.Embassies.Russian.Kdmid.Domain
+open EA.Russian.Clients.Domain.Kdmid
 
 module Notification =
     open EA.Telegram.Router
@@ -35,8 +36,8 @@ module Notification =
     let toHasAppointments (request: Request, appointments: Appointment Set) =
         fun chatId ->
             request.Service.Payload
-            |> Payload.toValue
-            |> Result.map (fun payloadValue ->
+            |> Payload.print
+            |> Result.map (fun payload ->
                 appointments
                 |> Seq.map (fun appointment ->
                     let route =
@@ -54,7 +55,7 @@ module Notification =
                     (chatId, New)
                     |> ButtonsGroup.create {
                         Name =
-                            $"Choose the appointment for subscription '{payloadValue}' of service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}'"
+                            $"Choose the appointment for subscription '{payload}' of service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}'"
                         Columns = 1
                         Buttons =
                             data
@@ -65,9 +66,9 @@ module Notification =
     let toHasConfirmations (request: Request, confirmations: Confirmation Set) =
         fun chatId ->
             request.Service.Payload
-            |> Payload.toValue
-            |> Result.map (fun payloadValue ->
-                $"The subscription '{payloadValue}' for service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}' was successfully applied.
+            |> Payload.print
+            |> Result.map (fun payload ->
+                $"The subscription '{payload}' for service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}' was successfully applied.
                 {Environment.NewLine}The response:{Environment.NewLine}
                 '{confirmations |> Seq.map _.Description |> String.concat Environment.NewLine}'"
                 |> Text.create
@@ -138,8 +139,6 @@ module Notification =
 module Instruction =
 
     open Infrastructure.Prelude
-    open EA.Embassies.Russian
-    open EA.Telegram
     open EA.Telegram.Router.Embassies.Russian
     open EA.Telegram.Router.Embassies.Russian.Kdmid.Post.Model
 

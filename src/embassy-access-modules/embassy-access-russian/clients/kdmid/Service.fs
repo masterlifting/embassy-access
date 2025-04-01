@@ -136,7 +136,7 @@ let private setFailedState error request =
                 |> Canceled
                 |> Error
                 |> async.Return
-            | false -> request |> restart 
+            | false -> request |> restart
         | _ ->
             {
                 request with

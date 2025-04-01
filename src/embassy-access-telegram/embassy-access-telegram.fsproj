@@ -59,7 +59,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\submodules\fsharp-ai-provider\src\fsharp-ai-provider.fsproj" />
         <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
-        <ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj" />
+        <ProjectReference Include="..\embassy-access-modules\embassy-access-russian\embassy-access-russian.fsproj" />
     </ItemGroup>
 
 </Project>

@@ -53,7 +53,7 @@ module private Kdmid =
                     |> Seq.sortByDescending _.Modified
                     |> Seq.truncate 5
                     |> Seq.toList
-                    |> handleGroup deps.pickOrder))
+                    |> handleGroup deps.tryProcessFirst))
             |> ResultAsync.map (Async.Sequential >> Async.map Result.unzip)
             |> Async.bind (function
                 | Error error -> Error error |> async.Return

@@ -2,10 +2,10 @@
 
 open System
 open System.Threading
-open System.Collections.Concurrent
 open EA.Core.Domain
 open EA.Core.DataAccess
 open Infrastructure.Domain
+open Web.Clients
 open Web.Clients.Domain
 
 type Client = {
@@ -30,7 +30,13 @@ type Payload = {
     Id: int
     Cd: string
     Ems: string option
-}
+} with
+
+    static member print value =
+        value
+        |> Http.Route.toUri
+        |> Result.bind Http.Route.toQueryParams
+        |> Result.map (fun paramsMap -> paramsMap.Keys |> String.concat ",")
 
 module Constants =
     let internal SUPPORTED_SUB_DOMAINS =

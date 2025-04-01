@@ -7,4 +7,4 @@ open Web.Clients.Domain
 type Client = Http.Client
 type ClientFactory = ConcurrentDictionary<string, Client>
 
-type Dependencies = { Number: string;}
+type Dependencies = { Number: string }

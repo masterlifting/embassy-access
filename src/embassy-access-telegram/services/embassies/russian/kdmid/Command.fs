@@ -4,7 +4,6 @@ open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Embassies.Russian.Kdmid.Domain
 open EA.Telegram.Router.Embassies.Russian
 open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian.Kdmid
@@ -33,19 +32,23 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                     resultAsync {
                         let! service = deps.getService model.ServiceId
                         let! embassy = deps.getEmbassy model.EmbassyId
-
                         let! request =
-                            model.Payload
-                            |> Web.Clients.Http.Route.toUri
-                            |> Result.map (fun uri -> {
-                                Uri = uri
-                                Service = service
-                                Embassy = embassy
-                                SubscriptionState = Auto
+                            deps.createRequest {
+                                Id = RequestId.createNew ()
+                                Service = {
+                                    Id = service.Id
+                                    Name = service.Name
+                                    Payload = model.Payload
+                                    Description = service.Description
+                                    Embassy = embassy
+                                }
+                                Attempt = System.DateTime.UtcNow, 0
+                                ProcessState = Ready
+                                SubscriptionState = Manual
                                 ConfirmationState = model.ConfirmationState
-                            })
-                            |> Result.map _.ToRequest()
-                            |> ResultAsync.wrap deps.createRequest
+                                Appointments = Set.empty<Appointment>
+                                Modified = System.DateTime.UtcNow
+                            }
 
                         return
                             $"Subscription '{request.Id.ValueStr}' for the service '{service.Name}' for the embassy '{embassy.Name}' has been created."
@@ -84,7 +87,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                     | Ready
                     | Failed _
                     | Completed _ ->
-                        deps.getApi request
+                        deps.processRequest request
                         |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result)
                 | None ->
                     resultAsync {
@@ -92,20 +95,25 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                         let! embassy = deps.getEmbassy model.EmbassyId
 
                         let! request =
-                            model.Payload
-                            |> Web.Clients.Http.Route.toUri
-                            |> Result.map (fun uri -> {
-                                Uri = uri
-                                Service = service
-                                Embassy = embassy
+                            deps.createRequest {
+                                Id = RequestId.createNew ()
+                                Service = {
+                                    Id = service.Id
+                                    Name = service.Name
+                                    Payload = model.Payload
+                                    Description = service.Description
+                                    Embassy = embassy
+                                }
+                                Attempt = System.DateTime.UtcNow, 0
+                                ProcessState = Ready
                                 SubscriptionState = Manual
                                 ConfirmationState = Disabled
-                            })
-                            |> Result.map _.ToRequest()
-                            |> ResultAsync.wrap deps.createRequest
+                                Appointments = Set.empty<Appointment>
+                                Modified = System.DateTime.UtcNow
+                            }
 
                         return
-                            deps.getApi request
+                            deps.processRequest request
                             |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result)
                     }
         }
@@ -127,7 +135,7 @@ let confirmAppointment (model: Kdmid.Post.Model.ConfirmAppointment) =
     fun (deps: Kdmid.Dependencies) ->
         deps.getRequest model.RequestId
         |> ResultAsync.bindAsync (fun request ->
-            deps.getApi {
+            deps.processRequest {
                 request with
                     ConfirmationState = ConfirmationState.Manual model.AppointmentId
             })
