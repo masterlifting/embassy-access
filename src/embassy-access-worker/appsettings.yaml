@@ -42,7 +42,7 @@ Worker:
               Schedule:
                 StartTime: 08:30:00
                 StopTime: 17:00:00
-                TimeZone: 1
+                TimeZone: 2
         - Id: DEU
           Name: Germany
           Parallel: true
@@ -58,7 +58,7 @@ Worker:
                   StartTime: 08:30:00
                   StopTime: 17:00:00
               Schedule:
-                TimeZone: 1
+                TimeZone: 2
         - Id: FRA
           Name: France
           Parallel: true
@@ -69,7 +69,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 1
+                TimeZone: 2
         - Id: MNE
           Name: Montenegro
           Parallel: true
@@ -80,7 +80,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 1
+                TimeZone: 2
         - Id: IRL
           Name: Ireland
           Parallel: true
@@ -91,7 +91,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 0
+                TimeZone: 1
         - Id: CHE
           Name: Switzerland
           Parallel: true
@@ -102,7 +102,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 1
+                TimeZone: 2
         - Id: FIN
           Name: Finland
           Parallel: true
@@ -113,7 +113,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 2
+                TimeZone: 3
         - Id: NLD
           Name: Netherlands
           Parallel: true
@@ -124,7 +124,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 1
+                TimeZone: 2
         - Id: ALB
           Name: Albania
           Parallel: true
@@ -135,7 +135,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 1
+                TimeZone: 2
         - Id: SVN
           Name: Slovenia
           Parallel: true
@@ -146,7 +146,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 1
+                TimeZone: 2
         - Id: BIH
           Name: Bosnia
           Parallel: true
@@ -157,7 +157,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 1
+                TimeZone: 2
         - Id: HUN
           Name: Hungary
           Parallel: true
@@ -168,7 +168,7 @@ Worker:
               Tasks:
                 <<: *SearchAppointments
               Schedule:
-                TimeZone: 1
+                TimeZone: 2
 
 Embassies:
   Id: EMB
@@ -185,69 +185,69 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 1
+              TimeZone: 2
         - Id: DEU
           Name: Germany
           Description: In which city of Germany is the Russian Embassy located?
           Children:
             - Id: BER
               Name: Berlin
-              TimeZone: 1
+              TimeZone: 2
             - Id: MUC
               Name: Munich
-              TimeZone: 1
+              TimeZone: 2
         - Id: FRA
           Name: France
           Description: In which city of France is the Russian Embassy located?
           Children:
             - Id: PAR
               Name: Paris
-              TimeZone: 1
+              TimeZone: 2
         - Id: ITA
           Name: Italy
           Description: In which city of Italy is the Russian Embassy located?
           Children:
             - Id: ROM
               Name: Rome
-              TimeZone: 1
+              TimeZone: 2
             - Id: MIL
               Name: Milan
-              TimeZone: 1
+              TimeZone: 2
         - Id: ESP
           Name: Spain
           Description: In which city of Spain is the Russian Embassy located?
           Children:
             - Id: MAD
               Name: Madrid
-              TimeZone: 1
+              TimeZone: 2
         - Id: CZE
           Name: Czech Republic
           Description: In which city of Czech Republic is the Russian Embassy located?
           Children:
             - Id: PRG
               Name: Prague
-              TimeZone: 1
+              TimeZone: 2
         - Id: POL
           Name: Poland
           Description: In which city of Poland is the Russian Embassy located?
           Children:
             - Id: WAW
               Name: Warsaw
-              TimeZone: 1
+              TimeZone: 2
         - Id: CHE
           Name: Switzerland
           Description: In which city of Switzerland is the Russian Embassy located?
           Children:
             - Id: BER
               Name: Bern
-              TimeZone: 1
+              TimeZone: 2
         - Id: GBR
           Name: Great Britain
           Description: In which city of Great Britain is the Russian Embassy located?
           Children:
             - Id: LON
               Name: London
-              TimeZone: 0
+              TimeZone: 1
         - Id: CHN
           Name: China
           Description: In which city of China is the Russian Embassy located?
@@ -357,14 +357,14 @@ Embassies:
           Children:
             - Id: MAD
               Name: Madrid
-              TimeZone: 1
+              TimeZone: 2
         - Id: ITA
           Name: Italy
           Description: In which city of Italy is the German embassy located?
           Children:
             - Id: ROM
               Name: Rome
-              TimeZone: 1
+              TimeZone: 2
     - Id: ITA
       Name: Italian
       Description: Select an embassy
@@ -375,14 +375,14 @@ Embassies:
           Children:
             - Id: ATH
               Name: Athens
-              TimeZone: 2
+              TimeZone: 3
         - Id: UKR
           Name: Ukraine
           Description: In which city of Ukraine is the Italian embassy located?
           Children:
             - Id: IEV
               Name: Kiev
-              TimeZone: 2
+              TimeZone: 3
     - Id: GBR
       Name: British
       Description: Select an embassy
@@ -393,14 +393,14 @@ Embassies:
           Children:
             - Id: WAW
               Name: Warsaw
-              TimeZone: 1
+              TimeZone: 2
         - Id: CZE
           Name: Czech Republic
           Description: In which city of Czech Republic is the British embassy located?
           Children:
             - Id: PRG
               Name: Prague
-              TimeZone: 1
+              TimeZone: 2
     - Id: FRA
       Name: French
       Description: Select an embassy
@@ -411,14 +411,14 @@ Embassies:
           Children:
             - Id: BRU
               Name: Brussels
-              TimeZone: 1
+              TimeZone: 2
         - Id: DEU
           Name: Germany
           Description: In which city of Germany is the French embassy located?
           Children:
             - Id: BER
               Name: Berlin
-              TimeZone: 1
+              TimeZone: 2
 
 KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
   Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat. Without apostrophes.
