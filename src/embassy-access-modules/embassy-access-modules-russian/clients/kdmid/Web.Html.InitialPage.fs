@@ -8,7 +8,6 @@ open Infrastructure.Prelude
 open Infrastructure.Parser
 open Web.Clients.Domain.Http
 open EA.Russian.Clients.Kdmid.Web
-open EA.Russian.Clients.Domain.Kdmid
 
 let private createHttpRequest queryParams = {
     Path = "/queue/orderinfo.aspx?" + queryParams
@@ -115,14 +114,15 @@ let parse queryParams =
         |> parseResponse
         |> ResultAsync.bindAsync (fun pageData ->
             match pageData |> Map.tryFind "captchaUrlPath" with
-            | None -> async { return Error <| NotFound "Kdmid 'captcha' information on the 'Initial Page'" }
+            | None ->
+                "Kdmid 'captcha' information on the 'Initial Page' not found."
+                |> NotFound
+                |> Error
+                |> async.Return
             | Some urlPath ->
 
                 // define
-                let getCaptchaRequest =
-                    let request = createCaptchaRequest urlPath
-                    getCaptcha request
-
+                let getCaptchaRequest = urlPath |> createCaptchaRequest |> getCaptcha
                 let setCookie = ResultAsync.bind (httpClient |> Http.setSessionCookie)
                 let prepareResponse = ResultAsync.bind prepareCaptchaImage
                 let solveCaptcha = ResultAsync.bindAsync solveIntCaptcha

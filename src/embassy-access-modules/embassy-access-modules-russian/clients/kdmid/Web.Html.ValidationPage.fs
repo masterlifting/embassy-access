@@ -9,7 +9,7 @@ open Web.Clients.Domain.Http
 open EA.Embassies.Russian.Kdmid.Web
 open EA.Russian.Clients.Domain.Kdmid
 
-let private createHttpRequest formData queryParams =
+let private createHttpRequest queryParams formData =
 
     let request = {
         Path = $"/queue/orderinfo.aspx?%s{queryParams}"
@@ -89,10 +89,7 @@ let parse queryParams formData =
     fun (httpClient, postValidationPage) ->
 
         // define
-        let postRequest =
-            let request, content = createHttpRequest formData queryParams
-            postValidationPage request content
-
+        let postRequest = formData |> createHttpRequest queryParams ||> postValidationPage
         let parseResponse = ResultAsync.bind parseHttpResponse
         let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
 

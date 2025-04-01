@@ -7,7 +7,6 @@ open Infrastructure.Parser
 open Web.Clients.Domain.Http
 open EA.Core.Domain
 open EA.Russian.Clients.Kdmid.Web
-open EA.Russian.Clients.Domain.Kdmid
 
 let private handleRequestConfirmation (request: Request) =
     match request.ConfirmationState with
@@ -48,7 +47,7 @@ let private handleRequestConfirmation (request: Request) =
                 <| NotFound
                     $"Appointment in the range '{min.ToShortDateString()}' - '{max.ToShortDateString()}' not found."
 
-let private createHttpRequest formData queryParamsId =
+let private createHttpRequest queryParamsId formData =
 
     let request = {
         Path = $"/queue/SPCalendar.aspx?bjo=%s{queryParamsId}"
@@ -110,11 +109,11 @@ let parse queryParams formDataMap request =
             | Some appointment ->
                 // define
                 let postRequest queryParamsId =
-                    let formData =
-                        appointment.Value |> prepareHttpFormData formDataMap |> Http.buildFormData
-
-                    let request, content = createHttpRequest formData queryParamsId
-                    postConfirmationPage request content
+                    appointment.Value
+                    |> prepareHttpFormData formDataMap
+                    |> Http.buildFormData
+                    |> createHttpRequest queryParamsId
+                    ||> postConfirmationPage
 
                 let parseResponse = ResultAsync.bind parseHttpResponse
                 let parseConfirmation = ResultAsync.bind createRequestConfirmation

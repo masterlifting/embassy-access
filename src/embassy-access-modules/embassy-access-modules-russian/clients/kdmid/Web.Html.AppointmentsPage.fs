@@ -9,7 +9,7 @@ open EA.Core.Domain
 open EA.Russian.Clients.Kdmid.Web
 open EA.Russian.Clients.Domain.Kdmid
 
-let private createHttpRequest formData queryParams =
+let private createHttpRequest queryParams formData =
 
     let request = {
         Path = $"/queue/orderinfo.aspx?%s{queryParams}"
@@ -157,9 +157,10 @@ let parse queryParams formDataMap request =
 
         // define
         let postRequest =
-            let formData = Http.buildFormData formDataMap
-            let request, content = createHttpRequest formData queryParams
-            postAppointmentsPage request content
+            formDataMap
+            |> Http.buildFormData
+            |> createHttpRequest queryParams
+            ||> postAppointmentsPage
 
         let parseResponse = ResultAsync.bind parseHttpResponse
         let prepareFormData = ResultAsync.mapAsync prepareHttpFormData

@@ -6,20 +6,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="services\city.kdmid.ru\domain\Constants.fs" />
-        <Compile Include="services\city.kdmid.ru\domain\KdmidRequest.fs" />
-        <Compile Include="services\city.kdmid.ru\domain\Payload.fs" />
-        <Compile Include="services\city.kdmid.ru\dependencies\Order.fs" />
-        <Compile Include="services\city.kdmid.ru\web\Http.fs"/>
-        <Compile Include="services\city.kdmid.ru\web\Html.fs"/>
-        <Compile Include="services\city.kdmid.ru\web\pages\InitialPage.fs"/>
-        <Compile Include="services\city.kdmid.ru\web\pages\ValidationPage.fs"/>
-        <Compile Include="services\city.kdmid.ru\web\pages\AppointmentsPage.fs"/>
-        <Compile Include="services\city.kdmid.ru\web\pages\ConfirmationPage.fs"/>
-        <Compile Include="services\city.kdmid.ru\Order.fs" />
-        <Compile Include="services\info.midpass.ru\domain\MidpassRequest.fs" />
-        <Compile Include="domain\Service.fs" />
-        <Compile Include="API.fs"/>
         <Compile Include="clients\kdmid\Domain.fs" />
         <Compile Include="clients\kdmid\Client.fs" />
         <Compile Include="clients\kdmid\Web.Http.fs" />

@@ -136,7 +136,7 @@ let private setFailedState error request =
                 |> Canceled
                 |> Error
                 |> async.Return
-            | false -> restart request
+            | false -> request |> restart 
         | _ ->
             {
                 request with
@@ -148,7 +148,7 @@ let private setFailedState error request =
             |> ResultAsync.bind (fun _ ->
                 $"{Environment.NewLine}%s{request.Service.Payload}" |> error.ExtendMsg |> Error)
 
-let rec start (request: Request) =
+let rec tryProcess (request: Request) =
     fun (client: Client) ->
 
         // define
@@ -198,7 +198,7 @@ let rec start (request: Request) =
             Async.bind (function
                 | Ok r -> client.updateRequest |> setCompletedState r
                 | Error error ->
-                    let inline restart request = client |> start request
+                    let inline restart request = client |> tryProcess request
                     (client.updateRequest, restart, 3) |> setFailedState error request)
 
         // pipe
@@ -215,8 +215,8 @@ let rec start (request: Request) =
 
         request |> run
 
-let startSeq (requests: Request seq) =
-    fun ((client: Client), notify) ->
+let tryProcessFirst (requests: Request seq) =
+    fun (client: Client, notify) ->
 
         let inline errorFilter error =
             match error with
@@ -235,7 +235,7 @@ let startSeq (requests: Request seq) =
                 match requests with
                 | [] -> return Error errors
                 | request :: requestsTail ->
-                    match! client |> start request with
+                    match! client |> tryProcess request with
                     | Error error ->
 
                         do!
