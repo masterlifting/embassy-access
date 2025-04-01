@@ -13,8 +13,8 @@
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\AIProvider.fs" />
         <Compile Include="dependencies\Culture.fs" />
-        <Compile Include="dependencies\embassy-access-telegram\Telegram.fs" />
-        <Compile Include="dependencies\embassies\Russian.fs" />
+        <Compile Include="dependencies\Telegram.fs" />
+        <Compile Include="dependencies\Embassies.Russian.fs" />
         <Compile Include="embassies\Russian.fs" />
         <Compile Include="Initializer.fs" />
         <Compile Include="Program.fs" />
