@@ -25,6 +25,7 @@ type Request = {
     Id: RequestId
     Service: RequestService
     Attempt: DateTime * int
+    Retries: uint<attempts>
     ProcessState: ProcessState
     SubscriptionState: SubscriptionState
     ConfirmationState: ConfirmationState

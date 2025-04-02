@@ -5,18 +5,8 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients
 open EA.Core.Domain
-open EA.Russian.Clients.Kdmid
 open EA.Russian.Clients.Kdmid.Web
 open EA.Russian.Clients.Domain.Kdmid
-
-let private setInProcessState request =
-    fun (client: Client) ->
-        {
-            request with
-                ProcessState = InProcess
-                Modified = DateTime.UtcNow
-        }
-        |> client.updateRequest
 
 let private createPayload request =
 
@@ -83,7 +73,7 @@ let private createPayload request =
     |> Result.bind create
     |> Result.bind validate
 
-let private setAttempt request =
+let private computeAttempt request =
     let attemptLimit = 20
     let timeZone = request.Service.Embassy.TimeZone |> Option.defaultValue 0.
 
@@ -124,35 +114,45 @@ let private setCompletedState request =
                 Modified = DateTime.UtcNow
         }
 
-let private setFailedState error request =
-    fun (updateRequest, restart, attempts) ->
+let private trySetFailedState error request =
+    fun (updateRequest, restart) ->
         match error with
-        | Operation {
-                        Code = Some(Custom Web.Captcha.ERROR_CODE)
-                    } ->
-            match attempts <= 0 with
+        | Operation reason when reason.Code = Some(Custom Web.Captcha.ERROR_CODE) ->
+            match request.Retries > 3u<attempts> with
             | true ->
                 "Limit of Captcha retries reached. The operation cancelled."
                 |> Canceled
                 |> Error
                 |> async.Return
-            | false -> request |> restart
+            | false -> restart request
         | _ ->
             {
                 request with
                     ProcessState = Failed error
                     Modified = DateTime.UtcNow
             }
-            |> setAttempt
+            |> computeAttempt
             |> ResultAsync.wrap updateRequest
-            |> ResultAsync.bind (fun _ ->
-                $"{Environment.NewLine}%s{request.Service.Payload}" |> error.ExtendMsg |> Error)
+            |> ResultAsync.bind (fun _ -> $"{Environment.NewLine}%s{request.Service.Payload}" |> error.Extend |> Error)
 
 let rec tryProcess (request: Request) =
     fun (client: Client) ->
 
         // define
-        let setInProcessState r = client |> setInProcessState r
+        let inline retryProcess r =
+            client
+            |> tryProcess {
+                r with
+                    Retries = r.Retries + 1u<attempts>
+            }
+
+        let inline setInProcessState r =
+            {
+                r with
+                    ProcessState = InProcess
+                    Modified = DateTime.UtcNow
+            }
+            |> client.updateRequest
 
         let createPayload =
             ResultAsync.bind (fun r -> r |> createPayload |> Result.map (fun payload -> r, payload))
@@ -173,7 +173,7 @@ let rec tryProcess (request: Request) =
         let setAttempt =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
                 r
-                |> setAttempt
+                |> computeAttempt
                 |> ResultAsync.wrap client.updateRequest
                 |> ResultAsync.map (fun r -> httpClient, r, qp, fd))
 
@@ -194,26 +194,22 @@ let rec tryProcess (request: Request) =
                 (httpClient, client.postConfirmationPage)
                 |> Html.ConfirmationPage.parse qp fdm r)
 
-        let setProcessState =
+        let trySetResultState =
             Async.bind (function
                 | Ok r -> client.updateRequest |> setCompletedState r
-                | Error error ->
-                    let inline restart request = client |> tryProcess request
-                    (client.updateRequest, restart, 3) |> setFailedState error request)
+                | Error error -> (client.updateRequest, retryProcess) |> trySetFailedState error request)
 
         // pipe
-        let run =
-            setInProcessState
-            >> createPayload
-            >> createHttpClient
-            >> parseInitialPage
-            >> setAttempt
-            >> parseValidationPage
-            >> parseAppointmentsPage
-            >> parseConfirmationPage
-            >> setProcessState
-
-        request |> run
+        request
+        |> setInProcessState
+        |> createPayload
+        |> createHttpClient
+        |> parseInitialPage
+        |> setAttempt
+        |> parseValidationPage
+        |> parseAppointmentsPage
+        |> parseConfirmationPage
+        |> trySetResultState
 
 let tryProcessFirst (requests: Request seq) =
     fun (client: Client, notify) ->
@@ -230,29 +226,27 @@ let tryProcessFirst (requests: Request seq) =
                 | _ -> false
             | _ -> false
 
-        let rec innerLoop (errors: Error' list) requests =
+        let rec processNextRequest (errors: Error' list) (remainingRequests: Request list) =
             async {
-                match requests with
-                | [] -> return Error errors
+                match remainingRequests with
+                | [] -> return Error(List.rev errors)
                 | request :: requestsTail ->
                     match! client |> tryProcess request with
                     | Error error ->
-
                         do!
                             match request |> Notification.tryCreateFail error errorFilter with
-                            | None -> () |> async.Return
+                            | None -> async.Return()
                             | Some notification -> notification |> notify
 
-                        return! requestsTail |> innerLoop (errors @ [ error ])
+                        return! requestsTail |> processNextRequest (error :: errors)
 
                     | Ok result ->
-
                         do!
                             match result |> Notification.tryCreate errorFilter with
-                            | None -> () |> async.Return
+                            | None -> async.Return()
                             | Some notification -> notification |> notify
 
-                        return result |> Ok
+                        return Ok result
             }
 
-        requests |> List.ofSeq |> innerLoop []
+        processNextRequest [] (requests |> List.ofSeq)

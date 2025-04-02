@@ -85,6 +85,7 @@ module private Fixture =
                 TimeZone = None
             }
         }
+        Retries = 0u<attempts>
         Attempt = DateTime.UtcNow, 0
         ProcessState = Ready
         SubscriptionState = Manual

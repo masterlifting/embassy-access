@@ -26,6 +26,7 @@ type StorageType =
 type RequestEntity() =
     member val Id = String.Empty with get, set
     member val Service = RequestServiceEntity() with get, set
+    member val Retries = 0u with get, set
     member val Attempt = 0 with get, set
     member val AttemptModified = DateTime.UtcNow with get, set
     member val ProcessState = ProcessStateEntity() with get, set
@@ -48,6 +49,7 @@ type RequestEntity() =
             return {
                 Id = requestId
                 Service = this.Service.ToDomain()
+                Retries = this.Retries * 1u<attempts>
                 Attempt = this.AttemptModified, this.Attempt
                 ProcessState = processState
                 SubscriptionState = subscriptionState
@@ -62,6 +64,7 @@ type private Request with
         let result = RequestEntity()
         result.Id <- this.Id.ValueStr
         result.Service <- this.Service.ToEntity()
+        result.Retries <- uint this.Retries
         result.Attempt <- this.Attempt |> snd
         result.AttemptModified <- this.Attempt |> fst
         result.ProcessState <- this.ProcessState.ToEntity()

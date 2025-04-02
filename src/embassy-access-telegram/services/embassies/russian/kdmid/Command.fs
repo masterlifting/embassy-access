@@ -1,5 +1,6 @@
 ﻿module EA.Telegram.Services.Embassies.Russian.Kdmid.Command
 
+open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
@@ -42,6 +43,7 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                                     Description = service.Description
                                     Embassy = embassy
                                 }
+                                Retries = 0u<attempts>
                                 Attempt = System.DateTime.UtcNow, 0
                                 ProcessState = Ready
                                 SubscriptionState = Manual
@@ -104,6 +106,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                                     Description = service.Description
                                     Embassy = embassy
                                 }
+                                Retries = 0u<attempts>
                                 Attempt = System.DateTime.UtcNow, 0
                                 ProcessState = Ready
                                 SubscriptionState = Manual
