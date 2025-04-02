@@ -44,6 +44,7 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                                     Embassy = embassy
                                 }
                                 Retries = 0u<attempts>
+                                Limitations = Set.empty<Limitation>
                                 Attempt = System.DateTime.UtcNow, 0
                                 ProcessState = Ready
                                 SubscriptionState = Manual
@@ -107,6 +108,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                                     Embassy = embassy
                                 }
                                 Retries = 0u<attempts>
+                                Limitations = Set.empty<Limitation>
                                 Attempt = System.DateTime.UtcNow, 0
                                 ProcessState = Ready
                                 SubscriptionState = Manual

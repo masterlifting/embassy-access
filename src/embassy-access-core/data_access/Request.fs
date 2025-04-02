@@ -13,6 +13,7 @@ open EA.Core.DataAccess.ProcessState
 open EA.Core.DataAccess.SubscriptionState
 open EA.Core.DataAccess.ConfirmationState
 open EA.Core.DataAccess.Appointment
+open EA.Core.DataAccess.Limitation
 
 [<Literal>]
 let private Name = "Requests"
@@ -27,6 +28,7 @@ type RequestEntity() =
     member val Id = String.Empty with get, set
     member val Service = RequestServiceEntity() with get, set
     member val Retries = 0u with get, set
+    member val Limitations = Array.empty<LimitationEntity> with get, set
     member val Attempt = 0 with get, set
     member val AttemptModified = DateTime.UtcNow with get, set
     member val ProcessState = ProcessStateEntity() with get, set
@@ -45,11 +47,13 @@ type RequestEntity() =
             let! subscriptionState = this.SubscriptionState.ToDomain()
             let! confirmationState = this.ConfirmationState.ToDomain()
             let! appointments = this.Appointments |> Seq.map _.ToDomain() |> Result.choose
+            let! limitations = this.Limitations |> Seq.map _.ToDomain() |> Result.choose
 
             return {
                 Id = requestId
                 Service = this.Service.ToDomain()
                 Retries = this.Retries * 1u<attempts>
+                Limitations = limitations |> Set.ofSeq
                 Attempt = this.AttemptModified, this.Attempt
                 ProcessState = processState
                 SubscriptionState = subscriptionState

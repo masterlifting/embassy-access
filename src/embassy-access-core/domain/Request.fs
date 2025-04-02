@@ -24,8 +24,9 @@ type RequestId =
 type Request = {
     Id: RequestId
     Service: RequestService
-    Attempt: DateTime * int
     Retries: uint<attempts>
+    Limitations: Set<Limitation>
+    Attempt: DateTime * int
     ProcessState: ProcessState
     SubscriptionState: SubscriptionState
     ConfirmationState: ConfirmationState
