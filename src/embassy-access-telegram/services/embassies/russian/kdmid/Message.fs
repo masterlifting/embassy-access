@@ -3,7 +3,6 @@ module EA.Telegram.Services.Embassies.Russian.Kdmid.Message
 
 open System
 open Infrastructure.Domain
-open Web.Clients
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain.Request
@@ -11,14 +10,12 @@ open EA.Core.Domain.Appointment
 open EA.Core.Domain.Confirmation
 open EA.Core.Domain.Notification
 open EA.Core.Domain.ServiceNode
-open EA.Core.Domain.ConfirmationOption
 open EA.Core.Domain.ConfirmationState
 open EA.Telegram.Router
 open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Russian.Clients.Domain.Kdmid
 
 module Notification =
-    open EA.Telegram.Router
     open EA.Telegram.Router.Embassies.Russian
     open EA.Telegram.Router.Embassies.Russian.Kdmid.Post.Model
 
@@ -195,14 +192,14 @@ module Instruction =
     let toFirstAvailableAutoSubscribe embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
-            |> toSubscribe embassyId service (Auto <| FirstAvailable)
+            |> toSubscribe embassyId service FirstAvailable
 
     let toLastAvailableAutoSubscribe embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
-            |> toSubscribe embassyId service (Auto <| LastAvailable)
+            |> toSubscribe embassyId service LastAvailable
 
     let toDateRangeAutoSubscribe embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
-            |> toSubscribe embassyId service (Auto <| DateTimeRange(DateTime.MinValue, DateTime.MaxValue))
+            |> toSubscribe embassyId service (DateTimeRange(DateTime.MinValue, DateTime.MaxValue))

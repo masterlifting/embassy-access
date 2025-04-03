@@ -90,7 +90,7 @@ module private Fixture =
         Attempt = DateTime.UtcNow, 0
         ProcessState = Ready
         SubscriptionState = Manual
-        ConfirmationState = ConfirmationState.Auto FirstAvailable
+        ConfirmationState = FirstAvailable
         Appointments = Set.empty<Appointment>
         Modified = DateTime.UtcNow
     }

@@ -1,7 +1,11 @@
 ﻿[<AutoOpen>]
 module EA.Core.Domain.ConfirmationState
 
+open System
+
 type ConfirmationState =
     | Disabled
-    | Manual of AppointmentId
-    | Auto of ConfirmationOption
+    | Appointment of AppointmentId
+    | FirstAvailable
+    | LastAvailable
+    | DateTimeRange of DateTime * DateTime

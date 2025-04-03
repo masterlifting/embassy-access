@@ -11,41 +11,37 @@ open EA.Russian.Clients.Kdmid.Web
 let private handleRequestConfirmation (request: Request) =
     match request.ConfirmationState with
     | ConfirmationState.Disabled -> Ok <| None
-    | ConfirmationState.Manual appointmentId ->
+    | ConfirmationState.Appointment appointmentId ->
         match request.Appointments |> Seq.tryFind (fun x -> x.Id = appointmentId) with
         | Some appointment -> Ok <| Some appointment
         | None -> Error <| NotFound $"AppointmentId '{appointmentId.ValueStr}' not found."
-    | ConfirmationState.Auto confirmationOption ->
-        match request.Appointments.Count > 0, confirmationOption with
-        | false, _ -> Ok None
-        | true, FirstAvailable ->
-            match request.Appointments |> Seq.tryHead with
-            | Some appointment -> Ok <| Some appointment
-            | None -> Error <| NotFound "First available appointment not found."
-        | true, LastAvailable ->
-            match request.Appointments |> Seq.tryLast with
-            | Some appointment -> Ok <| Some appointment
-            | None -> Error <| NotFound "Last available appointment not found."
-        | true, DateTimeRange(min, max) ->
+    | ConfirmationState.FirstAvailable ->
+        match request.Appointments |> Seq.tryHead with
+        | Some appointment -> Ok <| Some appointment
+        | None -> Error <| NotFound "First available appointment not found."
+    | ConfirmationState.LastAvailable ->
+        match request.Appointments |> Seq.tryLast with
+        | Some appointment -> Ok <| Some appointment
+        | None -> Error <| NotFound "Last available appointment not found."
+    | ConfirmationState.DateTimeRange(min, max) ->
 
-            let minDate = DateOnly.FromDateTime min
-            let maxDate = DateOnly.FromDateTime max
+        let minDate = DateOnly.FromDateTime min
+        let maxDate = DateOnly.FromDateTime max
 
-            let minTime = TimeOnly.FromDateTime min
-            let maxTime = TimeOnly.FromDateTime max
+        let minTime = TimeOnly.FromDateTime min
+        let maxTime = TimeOnly.FromDateTime max
 
-            let appointment =
-                request.Appointments
-                |> Seq.filter (fun x -> x.Date >= minDate && x.Date <= maxDate)
-                |> Seq.filter (fun x -> x.Time >= minTime && x.Time <= maxTime)
-                |> Seq.tryHead
+        let appointment =
+            request.Appointments
+            |> Seq.filter (fun x -> x.Date >= minDate && x.Date <= maxDate)
+            |> Seq.filter (fun x -> x.Time >= minTime && x.Time <= maxTime)
+            |> Seq.tryHead
 
-            match appointment with
-            | Some appointment -> Ok <| Some appointment
-            | None ->
-                Error
-                <| NotFound
-                    $"Appointment in the range '{min.ToShortDateString()}' - '{max.ToShortDateString()}' not found."
+        match appointment with
+        | Some appointment -> Ok <| Some appointment
+        | None ->
+            Error
+            <| NotFound $"Appointment in the range '{min.ToShortDateString()}' - '{max.ToShortDateString()}' not found."
 
 let private createHttpRequest queryParamsId formData =
 

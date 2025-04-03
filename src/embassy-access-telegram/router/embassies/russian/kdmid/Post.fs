@@ -43,25 +43,23 @@ type Route =
         | Subscribe model ->
             match model.ConfirmationState with
             | ConfirmationState.Disabled -> [ "0"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
-            | ConfirmationState.Manual appointmentId -> [
+            | ConfirmationState.Appointment appointmentId -> [
                 "1"
                 model.ServiceId.Value
                 model.EmbassyId.Value
                 appointmentId.ValueStr
                 model.Payload
               ]
-            | ConfirmationState.Auto option ->
-                match option with
-                | FirstAvailable -> [ "2"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
-                | LastAvailable -> [ "3"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
-                | DateTimeRange(start, finish) -> [
-                    "4"
-                    model.ServiceId.Value
-                    model.EmbassyId.Value
-                    start |> string
-                    finish |> string
-                    model.Payload
-                  ]
+            | ConfirmationState.FirstAvailable -> [ "2"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
+            | ConfirmationState.LastAvailable -> [ "3"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
+            | ConfirmationState.DateTimeRange(start, finish) -> [
+                "4"
+                model.ServiceId.Value
+                model.EmbassyId.Value
+                start |> string
+                finish |> string
+                model.Payload
+              ]
         | CheckAppointments model -> [ "5"; model.ServiceId.Value; model.EmbassyId.Value; model.Payload ]
         | SendAppointments model -> [
             "6"
@@ -86,20 +84,18 @@ type Route =
             |> Ok
 
         match parts with
-        | [| "0"; serviceId; embassyId; payload |] -> createSubscription serviceId embassyId payload Disabled
+        | [| "0"; serviceId; embassyId; payload |] -> createSubscription serviceId embassyId payload ConfirmationState.Disabled
         | [| "1"; serviceId; embassyId; appointmentId; payload |] ->
             appointmentId
             |> AppointmentId.parse
             |> Result.bind (fun appointmentId ->
-                createSubscription serviceId embassyId payload (ConfirmationState.Manual appointmentId))
-        | [| "2"; serviceId; embassyId; payload |] ->
-            createSubscription serviceId embassyId payload (ConfirmationState.Auto FirstAvailable)
-        | [| "3"; serviceId; embassyId; payload |] ->
-            createSubscription serviceId embassyId payload (ConfirmationState.Auto LastAvailable)
+                createSubscription serviceId embassyId payload (ConfirmationState.Appointment appointmentId))
+        | [| "2"; serviceId; embassyId; payload |] -> createSubscription serviceId embassyId payload ConfirmationState.FirstAvailable
+        | [| "3"; serviceId; embassyId; payload |] -> createSubscription serviceId embassyId payload ConfirmationState.LastAvailable
         | [| "4"; serviceId; embassyId; start; finish; payload |] ->
             match start, finish with
             | AP.IsDateTime start, AP.IsDateTime finish ->
-                createSubscription serviceId embassyId payload (ConfirmationState.Auto(DateTimeRange(start, finish)))
+                createSubscription serviceId embassyId payload (ConfirmationState.DateTimeRange(start, finish))
             | _ ->
                 $"start: {start} or finish: {finish} of Embassies.Russian.Kdmid.Post.KdmidSubscribe endpoint is not supported."
                 |> NotSupported
