@@ -152,11 +152,11 @@ module Instruction =
             |> Option.defaultValue message
             |> fun message -> (chatId, messageId |> Replace) |> Text.create message
 
-    let private toSubscribe embassyId (service: ServiceNode) confirmation =
+    let private toSubscribe embassyId (service: ServiceNode) confirmationState =
         fun (chatId, messageId) ->
             let request =
                 {
-                    ConfirmationState = confirmation
+                    ConfirmationState = confirmationState
                     ServiceId = service.Id
                     EmbassyId = embassyId
                     Payload = "<link>"

@@ -41,7 +41,8 @@ type Dependencies = {
     getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
     getChatRequests: unit -> Async<Result<Request list, Error'>>
     getRequest: RequestId -> Async<Result<Request, Error'>>
-    createRequest: Request -> Async<Result<Request, Error'>>
+    createRequest:
+        string * ServiceNode * EmbassyNode * SubscriptionState * ConfirmationState -> Async<Result<Request, Error'>>
     deleteRequest: RequestId -> Async<Result<unit, Error'>>
     processRequest: Request -> Async<Result<Request, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
@@ -83,10 +84,32 @@ type Dependencies = {
                         |> Error
                     | Some request -> request |> Ok)
 
-            let createRequest (request: Request) =
+            let createRequest
+                (payload, service: ServiceNode, embassy: EmbassyNode, subscriptionState, confirmationState)
+                =
+                let requestId = RequestId.createNew ()
                 deps.ChatStorage
-                |> Chat.Command.createChatSubscription deps.Chat.Id request.Id
-                |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.create request)
+                |> Chat.Command.createChatSubscription deps.Chat.Id requestId
+                |> ResultAsync.bindAsync (fun _ ->
+                    deps.RequestStorage
+                    |> Request.Command.create {
+                        Id = requestId
+                        Service = {
+                            Id = service.Id
+                            Name = service.Name
+                            Payload = payload
+                            Description = service.Description
+                            Embassy = embassy
+                        }
+                        Retries = 0u<attempts>
+                        Limitations = Set.empty<Limitation>
+                        Attempt = System.DateTime.UtcNow, 0
+                        ProcessState = Ready
+                        SubscriptionState = subscriptionState
+                        ConfirmationState = confirmationState
+                        Appointments = Set.empty<Appointment>
+                        Modified = System.DateTime.UtcNow
+                    })
 
             let deleteRequest requestId =
                 deps.ChatStorage

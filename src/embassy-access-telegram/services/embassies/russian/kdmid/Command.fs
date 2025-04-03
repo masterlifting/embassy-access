@@ -1,6 +1,5 @@
 ﻿module EA.Telegram.Services.Embassies.Russian.Kdmid.Command
 
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
@@ -34,24 +33,7 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                         let! service = deps.getService model.ServiceId
                         let! embassy = deps.getEmbassy model.EmbassyId
                         let! request =
-                            deps.createRequest {
-                                Id = RequestId.createNew ()
-                                Service = {
-                                    Id = service.Id
-                                    Name = service.Name
-                                    Payload = model.Payload
-                                    Description = service.Description
-                                    Embassy = embassy
-                                }
-                                Retries = 0u<attempts>
-                                Limitations = Set.empty<Limitation>
-                                Attempt = System.DateTime.UtcNow, 0
-                                ProcessState = Ready
-                                SubscriptionState = Manual
-                                ConfirmationState = model.ConfirmationState
-                                Appointments = Set.empty<Appointment>
-                                Modified = System.DateTime.UtcNow
-                            }
+                            deps.createRequest (model.Payload, service, embassy, Manual, model.ConfirmationState)
 
                         return
                             $"Subscription '{request.Id.ValueStr}' for the service '{service.Name}' for the embassy '{embassy.Name}' has been created."
@@ -96,26 +78,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                     resultAsync {
                         let! service = deps.getService model.ServiceId
                         let! embassy = deps.getEmbassy model.EmbassyId
-
-                        let! request =
-                            deps.createRequest {
-                                Id = RequestId.createNew ()
-                                Service = {
-                                    Id = service.Id
-                                    Name = service.Name
-                                    Payload = model.Payload
-                                    Description = service.Description
-                                    Embassy = embassy
-                                }
-                                Retries = 0u<attempts>
-                                Limitations = Set.empty<Limitation>
-                                Attempt = System.DateTime.UtcNow, 0
-                                ProcessState = Ready
-                                SubscriptionState = Manual
-                                ConfirmationState = Disabled
-                                Appointments = Set.empty<Appointment>
-                                Modified = System.DateTime.UtcNow
-                            }
+                        let! request = deps.createRequest (model.Payload, service, embassy, Manual, Disabled)
 
                         return
                             deps.processRequest request
