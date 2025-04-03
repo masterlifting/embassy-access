@@ -181,7 +181,7 @@ type Route =
                 |> Subscribe.deserialize [ serviceId; embassyId; payload; inBackground ]
                 |> Result.map Route.Subscribe
             | _ ->
-                $"start: {start} or finish: {finish} of Embassies.Russian.Kdmid.Post.KdmidSubscribe endpoint is not supported."
+                $"start: '{start}' or finish: '{finish}' of Embassies.Russian.Kdmid.Post.KdmidSubscribe endpoint is not supported."
                 |> NotSupported
                 |> Error
         | [| "5"; serviceId; embassyId; payload |] ->
