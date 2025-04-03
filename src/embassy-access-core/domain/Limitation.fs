@@ -5,6 +5,6 @@ open System
 open Infrastructure.Domain
 
 type Limitation = {
-    Count: uint<attempts>
+    Limit: uint<attempts>
     Period: TimeSpan
 }

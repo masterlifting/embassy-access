@@ -48,7 +48,7 @@ type ConfirmationStateEntity() =
             |> Error
 
 type internal ConfirmationState with
-    member internal this.ToEntity() =
+    member this.ToEntity() =
         let result = ConfirmationStateEntity()
 
         match this with

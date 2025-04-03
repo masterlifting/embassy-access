@@ -63,18 +63,19 @@ type RequestEntity() =
 
 type private Request with
     member private this.ToEntity() =
-        let result = RequestEntity()
-        result.Id <- this.Id.ValueStr
-        result.Service <- this.Service.ToEntity()
-        result.ProcessState <- this.ProcessState.ToEntity()
-        result.IsBackground <- this.IsBackground
-        result.Retries <- uint this.Retries
-        result.Attempt <- this.Attempt |> snd
-        result.AttemptModified <- this.Attempt |> fst
-        result.ConfirmationState <- this.ConfirmationState.ToEntity()
-        result.Appointments <- this.Appointments |> Seq.map _.ToEntity() |> Seq.toArray
-        result.Modified <- this.Modified
-        result
+        RequestEntity(
+            Id = this.Id.ValueStr,
+            Service = this.Service.ToEntity(),
+            ProcessState = this.ProcessState.ToEntity(),
+            IsBackground = this.IsBackground,
+            Retries = (this.Retries / 1u<attempts>),
+            Limitations = (this.Limitations |> Seq.map _.ToEntity() |> Seq.toArray),
+            Attempt = (this.Attempt |> snd),
+            AttemptModified = (this.Attempt |> fst),
+            ConfirmationState = this.ConfirmationState.ToEntity(),
+            Appointments = (this.Appointments |> Seq.map _.ToEntity() |> Seq.toArray),
+            Modified = this.Modified
+        )
 
 module private Common =
     let create (request: Request) (data: RequestEntity array) =

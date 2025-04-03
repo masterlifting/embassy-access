@@ -30,16 +30,14 @@ type RequestServiceEntity() =
     }
 
 type internal RequestService with
-    member internal this.ToEntity() =
-        let result = RequestServiceEntity()
-        result.Payload <- this.Payload
-
-        result.ServiceId <- this.Id.Value
-        result.ServiceName <- this.Name
-        result.ServiceDescription <- this.Description
-
-        result.EmbassyId <- this.Embassy.Id.Value
-        result.EmbassyName <- this.Embassy.Name
-        result.EmbassyDescription <- this.Embassy.Description
-        result.EmbassyTimeZone <- this.Embassy.TimeZone
-        result
+    member this.ToEntity() =
+        RequestServiceEntity(
+            Payload = this.Payload,
+            ServiceId = this.Id.Value,
+            ServiceName = this.Name,
+            ServiceDescription = this.Description,
+            EmbassyId = this.Embassy.Id.Value,
+            EmbassyName = this.Embassy.Name,
+            EmbassyDescription = this.Embassy.Description,
+            EmbassyTimeZone = this.Embassy.TimeZone
+        )

@@ -9,7 +9,5 @@ type ConfirmationEntity() =
     member this.ToDomain() = { Description = this.Description }
 
 type internal Confirmation with
-    member internal this.ToEntity() =
-        let result = ConfirmationEntity()
-        result.Description <- this.Description
-        result
+    member this.ToEntity() =
+        ConfirmationEntity(Description = this.Description)

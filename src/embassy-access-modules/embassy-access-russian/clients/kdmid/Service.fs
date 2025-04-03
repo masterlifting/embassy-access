@@ -111,6 +111,7 @@ let private setCompletedState request =
         updateRequest {
             request with
                 ProcessState = Completed message
+                Retries = 0u<attempts>
                 Modified = DateTime.UtcNow
         }
 
