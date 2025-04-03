@@ -41,8 +41,7 @@ type Dependencies = {
     getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
     getChatRequests: unit -> Async<Result<Request list, Error'>>
     getRequest: RequestId -> Async<Result<Request, Error'>>
-    createRequest:
-        string * ServiceNode * EmbassyNode * SubscriptionState * ConfirmationState -> Async<Result<Request, Error'>>
+    createRequest: string * ServiceNode * EmbassyNode * bool * ConfirmationState -> Async<Result<Request, Error'>>
     deleteRequest: RequestId -> Async<Result<unit, Error'>>
     processRequest: Request -> Async<Result<Request, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
@@ -85,7 +84,7 @@ type Dependencies = {
                     | Some request -> request |> Ok)
 
             let createRequest
-                (payload, service: ServiceNode, embassy: EmbassyNode, subscriptionState, confirmationState)
+                (payload, service: ServiceNode, embassy: EmbassyNode, processInBackground, confirmationState)
                 =
                 let requestId = RequestId.createNew ()
                 deps.ChatStorage
@@ -101,11 +100,11 @@ type Dependencies = {
                             Description = service.Description
                             Embassy = embassy
                         }
+                        ProcessState = Ready
+                        ProcessInBackground = processInBackground
                         Retries = 0u<attempts>
                         Limitations = Set.empty<Limitation>
                         Attempt = System.DateTime.UtcNow, 0
-                        ProcessState = Ready
-                        SubscriptionState = subscriptionState
                         ConfirmationState = confirmationState
                         Appointments = Set.empty<Appointment>
                         Modified = System.DateTime.UtcNow

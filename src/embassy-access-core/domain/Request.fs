@@ -24,11 +24,11 @@ type RequestId =
 type Request = {
     Id: RequestId
     Service: RequestService
+    ProcessState: ProcessState
+    ProcessInBackground: bool
     Retries: uint<attempts>
     Limitations: Set<Limitation>
     Attempt: DateTime * int
-    ProcessState: ProcessState
-    SubscriptionState: SubscriptionState
     ConfirmationState: ConfirmationState
     Appointments: Set<Appointment>
     Modified: DateTime

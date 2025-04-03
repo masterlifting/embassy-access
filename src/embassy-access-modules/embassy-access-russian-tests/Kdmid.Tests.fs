@@ -85,11 +85,11 @@ module private Fixture =
                 TimeZone = None
             }
         }
+        ProcessState = Ready
+        ProcessInBackground = false
         Retries = 0u<attempts>
         Limitations = Set.empty<Limitation>
         Attempt = DateTime.UtcNow, 0
-        ProcessState = Ready
-        SubscriptionState = Manual
         ConfirmationState = FirstAvailable
         Appointments = Set.empty<Appointment>
         Modified = DateTime.UtcNow

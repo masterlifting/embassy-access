@@ -9,7 +9,6 @@
         <Compile Include="domain\Confirmation.fs" />
         <Compile Include="domain\Appointment.fs" />
         <Compile Include="domain\ProcessState.fs" />
-        <Compile Include="domain\SubscriptionState.fs" />
         <Compile Include="domain\ConfirmationState.fs" />
         <Compile Include="domain\ServiceNode.fs" />
         <Compile Include="domain\RequestService.fs" />
@@ -21,7 +20,6 @@
         <Compile Include="data_access\Confirmation.fs" />
         <Compile Include="data_access\Appointment.fs" />
         <Compile Include="data_access\ProcessState.fs" />
-        <Compile Include="data_access\SubscriptionState.fs" />
         <Compile Include="data_access\ConfirmationState.fs" />
         <Compile Include="data_access\RequestService.fs" />
         <Compile Include="data_access\Limitation.fs" />

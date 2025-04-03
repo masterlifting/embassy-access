@@ -45,7 +45,7 @@ module Kdmid =
                     |> Request.Query.findManyByEmbassyId embassyId
                     |> ResultAsync.map (
                         List.filter (fun request ->
-                            request.SubscriptionState = Auto
+                            request.ProcessInBackground
                             && (request.ProcessState <> InProcess
                                 || request.ProcessState = InProcess
                                    && request.Modified < DateTime.UtcNow.Subtract task.Duration))

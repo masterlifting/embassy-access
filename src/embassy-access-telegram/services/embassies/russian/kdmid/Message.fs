@@ -149,13 +149,14 @@ module Instruction =
             |> Option.defaultValue message
             |> fun message -> (chatId, messageId |> Replace) |> Text.create message
 
-    let private toSubscribe embassyId (service: ServiceNode) confirmationState =
+    let private toSubscribe embassyId (service: ServiceNode) confirmationState processInBackground =
         fun (chatId, messageId) ->
             let request =
                 {
-                    ConfirmationState = confirmationState
                     ServiceId = service.Id
                     EmbassyId = embassyId
+                    ProcessInBackground = processInBackground
+                    ConfirmationState = confirmationState
                     Payload = "<link>"
                 }
                 |> Kdmid.Post.Subscribe
@@ -187,19 +188,19 @@ module Instruction =
             |> async.Return
 
     let toStandardSubscribe embassyId service =
-        fun (deps: Kdmid.Dependencies) -> (deps.Chat.Id, deps.MessageId) |> toSubscribe embassyId service Disabled
+        fun (deps: Kdmid.Dependencies) -> (deps.Chat.Id, deps.MessageId) |> toSubscribe embassyId service Disabled false
 
     let toFirstAvailableAutoSubscribe embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
-            |> toSubscribe embassyId service FirstAvailable
+            |> toSubscribe embassyId service FirstAvailable true
 
     let toLastAvailableAutoSubscribe embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
-            |> toSubscribe embassyId service LastAvailable
+            |> toSubscribe embassyId service LastAvailable true
 
     let toDateRangeAutoSubscribe embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
-            |> toSubscribe embassyId service (DateTimeRange(DateTime.MinValue, DateTime.MaxValue))
+            |> toSubscribe embassyId service (DateTimeRange(DateTime.MinValue, DateTime.MaxValue)) true

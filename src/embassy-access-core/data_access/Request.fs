@@ -10,7 +10,6 @@ open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.DataAccess.RequestService
 open EA.Core.DataAccess.ProcessState
-open EA.Core.DataAccess.SubscriptionState
 open EA.Core.DataAccess.ConfirmationState
 open EA.Core.DataAccess.Appointment
 open EA.Core.DataAccess.Limitation
@@ -27,12 +26,12 @@ type StorageType =
 type RequestEntity() =
     member val Id = String.Empty with get, set
     member val Service = RequestServiceEntity() with get, set
+    member val ProcessState = ProcessStateEntity() with get, set
+    member val ProcessInBackground = false with get, set
     member val Retries = 0u with get, set
     member val Limitations = Array.empty<LimitationEntity> with get, set
     member val Attempt = 0 with get, set
     member val AttemptModified = DateTime.UtcNow with get, set
-    member val ProcessState = ProcessStateEntity() with get, set
-    member val SubscriptionState = SubscriptionStateEntity() with get, set
     member val ConfirmationState = ConfirmationStateEntity() with get, set
     member val Appointments = Array.empty<AppointmentEntity> with get, set
     member val Modified = DateTime.UtcNow with get, set
@@ -44,7 +43,6 @@ type RequestEntity() =
 
             let! requestId = RequestId.parse this.Id
             let! processState = this.ProcessState.ToDomain()
-            let! subscriptionState = this.SubscriptionState.ToDomain()
             let! confirmationState = this.ConfirmationState.ToDomain()
             let! appointments = this.Appointments |> Seq.map _.ToDomain() |> Result.choose
             let! limitations = this.Limitations |> Seq.map _.ToDomain() |> Result.choose
@@ -52,11 +50,11 @@ type RequestEntity() =
             return {
                 Id = requestId
                 Service = this.Service.ToDomain()
+                ProcessState = processState
+                ProcessInBackground = this.ProcessInBackground
                 Retries = this.Retries * 1u<attempts>
                 Limitations = limitations |> Set.ofSeq
                 Attempt = this.AttemptModified, this.Attempt
-                ProcessState = processState
-                SubscriptionState = subscriptionState
                 ConfirmationState = confirmationState
                 Appointments = appointments |> Set.ofSeq
                 Modified = this.Modified
@@ -68,11 +66,11 @@ type private Request with
         let result = RequestEntity()
         result.Id <- this.Id.ValueStr
         result.Service <- this.Service.ToEntity()
+        result.ProcessState <- this.ProcessState.ToEntity()
+        result.ProcessInBackground <- this.ProcessInBackground
         result.Retries <- uint this.Retries
         result.Attempt <- this.Attempt |> snd
         result.AttemptModified <- this.Attempt |> fst
-        result.ProcessState <- this.ProcessState.ToEntity()
-        result.SubscriptionState <- this.SubscriptionState.ToEntity()
         result.ConfirmationState <- this.ConfirmationState.ToEntity()
         result.Appointments <- this.Appointments |> Seq.map _.ToEntity() |> Seq.toArray
         result.Modified <- this.Modified

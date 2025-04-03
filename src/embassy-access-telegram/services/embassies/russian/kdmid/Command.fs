@@ -33,7 +33,13 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                         let! service = deps.getService model.ServiceId
                         let! embassy = deps.getEmbassy model.EmbassyId
                         let! request =
-                            deps.createRequest (model.Payload, service, embassy, Manual, model.ConfirmationState)
+                            deps.createRequest (
+                                model.Payload,
+                                service,
+                                embassy,
+                                model.ProcessInBackground,
+                                model.ConfirmationState
+                            )
 
                         return
                             $"Subscription '{request.Id.ValueStr}' for the service '{service.Name}' for the embassy '{embassy.Name}' has been created."
@@ -78,7 +84,7 @@ let checkAppointments (model: Kdmid.Post.Model.CheckAppointments) =
                     resultAsync {
                         let! service = deps.getService model.ServiceId
                         let! embassy = deps.getEmbassy model.EmbassyId
-                        let! request = deps.createRequest (model.Payload, service, embassy, Manual, Disabled)
+                        let! request = deps.createRequest (model.Payload, service, embassy, false, Disabled)
 
                         return
                             deps.processRequest request

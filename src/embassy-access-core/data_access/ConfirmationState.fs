@@ -19,7 +19,6 @@ let private LAST_AVAILABLE = nameof LastAvailable
 [<Literal>]
 let private DATE_TIME_RANGE = nameof DateTimeRange
 
-
 type ConfirmationStateEntity() =
 
     member val Type = String.Empty with get, set
