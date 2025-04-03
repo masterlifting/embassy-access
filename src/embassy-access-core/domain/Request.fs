@@ -25,7 +25,7 @@ type Request = {
     Id: RequestId
     Service: RequestService
     ProcessState: ProcessState
-    ProcessInBackground: bool
+    InBackground: bool
     Retries: uint<attempts>
     Limitations: Set<Limitation>
     Attempt: DateTime * int

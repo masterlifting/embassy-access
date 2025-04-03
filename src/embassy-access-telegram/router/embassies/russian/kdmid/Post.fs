@@ -9,7 +9,7 @@ module Model =
     type Subscribe = {
         ServiceId: Graph.NodeId
         EmbassyId: Graph.NodeId
-        ProcessInBackground: bool
+        InBackground: bool
         ConfirmationState: ConfirmationState
         Payload: string
     } with
@@ -20,27 +20,27 @@ module Model =
                 this.ServiceId.Value
                 this.EmbassyId.Value
                 this.Payload
-                match this.ProcessInBackground with
+                match this.InBackground with
                 | true -> "1"
                 | false -> "0"
             ]
 
         static member deserialize (parts: string list) confirmationState =
             match parts with
-            | [ serviceId; embassyId; payload; processInBackground ] ->
-                match processInBackground with
+            | [ serviceId; embassyId; payload; inBackground ] ->
+                match inBackground with
                 | "0" -> false |> Ok
                 | "1" -> true |> Ok
                 | _ ->
-                    $"'{processInBackground}' of Embassies.Russian.Kdmid.Post.Subscribe endpoint is not supported."
+                    $"'{inBackground}' of Embassies.Russian.Kdmid.Post.Subscribe endpoint is not supported."
                     |> NotSupported
                     |> Error
-                |> Result.map (fun processInBackground -> {
+                |> Result.map (fun inBackground -> {
                     ServiceId = serviceId |> Graph.NodeIdValue
                     EmbassyId = embassyId |> Graph.NodeIdValue
                     Payload = payload
                     ConfirmationState = confirmationState
-                    ProcessInBackground = processInBackground
+                    InBackground = inBackground
                 })
             | _ ->
                 $"'{parts}' of Embassies.Russian.Kdmid.Post.Subscribe endpoint is not supported."
@@ -153,32 +153,32 @@ type Route =
         let parts = input.Split Constants.Router.DELIMITER
 
         match parts with
-        | [| "0"; serviceId; embassyId; payload; processInBackground |] ->
+        | [| "0"; serviceId; embassyId; payload; inBackground |] ->
             ConfirmationState.Disabled
-            |> Subscribe.deserialize [ serviceId; embassyId; payload; processInBackground ]
+            |> Subscribe.deserialize [ serviceId; embassyId; payload; inBackground ]
             |> Result.map Route.Subscribe
-        | [| "1"; serviceId; embassyId; appointmentId; payload; processInBackground |] ->
+        | [| "1"; serviceId; embassyId; appointmentId; payload; inBackground |] ->
             appointmentId
             |> AppointmentId.parse
             |> Result.bind (fun appointmentId ->
                 appointmentId
                 |> ConfirmationState.Appointment
-                |> Subscribe.deserialize [ serviceId; embassyId; payload; processInBackground ])
+                |> Subscribe.deserialize [ serviceId; embassyId; payload; inBackground ])
             |> Result.map Route.Subscribe
-        | [| "2"; serviceId; embassyId; payload; processInBackground |] ->
+        | [| "2"; serviceId; embassyId; payload; inBackground |] ->
             ConfirmationState.FirstAvailable
-            |> Subscribe.deserialize [ serviceId; embassyId; payload; processInBackground ]
+            |> Subscribe.deserialize [ serviceId; embassyId; payload; inBackground ]
             |> Result.map Route.Subscribe
-        | [| "3"; serviceId; embassyId; payload; processInBackground |] ->
+        | [| "3"; serviceId; embassyId; payload; inBackground |] ->
             ConfirmationState.LastAvailable
-            |> Subscribe.deserialize [ serviceId; embassyId; payload; processInBackground ]
+            |> Subscribe.deserialize [ serviceId; embassyId; payload; inBackground ]
             |> Result.map Route.Subscribe
-        | [| "4"; start; finish; serviceId; embassyId; payload; processInBackground |] ->
+        | [| "4"; start; finish; serviceId; embassyId; payload; inBackground |] ->
             match start, finish with
             | AP.IsDateTime start, AP.IsDateTime finish ->
                 (start, finish)
                 |> ConfirmationState.DateTimeRange
-                |> Subscribe.deserialize [ serviceId; embassyId; payload; processInBackground ]
+                |> Subscribe.deserialize [ serviceId; embassyId; payload; inBackground ]
                 |> Result.map Route.Subscribe
             | _ ->
                 $"start: {start} or finish: {finish} of Embassies.Russian.Kdmid.Post.KdmidSubscribe endpoint is not supported."

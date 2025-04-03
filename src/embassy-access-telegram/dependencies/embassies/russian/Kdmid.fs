@@ -83,9 +83,7 @@ type Dependencies = {
                         |> Error
                     | Some request -> request |> Ok)
 
-            let createRequest
-                (payload, service: ServiceNode, embassy: EmbassyNode, processInBackground, confirmationState)
-                =
+            let createRequest (payload, service: ServiceNode, embassy: EmbassyNode, inBackground, confirmationState) =
                 let requestId = RequestId.createNew ()
                 deps.ChatStorage
                 |> Chat.Command.createChatSubscription deps.Chat.Id requestId
@@ -101,7 +99,7 @@ type Dependencies = {
                             Embassy = embassy
                         }
                         ProcessState = Ready
-                        ProcessInBackground = processInBackground
+                        InBackground = inBackground
                         Retries = 0u<attempts>
                         Limitations = Set.empty<Limitation>
                         Attempt = System.DateTime.UtcNow, 0

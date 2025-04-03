@@ -27,7 +27,7 @@ type RequestEntity() =
     member val Id = String.Empty with get, set
     member val Service = RequestServiceEntity() with get, set
     member val ProcessState = ProcessStateEntity() with get, set
-    member val ProcessInBackground = false with get, set
+    member val InBackground = false with get, set
     member val Retries = 0u with get, set
     member val Limitations = Array.empty<LimitationEntity> with get, set
     member val Attempt = 0 with get, set
@@ -51,7 +51,7 @@ type RequestEntity() =
                 Id = requestId
                 Service = this.Service.ToDomain()
                 ProcessState = processState
-                ProcessInBackground = this.ProcessInBackground
+                InBackground = this.InBackground
                 Retries = this.Retries * 1u<attempts>
                 Limitations = limitations |> Set.ofSeq
                 Attempt = this.AttemptModified, this.Attempt
@@ -67,7 +67,7 @@ type private Request with
         result.Id <- this.Id.ValueStr
         result.Service <- this.Service.ToEntity()
         result.ProcessState <- this.ProcessState.ToEntity()
-        result.ProcessInBackground <- this.ProcessInBackground
+        result.InBackground <- this.InBackground
         result.Retries <- uint this.Retries
         result.Attempt <- this.Attempt |> snd
         result.AttemptModified <- this.Attempt |> fst
