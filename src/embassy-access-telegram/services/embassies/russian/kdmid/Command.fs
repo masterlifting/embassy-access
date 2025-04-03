@@ -37,7 +37,7 @@ let subscribe (model: Kdmid.Post.Model.Subscribe) =
                                 model.Payload,
                                 service,
                                 embassy,
-                                model.InBackground,
+                                model.IsBackground,
                                 model.ConfirmationState
                             )
 

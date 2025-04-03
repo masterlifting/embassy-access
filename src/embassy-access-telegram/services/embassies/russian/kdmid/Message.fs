@@ -149,13 +149,13 @@ module Instruction =
             |> Option.defaultValue message
             |> fun message -> (chatId, messageId |> Replace) |> Text.create message
 
-    let private toSubscribe embassyId (service: ServiceNode) confirmationState inBackground =
+    let private toSubscribe embassyId (service: ServiceNode) confirmationState isBackgroundTask =
         fun (chatId, messageId) ->
             let request =
                 {
                     ServiceId = service.Id
                     EmbassyId = embassyId
-                    InBackground = inBackground
+                    IsBackground = isBackgroundTask
                     ConfirmationState = confirmationState
                     Payload = "<link>"
                 }
@@ -187,20 +187,20 @@ module Instruction =
             |> Ok
             |> async.Return
 
-    let toStandardSubscribe embassyId service =
-        fun (deps: Kdmid.Dependencies) -> (deps.Chat.Id, deps.MessageId) |> toSubscribe embassyId service Disabled false
+    let toAutoNotifications embassyId service =
+        fun (deps: Kdmid.Dependencies) -> (deps.Chat.Id, deps.MessageId) |> toSubscribe embassyId service Disabled true
 
-    let toFirstAvailableAutoSubscribe embassyId service =
+    let toAutoFirstAvailableConfirmation embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
             |> toSubscribe embassyId service FirstAvailable true
 
-    let toLastAvailableAutoSubscribe embassyId service =
+    let toAutoLastAvailableConfirmation embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
             |> toSubscribe embassyId service LastAvailable true
 
-    let toDateRangeAutoSubscribe embassyId service =
+    let toAutoDateRangeConfirmation embassyId service =
         fun (deps: Kdmid.Dependencies) ->
             (deps.Chat.Id, deps.MessageId)
             |> toSubscribe embassyId service (DateTimeRange(DateTime.MinValue, DateTime.MaxValue)) true

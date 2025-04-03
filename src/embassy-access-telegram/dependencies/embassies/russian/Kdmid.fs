@@ -99,7 +99,7 @@ type Dependencies = {
                             Embassy = embassy
                         }
                         ProcessState = Ready
-                        InBackground = inBackground
+                        IsBackground = inBackground
                         Retries = 0u<attempts>
                         Limitations = Set.empty<Limitation>
                         Attempt = System.DateTime.UtcNow, 0
