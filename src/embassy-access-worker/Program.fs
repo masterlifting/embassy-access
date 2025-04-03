@@ -26,7 +26,7 @@ let main _ =
     let getTaskNode handlers =
         fun nodeId ->
             {
-                Configuration.Connection.SectionName = APP_NAME
+                Configuration.Connection.Section = APP_NAME
                 Configuration.Connection.Provider = configuration
             }
             |> TaskGraph.Configuration

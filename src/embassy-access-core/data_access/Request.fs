@@ -14,13 +14,10 @@ open EA.Core.DataAccess.ConfirmationState
 open EA.Core.DataAccess.Appointment
 open EA.Core.DataAccess.Limitation
 
-[<Literal>]
-let private Name = "Requests"
-
 type RequestStorage = RequestStorage of Storage.Provider
 
 type StorageType =
-    | InMemory
+    | InMemory of InMemory.Connection
     | FileSystem of FileSystem.Connection
 
 type RequestEntity() =
@@ -98,7 +95,7 @@ module private Common =
 module private InMemory =
     open Persistence.Storages.InMemory
 
-    let private loadData = Query.Json.get<RequestEntity> Name
+    let private loadData = Query.Json.get<RequestEntity>
 
     module Query =
 
@@ -151,7 +148,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (Common.create request)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> request)
             |> async.Return
 
@@ -159,7 +156,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (Common.update request)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> request)
             |> async.Return
 
@@ -170,7 +167,7 @@ module private InMemory =
                 match data |> Seq.exists (fun x -> x.Id = request.Id.ValueStr) with
                 | true -> data |> Common.update request
                 | false -> data |> Common.create request)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> request)
             |> async.Return
 
@@ -178,7 +175,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (Common.delete id)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
         let deleteMany (ids: RequestId Set) client =
@@ -187,7 +184,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.map (Array.filter (fun request -> not (idSet.Contains(request.Id))))
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
 module private FileSystem =
@@ -283,7 +280,7 @@ let private toPersistenceStorage storage =
 let init storageType =
     match storageType with
     | FileSystem connection -> connection |> Storage.Connection.FileSystem |> Storage.init
-    | InMemory -> Storage.Connection.InMemory |> Storage.init
+    | InMemory connection -> connection |> Storage.Connection.InMemory |> Storage.init
     |> Result.map RequestStorage
 
 module Query =

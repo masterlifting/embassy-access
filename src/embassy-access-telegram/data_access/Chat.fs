@@ -11,13 +11,10 @@ open Web.Clients.Domain.Telegram
 open EA.Core.Domain
 open EA.Telegram.Domain
 
-[<Literal>]
-let private Name = "Chats"
-
 type ChatStorage = ChatStorage of Storage.Provider
 
 type StorageType =
-    | InMemory
+    | InMemory of InMemory.Connection
     | FileSystem of FileSystem.Connection
 
 type ChatEntity() =
@@ -76,7 +73,7 @@ module private Common =
 module private InMemory =
     open Persistence.Storages.InMemory
 
-    let private loadData = Query.Json.get<ChatEntity> Name
+    let private loadData = Query.Json.get<ChatEntity>
 
     module Query =
 
@@ -118,7 +115,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (Common.create chat)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> chat)
             |> async.Return
 
@@ -126,7 +123,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (Common.update chat)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> chat)
             |> async.Return
 
@@ -141,7 +138,7 @@ module private InMemory =
                         data[index].Subscriptions |> Set |> Set.add subscription.ValueStr |> Seq.toList
 
                     data |> Ok)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
         let deleteChatSubscription (chatId: ChatId) (subscription: RequestId) client =
@@ -156,7 +153,7 @@ module private InMemory =
                         |> List.filter (fun subValue -> subValue <> subscription.ValueStr)
 
                     data |> Ok)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
         let deleteChatSubscriptions (chatId: ChatId) (subscriptions: RequestId Set) client =
@@ -172,7 +169,7 @@ module private InMemory =
                             not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = subValue)))
 
                     data |> Ok)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
         let deleteSubscriptions (subscriptions: RequestId Set) client =
@@ -187,7 +184,7 @@ module private InMemory =
                             not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = subValue))))
 
                 data |> Ok)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
         let setCulture (chatId: ChatId) (culture: Culture) client =
@@ -205,7 +202,7 @@ module private InMemory =
                 | Some index ->
                     data[index].Culture <- culture.Code
                     data |> Ok)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
 module private FileSystem =
@@ -342,7 +339,7 @@ let private toPersistenceStorage storage =
 let init storageType =
     match storageType with
     | FileSystem connection -> connection |> Storage.Connection.FileSystem |> Storage.init
-    | InMemory -> Storage.Connection.InMemory |> Storage.init
+    | InMemory connection -> connection |> Storage.Connection.InMemory |> Storage.init
     |> Result.map ChatStorage
 
 module Query =
