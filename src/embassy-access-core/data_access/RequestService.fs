@@ -13,7 +13,7 @@ type RequestServiceEntity() =
     member val EmbassyId = String.Empty with get, set
     member val EmbassyName = String.Empty with get, set
     member val EmbassyDescription: string option = None with get, set
-    member val EmbassyTimeZone: float option = None with get, set
+    member val EmbassyTimeZone: float = 0. with get, set
 
     member this.ToDomain() = {
         Id = this.ServiceId |> Graph.NodeIdValue

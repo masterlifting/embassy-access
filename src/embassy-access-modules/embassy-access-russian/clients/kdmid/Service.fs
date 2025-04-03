@@ -75,7 +75,7 @@ let private createPayload request =
 
 let private computeAttempt request =
     let attemptLimit = 20
-    let timeZone = request.Service.Embassy.TimeZone |> Option.defaultValue 0.
+    let timeZone = request.Service.Embassy.TimeZone
 
     let modified, attempt = request.Attempt
     let modified = modified.AddHours timeZone
@@ -97,6 +97,8 @@ let private computeAttempt request =
                 Attempt = DateTime.UtcNow, 1
         }
         |> Ok
+
+let private setLimitations (request: Request) = request.CheckLimitations()
 
 let private setCompletedState request =
     fun updateRequest ->

@@ -21,7 +21,4 @@ type LimitationEntity() =
 
 type internal Limitation with
     member this.ToEntity() =
-        LimitationEntity(
-            Limit = this.Limit / 1u<attempts>,
-            Period = (this.Period |> string)
-        )
+        LimitationEntity(Limit = this.Limit / 1u<attempts>, Period = (this.Period |> string))

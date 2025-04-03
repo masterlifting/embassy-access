@@ -137,7 +137,8 @@ type Route =
             | ConfirmationState.FirstAvailable -> "2" :: model.Serialize()
             | ConfirmationState.LastAvailable -> "3" :: model.Serialize()
             | ConfirmationState.DateTimeRange(start, finish) ->
-                [ "4"; start |> string; finish |> string ] @ model.Serialize()
+                [ "4"; start |> String.fromDateTime; finish |> String.fromDateTime ]
+                @ model.Serialize()
         | CheckAppointments model -> "5" :: model.Serialize()
         | SendAppointments model -> "6" :: model.Serialize()
         | ConfirmAppointment model -> "7" :: model.Serialize()

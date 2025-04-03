@@ -32,4 +32,13 @@ type Request = {
     Attempt: DateTime * int
     IsBackground: bool
     Modified: DateTime
-}
+} with
+
+    member this.CheckLimitations() =
+        this.Limitations
+        |> Seq.map (fun l -> l.Check this.Modified this.Service.Embassy.TimeZone)
+        |> Result.choose
+        |> Result.map (fun limitations -> {
+            this with
+                Limitations = limitations |> Set.ofList
+        })

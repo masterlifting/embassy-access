@@ -82,7 +82,7 @@ module private Fixture =
                 Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.Node.Name.combine
                 ShortName = "Berlin"
                 Description = None
-                TimeZone = None
+                TimeZone = 0.
             }
         }
         ProcessState = Ready

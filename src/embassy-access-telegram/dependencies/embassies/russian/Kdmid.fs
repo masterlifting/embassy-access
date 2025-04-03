@@ -1,6 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Embassies.Russian.Kdmid
 
+open System
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -85,6 +86,13 @@ type Dependencies = {
 
             let createRequest (payload, service: ServiceNode, embassy: EmbassyNode, inBackground, confirmationState) =
                 let requestId = RequestId.createNew ()
+                let limitations =
+                    Set [
+                        {
+                            Limit = 20u<attempts>
+                            Period = TimeSpan.FromHours 24
+                        }
+                    ]
                 deps.ChatStorage
                 |> Chat.Command.createChatSubscription deps.Chat.Id requestId
                 |> ResultAsync.bindAsync (fun _ ->
@@ -101,11 +109,11 @@ type Dependencies = {
                         ProcessState = Ready
                         IsBackground = inBackground
                         Retries = 0u<attempts>
-                        Limitations = Set.empty<Limitation>
-                        Attempt = System.DateTime.UtcNow, 0
+                        Limitations = limitations
+                        Attempt = DateTime.UtcNow, 0
                         ConfirmationState = confirmationState
                         Appointments = Set.empty<Appointment>
-                        Modified = System.DateTime.UtcNow
+                        Modified = DateTime.UtcNow
                     })
 
             let deleteRequest requestId =
