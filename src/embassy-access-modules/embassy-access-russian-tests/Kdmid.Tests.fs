@@ -87,7 +87,6 @@ module private Fixture =
         }
         ProcessState = Ready
         IsBackground = false
-        Retries = 0u<attempts>
         Limitations = Set.empty<Limitation>
         ConfirmationState = FirstAvailable
         Appointments = Set.empty<Appointment>

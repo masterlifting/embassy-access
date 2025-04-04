@@ -109,7 +109,6 @@ type Dependencies = {
                         }
                         ProcessState = Ready
                         IsBackground = inBackground
-                        Retries = 0u<attempts>
                         Limitations = limitations
                         ConfirmationState = confirmationState
                         Appointments = Set.empty<Appointment>

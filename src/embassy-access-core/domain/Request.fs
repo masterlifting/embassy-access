@@ -28,7 +28,6 @@ type Request = {
     ConfirmationState: ConfirmationState
     Appointments: Set<Appointment>
     Limitations: Set<Limitation>
-    Retries: uint<attempts>
     IsBackground: bool
     Modified: DateTime
 }

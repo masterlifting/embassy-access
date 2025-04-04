@@ -125,7 +125,20 @@ let parse queryParams =
                 let getCaptchaRequest = urlPath |> createCaptchaRequest |> getCaptcha
                 let setCookie = ResultAsync.bind (httpClient |> Http.setSessionCookie)
                 let prepareResponse = ResultAsync.bind prepareCaptchaImage
-                let solveCaptcha = ResultAsync.bindAsync solveIntCaptcha
+                let rec solveCaptcha attempts =
+                    ResultAsync.bindAsync (fun data ->
+                        async {
+                            match! data |> solveIntCaptcha with
+                            | Ok captcha -> return Ok captcha
+                            | Error error ->
+                                match attempts <= 0 with
+                                | true -> return Error error
+                                | false ->
+                                    do! Async.Sleep 1000
+                                    let data = data |> Ok |> async.Return
+                                    return! data |> solveCaptcha (attempts - 1)
+                        })
+
                 let prepareFormData = ResultAsync.mapAsync (pageData |> prepareHttpFormData)
                 let buildFormData = ResultAsync.mapAsync Http.buildFormData
 
@@ -134,6 +147,6 @@ let parse queryParams =
                 |> getCaptchaRequest
                 |> setCookie
                 |> prepareResponse
-                |> solveCaptcha
+                |> (solveCaptcha 3)
                 |> prepareFormData
                 |> buildFormData)

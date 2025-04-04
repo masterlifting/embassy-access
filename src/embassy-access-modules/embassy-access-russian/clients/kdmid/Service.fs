@@ -85,38 +85,44 @@ let private validateLimitations request =
     |> Option.map (Canceled >> Error)
     |> Option.defaultValue (request |> Ok)
 
-let private setCompletedState request =
+let private setFinalProcessState request requestPipe =
     fun updateRequest ->
-        let message =
-            match request.Appointments.IsEmpty with
-            | true -> "No appointments found"
-            | false ->
-                match request.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
-                | [] -> $"Found appointments: %i{request.Appointments.Count}"
-                | confirmations -> $"Found confirmations: %i{confirmations.Length}"
+        requestPipe
+        |> Async.bind (function
+            | Ok r ->
+                {
+                    r with
+                        Modified = DateTime.UtcNow
+                        ProcessState =
+                            match r.Appointments.IsEmpty with
+                            | true -> "No appointments found"
+                            | false ->
+                                match r.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
+                                | [] -> $"Found appointments: %i{r.Appointments.Count}"
+                                | confirmations -> $"Found confirmations: %i{confirmations.Length}"
+                            |> Completed
+                }
+                |> Ok
+                |> async.Return
+            | Error error ->
+                match error with
+                | Operation reason ->
+                    match reason.Code with
+                    | Some(Custom Web.Captcha.ERROR_CODE) -> request
+                    | _ -> request |> Request.updateLimitations
+                | _ -> request |> Request.updateLimitations
+                |> fun r ->
+                    updateRequest {
+                        r with
+                            ProcessState = Failed error
+                            Modified = DateTime.UtcNow
+                    })
 
-        updateRequest {
-            request with
-                ProcessState = Completed message
-                Retries = 0u<attempts>
-                Modified = DateTime.UtcNow
-        }
-
-let private trySetFailedState error request =
-    fun updateRequest ->
-        Request.updateLimitations {
-            request with
-                ProcessState = Failed error
-                Modified = DateTime.UtcNow
-        }
-        |> updateRequest
-        |> ResultAsync.bind (fun _ -> $"{Environment.NewLine}%s{request.Service.Payload}" |> error.Extend |> Error)
-
-let rec tryProcess (request: Request) =
+let tryProcess (request: Request) =
     fun (client: Client) ->
 
         // define
-        let inline initProcessState r =
+        let inline setInitialProcessState r =
             {
                 r with
                     ProcessState = InProcess
@@ -148,22 +154,7 @@ let rec tryProcess (request: Request) =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
                 (httpClient, client.postValidationPage)
                 |> Html.ValidationPage.parse qp fd
-                |> ResultAsync.map (fun formDataMap -> httpClient, r, qp, formDataMap)
-                |> ResultAsync.mapErrorAsync (fun error ->
-                    match error with
-                    | Operation reason when reason.Code = Some(Custom Web.Captcha.ERROR_CODE) ->
-                        match request.Retries > 3u<attempts> with
-                        | true ->
-                            "Limit of Captcha retries reached. The operation cancelled."
-                            |> Canceled
-                            |> Error
-                            |> async.Return
-                        | false ->
-                            client
-                            |> tryProcess {
-                                request with
-                                    Retries = request.Retries + 1u<attempts>
-                            }))
+                |> ResultAsync.map (fun formDataMap -> httpClient, r, qp, formDataMap))
 
         let parseAppointmentsPage =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fdm) ->
@@ -176,14 +167,12 @@ let rec tryProcess (request: Request) =
                 (httpClient, client.postConfirmationPage)
                 |> Html.ConfirmationPage.parse qp fdm r)
 
-        let setFinalProcessState =
-            Async.bind (function
-                | Ok r -> client.updateRequest |> setCompletedState r
-                | Error error -> client.updateRequest |> trySetFailedState error request)
+        let setFinalProcessState requestRes =
+            client.updateRequest |> setFinalProcessState request requestRes
 
         // pipe
         request
-        |> initProcessState
+        |> setInitialProcessState
         |> createPayload
         |> createHttpClient
         |> parseInitialPage
