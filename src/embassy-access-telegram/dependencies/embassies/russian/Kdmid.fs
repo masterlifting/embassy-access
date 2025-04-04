@@ -91,7 +91,7 @@ type Dependencies = {
                         {
                             Limit = 20u<attempts>
                             Period = TimeSpan.FromHours 24
-                            State = New
+                            State = Start
                         }
                     ]
                 deps.ChatStorage
@@ -111,7 +111,6 @@ type Dependencies = {
                         IsBackground = inBackground
                         Retries = 0u<attempts>
                         Limitations = limitations
-                        Attempt = DateTime.UtcNow, 0
                         ConfirmationState = confirmationState
                         Appointments = Set.empty<Appointment>
                         Modified = DateTime.UtcNow

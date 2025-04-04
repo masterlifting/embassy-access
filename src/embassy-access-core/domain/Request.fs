@@ -29,7 +29,6 @@ type Request = {
     Appointments: Set<Appointment>
     Limitations: Set<Limitation>
     Retries: uint<attempts>
-    Attempt: DateTime * int
     IsBackground: bool
     Modified: DateTime
 }

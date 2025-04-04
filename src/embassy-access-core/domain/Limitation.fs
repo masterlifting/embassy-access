@@ -5,7 +5,7 @@ open System
 open Infrastructure.Domain
 
 type LimitationState =
-    | New
+    | Start
     | Active of TimeSpan * uint<attempts>
     | Reached of TimeSpan
 
@@ -16,22 +16,26 @@ type Limitation = {
 }
 
 let updateState (lastModifiedDate: DateTime) timeZone limitation =
+    let currentDate = DateTime.UtcNow.AddHours timeZone
+    let lastModifiedDate = lastModifiedDate.AddHours timeZone
+    let elapsed = currentDate - lastModifiedDate
 
     let state =
         match limitation.State with
-        | New -> Active(limitation.Period, limitation.Limit - 1u<attempts>)
+        | Start -> Active(limitation.Period, limitation.Limit - 1u<attempts>)
         | Active(period, limit) ->
-            let currentDate = DateTime.UtcNow.AddHours timeZone
-            let lastModifiedDate = lastModifiedDate.AddHours timeZone
-
-            let remainingPeriod = period - (currentDate - lastModifiedDate)
-
+            let remainingPeriod = period - elapsed
             if remainingPeriod <= TimeSpan.Zero then
                 Active(limitation.Period, limitation.Limit - 1u<attempts>)
-            else if limit = 0u<attempts> then
+            elif limit = 0u<attempts> then
                 Reached remainingPeriod
             else
                 Active(remainingPeriod, limit - 1u<attempts>)
-        | Reached period -> Active(period, 0u<attempts>)
+        | Reached period ->
+            let remainingPeriod = period - elapsed
+            if remainingPeriod <= TimeSpan.Zero then
+                Active(limitation.Period, limitation.Limit - 1u<attempts>)
+            else
+                Reached remainingPeriod
 
     { limitation with State = state }

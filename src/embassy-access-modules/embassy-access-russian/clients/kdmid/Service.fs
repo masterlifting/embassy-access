@@ -80,7 +80,7 @@ let private validateLimitations request =
         | Reached period ->
             $"Limit of attempts reached. Remaining period: '%s{period |> String.fromTimeSpan}'. The operation cancelled."
             |> Some
-        | New
+        | Start
         | Active _ -> None)
     |> Option.map (Canceled >> Error)
     |> Option.defaultValue (request |> Ok)
@@ -114,12 +114,15 @@ let private trySetFailedState error request =
                 |> async.Return
             | false -> restart request
         | _ ->
-            updateRequest {
-                request with
+            request
+            |> Request.updateLimitations
+            |> fun r -> {
+                r with
                     ProcessState = Failed error
                     Modified = DateTime.UtcNow
             }
-            |> ResultAsync.bind (fun _ -> $"{Environment.NewLine}%s{request.Service.Payload}" |> error.Extend)
+            |> updateRequest
+            |> ResultAsync.bind (fun _ -> $"{Environment.NewLine}%s{request.Service.Payload}" |> error.Extend |> Error)
 
 let rec tryProcess (request: Request) =
     fun (client: Client) ->

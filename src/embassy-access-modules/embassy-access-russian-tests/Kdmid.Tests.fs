@@ -89,7 +89,6 @@ module private Fixture =
         IsBackground = false
         Retries = 0u<attempts>
         Limitations = Set.empty<Limitation>
-        Attempt = DateTime.UtcNow, 0
         ConfirmationState = FirstAvailable
         Appointments = Set.empty<Appointment>
         Modified = DateTime.UtcNow

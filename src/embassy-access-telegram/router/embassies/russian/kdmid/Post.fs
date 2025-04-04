@@ -148,7 +148,7 @@ type Route =
         let parts = input.Split Constants.Router.DELIMITER
 
         match parts with
-        | [| "0"; serviceId; embassyId; payload; isBackground |] ->
+        | [| "0"; serviceId; embassyId; isBackground; payload |] ->
             ConfirmationState.Disabled
             |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
             |> Result.map Route.Subscribe

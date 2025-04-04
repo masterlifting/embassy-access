@@ -41,7 +41,7 @@ Worker:
                   Duration: 00:01:00
               Schedule:
                 StartTime: 00:55:00
-                StopTime: 16:55:20
+                StopTime: 23:55:20
                 TimeZone: 1
         - Id: DEU
           Name: Germany
