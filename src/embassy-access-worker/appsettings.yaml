@@ -42,7 +42,7 @@ Worker:
               Schedule:
                 StartTime: 00:55:00
                 StopTime: 23:55:20
-                TimeZone: 1
+                TimeZone: 2
         - Id: DEU
           Name: Germany
           Parallel: true
