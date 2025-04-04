@@ -73,32 +73,17 @@ let private createPayload request =
     |> Result.bind create
     |> Result.bind validate
 
-let private computeAttempt request =
-    let attemptLimit = 20
-    let timeZone = request.Service.Embassy.TimeZone
-
-    let modified, attempt = request.Attempt
-    let modified = modified.AddHours timeZone
-    let today = DateTime.UtcNow.AddHours timeZone
-
-    match modified.DayOfYear = today.DayOfYear, attempt > attemptLimit with
-    | true, true ->
-        Error
-        <| Canceled $"Number of attempts reached the limit '%i{attemptLimit}' for today. The operation cancelled."
-    | true, false ->
-        {
-            request with
-                Attempt = DateTime.UtcNow, attempt + 1
-        }
-        |> Ok
-    | _ ->
-        {
-            request with
-                Attempt = DateTime.UtcNow, 1
-        }
-        |> Ok
-
-let private setLimitations (request: Request) = request.CheckLimitations()
+let private validateLimitations request =
+    request.Limitations
+    |> Seq.tryPick (fun l ->
+        match l.State with
+        | Reached period ->
+            $"Limit of attempts reached. Remaining period: '%s{period |> String.fromTimeSpan}'. The operation cancelled."
+            |> Some
+        | New
+        | Active _ -> None)
+    |> Option.map (Canceled >> Error)
+    |> Option.defaultValue (request |> Ok)
 
 let private setCompletedState request =
     fun updateRequest ->
@@ -129,27 +114,18 @@ let private trySetFailedState error request =
                 |> async.Return
             | false -> restart request
         | _ ->
-            {
+            updateRequest {
                 request with
                     ProcessState = Failed error
                     Modified = DateTime.UtcNow
             }
-            |> computeAttempt
-            |> ResultAsync.wrap updateRequest
-            |> ResultAsync.bind (fun _ -> $"{Environment.NewLine}%s{request.Service.Payload}" |> error.Extend |> Error)
+            |> ResultAsync.bind (fun _ -> $"{Environment.NewLine}%s{request.Service.Payload}" |> error.Extend)
 
 let rec tryProcess (request: Request) =
     fun (client: Client) ->
 
         // define
-        let inline retryProcess r =
-            client
-            |> tryProcess {
-                r with
-                    Retries = r.Retries + 1u<attempts>
-            }
-
-        let inline setInProcessState r =
+        let inline initProcessState r =
             {
                 r with
                     ProcessState = InProcess
@@ -173,12 +149,16 @@ let rec tryProcess (request: Request) =
                 |> Html.InitialPage.parse queryParams
                 |> ResultAsync.map (fun formData -> httpClient, r, queryParams, formData))
 
-        let setAttempt =
+        let updateLimitations =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
                 r
-                |> computeAttempt
-                |> ResultAsync.wrap client.updateRequest
+                |> Request.updateLimitations
+                |> client.updateRequest
                 |> ResultAsync.map (fun r -> httpClient, r, qp, fd))
+
+        let validateLimitations =
+            ResultAsync.bind (fun (httpClient, r, qp, fd) ->
+                r |> validateLimitations |> Result.map (fun r -> httpClient, r, qp, fd))
 
         let parseValidationPage =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
@@ -197,22 +177,30 @@ let rec tryProcess (request: Request) =
                 (httpClient, client.postConfirmationPage)
                 |> Html.ConfirmationPage.parse qp fdm r)
 
-        let trySetResultState =
+        let setFinalProcessState =
             Async.bind (function
                 | Ok r -> client.updateRequest |> setCompletedState r
-                | Error error -> (client.updateRequest, retryProcess) |> trySetFailedState error request)
+                | Error error ->
+                    let inline retryProcess r =
+                        client
+                        |> tryProcess {
+                            r with
+                                Retries = r.Retries + 1u<attempts>
+                        }
+                    (client.updateRequest, retryProcess) |> trySetFailedState error request)
 
         // pipe
         request
-        |> setInProcessState
+        |> initProcessState
         |> createPayload
         |> createHttpClient
         |> parseInitialPage
-        |> setAttempt
+        |> updateLimitations
+        |> validateLimitations
         |> parseValidationPage
         |> parseAppointmentsPage
         |> parseConfirmationPage
-        |> trySetResultState
+        |> setFinalProcessState
 
 let tryProcessFirst (requests: Request seq) =
     fun (client: Client, notify) ->

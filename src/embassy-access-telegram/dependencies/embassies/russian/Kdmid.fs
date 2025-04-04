@@ -91,6 +91,7 @@ type Dependencies = {
                         {
                             Limit = 20u<attempts>
                             Period = TimeSpan.FromHours 24
+                            State = New
                         }
                     ]
                 deps.ChatStorage
