@@ -103,26 +103,14 @@ let private setCompletedState request =
         }
 
 let private trySetFailedState error request =
-    fun (updateRequest, restart) ->
-        match error with
-        | Operation reason when reason.Code = Some(Custom Web.Captcha.ERROR_CODE) ->
-            match request.Retries > 3u<attempts> with
-            | true ->
-                "Limit of Captcha retries reached. The operation cancelled."
-                |> Canceled
-                |> Error
-                |> async.Return
-            | false -> restart request
-        | _ ->
-            request
-            |> Request.updateLimitations
-            |> fun r -> {
-                r with
-                    ProcessState = Failed error
-                    Modified = DateTime.UtcNow
-            }
-            |> updateRequest
-            |> ResultAsync.bind (fun _ -> $"{Environment.NewLine}%s{request.Service.Payload}" |> error.Extend |> Error)
+    fun updateRequest ->
+        Request.updateLimitations {
+            request with
+                ProcessState = Failed error
+                Modified = DateTime.UtcNow
+        }
+        |> updateRequest
+        |> ResultAsync.bind (fun _ -> $"{Environment.NewLine}%s{request.Service.Payload}" |> error.Extend |> Error)
 
 let rec tryProcess (request: Request) =
     fun (client: Client) ->
@@ -152,13 +140,6 @@ let rec tryProcess (request: Request) =
                 |> Html.InitialPage.parse queryParams
                 |> ResultAsync.map (fun formData -> httpClient, r, queryParams, formData))
 
-        let updateLimitations =
-            ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
-                r
-                |> Request.updateLimitations
-                |> client.updateRequest
-                |> ResultAsync.map (fun r -> httpClient, r, qp, fd))
-
         let validateLimitations =
             ResultAsync.bind (fun (httpClient, r, qp, fd) ->
                 r |> validateLimitations |> Result.map (fun r -> httpClient, r, qp, fd))
@@ -167,7 +148,22 @@ let rec tryProcess (request: Request) =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
                 (httpClient, client.postValidationPage)
                 |> Html.ValidationPage.parse qp fd
-                |> ResultAsync.map (fun formDataMap -> httpClient, r, qp, formDataMap))
+                |> ResultAsync.map (fun formDataMap -> httpClient, r, qp, formDataMap)
+                |> ResultAsync.mapErrorAsync (fun error ->
+                    match error with
+                    | Operation reason when reason.Code = Some(Custom Web.Captcha.ERROR_CODE) ->
+                        match request.Retries > 3u<attempts> with
+                        | true ->
+                            "Limit of Captcha retries reached. The operation cancelled."
+                            |> Canceled
+                            |> Error
+                            |> async.Return
+                        | false ->
+                            client
+                            |> tryProcess {
+                                request with
+                                    Retries = request.Retries + 1u<attempts>
+                            }))
 
         let parseAppointmentsPage =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fdm) ->
@@ -183,14 +179,7 @@ let rec tryProcess (request: Request) =
         let setFinalProcessState =
             Async.bind (function
                 | Ok r -> client.updateRequest |> setCompletedState r
-                | Error error ->
-                    let inline retryProcess r =
-                        client
-                        |> tryProcess {
-                            r with
-                                Retries = r.Retries + 1u<attempts>
-                        }
-                    (client.updateRequest, retryProcess) |> trySetFailedState error request)
+                | Error error -> client.updateRequest |> trySetFailedState error request)
 
         // pipe
         request
@@ -198,7 +187,6 @@ let rec tryProcess (request: Request) =
         |> createPayload
         |> createHttpClient
         |> parseInitialPage
-        |> updateLimitations
         |> validateLimitations
         |> parseValidationPage
         |> parseAppointmentsPage
