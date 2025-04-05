@@ -90,7 +90,7 @@ let private setFinalProcessState request requestPipe =
         requestPipe
         |> Async.bind (function
             | Ok r ->
-                {
+                Request.updateLimitations {
                     r with
                         Modified = DateTime.UtcNow
                         ProcessState =
