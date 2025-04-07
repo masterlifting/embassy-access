@@ -87,7 +87,7 @@ module private Fixture =
         }
         ProcessState = Ready
         IsBackground = false
-        Limitations = Set.empty<Limitation>
+        Limitations = Set.empty<Limit>
         ConfirmationState = FirstAvailable
         Appointments = Set.empty<Appointment>
         Modified = DateTime.UtcNow

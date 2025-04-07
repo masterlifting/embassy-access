@@ -89,7 +89,7 @@ type Dependencies = {
                 let limitations =
                     Set [
                         {
-                            Limit = 1u<attempts>
+                            Attempts = 1u<attempts>
                             Period = TimeSpan.FromHours 24
                             State = Start
                         }

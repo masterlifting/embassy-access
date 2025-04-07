@@ -12,7 +12,7 @@ let private START = nameof Start
 let private ACTIVE = nameof Active
 
 [<Literal>]
-let private REACHED = nameof Reached
+let private REACHED = nameof WaitingForActive
 
 type LimitationEntity() =
     member val Limit = 0u with get, set
@@ -32,20 +32,20 @@ type LimitationEntity() =
                 | _ -> "Limitation 'RemainingPeriod' is not supported." |> NotSupported |> Error
             | REACHED ->
                 match this.RemainingPeriod with
-                | AP.IsTimeSpan remainingPeriod -> Reached remainingPeriod |> Ok
+                | AP.IsTimeSpan remainingPeriod -> WaitingForActive remainingPeriod |> Ok
                 | _ -> "Limitation 'RemainingPeriod' is not supported." |> NotSupported |> Error
             | _ -> $"Limitation 'StateType' is not supported." |> NotSupported |> Error
             |> Result.map (fun state -> {
-                Limit = this.Limit * 1u<attempts>
+                Attempts = this.Limit * 1u<attempts>
                 Period = period
                 State = state
             })
         | _ -> $"Limitation '{this.Period}' is not supported." |> NotSupported |> Error
 
-type internal Limitation with
+type internal Limit with
     member this.ToEntity() =
         let entity =
-            LimitationEntity(Limit = this.Limit / 1u<attempts>, Period = (this.Period |> string))
+            LimitationEntity(Limit = this.Attempts / 1u<attempts>, Period = (this.Period |> string))
 
         match this.State with
         | Start -> entity.StateType <- START
@@ -53,7 +53,7 @@ type internal Limitation with
             entity.StateType <- ACTIVE
             entity.RemainingPeriod <- remainingPeriod.ToString()
             entity.RemainingAttempts <- remainingAttempts / 1u<attempts>
-        | Reached remainingPeriod ->
+        | WaitingForActive remainingPeriod ->
             entity.StateType <- REACHED
             entity.RemainingPeriod <- remainingPeriod.ToString()
 

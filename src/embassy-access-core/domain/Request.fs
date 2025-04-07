@@ -27,14 +27,14 @@ type Request = {
     ProcessState: ProcessState
     ConfirmationState: ConfirmationState
     Appointments: Set<Appointment>
-    Limitations: Set<Limitation>
+    Limitations: Set<Limit>
     IsBackground: bool
     Modified: DateTime
 }
 
 let updateLimitations request =
     request.Limitations
-    |> Seq.map (Limitation.updateState request.Modified request.Service.Embassy.TimeZone)
+    |> Seq.map (Limit.update request.Modified request.Service.Embassy.TimeZone)
     |> Result.choose
     |> Result.map (fun limitations -> {
         request with

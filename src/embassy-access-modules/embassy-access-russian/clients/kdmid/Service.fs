@@ -76,12 +76,12 @@ let private createPayload request =
 let private checkLimitations request =
     request.Limitations
     |> Seq.tryPick (fun l ->
-        match l.State with
-        | Reached period ->
+        match l |> Limit.validate with
+        | Active _
+        | ReadyForRefresh _ -> None
+        | WaitingForActive period ->
             $"Limit of attempts reached. Remaining period: '%s{period |> String.fromTimeSpan}'. The operation cancelled."
-            |> Some
-        | Start
-        | Active _ -> None)
+            |> Some)
     |> Option.map (Canceled >> Error)
     |> Option.defaultValue (request |> Ok)
 
