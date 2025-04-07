@@ -73,7 +73,7 @@ let private createPayload request =
     |> Result.bind create
     |> Result.bind validate
 
-let private validateLimitations request =
+let private checkLimitations request =
     request.Limitations
     |> Seq.tryPick (fun l ->
         match l.State with
@@ -90,7 +90,7 @@ let private setFinalProcessState request requestPipe =
         requestPipe
         |> Async.bind (function
             | Ok r ->
-                Request.updateLimitations {
+                {
                     r with
                         Modified = DateTime.UtcNow
                         ProcessState =
@@ -122,13 +122,14 @@ let tryProcess (request: Request) =
     fun (client: Client) ->
 
         // define
-        let inline setInitialProcessState r =
-            {
-                r with
-                    ProcessState = InProcess
-                    Modified = DateTime.UtcNow
-            }
-            |> client.updateRequest
+        let setInitialProcessState =
+            ResultAsync.wrap (fun r ->
+                {
+                    r with
+                        ProcessState = InProcess
+                        Modified = DateTime.UtcNow
+                }
+                |> client.updateRequest)
 
         let createPayload =
             ResultAsync.bind (fun r -> r |> createPayload |> Result.map (fun payload -> r, payload))
@@ -146,9 +147,9 @@ let tryProcess (request: Request) =
                 |> Html.InitialPage.parse queryParams
                 |> ResultAsync.map (fun formData -> httpClient, r, queryParams, formData))
 
-        let validateLimitations =
+        let setLimitations =
             ResultAsync.bind (fun (httpClient, r, qp, fd) ->
-                r |> validateLimitations |> Result.map (fun r -> httpClient, r, qp, fd))
+                r |> Request.updateLimitations |> Result.map (fun r -> httpClient, r, qp, fd))
 
         let parseValidationPage =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
@@ -172,11 +173,12 @@ let tryProcess (request: Request) =
 
         // pipe
         request
+        |> checkLimitations
         |> setInitialProcessState
         |> createPayload
         |> createHttpClient
         |> parseInitialPage
-        |> validateLimitations
+        |> setLimitations
         |> parseValidationPage
         |> parseAppointmentsPage
         |> parseConfirmationPage

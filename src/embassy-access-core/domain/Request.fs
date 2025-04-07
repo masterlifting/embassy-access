@@ -32,10 +32,11 @@ type Request = {
     Modified: DateTime
 }
 
-let updateLimitations request = {
-    request with
-        Limitations =
-            request.Limitations
-            |> Seq.map (Limitation.updateState request.Modified request.Service.Embassy.TimeZone)
-            |> Set.ofSeq
-}
+let updateLimitations request =
+    request.Limitations
+    |> Seq.map (Limitation.updateState request.Modified request.Service.Embassy.TimeZone)
+    |> Result.choose
+    |> Result.map (fun limitations -> {
+        request with
+            Limitations = limitations |> Set.ofSeq
+    })
