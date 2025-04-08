@@ -39,3 +39,9 @@ type Request = {
             request with
                 Limits = limits |> Set.ofSeq
         }
+    
+    static member validateLimits request =
+        request.Limits
+        |> Seq.map Limit.validate
+        |> Result.choose
+        |> Result.map(fun _ -> request)

@@ -74,15 +74,9 @@ let private createPayload request =
     |> Result.bind validate
 
 let private validateLimits request =
-    request.Limits
-    |> Seq.tryPick (fun l ->
-        match l.State with
-        | Valid _ -> None
-        | Invalid(period, _) ->
-            $"Limit of attempts reached. Remaining period: '%s{period |> String.fromTimeSpan}'. The operation cancelled."
-            |> Some)
-    |> Option.map (Canceled >> Error)
-    |> Option.defaultValue (request |> Ok)
+    request
+    |> Request.validateLimits
+    |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
 
 let private setFinalProcessState request requestPipe =
     fun updateRequest ->

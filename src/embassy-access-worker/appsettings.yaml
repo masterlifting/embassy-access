@@ -25,12 +25,12 @@ Worker:
       Name: Russian
       Parallel: true
       Schedule:
-        Workdays: mon,tue,wed,thu,fri
+        Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
         - Id: SRB
           Name: Serbia
           Parallel: true
-          Recursively: 00:30:00
+          Recursively: 00:01:00
           Tasks:
             - Id: BEG
               Name: Belgrade
