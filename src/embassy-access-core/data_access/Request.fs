@@ -79,6 +79,12 @@ module private Common =
             Ok data
         | None -> $"The '{request.Id}' not found." |> NotFound |> Error
 
+    let updateSeq (requests: Request seq) (data: RequestEntity array) =
+        requests
+        |> Seq.map (fun request -> data |> update request)
+        |> Result.choose
+        |> Result.map Array.concat
+
     let delete (id: RequestId) (data: RequestEntity array) =
         match data |> Array.tryFindIndex (fun x -> x.Id = id.ValueStr) with
         | Some index -> data |> Array.removeAt index |> Ok
@@ -150,6 +156,14 @@ module private InMemory =
             |> Result.bind (Common.update request)
             |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> request)
+            |> async.Return
+
+        let updateSeq requests client =
+            client
+            |> loadData
+            |> Result.bind (Common.updateSeq requests)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
+            |> Result.map (fun _ -> requests |> Seq.toList)
             |> async.Return
 
         let createOrUpdate request client =
@@ -239,6 +253,13 @@ module private FileSystem =
             |> ResultAsync.bind (Common.update request)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
             |> ResultAsync.map (fun _ -> request)
+            
+        let updateSeq requests client =
+            client
+            |> loadData
+            |> ResultAsync.bind (Common.updateSeq requests)
+            |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
+            |> ResultAsync.map (fun _ -> requests |> Seq.toList)
 
         let createOrUpdate request client =
             client
@@ -327,12 +348,11 @@ module Command =
         | Storage.FileSystem client -> client |> FileSystem.Command.update request
         | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
-    //TODO: Optimize this
     let updateSeq requests storage =
-        requests
-        |> Seq.map (fun request -> storage |> update request)
-        |> Async.Sequential
-        |> Async.map Result.choose
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.updateSeq requests
+        | Storage.FileSystem client -> client |> FileSystem.Command.updateSeq requests
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let createOrUpdate request storage =
         match storage |> toPersistenceStorage with
