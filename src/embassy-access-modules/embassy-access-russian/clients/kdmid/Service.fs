@@ -73,13 +73,12 @@ let private createPayload request =
     |> Result.bind create
     |> Result.bind validate
 
-let private checkLimitations request =
-    request.Limitations
+let private validateLimits request =
+    request.Limits
     |> Seq.tryPick (fun l ->
-        match l |> Limit.validate with
-        | Active _
-        | ReadyForRefresh _ -> None
-        | WaitingForActive period ->
+        match l.State with
+        | Valid _ -> None
+        | Invalid(period, _) ->
             $"Limit of attempts reached. Remaining period: '%s{period |> String.fromTimeSpan}'. The operation cancelled."
             |> Some)
     |> Option.map (Canceled >> Error)
@@ -90,7 +89,7 @@ let private setFinalProcessState request requestPipe =
         requestPipe
         |> Async.bind (function
             | Ok r ->
-                {
+                Request.updateLimits {
                     r with
                         Modified = DateTime.UtcNow
                         ProcessState =
@@ -102,15 +101,14 @@ let private setFinalProcessState request requestPipe =
                                 | confirmations -> $"Found confirmations: %i{confirmations.Length}"
                             |> Completed
                 }
-                |> Ok
-                |> async.Return
+                |> updateRequest
             | Error error ->
                 match error with
                 | Operation reason ->
                     match reason.Code with
                     | Some(Custom Web.Captcha.ERROR_CODE) -> request
-                    | _ -> request |> Request.updateLimitations
-                | _ -> request |> Request.updateLimitations
+                    | _ -> request |> Request.updateLimits
+                | _ -> request |> Request.updateLimits
                 |> fun r ->
                     updateRequest {
                         r with
@@ -147,10 +145,6 @@ let tryProcess (request: Request) =
                 |> Html.InitialPage.parse queryParams
                 |> ResultAsync.map (fun formData -> httpClient, r, queryParams, formData))
 
-        let setLimitations =
-            ResultAsync.bind (fun (httpClient, r, qp, fd) ->
-                r |> Request.updateLimitations |> Result.map (fun r -> httpClient, r, qp, fd))
-
         let parseValidationPage =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
                 (httpClient, client.postValidationPage)
@@ -173,12 +167,11 @@ let tryProcess (request: Request) =
 
         // pipe
         request
-        |> checkLimitations
+        |> validateLimits
         |> setInitialProcessState
         |> createPayload
         |> createHttpClient
         |> parseInitialPage
-        |> setLimitations
         |> parseValidationPage
         |> parseAppointmentsPage
         |> parseConfirmationPage

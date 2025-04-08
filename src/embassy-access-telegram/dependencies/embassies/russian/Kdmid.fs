@@ -86,14 +86,8 @@ type Dependencies = {
 
             let createRequest (payload, service: ServiceNode, embassy: EmbassyNode, inBackground, confirmationState) =
                 let requestId = RequestId.createNew ()
-                let limitations =
-                    Set [
-                        {
-                            Attempts = 1u<attempts>
-                            Period = TimeSpan.FromHours 24
-                            State = Start
-                        }
-                    ]
+                let limits = Limit.create (1u<attempts>, TimeSpan.FromMinutes 2.) |> Set.singleton
+
                 deps.ChatStorage
                 |> Chat.Command.createChatSubscription deps.Chat.Id requestId
                 |> ResultAsync.bindAsync (fun _ ->
@@ -109,7 +103,7 @@ type Dependencies = {
                         }
                         ProcessState = Ready
                         IsBackground = inBackground
-                        Limitations = limitations
+                        Limits = limits
                         ConfirmationState = confirmationState
                         Appointments = Set.empty<Appointment>
                         Modified = DateTime.UtcNow

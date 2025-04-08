@@ -4,47 +4,48 @@ module EA.Core.Domain.Limit
 open System
 open Infrastructure.Domain
 
+type LimitState =
+    | Valid of uint<attempts> * TimeSpan * DateTime
+    | Invalid of TimeSpan * DateTime
+
+    static member internal create attempts period =
+        match attempts > 0u<attempts> && period > TimeSpan.Zero with
+        | true -> Valid(attempts, period, DateTime.UtcNow)
+        | false -> Invalid(period, DateTime.UtcNow)
+
 type Limit = {
     Attempts: uint<attempts>
     Period: TimeSpan
     State: LimitState
-}
-and LimitState =
-    | Active of Limit
-    | ReadyForRefresh
-    | WaitingForActive of TimeSpan
+} with
 
-let create (limit: Limit) =
-    match limit.Attempts > 0u<attempts>, limit.Period > TimeSpan.Zero with
-    | true, true -> Active { Attempts = limit.Attempts; Period = limit.Period } |> Ok
-    | true, false -> Active { Attempts = limit.Attempts; Period = TimeSpan.Zero } |> Ok
-    | false, true -> "Invalid attempts count." |> NotSupported |> Error
-    | false, false -> "Invalid attempts count and period." |> NotSupported |> Error
+    static member create(attempts, period) = {
+        Attempts = attempts
+        Period = period
+        State = LimitState.create attempts period
+    }
 
-let validate limit =
-    match limit.Attempts > 0u<attempts>, limit.Period > TimeSpan.Zero with
-    | true, true -> Active limit
-    | true, false -> ReadyForRefresh limit
-    | false, true -> WaitingForActive limit.Period
-    | false, false -> ReadyForRefresh limit
+    static member update limit =
 
-let update (date: DateTime) timeZone limit =
+        let calculateState attempts period previousDate =
+            let attempts =
+                match attempts > 0u<attempts> with
+                | true -> attempts - 1u<attempts>
+                | false -> 0u<attempts>
 
-    let calculateRemainingLimit (limit: Limit)=
-        let attempts =
-            match limit.Attempts > 0u<attempts> with
-            | true -> limit.Attempts - 1u<attempts>
-            | false -> 0u<attempts>
+            let period = max (period - (DateTime.UtcNow - previousDate)) TimeSpan.Zero
 
-        let currentDate = DateTime.UtcNow.AddHours timeZone
-        let lastModifiedDate = date.AddHours timeZone
-        let remainingPeriod = limit.Period - (currentDate - lastModifiedDate)
-        match remainingPeriod > TimeSpan.Zero with
-        | true -> remainingPeriod
-        | false -> TimeSpan.Zero
-        
-        { Attempts = attempts; Period = remainingPeriod }
+            LimitState.create attempts period
 
-    match limit |> validate with
-    | Active limit -> limit |> calculateRemainingLimit |> Ok
-    | WaitingForActive period 
+        match limit.State with
+        | Valid(attempts, period, date) -> {
+            limit with
+                State = calculateState attempts period date
+          }
+        | Invalid(period, date) ->
+            match period > TimeSpan.Zero with
+            | true -> {
+                limit with
+                    State = calculateState 0u<attempts> period date
+              }
+            | false -> Limit.create (limit.Attempts, limit.Period)

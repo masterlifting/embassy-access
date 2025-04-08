@@ -27,16 +27,15 @@ type Request = {
     ProcessState: ProcessState
     ConfirmationState: ConfirmationState
     Appointments: Set<Appointment>
-    Limitations: Set<Limit>
+    Limits: Set<Limit>
     IsBackground: bool
     Modified: DateTime
-}
+} with
 
-let updateLimitations request =
-    request.Limitations
-    |> Seq.map (Limit.update request.Modified request.Service.Embassy.TimeZone)
-    |> Result.choose
-    |> Result.map (fun limitations -> {
-        request with
-            Limitations = limitations |> Set.ofSeq
-    })
+    static member updateLimits request =
+        request.Limits
+        |> Seq.map Limit.update
+        |> fun limits -> {
+            request with
+                Limits = limits |> Set.ofSeq
+        }

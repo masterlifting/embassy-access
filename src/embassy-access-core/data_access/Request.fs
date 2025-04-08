@@ -12,7 +12,7 @@ open EA.Core.DataAccess.RequestService
 open EA.Core.DataAccess.ProcessState
 open EA.Core.DataAccess.ConfirmationState
 open EA.Core.DataAccess.Appointment
-open EA.Core.DataAccess.Limitation
+open EA.Core.DataAccess.Limit
 
 type RequestStorage = RequestStorage of Storage.Provider
 
@@ -25,7 +25,7 @@ type RequestEntity() =
     member val Service = RequestServiceEntity() with get, set
     member val ProcessState = ProcessStateEntity() with get, set
     member val IsBackground = false with get, set
-    member val Limitations = Array.empty<LimitationEntity> with get, set
+    member val Limits = Array.empty<LimitEntity> with get, set
     member val ConfirmationState = ConfirmationStateEntity() with get, set
     member val Appointments = Array.empty<AppointmentEntity> with get, set
     member val Modified = DateTime.UtcNow with get, set
@@ -39,14 +39,14 @@ type RequestEntity() =
             let! processState = this.ProcessState.ToDomain()
             let! confirmationState = this.ConfirmationState.ToDomain()
             let! appointments = this.Appointments |> Seq.map _.ToDomain() |> Result.choose
-            let! limitations = this.Limitations |> Seq.map _.ToDomain() |> Result.choose
+            let! limitations = this.Limits |> Seq.map _.ToDomain() |> Result.choose
 
             return {
                 Id = requestId
                 Service = this.Service.ToDomain()
                 ProcessState = processState
                 IsBackground = this.IsBackground
-                Limitations = limitations |> Set.ofSeq
+                Limits = limitations |> Set.ofSeq
                 ConfirmationState = confirmationState
                 Appointments = appointments |> Set.ofSeq
                 Modified = this.Modified
@@ -60,7 +60,7 @@ type private Request with
             Service = this.Service.ToEntity(),
             ProcessState = this.ProcessState.ToEntity(),
             IsBackground = this.IsBackground,
-            Limitations = (this.Limitations |> Seq.map _.ToEntity() |> Seq.toArray),
+            Limits = (this.Limits |> Seq.map _.ToEntity() |> Seq.toArray),
             ConfirmationState = this.ConfirmationState.ToEntity(),
             Appointments = (this.Appointments |> Seq.map _.ToEntity() |> Seq.toArray),
             Modified = this.Modified

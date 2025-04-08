@@ -38,7 +38,7 @@ Worker:
                 - Id: SA
                   Name: Search appointments
                   Enabled: true
-                  Duration: 00:01:00
+                  Duration: 00:05:00
               Schedule:
                 StartTime: 00:55:00
                 StopTime: 23:55:20
