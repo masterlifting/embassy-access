@@ -38,7 +38,7 @@ Worker:
                 - Id: SA
                   Name: Search appointments
                   Enabled: true
-                  Duration: 00:01:00
+                  Duration: 00:02:00
               Schedule:
                 StartTime: 08:30:00
                 StopTime: 17:00:00
@@ -421,17 +421,17 @@ Embassies:
               TimeZone: 2
 
 KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
-  Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat. Without apostrophes.
+  Instruction: Take the link you received in your email after registering your request on the kdmid.ru website. Put the link instead of <link> in the command above. Send it to the chat (without apostrophes).
 
 KdmidRussianServices: &KdmidRussianServices
   - Id: "0"
     Name: Check slots now
     <<: *KdmidRussianServicesInstructions
   - Id: "1"
-    Name: Slot notifications
+    Name: Slots auto notification
     <<: *KdmidRussianServicesInstructions
   - Id: "2"
-    Name: Auto booking
+    Name: Slot auto booking
     Description: Auto slot booking
     Children:
       - Id: "0"
@@ -441,8 +441,8 @@ KdmidRussianServices: &KdmidRussianServices
         Name: Book last slot
         <<: *KdmidRussianServicesInstructions
       - Id: "2"
-        Name: Book in period
-        Instruction: To use this service, add the link you received in your email after registering your application on the website, after the | symbol in the above command and send it to the chat. Without apostrophes. Also change the date and time of the beginning and end of the period.
+        Name: Book first slot in period
+        Instruction: Take the link you received in your email after registering your request on the kdmid.ru website. Put the link instead of <link> in the command above. Change the start and end of the time periods in the command. Send it to the chat (without apostrophes).
 
 Services:
   Id: SRV
@@ -450,8 +450,8 @@ Services:
   Description: Choose the service you need
   Children:
     - Id: RUS
-      Name: Russian Embassy
-      Description: Choose the service of the Russian Embassy
+      Name: Russian embassy
+      Description: Choose the service of the Russian embassy
       Children:
         - Id: "0"
           Name: Passport
@@ -471,7 +471,7 @@ Services:
           Children:
             - Id: "0"
               Name: Power of attorney
-              Description: POA options
+              Description: Power of attorney options
               Children:
                 <<: *KdmidRussianServices
         - Id: "2"

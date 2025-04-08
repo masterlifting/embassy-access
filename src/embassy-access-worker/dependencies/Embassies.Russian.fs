@@ -5,19 +5,19 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Embassies.Russian
 open EA.Worker.Dependencies
 open Worker.Domain
+open EA.Russian.Clients
+open EA.Russian.Clients.Domain.Kdmid
 
 module Kdmid =
     open Infrastructure.Logging
-    open EA.Embassies.Russian.Kdmid.Dependencies
     open EA.Telegram.Services.Embassies.Russian.Kdmid
     open EA.Telegram.Dependencies.Embassies.Russian
 
     type Dependencies = {
         getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
-        pickOrder: Request list -> Async<Result<Request, Error' list>>
+        tryProcessFirst: Request list -> Async<Result<Request, Error' list>>
     } with
 
         static member create (task: WorkerTask) cfg ct =
@@ -25,13 +25,13 @@ module Kdmid =
 
             result {
                 let! persistenceDeps = Persistence.Dependencies.create cfg
-                let! tgDeps = Telegram.Dependencies.create cfg ct
+                let! telegramDeps = Telegram.Dependencies.create cfg ct
 
                 let notificationDeps: Kdmid.Notification.Dependencies = {
-                    translateMessages = tgDeps.Culture.translateSeq
-                    setRequestAppointments = tgDeps.Persistence.setRequestAppointments
-                    getRequestChats = tgDeps.Persistence.getRequestChats
-                    sendMessages = tgDeps.Web.Telegram.sendMessages
+                    translateMessages = telegramDeps.Culture.translateSeq
+                    setRequestAppointments = telegramDeps.Persistence.setRequestAppointments
+                    getRequestChats = telegramDeps.Persistence.getRequestChats
+                    sendMessages = telegramDeps.Web.Telegram.sendMessages
                 }
 
                 let notify notification =
@@ -45,19 +45,23 @@ module Kdmid =
                     |> Request.Query.findManyByEmbassyId embassyId
                     |> ResultAsync.map (
                         List.filter (fun request ->
-                            request.SubscriptionState = Auto
+                            request.IsBackground
                             && (request.ProcessState <> InProcess
                                 || request.ProcessState = InProcess
                                    && request.Modified < DateTime.UtcNow.Subtract task.Duration))
                     )
 
-                let pickOrder requests =
-                    (persistenceDeps.RequestStorage, ct)
-                    ||> Order.Dependencies.create
-                    |> API.Order.Kdmid.pick requests notify
+                let tryProcessFirst requests =
+                    {
+                        CancellationToken = ct
+                        RequestStorage = persistenceDeps.RequestStorage
+                    }
+                    |> Kdmid.Client.init
+                    |> Result.map (fun client -> client, notify)
+                    |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
 
                 return {
                     getRequests = getRequests
-                    pickOrder = pickOrder
+                    tryProcessFirst = tryProcessFirst
                 }
             }

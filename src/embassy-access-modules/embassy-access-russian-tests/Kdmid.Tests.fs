@@ -1,18 +1,17 @@
-﻿module EA.Embassies.Russian.Kdmid.Tests
+﻿module EA.Russian.Tests.Kdmid
 
 open System
 open Expecto
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Web.Clients.Domain
 open EA.Core.Domain
-open EA.Embassies.Russian.Domain
-open EA.Embassies.Russian.Kdmid.Domain
+open EA.Russian.Clients.Kdmid
+open EA.Russian.Clients.Domain.Kdmid
 
 module private Fixture =
-    open Web.Clients.Domain.Http
     open Persistence.Storages
     open Persistence.Storages.Domain.FileSystem
-    open EA.Embassies.Russian.Kdmid.Dependencies
 
     let httpRequestHeaders =
         Some
@@ -27,9 +26,9 @@ module private Fixture =
         |> ResultAsync.wrap FileSystem.Read.string
         |> ResultAsync.map (Option.defaultValue "")
         |> ResultAsync.map (fun data -> {
-            Content = data
-            Headers = httpRequestHeaders
-            StatusCode = 200
+            Http.Response.Content = data
+            Http.Response.Headers = httpRequestHeaders
+            Http.Response.StatusCode = 200
         })
 
     let httpGetBytesRequest fileName =
@@ -41,9 +40,9 @@ module private Fixture =
         |> ResultAsync.wrap FileSystem.Read.bytes
         |> ResultAsync.map (Option.defaultValue [||])
         |> ResultAsync.map (fun data -> {
-            Content = data
-            Headers = httpRequestHeaders
-            StatusCode = 200
+            Http.Response.Content = data
+            Http.Response.Headers = httpRequestHeaders
+            Http.Response.StatusCode = 200
         })
 
     let httpPostStringRequest fileName =
@@ -55,8 +54,13 @@ module private Fixture =
         |> ResultAsync.wrap FileSystem.Read.string
         |> ResultAsync.map (Option.defaultValue "")
 
-    let Dependencies: Order.Dependencies = {
-        RestartAttempts = 1
+    let Client = {
+        initHttpClient =
+            fun _ ->
+                Web.Clients.Http.Client.init {
+                    Host = "https://belgrad.kdmid.ru"
+                    Headers = None
+                }
         updateRequest = fun request -> async { return Ok request }
         getInitialPage = fun _ _ -> httpGetStringRequest "initial_page_response"
         getCaptcha = fun _ _ -> httpGetBytesRequest "captcha.png"
@@ -66,48 +70,39 @@ module private Fixture =
         postConfirmationPage = fun _ _ _ -> httpPostStringRequest "confirmation_page_has_result_1"
     }
 
-    let private KdmidRequest = {
-        Uri = Uri("https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=96794&cd=AB6C2AF3")
-        Embassy = {
-            Id = "EMB.RUS.SRB.BEG" |> Graph.NodeIdValue
-            Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.Node.Name.combine
-            ShortName = "Berlin"
-            Description = None
-            TimeZone = None
-        }
+    let Request = {
+        Id = RequestId.createNew ()
         Service = {
             Id = Graph.NodeId.createNew ()
             Name = "TestService"
-            ShortName = "TestService"
-            Instruction = None
+            Payload = "https://belgrad.kdmid.ru/queue/OrderInfo.aspx?id=96794&cd=AB6C2AF3"
             Description = None
+            Embassy = {
+                Id = "EMB.RUS.SRB.BEG" |> Graph.NodeIdValue
+                Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.Node.Name.combine
+                ShortName = "Berlin"
+                Description = None
+                TimeZone = 0.
+            }
         }
-        SubscriptionState = Manual
-        ConfirmationState = ConfirmationState.Auto FirstAvailable
-    }
-
-    let IssueForeign = {
-        KdmidService.Request = KdmidRequest.ToRequest()
-        KdmidService.Dependencies = Dependencies
+        ProcessState = Ready
+        IsBackground = false
+        Limits = Set.empty<Limit>
+        ConfirmationState = FirstAvailable
+        Appointments = Set.empty<Appointment>
+        Modified = DateTime.UtcNow
     }
 
 open Fixture
 
 let private ``validation page should have an error`` =
     testAsync "Validation page should have an error" {
-        let dependencies = {
-            Dependencies with
+        let client = {
+            Client with
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_has_error"
         }
 
-        let service =
-            {
-                IssueForeign with
-                    KdmidService.Dependencies = dependencies
-            }
-            |> Kdmid
-
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service
+        let! serviceResult = client |> Service.tryProcess Request
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -120,19 +115,12 @@ let private ``validation page should have an error`` =
 
 let private ``validation page should have a confirmed request`` =
     testAsync "Validation page should have a confirmed request" {
-        let dependencies = {
-            Dependencies with
+        let client = {
+            Client with
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_requires_confirmation"
         }
 
-        let service =
-            {
-                IssueForeign with
-                    KdmidService.Dependencies = dependencies
-            }
-            |> Kdmid
-
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service
+        let! serviceResult = client |> Service.tryProcess Request
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -145,19 +133,12 @@ let private ``validation page should have a confirmed request`` =
 
 let private ``validation page should have a confirmation`` =
     testAsync "Validation page should have a confirmation" {
-        let dependencies = {
-            Dependencies with
+        let client = {
+            Client with
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_has_confirmation"
         }
 
-        let service =
-            {
-                IssueForeign with
-                    KdmidService.Dependencies = dependencies
-            }
-            |> Kdmid
-
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service
+        let! serviceResult = client |> Service.tryProcess Request
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -170,19 +151,12 @@ let private ``validation page should have a confirmation`` =
 
 let private ``validation page should have a deleted request`` =
     testAsync "Validation page should have a deleted request" {
-        let dependencies = {
-            Dependencies with
+        let client = {
+            Client with
                 postValidationPage = fun _ _ _ -> httpPostStringRequest "validation_page_request_deleted"
         }
 
-        let service =
-            {
-                IssueForeign with
-                    KdmidService.Dependencies = dependencies
-            }
-            |> Kdmid
-
-        let! serviceResult = EA.Embassies.Russian.API.Service.get service
+        let! serviceResult = client |> Service.tryProcess Request
 
         let error = Expect.wantError serviceResult "processed service should be an error"
 
@@ -197,19 +171,12 @@ let private ``appointments page should not have data`` =
     testTheoryAsync "Appointments page should not have data" [ 1 ]
     <| fun i ->
         async {
-            let dependencies = {
-                Dependencies with
+            let client = {
+                Client with
                     postAppointmentsPage = fun _ _ _ -> httpPostStringRequest $"appointments_page_empty_result_{i}"
             }
 
-            let service =
-                {
-                    IssueForeign with
-                        KdmidService.Dependencies = dependencies
-                }
-                |> Kdmid
-
-            let! serviceResult = EA.Embassies.Russian.API.Service.get service
+            let! serviceResult = client |> Service.tryProcess Request
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
             Expect.isEmpty result.Appointments "Appointments should not be not empty"
@@ -219,19 +186,12 @@ let private ``appointments page should have data`` =
     testTheoryAsync "Appointments page should have data" [ 1; 2; 3 ]
     <| fun i ->
         async {
-            let dependencies = {
-                Dependencies with
+            let client = {
+                Client with
                     postAppointmentsPage = fun _ _ _ -> httpPostStringRequest $"appointments_page_has_result_{i}"
             }
 
-            let service =
-                {
-                    IssueForeign with
-                        KdmidService.Dependencies = dependencies
-                }
-                |> Kdmid
-
-            let! serviceResult = EA.Embassies.Russian.API.Service.get service
+            let! serviceResult = client |> Service.tryProcess Request
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
             Expect.isTrue (not result.Appointments.IsEmpty) "Appointments should be not empty"
@@ -241,19 +201,12 @@ let private ``confirmation page should have a valid result`` =
     testTheoryAsync "Confirmation page should have a valid result" [ 1; 2 ]
     <| fun i ->
         async {
-            let dependencies = {
-                Dependencies with
+            let client = {
+                Client with
                     postConfirmationPage = fun _ _ _ -> httpPostStringRequest $"confirmation_page_has_result_{i}"
             }
 
-            let service =
-                {
-                    IssueForeign with
-                        KdmidService.Dependencies = dependencies
-                }
-                |> Kdmid
-
-            let! serviceResult = EA.Embassies.Russian.API.Service.get service
+            let! serviceResult = client |> Service.tryProcess Request
 
             let result = Expect.wantOk serviceResult "Appointments should be Ok"
 
@@ -270,12 +223,13 @@ let private ``confirmation page should have a valid result`` =
                     $"Service request should have a valid state, but was {result.ProcessState} with description {result.Service.Description}"
         }
 
-let list =
-    testList "Kdmid" [ //``validation page should have an error``
-        //``validation page should have a confirmed request``
-        //``validation page should have a confirmation``
-        //``validation page should have a deleted request``
+let tests =
+    testList "Kdmid" [
+        ``validation page should have an error``
+        ``validation page should have a confirmed request``
+        ``validation page should have a confirmation``
+        ``validation page should have a deleted request``
         ``appointments page should not have data``
-    //``appointments page should have data``
-    //``confirmation page should have a valid result``
+        ``appointments page should have data``
+        ``confirmation page should have a valid result``
     ]

@@ -24,11 +24,11 @@ type AppointmentEntity() =
         })
 
 type internal Appointment with
-    member internal this.ToEntity() =
-        let result = AppointmentEntity()
-        result.Id <- this.Id.ValueStr
-        result.Value <- this.Value
-        result.Confirmation <- this.Confirmation |> Option.map _.ToEntity()
-        result.DateTime <- this.Date.ToDateTime this.Time
-        result.Description <- this.Description
-        result
+    member this.ToEntity() =
+        AppointmentEntity(
+            Id = this.Id.ValueStr,
+            Value = this.Value,
+            Confirmation = (this.Confirmation |> Option.map _.ToEntity()),
+            DateTime = this.Date.ToDateTime this.Time,
+            Description = this.Description
+        )

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="clients\kdmid\Domain.fs" />
+        <Compile Include="clients\kdmid\Client.fs" />
+        <Compile Include="clients\kdmid\Web.Http.fs" />
+        <Compile Include="clients\kdmid\Web.Html.Common.fs" />
+        <Compile Include="clients\kdmid\Web.Html.InitialPage.fs" />
+        <Compile Include="clients\kdmid\Web.Html.ValidationPage.fs" />
+        <Compile Include="clients\kdmid\Web.Html.AppointmentsPage.fs" />
+        <Compile Include="clients\kdmid\Web.Html.ConfirmationPage.fs" />
+        <Compile Include="clients\kdmid\Service.fs" />
+        <Compile Include="clients\midpass\Domain.fs" />
+        <Compile Include="clients\midpass\Client.fs" />
+        <Compile Include="Client.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="SkiaSharp" Version="2.88.9"/>
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.9"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
+        <ProjectReference Include="..\..\embassy-access-core\embassy-access-core.fsproj"/>
+    </ItemGroup>
+
+</Project>

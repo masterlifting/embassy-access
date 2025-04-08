@@ -1,6 +1,7 @@
 ﻿module EA.Telegram.Services.Embassies.Russian.Kdmid.Query
 
 open Infrastructure.Prelude
+open Web.Clients
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain.Request
@@ -10,7 +11,7 @@ open EA.Telegram.Router
 open EA.Telegram.Router.Embassies.Russian
 open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian.Kdmid
-open EA.Embassies.Russian.Kdmid.Domain
+open EA.Russian.Clients.Domain.Kdmid
 
 let private buildSubscriptionMenu (request: Request) =
     let getRoute =
@@ -49,8 +50,8 @@ let getSubscriptions (requests: Request list) =
                 |> Router.RussianEmbassy
 
             request.Service.Payload
-            |> Payload.toValue
-            |> Result.map (fun payloadValue -> route.Value, payloadValue))
+            |> Payload.print
+            |> Result.map (fun payload -> route.Value, payload))
         |> Result.choose
         |> Result.map (fun data ->
             (deps.Chat.Id, Replace deps.MessageId)
@@ -77,11 +78,11 @@ let getSubscriptionsMenu requestId =
             | Failed _
             | Completed _ ->
                 request.Service.Payload
-                |> Payload.toValue
-                |> Result.map (fun payloadValue ->
+                |> Payload.print
+                |> Result.map (fun payload ->
                     (deps.Chat.Id, Replace deps.MessageId)
                     |> ButtonsGroup.create {
-                        Name = $"What do you want to do with the subscription '{payloadValue}'?"
+                        Name = $"What do you want to do with the subscription '{payload}'?"
                         Columns = 1
                         Buttons = buildSubscriptionMenu request
                     }))
@@ -100,5 +101,5 @@ let getAppointments requestId =
             | Ready
             | Failed _
             | Completed _ ->
-                deps.getApi request
+                deps.processRequest request
                 |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result))

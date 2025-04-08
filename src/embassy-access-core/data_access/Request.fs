@@ -10,26 +10,22 @@ open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.DataAccess.RequestService
 open EA.Core.DataAccess.ProcessState
-open EA.Core.DataAccess.SubscriptionState
 open EA.Core.DataAccess.ConfirmationState
 open EA.Core.DataAccess.Appointment
-
-[<Literal>]
-let private Name = "Requests"
+open EA.Core.DataAccess.Limit
 
 type RequestStorage = RequestStorage of Storage.Provider
 
 type StorageType =
-    | InMemory
+    | InMemory of InMemory.Connection
     | FileSystem of FileSystem.Connection
 
 type RequestEntity() =
     member val Id = String.Empty with get, set
     member val Service = RequestServiceEntity() with get, set
-    member val Attempt = 0 with get, set
-    member val AttemptModified = DateTime.UtcNow with get, set
     member val ProcessState = ProcessStateEntity() with get, set
-    member val SubscriptionState = SubscriptionStateEntity() with get, set
+    member val IsBackground = false with get, set
+    member val Limits = Array.empty<LimitEntity> with get, set
     member val ConfirmationState = ConfirmationStateEntity() with get, set
     member val Appointments = Array.empty<AppointmentEntity> with get, set
     member val Modified = DateTime.UtcNow with get, set
@@ -41,16 +37,16 @@ type RequestEntity() =
 
             let! requestId = RequestId.parse this.Id
             let! processState = this.ProcessState.ToDomain()
-            let! subscriptionState = this.SubscriptionState.ToDomain()
             let! confirmationState = this.ConfirmationState.ToDomain()
             let! appointments = this.Appointments |> Seq.map _.ToDomain() |> Result.choose
+            let! limitations = this.Limits |> Seq.map _.ToDomain() |> Result.choose
 
             return {
                 Id = requestId
                 Service = this.Service.ToDomain()
-                Attempt = this.AttemptModified, this.Attempt
                 ProcessState = processState
-                SubscriptionState = subscriptionState
+                IsBackground = this.IsBackground
+                Limits = limitations |> Set.ofSeq
                 ConfirmationState = confirmationState
                 Appointments = appointments |> Set.ofSeq
                 Modified = this.Modified
@@ -59,17 +55,16 @@ type RequestEntity() =
 
 type private Request with
     member private this.ToEntity() =
-        let result = RequestEntity()
-        result.Id <- this.Id.ValueStr
-        result.Service <- this.Service.ToEntity()
-        result.Attempt <- this.Attempt |> snd
-        result.AttemptModified <- this.Attempt |> fst
-        result.ProcessState <- this.ProcessState.ToEntity()
-        result.SubscriptionState <- this.SubscriptionState.ToEntity()
-        result.ConfirmationState <- this.ConfirmationState.ToEntity()
-        result.Appointments <- this.Appointments |> Seq.map _.ToEntity() |> Seq.toArray
-        result.Modified <- this.Modified
-        result
+        RequestEntity(
+            Id = this.Id.ValueStr,
+            Service = this.Service.ToEntity(),
+            ProcessState = this.ProcessState.ToEntity(),
+            IsBackground = this.IsBackground,
+            Limits = (this.Limits |> Seq.map _.ToEntity() |> Seq.toArray),
+            ConfirmationState = this.ConfirmationState.ToEntity(),
+            Appointments = (this.Appointments |> Seq.map _.ToEntity() |> Seq.toArray),
+            Modified = this.Modified
+        )
 
 module private Common =
     let create (request: Request) (data: RequestEntity array) =
@@ -92,7 +87,7 @@ module private Common =
 module private InMemory =
     open Persistence.Storages.InMemory
 
-    let private loadData = Query.Json.get<RequestEntity> Name
+    let private loadData = Query.Json.get<RequestEntity>
 
     module Query =
 
@@ -145,7 +140,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (Common.create request)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> request)
             |> async.Return
 
@@ -153,7 +148,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (Common.update request)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> request)
             |> async.Return
 
@@ -164,7 +159,7 @@ module private InMemory =
                 match data |> Seq.exists (fun x -> x.Id = request.Id.ValueStr) with
                 | true -> data |> Common.update request
                 | false -> data |> Common.create request)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> request)
             |> async.Return
 
@@ -172,7 +167,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (Common.delete id)
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
         let deleteMany (ids: RequestId Set) client =
@@ -181,7 +176,7 @@ module private InMemory =
             client
             |> loadData
             |> Result.map (Array.filter (fun request -> not (idSet.Contains(request.Id))))
-            |> Result.bind (fun data -> client |> Command.Json.save Name data)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
 module private FileSystem =
@@ -277,7 +272,7 @@ let private toPersistenceStorage storage =
 let init storageType =
     match storageType with
     | FileSystem connection -> connection |> Storage.Connection.FileSystem |> Storage.init
-    | InMemory -> Storage.Connection.InMemory |> Storage.init
+    | InMemory connection -> connection |> Storage.Connection.InMemory |> Storage.init
     |> Result.map RequestStorage
 
 module Query =

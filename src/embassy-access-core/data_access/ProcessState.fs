@@ -48,7 +48,7 @@ type ProcessStateEntity() =
             |> Error
 
 type internal ProcessState with
-    member internal this.ToEntity() =
+    member this.ToEntity() =
         let result = ProcessStateEntity()
 
         match this with
