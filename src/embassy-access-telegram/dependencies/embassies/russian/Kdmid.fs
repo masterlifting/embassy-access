@@ -86,7 +86,7 @@ type Dependencies = {
 
             let createRequest (payload, service: ServiceNode, embassy: EmbassyNode, inBackground, confirmationState) =
                 let requestId = RequestId.createNew ()
-                let limits = Limit.create (1u<attempts>, TimeSpan.FromMinutes 2.) |> Set.singleton
+                let limits = Limit.create (20u<attempts>, TimeSpan.FromDays 1) |> Set.singleton
 
                 deps.ChatStorage
                 |> Chat.Command.createChatSubscription deps.Chat.Id requestId

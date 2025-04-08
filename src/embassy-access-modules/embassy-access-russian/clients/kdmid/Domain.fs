@@ -74,3 +74,6 @@ module Constants =
 
         [<Literal>]
         let REQUEST_NOT_FOUND = "RequestNotFound"
+        
+        [<Literal>]
+        let INITIAL_PAGE_ERROR = "InitialPageError"

@@ -106,7 +106,7 @@ let private setFinalProcessState request requestPipe =
                 match error with
                 | Operation reason ->
                     match reason.Code with
-                    | Some(Custom Web.Captcha.ERROR_CODE) -> request
+                    | Some(Custom Constants.ErrorCode.INITIAL_PAGE_ERROR) -> request
                     | _ -> request |> Request.updateLimits
                 | _ -> request |> Request.updateLimits
                 |> fun r ->
@@ -143,7 +143,12 @@ let tryProcess (request: Request) =
                 let queryParams = p |> Http.createQueryParams
                 (httpClient, client.getInitialPage, client.getCaptcha, client.solveIntCaptcha)
                 |> Html.InitialPage.parse queryParams
-                |> ResultAsync.map (fun formData -> httpClient, r, queryParams, formData))
+                |> ResultAsync.map (fun formData -> httpClient, r, queryParams, formData)
+                |> ResultAsync.mapError (fun error ->
+                    Operation {
+                        Message = error.Message
+                        Code = Constants.ErrorCode.INITIAL_PAGE_ERROR |> Custom |> Some
+                    }))
 
         let parseValidationPage =
             ResultAsync.bindAsync (fun (httpClient, r, qp, fd) ->
