@@ -1,15 +1,14 @@
-﻿module internal EA.Embassies.Russian.Kdmid.Web.ValidationPage
+﻿module EA.Russian.Clients.Kdmid.Web.Html.ValidationPage
 
 open System
+open EA.Russian.Clients.Kdmid
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
 open Web.Clients.Domain.Http
-open EA.Embassies.Russian.Kdmid.Web
-open EA.Embassies.Russian.Kdmid.Domain
-open EA.Embassies.Russian.Kdmid.Dependencies
+open EA.Russian.Clients.Domain.Kdmid
 
-let private createHttpRequest formData queryParams =
+let private createHttpRequest queryParams formData =
 
     let request = {
         Path = $"/queue/orderinfo.aspx?%s{queryParams}"
@@ -27,7 +26,7 @@ let private createHttpRequest formData queryParams =
 
 let private pageHasInconsistentState page =
     page
-    |> Html.pageHasInconsistentState (function
+    |> Common.pageHasInconsistentState (function
         | text when text |> String.has "Вы записаны" && not (text |> String.has "список ожидания") ->
             Error
             <| Operation {
@@ -50,7 +49,7 @@ let private pageHasInconsistentState page =
 
 let private parseHttpResponse page =
     Html.load page
-    |> Result.bind Html.pageHasError
+    |> Result.bind Common.pageHasError
     |> Result.bind pageHasInconsistentState
     |> Result.bind (Html.getNodes "//input")
     |> Result.bind (function
@@ -85,20 +84,13 @@ let private prepareHttpFormData data =
     |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
     |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
 
-let private handlePage (deps: Order.Dependencies, httpClient, queryParams, formData) =
+let parse queryParams formData =
+    fun (httpClient, postValidationPage) ->
 
-    // define
-    let postRequest =
-        let request, content = createHttpRequest formData queryParams
-        deps.postValidationPage request content
+        // define
+        let postRequest = formData |> createHttpRequest queryParams ||> postValidationPage
+        let parseResponse = ResultAsync.bind parseHttpResponse
+        let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
 
-    let parseResponse = ResultAsync.bind parseHttpResponse
-    let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
-
-    // pipe
-    httpClient |> postRequest |> parseResponse |> prepareFormData
-
-let handle deps =
-    ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
-        handlePage (deps, httpClient, queryParams, formData)
-        |> ResultAsync.map (fun formData -> httpClient, queryParams, formData, request))
+        // pipe
+        httpClient |> postRequest |> parseResponse |> prepareFormData

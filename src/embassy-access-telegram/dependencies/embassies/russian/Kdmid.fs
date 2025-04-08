@@ -1,6 +1,7 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Embassies.Russian.Kdmid
 
+open System
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -10,9 +11,8 @@ open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
-open EA.Embassies.Russian
-open EA.Embassies.Russian.Domain
-open EA.Embassies.Russian.Kdmid.Dependencies
+open EA.Russian.Clients.Kdmid
+open EA.Russian.Clients.Domain.Kdmid
 
 module Notification =
 
@@ -42,9 +42,9 @@ type Dependencies = {
     getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
     getChatRequests: unit -> Async<Result<Request list, Error'>>
     getRequest: RequestId -> Async<Result<Request, Error'>>
-    createRequest: Request -> Async<Result<Request, Error'>>
+    createRequest: string * ServiceNode * EmbassyNode * bool * ConfirmationState -> Async<Result<Request, Error'>>
     deleteRequest: RequestId -> Async<Result<unit, Error'>>
-    getApi: Request -> Async<Result<Request, Error'>>
+    processRequest: Request -> Async<Result<Request, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
     translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>>
 } with
@@ -84,25 +84,43 @@ type Dependencies = {
                         |> Error
                     | Some request -> request |> Ok)
 
-            let createRequest (request: Request) =
+            let createRequest (payload, service: ServiceNode, embassy: EmbassyNode, inBackground, confirmationState) =
+                let requestId = RequestId.createNew ()
+                let limits = Limit.create (20u<attempts>, TimeSpan.FromDays 1) |> Set.singleton
+
                 deps.ChatStorage
-                |> Chat.Command.createChatSubscription deps.Chat.Id request.Id
-                |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.create request)
+                |> Chat.Command.createChatSubscription deps.Chat.Id requestId
+                |> ResultAsync.bindAsync (fun _ ->
+                    deps.RequestStorage
+                    |> Request.Command.create {
+                        Id = requestId
+                        Service = {
+                            Id = service.Id
+                            Name = service.Name
+                            Payload = payload
+                            Description = service.Description
+                            Embassy = embassy
+                        }
+                        ProcessState = Ready
+                        IsBackground = inBackground
+                        Limits = limits
+                        ConfirmationState = confirmationState
+                        Appointments = Set.empty<Appointment>
+                        Modified = DateTime.UtcNow
+                    })
 
             let deleteRequest requestId =
                 deps.ChatStorage
                 |> Chat.Command.deleteChatSubscription deps.Chat.Id requestId
                 |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.delete requestId)
 
-            let apiDeps = Order.Dependencies.create deps.RequestStorage deps.CancellationToken
-
-            let getApi request =
+            let processRequest request =
                 {
-                    Request = request
-                    Dependencies = apiDeps
+                    CancellationToken = deps.CancellationToken
+                    RequestStorage = deps.RequestStorage
                 }
-                |> Kdmid
-                |> API.Service.get
+                |> Client.init
+                |> ResultAsync.wrap (Service.tryProcess request)
 
             let translateMessageRes = deps.Culture.translateRes deps.Chat.Culture
 
@@ -124,7 +142,7 @@ type Dependencies = {
                 getChatRequests = deps.getChatRequests
                 createRequest = createRequest
                 deleteRequest = deleteRequest
-                getApi = getApi
+                processRequest = processRequest
                 translateMessageRes = translateMessageRes
                 translateMessagesRes = translateMessagesRes
             }

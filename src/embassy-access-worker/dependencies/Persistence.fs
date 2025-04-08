@@ -61,7 +61,7 @@ type Dependencies = {
 
             let initEmbassyGraphStorage () =
                 {
-                    Configuration.Connection.SectionName = "Embassies"
+                    Configuration.Connection.Section = "Embassies"
                     Configuration.Connection.Provider = cfg
                 }
                 |> EmbassyGraph.Configuration
@@ -69,7 +69,7 @@ type Dependencies = {
 
             let initServiceGraphStorage () =
                 {
-                    Configuration.Connection.SectionName = "Services"
+                    Configuration.Connection.Section = "Services"
                     Configuration.Connection.Provider = cfg
                 }
                 |> ServiceGraph.Configuration

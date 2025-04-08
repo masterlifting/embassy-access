@@ -13,15 +13,15 @@
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\AIProvider.fs" />
         <Compile Include="dependencies\Culture.fs" />
-        <Compile Include="dependencies\embassy-access-telegram\Telegram.fs" />
-        <Compile Include="dependencies\embassies\Russian.fs" />
-        <Compile Include="embassies\Russian.fs"/>
-        <Compile Include="Initializer.fs"/>
-        <Compile Include="Program.fs"/>
+        <Compile Include="dependencies\Telegram.fs" />
+        <Compile Include="dependencies\Embassies.Russian.fs" />
+        <Compile Include="embassies\Russian.fs" />
+        <Compile Include="Initializer.fs" />
+        <Compile Include="Program.fs" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Dockerfile"/>
+        <Content Include="Dockerfile" />
         <Content Include="..\..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
@@ -34,9 +34,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj"/>
-        <ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj"/>
-        <ProjectReference Include="..\embassy-access-modules\embassy-access-modules-russian\embassy-access-modules-russian.fsproj"/>
+        <ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
+        <ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj" />
+        <ProjectReference Include="..\embassy-access-modules\embassy-access-russian\embassy-access-russian.fsproj" />
     </ItemGroup>
 
 </Project>

@@ -37,7 +37,7 @@ type EmbassyGraphEntity() =
                         Name = this.Name
                         ShortName = this.Name |> Graph.Node.Name.split |> Seq.last
                         Description = this.Description
-                        TimeZone = this.TimeZone
+                        TimeZone = this.TimeZone |> Option.defaultValue 0.
                     },
                     children
                 )))

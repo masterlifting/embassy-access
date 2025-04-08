@@ -17,19 +17,19 @@ let get embassyId (service: ServiceNode) =
         | [ _; Constants.RUSSIAN_NODE_ID; _; _; "1" ] ->
             deps
             |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Kdmid.Message.Instruction.toStandardSubscribe embassyId service)
+            |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoNotifications embassyId service)
         | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "0" ] ->
             deps
             |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Kdmid.Message.Instruction.toFirstAvailableAutoSubscribe embassyId service)
+            |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoFirstAvailableConfirmation embassyId service)
         | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "1" ] ->
             deps
             |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Kdmid.Message.Instruction.toLastAvailableAutoSubscribe embassyId service)
+            |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoLastAvailableConfirmation embassyId service)
         | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "2" ] ->
             deps
             |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Kdmid.Message.Instruction.toDateRangeAutoSubscribe embassyId service)
+            |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoDateRangeConfirmation embassyId service)
         | _ ->
             $"The '%s{service.ShortName}' is not supported."
             |> NotSupported

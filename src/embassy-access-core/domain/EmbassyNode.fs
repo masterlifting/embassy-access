@@ -9,7 +9,7 @@ type EmbassyNode = {
     Name: string
     ShortName: string
     Description: string option
-    TimeZone: float option
+    TimeZone: float
 } with
 
     interface Graph.INode with

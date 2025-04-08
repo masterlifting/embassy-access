@@ -47,13 +47,13 @@ module private Kdmid =
             deps.getRequests embassyId
             |> ResultAsync.map (fun requests ->
                 requests
-                |> Seq.groupBy _.Service.Id.Value
+                |> Seq.groupBy (fun r -> r.Service.Id, r.Service.Payload)
                 |> Seq.map (fun (_, requests) ->
                     requests
                     |> Seq.sortByDescending _.Modified
                     |> Seq.truncate 5
                     |> Seq.toList
-                    |> handleGroup deps.pickOrder))
+                    |> handleGroup deps.tryProcessFirst))
             |> ResultAsync.map (Async.Sequential >> Async.map Result.unzip)
             |> Async.bind (function
                 | Error error -> Error error |> async.Return

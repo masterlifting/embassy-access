@@ -28,7 +28,7 @@ module private Payload =
                     |> Map.ofList
                     |> Map.tryFind text
                     |> Option.defaultValue text)
-                |> ResultAsync.map error.ReplaceMsg
+                |> ResultAsync.map error.Replace
 
     module Text =
         let translate culture (payload: Payload<string>) =

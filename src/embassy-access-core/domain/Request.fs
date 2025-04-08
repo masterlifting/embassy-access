@@ -24,10 +24,18 @@ type RequestId =
 type Request = {
     Id: RequestId
     Service: RequestService
-    Attempt: DateTime * int
     ProcessState: ProcessState
-    SubscriptionState: SubscriptionState
     ConfirmationState: ConfirmationState
     Appointments: Set<Appointment>
+    Limits: Set<Limit>
+    IsBackground: bool
     Modified: DateTime
-}
+} with
+
+    static member updateLimits request =
+        request.Limits
+        |> Seq.map Limit.update
+        |> fun limits -> {
+            request with
+                Limits = limits |> Set.ofSeq
+        }

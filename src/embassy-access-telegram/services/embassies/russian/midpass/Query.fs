@@ -1,6 +1,6 @@
 ﻿module EA.Telegram.Services.Embassies.Russian.Midpass.Query
 
-open EA.Telegram.Domain
+open EA.Core.Domain
 open Infrastructure.Domain
 open EA.Telegram.Dependencies.Embassies.Russian
 

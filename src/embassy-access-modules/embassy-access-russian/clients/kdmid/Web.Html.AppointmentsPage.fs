@@ -1,16 +1,15 @@
-﻿module internal EA.Embassies.Russian.Kdmid.Web.AppointmentsPage
+﻿module EA.Russian.Clients.Kdmid.Web.Html.AppointmentsPage
 
 open System
-open EA.Embassies.Russian.Kdmid.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
 open Web.Clients.Domain.Http
 open EA.Core.Domain
-open EA.Embassies.Russian.Kdmid.Web
-open EA.Embassies.Russian.Kdmid.Dependencies
+open EA.Russian.Clients.Kdmid.Web
+open EA.Russian.Clients.Domain.Kdmid
 
-let private createHttpRequest formData queryParams =
+let private createHttpRequest queryParams formData =
 
     let request = {
         Path = $"/queue/orderinfo.aspx?%s{queryParams}"
@@ -28,7 +27,7 @@ let private createHttpRequest formData queryParams =
 
 let private pageHasInconsistentState page =
     page
-    |> Html.pageHasInconsistentState (function
+    |> Common.pageHasInconsistentState (function
         | text when text |> String.has "Ваша заявка заблокирована" ->
             Error
             <| Operation {
@@ -45,7 +44,7 @@ let private pageHasInconsistentState page =
 
 let private parseHttpResponse page =
     Html.load page
-    |> Result.bind Html.pageHasError
+    |> Result.bind Common.pageHasError
     |> Result.bind pageHasInconsistentState
     |> Result.bind (Html.getNodes "//input")
     |> Result.bind (function
@@ -153,31 +152,25 @@ let private createResult (request: Request) (formData, appointments) =
 
     formData, request
 
-let private handlePage (deps: Order.Dependencies, httpClient, queryParams, formData, request) =
+let parse queryParams formDataMap request =
+    fun (httpClient, postAppointmentsPage) ->
 
-    // define
-    let postRequest =
-        let formData = Http.buildFormData formData
-        let request, content = createHttpRequest formData queryParams
-        deps.postAppointmentsPage request content
+        // define
+        let postRequest =
+            formDataMap
+            |> Http.buildFormData
+            |> createHttpRequest queryParams
+            ||> postAppointmentsPage
 
-    let parseResponse = ResultAsync.bind parseHttpResponse
-    let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
-    let parseAppointments = ResultAsync.bind createRequestAppointments
-    let createResult = ResultAsync.map (createResult request)
+        let parseResponse = ResultAsync.bind parseHttpResponse
+        let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
+        let parseAppointments = ResultAsync.bind createRequestAppointments
+        let createResult = ResultAsync.map (createResult request)
 
-    // pipe
-    httpClient
-    |> postRequest
-    |> parseResponse
-    |> prepareFormData
-    |> parseAppointments
-    |> createResult
-
-let handle deps =
-    ResultAsync.bindAsync (fun (httpClient, queryParams, formData, request) ->
-        queryParams
-        |> Http.getQueryParamsId
-        |> ResultAsync.wrap (fun queryParamsId ->
-            handlePage (deps, httpClient, queryParams, formData, request)
-            |> ResultAsync.map (fun (formData, request) -> httpClient, queryParamsId, formData, request)))
+        // pipe
+        httpClient
+        |> postRequest
+        |> parseResponse
+        |> prepareFormData
+        |> parseAppointments
+        |> createResult

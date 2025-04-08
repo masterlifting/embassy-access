@@ -4,15 +4,15 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="domain\Constants.fs" />
         <Compile Include="domain\EmbassyNode.fs" />
         <Compile Include="domain\Confirmation.fs" />
         <Compile Include="domain\Appointment.fs" />
         <Compile Include="domain\ProcessState.fs" />
-        <Compile Include="domain\SubscriptionState.fs" />
-        <Compile Include="domain\ConfirmationOption.fs" />
         <Compile Include="domain\ConfirmationState.fs" />
         <Compile Include="domain\ServiceNode.fs" />
         <Compile Include="domain\RequestService.fs" />
+        <Compile Include="domain\Limit.fs" />
         <Compile Include="domain\Request.fs" />
         <Compile Include="domain\Notification.fs" />
         <Compile Include="data_access\EmbassyGraph.fs" />
@@ -20,10 +20,9 @@
         <Compile Include="data_access\Confirmation.fs" />
         <Compile Include="data_access\Appointment.fs" />
         <Compile Include="data_access\ProcessState.fs" />
-        <Compile Include="data_access\SubscriptionState.fs" />
-        <Compile Include="data_access\ConfirmationOption.fs" />
         <Compile Include="data_access\ConfirmationState.fs" />
         <Compile Include="data_access\RequestService.fs" />
+        <Compile Include="data_access\Limit.fs" />
         <Compile Include="data_access\Request.fs" />
     </ItemGroup>
   

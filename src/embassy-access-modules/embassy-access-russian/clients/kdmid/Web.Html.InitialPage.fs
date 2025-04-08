@@ -1,14 +1,13 @@
-﻿module internal EA.Embassies.Russian.Kdmid.Web.InitialPage
+﻿module EA.Russian.Clients.Kdmid.Web.Html.InitialPage
 
 open System
+open EA.Russian.Clients.Kdmid
 open SkiaSharp
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
 open Web.Clients.Domain.Http
-open EA.Embassies.Russian.Kdmid.Web
-open EA.Embassies.Russian.Kdmid.Domain
-open EA.Embassies.Russian.Kdmid.Dependencies
+open EA.Russian.Clients.Kdmid.Web
 
 let private createHttpRequest queryParams = {
     Path = "/queue/orderinfo.aspx?" + queryParams
@@ -17,7 +16,7 @@ let private createHttpRequest queryParams = {
 
 let private parseHttpResponse page =
     Html.load page
-    |> Result.bind Html.pageHasError
+    |> Result.bind Common.pageHasError
     |> Result.bind (Html.getNodes "//input | //img")
     |> Result.bind (function
         | None -> Error <| NotFound "Nodes on the Initial Page not found."
@@ -101,50 +100,53 @@ let private prepareHttpFormData pageData captcha =
     |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
     |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
 
-let private handlePage (deps: Order.Dependencies, httpClient, queryParams) =
+let parse queryParams =
+    fun (httpClient, getInitialPage, getCaptcha, solveIntCaptcha) ->
+        // define
+        let getRequest = queryParams |> createHttpRequest |> getInitialPage
+        let setCookie = ResultAsync.bind (httpClient |> Http.setRequiredCookie)
+        let parseResponse = ResultAsync.bind parseHttpResponse
 
-    // define
-    let getRequest =
-        let request = createHttpRequest queryParams
-        deps.getInitialPage request
+        // pipe
+        httpClient
+        |> getRequest
+        |> setCookie
+        |> parseResponse
+        |> ResultAsync.bindAsync (fun pageData ->
+            match pageData |> Map.tryFind "captchaUrlPath" with
+            | None ->
+                "Kdmid 'captcha' information on the 'Initial Page' not found."
+                |> NotFound
+                |> Error
+                |> async.Return
+            | Some urlPath ->
 
-    let setCookie = ResultAsync.bind (httpClient |> Http.setRequiredCookie)
-    let parseResponse = ResultAsync.bind parseHttpResponse
+                // define
+                let getCaptchaRequest = urlPath |> createCaptchaRequest |> getCaptcha
+                let setCookie = ResultAsync.bind (httpClient |> Http.setSessionCookie)
+                let prepareResponse = ResultAsync.bind prepareCaptchaImage
+                let rec solveCaptcha attempts =
+                    ResultAsync.bindAsync (fun data ->
+                        async {
+                            match! data |> solveIntCaptcha with
+                            | Ok captcha -> return Ok captcha
+                            | Error error ->
+                                match attempts <= 0 with
+                                | true -> return Error error
+                                | false ->
+                                    do! Async.Sleep 1000
+                                    let data = data |> Ok |> async.Return
+                                    return! data |> solveCaptcha (attempts - 1)
+                        })
 
-    // pipe
-    httpClient
-    |> getRequest
-    |> setCookie
-    |> parseResponse
-    |> ResultAsync.bindAsync (fun pageData ->
-        match pageData |> Map.tryFind "captchaUrlPath" with
-        | None -> async { return Error <| NotFound "Kdmid 'captcha' information on the 'Initial Page'" }
-        | Some urlPath ->
+                let prepareFormData = ResultAsync.mapAsync (pageData |> prepareHttpFormData)
+                let buildFormData = ResultAsync.mapAsync Http.buildFormData
 
-            // define
-            let getCaptchaRequest =
-                let request = createCaptchaRequest urlPath
-                deps.getCaptcha request
-
-            let setCookie = ResultAsync.bind (httpClient |> Http.setSessionCookie)
-            let prepareResponse = ResultAsync.bind prepareCaptchaImage
-            let solveCaptcha = ResultAsync.bindAsync deps.solveIntCaptcha
-            let prepareFormData = ResultAsync.mapAsync (pageData |> prepareHttpFormData)
-            let buildFormData = ResultAsync.mapAsync Http.buildFormData
-
-            // pipe
-            httpClient
-            |> getCaptchaRequest
-            |> setCookie
-            |> prepareResponse
-            |> solveCaptcha
-            |> prepareFormData
-            |> buildFormData)
-
-let handle deps =
-    ResultAsync.bindAsync (fun (httpClient, payload, request) ->
-
-        let queryParams = Http.createQueryParams payload.Id payload.Cd payload.Ems
-
-        handlePage (deps, httpClient, queryParams)
-        |> ResultAsync.map (fun formData -> httpClient, queryParams, formData, request))
+                // pipe
+                httpClient
+                |> getCaptchaRequest
+                |> setCookie
+                |> prepareResponse
+                |> (solveCaptcha 3)
+                |> prepareFormData
+                |> buildFormData)
