@@ -23,8 +23,8 @@ The project is structured into several components, including core functionality,
 - **Sources**
 
   - **embassy-access-modules**
-    - `embassy-access-modules-russian`: Logic for the Russian embassy.
-    - `embassy-access-modules-russian-tests`: Tests for the Russian embassy module.
+    - `embassy-access-russian`: Logic for the Russian embassy.
+    - `embassy-access-russian-tests`: Tests for the Russian embassy module.
   - `embassy-access-core`: Common code for any embassy.
   - `embassy-access-telegram`: Telegram bot for interacting with users.
   - `embassy-access-worker`: Background services for processing tasks for any embassy.

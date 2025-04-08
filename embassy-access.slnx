@@ -1,21 +1,21 @@
 <Solution>
   <Folder Name="/Solution Items/">
-    <File Path=".devops/docker-compose.yaml" />
-    <File Path=".editorconfig" />
-    <File Path=".gitignore" />
-    <File Path=".gitmodules" />
     <File Path="README.md" />
+    <File Path=".editorconfig" />
+    <File Path=".gitmodules" />
+    <File Path=".gitignore" />
+    <File Path=".devops/docker-compose.yaml" />
   </Folder>
   <Folder Name="/Submodules/">
-    <Project Path="submodules/fsharp-ai-provider/src/fsharp-ai-provider.fsproj" />
     <Project Path="submodules/fsharp-infrastructure/src/fsharp-infrastructure.fsproj" />
     <Project Path="submodules/fsharp-persistence/src/fsharp-persistence.fsproj" />
     <Project Path="submodules/fsharp-web/src/fsharp-web.fsproj" />
+    <Project Path="submodules/fsharp-ai-provider/src/fsharp-ai-provider.fsproj" />
     <Project Path="submodules/fsharp-worker/src/fsharp-worker.fsproj" />
   </Folder>
   <Folder Name="/Modules/">
-    <Project Path="src/embassy-access-modules/embassy-access-russian-tests/embassy-access-russian-tests.fsproj" />
     <Project Path="src/embassy-access-modules/embassy-access-russian/embassy-access-russian.fsproj" />
+    <Project Path="src/embassy-access-modules/embassy-access-russian-tests/embassy-access-russian-tests.fsproj" />
   </Folder>
   <Project Path="src/embassy-access-core/embassy-access-core.fsproj" />
   <Project Path="src/embassy-access-telegram/embassy-access-telegram.fsproj" />
