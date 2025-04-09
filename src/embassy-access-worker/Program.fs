@@ -22,6 +22,15 @@ let main _ =
 
     Logging.useConsole configuration
 
+    let workerStorage =
+        {
+            Configuration.Connection.Section = APP_NAME
+            Configuration.Connection.Provider = configuration
+        }
+        |> TaskGraph.Configuration
+        |> TaskGraph.init
+        |> Result.defaultWith (fun error -> failwithf $"Failed to initialize worker storage: %s{error.Message}")
+
     let rootNodeId = "WRK" |> Graph.NodeIdValue
 
     let rootHandler = {
@@ -30,21 +39,18 @@ let main _ =
         Handler = Initializer.run |> Some
     }
 
-    let initWorkerStorage () =
-        {
-            Configuration.Connection.Section = APP_NAME
-            Configuration.Connection.Provider = configuration
-        }
-        |> TaskGraph.Configuration
-        |> TaskGraph.init
+    let russianHandler =
+        workerStorage
+        |> Embassies.Russian.register rootNodeId
+        |> ResultAsync.defaultWith (fun error -> failwithf $"Failed to register Russian embassy handlers: %s{error.Message}")
 
-    let appHandlers =
-        Graph.Node(rootHandler, [ Embassies.Russian.register rootNodeId initWorkerStorage ])
+    let workerHandlers =
+        Graph.Node(rootHandler, [ russianHandler ])
 
     let getTaskNode handlers =
         fun nodeId ->
-            initWorkerStorage ()
-            |> ResultAsync.wrap (TaskGraph.merge handlers)
+            workerStorage
+            |> TaskGraph.merge handlers
             |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
             |> ResultAsync.bind (function
                 | Some node -> Ok node
@@ -54,7 +60,7 @@ let main _ =
         Name = rootHandler.Name
         Configuration = configuration
         TaskNodeRootId = rootHandler.Id
-        getTaskNode = getTaskNode appHandlers
+        getTaskNode = getTaskNode workerHandlers
     }
 
     workerConfig |> Worker.Client.start |> Async.RunSynchronously

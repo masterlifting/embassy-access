@@ -95,9 +95,6 @@ module private Kdmid =
     module SearchAppointments =
         let HandlerId = "SA" |> Graph.NodeIdValue
 
-        let createRouterNode cityId =
-            Graph.Node(Id(cityId |> Graph.NodeIdValue), [ Graph.Node(Id HandlerId, []) ])
-
         let start (task, cfg, ct) =
             let result = ResultBuilder()
 
@@ -108,44 +105,27 @@ module private Kdmid =
             }
             |> ResultAsync.wrap id
 
-let private Router =
-
-    let inline createNode countryId cityId =
-        Graph.Node(Id(countryId |> Graph.NodeIdValue), [ cityId |> Kdmid.SearchAppointments.createRouterNode ])
-
-    Graph.Node(
-        Id("RUS" |> Graph.NodeIdValue),
-        [
-            createNode "SRB" "BEG"
-            createNode "DEU" "BER"
-            createNode "FRA" "PAR"
-            createNode "MNE" "POD"
-            createNode "IRL" "DUB"
-            createNode "CHE" "BER"
-            createNode "FIN" "HEL"
-            createNode "NLD" "HAG"
-            createNode "ALB" "TIA"
-            createNode "SVN" "LJU"
-            createNode "BIH" "SJJ"
-            createNode "HUN" "BUD"
-        ]
-    )
-
 let register rootNode =
-    fun initWorkerStorage ->
+    fun workerStorage ->
         let nodeId = Graph.Node.Id.combine [ rootNode; "RUS" |> Graph.NodeIdValue ]
+
+        workerStorage
+        |> TaskGraph.create
+        |> ResultAsync.map (Graph.DFS.getVertices nodeId)
+        |> ResultAsync.map (
+            Seq.map (fun node ->
+                match node.Id |> Graph.Node.Id.split |> Seq.tryLast with
+                | Some id ->
+                    match id = Kdmid.SearchAppointments.HandlerId with
+                    | true -> 
+                        let handler = {
+                            Id = node.Id
+                            Name = node.Name
+                            Handler = Kdmid.SearchAppointments.start |> Some
+                        }
+                        Graph.Node(handler, []) |> Some
+                    | false -> None
+                | None -> None)
+            )
+        |> ResultAsync.map (Seq.choose id >> Seq.toList)
         
-        let handlers =
-            initWorkerStorage ()
-            |> ResultAsync.wrap TaskGraph.create
-            |> ResultAsync.map (Graph.DFS.getVertices nodeId)
-            |> ResultAsync.map (Seq.map(fun node ->
-                    match node.Id |> Graph.Node.Id.split |> Seq.tryLast with
-                    | Some id ->
-                        match id = Kdmid.SearchAppointments.HandlerId with
-                        | true -> (id, Kdmid.SearchAppointments.start) |> Some
-                        | false -> None
-                    | None -> None))
-        
-        Router
-        |> RouteNode.register (Kdmid.SearchAppointments.HandlerId, Kdmid.SearchAppointments.start)
