@@ -105,9 +105,9 @@ module private Kdmid =
             }
             |> ResultAsync.wrap id
 
-let register rootNode =
+let register rootNodeId =
     fun workerStorage ->
-        let nodeId = Graph.Node.Id.combine [ rootNode; "RUS" |> Graph.NodeIdValue ]
+        let nodeId = Graph.Node.Id.combine [ rootNodeId; "RUS" |> Graph.NodeIdValue ]
 
         workerStorage
         |> TaskGraph.create
