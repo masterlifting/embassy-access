@@ -36,7 +36,8 @@ type Payload = {
         value
         |> Http.Route.toUri
         |> Result.bind Http.Route.toQueryParams
-        |> Result.map (fun paramsMap -> paramsMap.Keys |> String.concat ",")
+        |> Result.map (Seq.map (fun p -> $"%s{p.Key}=%s{p.Value}"))
+        |> Result.map (String.concat ",")
 
 module Constants =
     let internal SUPPORTED_SUB_DOMAINS =
@@ -74,6 +75,6 @@ module Constants =
 
         [<Literal>]
         let REQUEST_NOT_FOUND = "RequestNotFound"
-        
+
         [<Literal>]
         let INITIAL_PAGE_ERROR = "InitialPageError"

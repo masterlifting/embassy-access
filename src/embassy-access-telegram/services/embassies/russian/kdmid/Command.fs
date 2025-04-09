@@ -111,7 +111,7 @@ let confirmAppointment (model: Kdmid.Post.Model.ConfirmAppointment) =
         |> ResultAsync.bindAsync (fun request ->
             deps.processRequest {
                 request with
-                    ConfirmationState = ConfirmationState.Appointment model.AppointmentId
+                    ConfirmationState = Appointment model.AppointmentId
             })
         |> ResultAsync.bind (fun r -> deps.Chat.Id |> Message.Notification.create r)
 

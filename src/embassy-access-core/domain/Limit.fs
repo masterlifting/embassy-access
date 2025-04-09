@@ -8,7 +8,7 @@ open Infrastructure.Domain
 type private Refresh =
     | Ready
     | Waiting of TimeSpan
-    
+
     static member validate remainingPeriod modifiedDate =
         match max (remainingPeriod - (DateTime.UtcNow - modifiedDate)) TimeSpan.Zero with
         | p when p = TimeSpan.Zero -> Ready
