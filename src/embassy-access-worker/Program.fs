@@ -12,26 +12,39 @@ let private APP_NAME = "Worker"
 [<EntryPoint>]
 let main _ =
 
-    let configuration = Configuration.getYaml "appsettings"
+    let configuration =
+        Configuration.setYamls [
+            @"settings\appsettings"
+            @"settings\worker"
+            @"settings\embassies"
+            @"settings\embassies.rus"
+        ]
+
     Logging.useConsole configuration
 
+    let rootNodeId = "WRK" |> Graph.NodeIdValue
+
     let rootHandler = {
-        Id = "WRK" |> Graph.NodeIdValue
+        Id = rootNodeId
         Name = APP_NAME
         Handler = Initializer.run |> Some
     }
 
-    let appHandlers = Graph.Node(rootHandler, [ Embassies.Russian.register () ])
+    let initWorkerStorage () =
+        {
+            Configuration.Connection.Section = APP_NAME
+            Configuration.Connection.Provider = configuration
+        }
+        |> TaskGraph.Configuration
+        |> TaskGraph.init
+
+    let appHandlers =
+        Graph.Node(rootHandler, [ Embassies.Russian.register rootNodeId initWorkerStorage ])
 
     let getTaskNode handlers =
         fun nodeId ->
-            {
-                Configuration.Connection.Section = APP_NAME
-                Configuration.Connection.Provider = configuration
-            }
-            |> TaskGraph.Configuration
-            |> TaskGraph.init
-            |> ResultAsync.wrap (TaskGraph.create handlers)
+            initWorkerStorage ()
+            |> ResultAsync.wrap (TaskGraph.merge handlers)
             |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
             |> ResultAsync.bind (function
                 | Some node -> Ok node

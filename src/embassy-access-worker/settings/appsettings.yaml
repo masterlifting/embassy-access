@@ -1,0 +1,8 @@
+# @format
+
+Logging:
+  LogLevel:
+    Default: Trace
+
+Persistence:
+  FileSystem: ..\..\..\data

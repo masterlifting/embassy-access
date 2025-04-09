@@ -23,7 +23,7 @@ type RouteNode =
                     Id = node.ShortId
                     Name = node.ShortName
                     Handler =
-                        match node.Children.IsEmpty, node.ShortId = nodeId with
+                        match node.Children.IsEmpty, node.Id = nodeId with
                         | false, _ -> None
                         | true, false -> None
                         | true, true -> handler |> Some

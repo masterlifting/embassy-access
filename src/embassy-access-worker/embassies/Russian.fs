@@ -5,6 +5,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Worker.Domain
 open EA.Core.Domain
+open Worker.DataAccess
 open EA.Worker.Domain
 open EA.Worker.Dependencies.Embassies.Russian
 
@@ -130,6 +131,21 @@ let private Router =
         ]
     )
 
-let register () =
-    Router
-    |> RouteNode.register (Kdmid.SearchAppointments.HandlerId, Kdmid.SearchAppointments.start)
+let register rootNode =
+    fun initWorkerStorage ->
+        let nodeId = Graph.Node.Id.combine [ rootNode; "RUS" |> Graph.NodeIdValue ]
+        
+        let handlers =
+            initWorkerStorage ()
+            |> ResultAsync.wrap TaskGraph.create
+            |> ResultAsync.map (Graph.DFS.getVertices nodeId)
+            |> ResultAsync.map (Seq.map(fun node ->
+                    match node.Id |> Graph.Node.Id.split |> Seq.tryLast with
+                    | Some id ->
+                        match id = Kdmid.SearchAppointments.HandlerId with
+                        | true -> (id, Kdmid.SearchAppointments.start) |> Some
+                        | false -> None
+                    | None -> None))
+        
+        Router
+        |> RouteNode.register (Kdmid.SearchAppointments.HandlerId, Kdmid.SearchAppointments.start)

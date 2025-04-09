@@ -1,0 +1,117 @@
+# @format
+
+Embassies:
+  Id: EMB
+  Name: Embassies
+  Description: Select the embassy you want to visit
+  Children:
+    - Id: FRA
+      Name: French
+      Description: In which country is the French Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the French Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2
+    - Id: GBR
+      Name: British
+      Description: In which country is the British Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the British Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2
+    - Id: USA
+      Name: American
+      Description: In which country is the American Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the American Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2
+    - Id: DEU
+      Name: German
+      Description: In which country is the German Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the German Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2
+    - Id: RUS
+      Name: Russian
+      Description: In which country is the Russian Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the Russian Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2
+    - Id: CHN
+      Name: Chinese
+      Description: In which country is the Chinese Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the Chinese Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2
+    - Id: GRC
+      Name: Greek
+      Description: In which country is the Greek Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the Greek Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2
+    - Id: ITA
+      Name: Italian
+      Description: In which country is the Italian Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the Italian Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2
+    - Id: ESP
+      Name: Spanish
+      Description: In which country is the Spanish Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the Spanish Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2
+    - Id: NLD
+      Name: Dutch
+      Description: In which country is the Dutch Embassy located?
+      Children:
+        - Id: SRB
+          Name: Serbia
+          Description: In which city of Serbia is the Dutch Embassy located?
+          Children:
+            - Id: BEG
+              Name: Belgrade
+              TimeZone: 2

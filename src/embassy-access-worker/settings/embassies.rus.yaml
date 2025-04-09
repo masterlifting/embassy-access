@@ -1,0 +1,65 @@
+# @format
+
+KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
+  Instruction: Take the link you received in your email after registering your request on the kdmid.ru website. Put the link instead of <link> in the command above. Send it to the chat (without apostrophes).
+
+KdmidRussianServices: &KdmidRussianServices
+  - Id: "0"
+    Name: Check slots now
+    <<: *KdmidRussianServicesInstructions
+  - Id: "1"
+    Name: Slots auto notification
+    <<: *KdmidRussianServicesInstructions
+  - Id: "2"
+    Name: Slot auto booking
+    Description: Auto slot booking
+    Children:
+      - Id: "0"
+        Name: Book first slot
+        <<: *KdmidRussianServicesInstructions
+      - Id: "1"
+        Name: Book last slot
+        <<: *KdmidRussianServicesInstructions
+      - Id: "2"
+        Name: Book first slot in period
+        Instruction: Take the link you received in your email after registering your request on the kdmid.ru website. Put the link instead of <link> in the command above. Change the start and end of the time periods in the command. Send it to the chat (without apostrophes).
+
+Services:
+  Id: SRV
+  Name: Services
+  Description: Choose the service you need
+  Children:
+    - Id: RUS
+      Name: Russian embassy
+      Description: Choose the service of the Russian embassy
+      Children:
+        - Id: "0"
+          Name: Passport
+          Description: Passport services
+          Children:
+            - Id: "0"
+              Name: International passport
+              Description: International passport options
+              Children:
+                <<: *KdmidRussianServices
+            - Id: "1"
+              Name: Passport status
+              <<: *KdmidRussianServicesInstructions
+        - Id: "1"
+          Name: Notary
+          Description: Notary services
+          Children:
+            - Id: "0"
+              Name: Power of attorney
+              Description: Power of attorney options
+              Children:
+                <<: *KdmidRussianServices
+        - Id: "2"
+          Name: Citizenship
+          Description: Citizenship services
+          Children:
+            - Id: "0"
+              Name: Citizenship renunciation
+              Description: Renunciation options
+              Children:
+                <<: *KdmidRussianServices

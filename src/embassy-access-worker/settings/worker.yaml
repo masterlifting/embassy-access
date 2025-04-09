@@ -1,0 +1,200 @@
+# @format
+SearchAppointments: &SearchAppointments
+  - Id: SA
+    Name: Search appointments
+    Enabled: true
+    Wait: false
+    Duration: 00:03:00
+
+Worker:
+  Id: WRK
+  Name: Worker
+  Enabled: true
+  Wait: true
+  Schedule:
+  Tasks:
+    - Id: FRA
+      Name: French
+      Enabled: false
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri,sat,sun
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                - Id: SA
+                  Name: Search appointments
+                  Enabled: false
+                  Duration: 00:01:00
+              Schedule:
+                TimeZone: 2
+    - Id: GBR
+      Name: British
+      Enabled: false
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 2
+    - Id: USA
+      Name: American
+      Enabled: false
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 2
+    - Id: DEU
+      Name: German
+      Enabled: false
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 2
+    - Id: RUS
+      Name: Russian
+      Enabled: true
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri,sat,sun
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                StartTime: 00:55:00
+                StopTime: 23:55:20
+                TimeZone: 2
+    - Id: CHN
+      Name: Chinese
+      Enabled: false
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 2
+    - Id: GRC
+      Name: Greek
+      Enabled: false
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 2
+    - Id: ITA
+      Name: Italian
+      Enabled: false
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 2
+    - Id: ESP
+      Name: Spanish
+      Enabled: false
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 2
+    - Id: NLD
+      Name: Dutch
+      Enabled: false
+      Parallel: true
+      Schedule:
+        Workdays: mon,tue,wed,thu,fri
+      Tasks:
+        - Id: SRB
+          Name: Serbia
+          Parallel: true
+          Recursively: 00:01:00
+          Tasks:
+            - Id: BEG
+              Name: Belgrade
+              Tasks:
+                <<: *SearchAppointments
+              Schedule:
+                TimeZone: 2
