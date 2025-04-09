@@ -253,7 +253,7 @@ module private FileSystem =
             |> ResultAsync.bind (Common.update request)
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
             |> ResultAsync.map (fun _ -> request)
-            
+
         let updateSeq requests client =
             client
             |> loadData

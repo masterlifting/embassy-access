@@ -33,23 +33,29 @@ type Dependencies = {
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bind (function
                     | Some embassy -> Ok embassy
-                    | None -> $"Embassy '%s{embassyId.Value}' not found." |> NotFound |> Error)
+                    | None ->
+                        $"Embassy '%s{embassyId.Value}' is not implemented. "
+                        + Constants.NOT_IMPLEMENTED
+                        |> NotImplemented
+                        |> Error)
 
             let getEmbassyServiceGraph embassyId =
                 deps.getEmbassyGraph ()
                 |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
                 |> ResultAsync.bindAsync (function
                     | None ->
-                        $"Services of Embassy '%s{embassyId.Value}' not found."
-                        |> NotFound
+                        $"Services of Embassy '%s{embassyId.Value}' is not implemented. "
+                        + Constants.NOT_IMPLEMENTED
+                        |> NotImplemented
                         |> Error
                         |> async.Return
                     | Some node ->
                         // try to get the countryId from the embassyId. It should be the second part of the embassyId
                         match node.Id.TryGetPart 1 with
                         | None ->
-                            $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' not found."
-                            |> NotFound
+                            $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
+                            + Constants.NOT_IMPLEMENTED
+                            |> NotImplemented
                             |> Error
                             |> async.Return
                         | Some countryId ->
@@ -61,8 +67,9 @@ type Dependencies = {
                             |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                             |> ResultAsync.bind (function
                                 | None ->
-                                    $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' not found."
-                                    |> NotFound
+                                    $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
+                                    + Constants.NOT_IMPLEMENTED
+                                    |> NotImplemented
                                     |> Error
                                 | Some serviceNode -> serviceNode |> Ok))
 
@@ -71,8 +78,9 @@ type Dependencies = {
                 |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
                 |> ResultAsync.bind (function
                     | None ->
-                        $"Service '%s{serviceId.Value}' for the chat '%s{deps.ChatId.ValueStr}' not found."
-                        |> NotFound
+                        $"Service '%s{serviceId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
+                        + Constants.NOT_IMPLEMENTED
+                        |> NotImplemented
                         |> Error
                     | Some serviceNode -> serviceNode |> Ok)
 
