@@ -111,13 +111,21 @@ let register rootNodeId =
 
         workerStorage
         |> TaskGraph.create
-        |> ResultAsync.map (Graph.DFS.getVertices nodeId)
-        |> ResultAsync.map (
-            Seq.map (fun node ->
+        |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
+        |> ResultAsync.bind (function
+            | Some node -> Ok node
+            | None ->
+                $"Node Id '%s{nodeId.Value}' for Russian Embassy regustrations not found."
+                |> NotFound
+                |> Error)
+        |> ResultAsync.bind (fun russianNode ->
+            russianNode
+            |> Graph.DFS.getVertices russianNode.Id
+            |> Seq.map (fun node ->
                 match node.Id |> Graph.Node.Id.split |> Seq.tryLast with
                 | Some id ->
                     match id = Kdmid.SearchAppointments.HandlerId with
-                    | true -> 
+                    | true ->
                         let handler = {
                             Id = node.Id
                             Name = node.Name
@@ -126,6 +134,11 @@ let register rootNodeId =
                         Graph.Node(handler, []) |> Some
                     | false -> None
                 | None -> None)
-            )
-        |> ResultAsync.map (Seq.choose id >> Seq.toList)
-        
+            |> Result.map (Seq.choose id >> Seq.toList)
+            |> Result.map (fun handlers ->
+                let handler = {
+                    Id = russianNode.Id
+                    Name = russianNode.Name
+                    Handler = None
+                }
+                Graph.Node(handler, handlers)))
