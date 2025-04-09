@@ -2,7 +2,7 @@
 
 Logging:
   LogLevel:
-    Default: Trace
+    Default: Information
 
 Persistence:
   FileSystem: /usr/src/embassy-access-data
@@ -25,7 +25,7 @@ Worker:
       Name: Russian
       Parallel: true
       Schedule:
-        Workdays: mon,tue,wed,thu,fri,sat,sun
+        Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
           Name: Serbia
@@ -46,7 +46,6 @@ Worker:
         - Id: DEU
           Name: Germany
           Parallel: true
-          Recursively: 00:30:00
           Tasks:
             - Id: BER
               Name: Berlin
