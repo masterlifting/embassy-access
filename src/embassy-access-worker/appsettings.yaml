@@ -2,7 +2,7 @@
 
 Logging:
   LogLevel:
-    Default: Information
+    Default: Trace
 
 Persistence:
   FileSystem: ..\..\..\data
