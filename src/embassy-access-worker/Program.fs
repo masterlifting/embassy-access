@@ -39,7 +39,6 @@ let main _ =
 
     let rootHandler = {
         Id = "WRK" |> Graph.NodeIdValue
-        Name = APP_NAME
         Handler = Initializer.run |> Some
     }
 
@@ -57,7 +56,7 @@ let main _ =
             |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
 
     let workerConfig = {
-        Name = rootHandler.Name
+        Name = APP_NAME
         Configuration = configuration
         TaskNodeRootId = rootHandler.Id
         tryFindTaskNode = tryFindTaskNode ()

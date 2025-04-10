@@ -109,13 +109,11 @@ module private Kdmid =
 
 let private SearchAppointmentsHandler = {
     Id = Kdmid.SearchAppointments.ID |> Graph.NodeIdValue
-    Name = Kdmid.SearchAppointments.NAME
     Handler = Kdmid.SearchAppointments.handle |> Some
 }
 
 let private PassportReadinessHandler = {
     Id = "PR" |> Graph.NodeIdValue
-    Name = Kdmid.SearchAppointments.NAME
     Handler = Kdmid.SearchAppointments.handle |> Some
 }
 
