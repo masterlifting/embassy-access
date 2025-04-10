@@ -1,107 +1,107 @@
 # @format
 SearchAppointments: &SearchAppointmentsHandler
   - Id: SA
-    Name: Search appointments
     Enabled: true
     Wait: false
     Duration: 00:03:00
+    Description: Search appointments
 
 Worker:
   Id: WRK
-  Name: Worker
   Enabled: true
   Wait: true
+  Description: Worker
   Schedule:
   Tasks:
     - Id: FRA
-      Name: French
       Enabled: false
       Parallel: true
+      Description: French
       Schedule:
         Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 - Id: SA
-                  Name: Search appointments
                   Enabled: false
                   Duration: 00:01:00
+                  Description: Search appointments
               Schedule:
                 TimeZone: 2
     - Id: GBR
-      Name: British
       Enabled: false
       Parallel: true
+      Description: British
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 <<: *SearchAppointmentsHandler
               Schedule:
                 TimeZone: 2
     - Id: USA
-      Name: American
       Enabled: false
       Parallel: true
+      Description: American
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 <<: *SearchAppointmentsHandler
               Schedule:
                 TimeZone: 2
     - Id: DEU
-      Name: German
       Enabled: false
       Parallel: true
+      Description: German
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 <<: *SearchAppointmentsHandler
               Schedule:
                 TimeZone: 2
     - Id: RUS
-      Name: Russian
       Enabled: true
       Parallel: true
+      Description: Russian
       Schedule:
         Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 <<: *SearchAppointmentsHandler
               Schedule:
@@ -109,91 +109,91 @@ Worker:
                 StopTime: 23:55:20
                 TimeZone: 2
     - Id: CHN
-      Name: Chinese
       Enabled: false
       Parallel: true
+      Description: Chinese
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 <<: *SearchAppointmentsHandler
               Schedule:
                 TimeZone: 2
     - Id: GRC
-      Name: Greek
       Enabled: false
       Parallel: true
+      Description: Greek
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 <<: *SearchAppointmentsHandler
               Schedule:
                 TimeZone: 2
     - Id: ITA
-      Name: Italian
       Enabled: false
       Parallel: true
+      Description: Italian
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 <<: *SearchAppointmentsHandler
               Schedule:
                 TimeZone: 2
     - Id: ESP
-      Name: Spanish
       Enabled: false
       Parallel: true
+      Description: Spanish
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 <<: *SearchAppointmentsHandler
               Schedule:
                 TimeZone: 2
     - Id: NLD
-      Name: Dutch
       Enabled: false
       Parallel: true
+      Description: Dutch
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Name: Serbia
           Parallel: true
           Recursively: 00:01:00
+          Description: Serbia
           Tasks:
             - Id: BEG
-              Name: Belgrade
+              Description: Belgrade
               Tasks:
                 <<: *SearchAppointmentsHandler
               Schedule:
