@@ -50,20 +50,17 @@ let main _ =
             |> List.choose id
         )
 
-    let getTaskNode () =
+    let tryFindTaskNode () =
         fun nodeId ->
             workerStorage
             |> TaskGraph.getWithHandlers workerHandlers
             |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
-            |> ResultAsync.bind (function
-                | Some node -> Ok node
-                | None -> $"Task Id '%s{nodeId.Value}' not found." |> NotFound |> Error)
 
     let workerConfig = {
         Name = rootHandler.Name
         Configuration = configuration
         TaskNodeRootId = rootHandler.Id
-        getTaskNode = getTaskNode ()
+        tryFindTaskNode = tryFindTaskNode ()
     }
 
     workerConfig |> Worker.Client.start |> Async.RunSynchronously
