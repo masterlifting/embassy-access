@@ -93,9 +93,10 @@ module private Kdmid =
                         | None, None -> "No results found." |> Debug |> Ok))
 
     module SearchAppointments =
-        let HandlerId = "SA" |> Graph.NodeIdValue
+        [<Literal>]
+        let ID = "SA"
 
-        let start (task, cfg, ct) =
+        let handle (task, cfg, ct) =
             let result = ResultBuilder()
 
             result {
@@ -107,38 +108,12 @@ module private Kdmid =
 
 let register rootNodeId =
     fun workerStorage ->
+
         let nodeId = Graph.Node.Id.combine [ rootNodeId; "RUS" |> Graph.NodeIdValue ]
 
         workerStorage
         |> TaskGraph.create
-        |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
-        |> ResultAsync.bind (function
-            | Some node -> Ok node
-            | None ->
-                $"Node Id '%s{nodeId.Value}' for Russian Embassy regustrations not found."
-                |> NotFound
-                |> Error)
-        |> ResultAsync.bind (fun russianNode ->
-            russianNode
-            |> Graph.DFS.getVertices russianNode.Id
-            |> Seq.map (fun node ->
-                match node.Id |> Graph.Node.Id.split |> Seq.tryLast with
-                | Some id ->
-                    match id = Kdmid.SearchAppointments.HandlerId with
-                    | true ->
-                        let handler = {
-                            Id = node.Id
-                            Name = node.Name
-                            Handler = Kdmid.SearchAppointments.start |> Some
-                        }
-                        Graph.Node(handler, []) |> Some
-                    | false -> None
-                | None -> None)
-            |> Result.map (Seq.choose id >> Seq.toList)
-            |> Result.map (fun handlers ->
-                let handler = {
-                    Id = russianNode.Id
-                    Name = russianNode.Name
-                    Handler = None
-                }
-                Graph.Node(handler, handlers)))
+        |> ResultAsync.map (
+            Kdmid.SearchAppointments.handle
+            |> Worker.Client.registerHandler nodeId Kdmid.SearchAppointments.ID
+        )

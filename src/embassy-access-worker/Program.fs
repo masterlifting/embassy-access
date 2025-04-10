@@ -14,10 +14,10 @@ let main _ =
 
     let configuration =
         Configuration.setYamls [
-            @"settings\appsettings"
-            @"settings\worker"
-            @"settings\embassies"
-            @"settings\embassies.rus"
+            @"settings\appsettings.yaml"
+            @"settings\worker.yaml"
+            @"settings\embassies.yaml"
+            @"settings\embassies.rus.yaml"
         ]
 
     Logging.useConsole configuration
@@ -42,10 +42,11 @@ let main _ =
     let russianHandler =
         workerStorage
         |> Embassies.Russian.register rootNodeId
-        |> ResultAsync.defaultWith (fun error -> failwithf $"Failed to register Russian embassy handlers: %s{error.Message}")
+        |> ResultAsync.defaultWith (fun error ->
+            failwithf $"Failed to register Russian embassy handlers: %s{error.Message}")
+        |> Async.RunSynchronously
 
-    let workerHandlers =
-        Graph.Node(rootHandler, [ russianHandler ])
+    let workerHandlers = Graph.Node(rootHandler, [ russianHandler ])
 
     let getTaskNode handlers =
         fun nodeId ->
