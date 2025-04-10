@@ -1,200 +1,133 @@
 # @format
-SearchAppointments: &SearchAppointmentsHandler
-  - Id: SA
-    Enabled: true
-    Wait: false
-    Duration: 00:03:00
-    Description: Search appointments
 
 Worker:
   Id: WRK
   Enabled: true
   Wait: true
-  Description: Worker
+  Description: Embassy worker
   Schedule:
   Tasks:
     - Id: FRA
-      Enabled: false
-      Parallel: true
-      Description: French
+      Description: French embassy
       Schedule:
-        Workdays: mon,tue,wed,thu,fri,sat,sun
+        Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
           Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                - Id: SA
-                  Enabled: false
-                  Duration: 00:01:00
-                  Description: Search appointments
-              Schedule:
-                TimeZone: 2
+            - Id: SA
+              Description: Search appointments for French embassy in Serbia
+          Schedule:
+            TimeZone: 2
     - Id: GBR
-      Enabled: false
-      Parallel: true
-      Description: British
+      Description: British embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
           Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                <<: *SearchAppointmentsHandler
-              Schedule:
-                TimeZone: 2
+            - Id: SA
+              Description: Search appointments for British embassy in Serbia
+          Schedule:
+            TimeZone: 2
     - Id: USA
-      Enabled: false
-      Parallel: true
-      Description: American
+      Description: American embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
           Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                <<: *SearchAppointmentsHandler
-              Schedule:
-                TimeZone: 2
+            - Id: SA
+              Description: Search appointments for American embassy in Serbia
+          Schedule:
+            TimeZone: 2
     - Id: DEU
-      Enabled: false
-      Parallel: true
-      Description: German
+      Description: German embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
           Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                <<: *SearchAppointmentsHandler
-              Schedule:
-                TimeZone: 2
+            - Id: SA
+              Description: Search appointments for German embassy in Serbia
+          Schedule:
+            TimeZone: 2
     - Id: RUS
-      Enabled: true
-      Parallel: true
-      Description: Russian
+      Description: Russian embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
-          Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                <<: *SearchAppointmentsHandler
-              Schedule:
-                StartTime: 00:55:00
-                StopTime: 23:55:20
-                TimeZone: 2
+            - Id: SA
+              Enabled: true
+              Recursively: 00:01:00
+              Duration: 00:03:00
+              Description: Search appointments for Russian embassy in Serbia
+          Schedule:
+            StartTime: 00:55:00
+            StopTime: 23:55:20
+            TimeZone: 2
     - Id: CHN
-      Enabled: false
-      Parallel: true
-      Description: Chinese
+      Description: Chinese embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
           Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                <<: *SearchAppointmentsHandler
-              Schedule:
-                TimeZone: 2
+            - Id: SA
+              Description: Search appointments for Chinese embassy in Serbia
+          Schedule:
+            TimeZone: 2
     - Id: GRC
-      Enabled: false
-      Parallel: true
-      Description: Greek
+      Description: Greek embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
           Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                <<: *SearchAppointmentsHandler
-              Schedule:
-                TimeZone: 2
+            - Id: SA
+              Description: Search appointments for Greek embassy in Serbia
+          Schedule:
+            TimeZone: 2
     - Id: ITA
-      Enabled: false
-      Parallel: true
       Description: Italian
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
           Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                <<: *SearchAppointmentsHandler
-              Schedule:
-                TimeZone: 2
+            - Id: SA
+              Description: Search appointments for Italian embassy in Serbia
+          Schedule:
+            TimeZone: 2
     - Id: ESP
-      Enabled: false
-      Parallel: true
-      Description: Spanish
+      Description: Spanish embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
           Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                <<: *SearchAppointmentsHandler
-              Schedule:
-                TimeZone: 2
+            - Id: SA
+              Description: Search appointments for Spanish embassy in Serbia
+          Schedule:
+            TimeZone: 2
     - Id: NLD
-      Enabled: false
-      Parallel: true
-      Description: Dutch
+      Description: Dutch embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Parallel: true
-          Recursively: 00:01:00
           Description: Serbia
           Tasks:
-            - Id: BEG
-              Description: Belgrade
-              Tasks:
-                <<: *SearchAppointmentsHandler
-              Schedule:
-                TimeZone: 2
+            - Id: SA
+              Description: Search appointments for Dutch embassy in Serbia
+          Schedule:
+            TimeZone: 2
