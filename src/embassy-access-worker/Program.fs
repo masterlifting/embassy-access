@@ -31,40 +31,39 @@ let main _ =
         |> TaskGraph.init
         |> Result.defaultWith (fun error -> failwithf $"Failed to initialize worker storage: %s{error.Message}")
 
+    let workerGraph =
+        workerStorage
+        |> TaskGraph.getSimple
+        |> ResultAsync.defaultWith (fun error -> failwithf $"Failed to initialize worker graph: %s{error.Message}")
+        |> Async.RunSynchronously
+
     let rootHandler = {
         Id = "WRK" |> Graph.NodeIdValue
         Name = APP_NAME
         Handler = Initializer.run |> Some
     }
 
-    let russianHandler =
-        workerStorage
-        |> Embassies.Russian.register rootHandler
-        |> ResultAsync.defaultWith (fun error ->
-            failwithf $"Failed to register Russian embassy handlers: %s{error.Message}")
-        |> Async.RunSynchronously
-
     let workerHandlers =
         Graph.Node(
             rootHandler,
-            russianHandler |> Option.map List.singleton |> Option.defaultValue []
-
+            [ workerGraph |> Embassies.Russian.registerHandlers rootHandler ]
+            |> List.choose id
         )
 
-    let getTaskNode handlers =
+    let getTaskNode () =
         fun nodeId ->
             workerStorage
-            |> TaskGraph.getWithHandlers handlers
+            |> TaskGraph.getWithHandlers workerHandlers
             |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
             |> ResultAsync.bind (function
                 | Some node -> Ok node
-                | None -> $"Task handler Id '%s{nodeId.Value}' not found." |> NotFound |> Error)
+                | None -> $"Task Id '%s{nodeId.Value}' not found." |> NotFound |> Error)
 
     let workerConfig = {
         Name = rootHandler.Name
         Configuration = configuration
         TaskNodeRootId = rootHandler.Id
-        getTaskNode = getTaskNode workerHandlers
+        getTaskNode = getTaskNode ()
     }
 
     workerConfig |> Worker.Client.start |> Async.RunSynchronously

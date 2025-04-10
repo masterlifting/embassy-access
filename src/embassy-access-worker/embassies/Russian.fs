@@ -5,7 +5,6 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Worker.Domain
 open EA.Core.Domain
-open Worker.DataAccess
 open EA.Worker.Domain
 open EA.Worker.Dependencies.Embassies.Russian
 
@@ -108,24 +107,22 @@ module private Kdmid =
             }
             |> ResultAsync.wrap id
 
-let private getSearchAppointmentsHandler () = {
+let private SearchAppointmentsHandler = {
     Id = Kdmid.SearchAppointments.ID |> Graph.NodeIdValue
     Name = Kdmid.SearchAppointments.NAME
     Handler = Kdmid.SearchAppointments.handle |> Some
 }
 
-let private getPassportReadinessHandler () = {
+let private PassportReadinessHandler = {
     Id = "PR" |> Graph.NodeIdValue
     Name = Kdmid.SearchAppointments.NAME
     Handler = Kdmid.SearchAppointments.handle |> Some
 }
 
-let register (rootHandler: WorkerTaskNodeHandler) =
-    fun workerStorage ->
+let registerHandlers (rootHandler: WorkerTaskNodeHandler) =
+    fun workerGraph ->
 
         let nodeId = Graph.Node.Id.combine [ rootHandler.Id; "RUS" |> Graph.NodeIdValue ]
-        let handlers = [ getSearchAppointmentsHandler (); getPassportReadinessHandler () ]
+        let handlers = [ SearchAppointmentsHandler; PassportReadinessHandler ]
 
-        workerStorage
-        |> TaskGraph.getSimple
-        |> ResultAsync.map (Worker.Client.registerHandlers nodeId handlers)
+        workerGraph |> Worker.Client.registerHandlers nodeId handlers
