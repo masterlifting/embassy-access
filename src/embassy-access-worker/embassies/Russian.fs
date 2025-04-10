@@ -95,6 +95,8 @@ module private Kdmid =
     module SearchAppointments =
         [<Literal>]
         let ID = "SA"
+        [<Literal>]
+        let NAME = "Search Appointments"
 
         let handle (task, cfg, ct) =
             let result = ResultBuilder()
@@ -106,14 +108,24 @@ module private Kdmid =
             }
             |> ResultAsync.wrap id
 
-let register rootNodeId =
+let private getSearchAppointmentsHandler () = {
+    Id = Kdmid.SearchAppointments.ID |> Graph.NodeIdValue
+    Name = Kdmid.SearchAppointments.NAME
+    Handler = Kdmid.SearchAppointments.handle |> Some
+}
+
+let private getPassportReadinessHandler () = {
+    Id = "PR" |> Graph.NodeIdValue
+    Name = Kdmid.SearchAppointments.NAME
+    Handler = Kdmid.SearchAppointments.handle |> Some
+}
+
+let register (rootHandler: WorkerTaskNodeHandler) =
     fun workerStorage ->
 
-        let nodeId = Graph.Node.Id.combine [ rootNodeId; "RUS" |> Graph.NodeIdValue ]
+        let nodeId = Graph.Node.Id.combine [ rootHandler.Id; "RUS" |> Graph.NodeIdValue ]
+        let handlers = [ getSearchAppointmentsHandler (); getPassportReadinessHandler () ]
 
         workerStorage
-        |> TaskGraph.create
-        |> ResultAsync.map (
-            Kdmid.SearchAppointments.handle
-            |> Worker.Client.registerHandler nodeId Kdmid.SearchAppointments.ID
-        )
+        |> TaskGraph.getSimple
+        |> ResultAsync.map (Worker.Client.registerHandlers nodeId handlers)

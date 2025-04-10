@@ -31,27 +31,30 @@ let main _ =
         |> TaskGraph.init
         |> Result.defaultWith (fun error -> failwithf $"Failed to initialize worker storage: %s{error.Message}")
 
-    let rootNodeId = "WRK" |> Graph.NodeIdValue
-
     let rootHandler = {
-        Id = rootNodeId
+        Id = "WRK" |> Graph.NodeIdValue
         Name = APP_NAME
         Handler = Initializer.run |> Some
     }
 
     let russianHandler =
         workerStorage
-        |> Embassies.Russian.register rootNodeId
+        |> Embassies.Russian.register rootHandler
         |> ResultAsync.defaultWith (fun error ->
             failwithf $"Failed to register Russian embassy handlers: %s{error.Message}")
         |> Async.RunSynchronously
 
-    let workerHandlers = Graph.Node(rootHandler, [ russianHandler ])
+    let workerHandlers =
+        Graph.Node(
+            rootHandler,
+            russianHandler |> Option.map List.singleton |> Option.defaultValue []
+
+        )
 
     let getTaskNode handlers =
         fun nodeId ->
             workerStorage
-            |> TaskGraph.merge handlers
+            |> TaskGraph.getWithHandlers handlers
             |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
             |> ResultAsync.bind (function
                 | Some node -> Ok node
