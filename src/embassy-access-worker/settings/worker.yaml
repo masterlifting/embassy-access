@@ -3,11 +3,12 @@
 Worker:
   Id: WRK
   Enabled: true
-  Wait: true
+  WaitResult: true
   Description: Embassy worker
   Schedule:
   Tasks:
     - Id: FRA
+      Parallel: true
       Description: French embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
@@ -20,6 +21,7 @@ Worker:
           Schedule:
             TimeZone: 2
     - Id: GBR
+      Parallel: true
       Description: British embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
@@ -32,6 +34,7 @@ Worker:
           Schedule:
             TimeZone: 2
     - Id: USA
+      Parallel: true
       Description: American embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
@@ -44,6 +47,7 @@ Worker:
           Schedule:
             TimeZone: 2
     - Id: DEU
+      Parallel: true
       Description: German embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
@@ -56,6 +60,7 @@ Worker:
           Schedule:
             TimeZone: 2
     - Id: RUS
+      Parallel: true
       Description: Russian embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri,sat,sun
@@ -67,11 +72,12 @@ Worker:
               Recursively: 00:01:00
               Duration: 00:03:00
               Description: Search appointments for Russian embassy in Serbia
-          Schedule:
-            StartTime: 00:55:00
-            StopTime: 23:55:20
-            TimeZone: 2
+              Schedule:
+                StartTime: 00:55:00
+                StopTime: 23:55:20
+                TimeZone: 2
     - Id: CHN
+      Parallel: true
       Description: Chinese embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
@@ -84,6 +90,7 @@ Worker:
           Schedule:
             TimeZone: 2
     - Id: GRC
+      Parallel: true
       Description: Greek embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
@@ -96,6 +103,7 @@ Worker:
           Schedule:
             TimeZone: 2
     - Id: ITA
+      Parallel: true
       Description: Italian
       Schedule:
         Workdays: mon,tue,wed,thu,fri
@@ -108,6 +116,7 @@ Worker:
           Schedule:
             TimeZone: 2
     - Id: ESP
+      Parallel: true
       Description: Spanish embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
@@ -120,6 +129,7 @@ Worker:
           Schedule:
             TimeZone: 2
     - Id: NLD
+      Parallel: true
       Description: Dutch embassy
       Schedule:
         Workdays: mon,tue,wed,thu,fri
