@@ -16,11 +16,12 @@ module Kdmid =
     open EA.Telegram.Dependencies.Embassies.Russian
 
     type Dependencies = {
+        TaskName: string
         getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
         tryProcessFirst: Request list -> Async<Result<Request, Error' list>>
     } with
 
-        static member create (task: WorkerActiveTask) cfg ct =
+        static member create (task: ActiveTask) cfg ct =
             let result = ResultBuilder()
 
             result {
@@ -37,7 +38,7 @@ module Kdmid =
                 let notify notification =
                     notificationDeps
                     |> Message.Notification.spread notification
-                    |> ResultAsync.mapError (_.Message >> Log.critical)
+                    |> ResultAsync.mapError (_.Message >> Log.crt)
                     |> Async.Ignore
 
                 let getRequests embassyId =
@@ -61,6 +62,7 @@ module Kdmid =
                     |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
 
                 return {
+                    TaskName = $"%i{task.Attempt}.'%s{task.Description |> Option.defaultValue task.Id.Value}'. "
                     getRequests = getRequests
                     tryProcessFirst = tryProcessFirst
                 }

@@ -3,12 +3,13 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Domain
 open EA.Worker.Dependencies.Embassies.Russian
 
-let private createEmbassyId (task: WorkerActiveTask) =
+let private createEmbassyId (task: ActiveTask) =
     task.Id.TryTakeRange 1 None
     |> Option.map (fun range -> range[.. range.Length - 2]) // Reduce the handler Id here (e.g. "RUS.SRB.BEG.SA" -> "RUS.SRB.BEG")
     |> Option.map (fun range -> (Constants.EMBASSY_ROOT_ID |> Graph.NodeIdValue) :: range)
@@ -78,10 +79,10 @@ module private Kdmid =
 
                         match validResults, invalidResults with
                         | Some validResults, Some invalidResults ->
-                            $"{Environment.NewLine}Valid results:{validResults}{Environment.NewLine}Invalid results:{invalidResults}"
-                            |> Warn
+                            $"{deps.TaskName}{Environment.NewLine}Valid results:{validResults}{Environment.NewLine}Invalid results:{invalidResults}"
+                            |> Log.wrn
                             |> Ok
-                        | Some validResults, None -> validResults |> Info |> Ok
+                        | Some validResults, None -> deps.TaskName + validResults |> Log.scs |> Ok
                         | None, Some invalidResults ->
                             {
                                 Message = invalidResults
@@ -89,7 +90,7 @@ module private Kdmid =
                             }
                             |> Operation
                             |> Error
-                        | None, None -> "No results found." |> Debug |> Ok))
+                        | None, None -> $"{deps.TaskName}No results found." |> Log.dbg |> Ok))
 
     module SearchAppointments =
         [<Literal>]

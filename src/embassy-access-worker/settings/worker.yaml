@@ -4,7 +4,7 @@ Worker:
   Id: WRK
   Enabled: true
   WaitResult: true
-  Description: Embassy worker
+  Description: Initialization of the required services
   Schedule:
   Tasks:
     - Id: FRA
