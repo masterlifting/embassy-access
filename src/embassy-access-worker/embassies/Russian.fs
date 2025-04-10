@@ -8,7 +8,7 @@ open EA.Core.Domain
 open EA.Worker.Domain
 open EA.Worker.Dependencies.Embassies.Russian
 
-let private createEmbassyId (task: WorkerTask) =
+let private createEmbassyId (task: WorkerActiveTask) =
     task.Id.TryTakeRange 1 None
     |> Option.map (fun range -> range[.. range.Length - 2]) // Reduce the handler Id here (e.g. "RUS.SRB.BEG.SA" -> "RUS.SRB.BEG")
     |> Option.map (fun range -> (Constants.EMBASSY_ROOT_ID |> Graph.NodeIdValue) :: range)
@@ -117,10 +117,10 @@ let private PassportReadinessHandler = {
     Handler = Kdmid.SearchAppointments.handle |> Some
 }
 
-let registerHandlers (rootHandler: WorkerTaskNodeHandler) =
+let createHandlers (parentHandler: WorkerTaskHandler) =
     fun workerGraph ->
 
-        let nodeId = Graph.Node.Id.combine [ rootHandler.Id; "RUS" |> Graph.NodeIdValue ]
+        let nodeId = Graph.Node.Id.combine [ parentHandler.Id; "RUS" |> Graph.NodeIdValue ]
         let handlers = [ SearchAppointmentsHandler; PassportReadinessHandler ]
 
-        workerGraph |> Worker.Client.registerHandlers nodeId handlers
+        workerGraph |> Worker.Client.createHandlers nodeId handlers

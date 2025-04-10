@@ -22,19 +22,19 @@ let main _ =
 
     Logging.useConsole configuration
 
-    let workerStorage =
+    let taskGraphStorage =
         {
             Configuration.Connection.Section = APP_NAME
             Configuration.Connection.Provider = configuration
         }
         |> TaskGraph.Configuration
         |> TaskGraph.init
-        |> Result.defaultWith (fun error -> failwithf $"Failed to initialize worker storage: %s{error.Message}")
+        |> Result.defaultWith (fun error -> failwithf $"Failed to initialize task graph storage: %s{error.Message}")
 
-    let workerGraph =
-        workerStorage
-        |> TaskGraph.getSimple
-        |> ResultAsync.defaultWith (fun error -> failwithf $"Failed to initialize worker graph: %s{error.Message}")
+    let taskGraph =
+        taskGraphStorage
+        |> TaskGraph.get
+        |> ResultAsync.defaultWith (fun error -> failwithf $"Failed to initialize task graph: %s{error.Message}")
         |> Async.RunSynchronously
 
     let rootHandler = {
@@ -42,24 +42,22 @@ let main _ =
         Handler = Initializer.run |> Some
     }
 
-    let workerHandlers =
-        Graph.Node(
-            rootHandler,
-            [ workerGraph |> Embassies.Russian.registerHandlers rootHandler ]
-            |> List.choose id
-        )
+    let handlers =
+        Graph.Node(rootHandler, [ taskGraph |> Embassies.Russian.createHandlers rootHandler ] |> List.choose id)
 
-    let tryFindTaskNode () =
+    let tryFindTask () =
         fun nodeId ->
-            workerStorage
-            |> TaskGraph.getWithHandlers workerHandlers
-            |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
+            taskGraph
+            |> Worker.Client.registerHandlers handlers
+            |> Graph.DFS.tryFindById nodeId
+            |> Ok
+            |> async.Return
 
     let workerConfig = {
         Name = APP_NAME
         Configuration = configuration
         TaskNodeRootId = rootHandler.Id
-        tryFindTaskNode = tryFindTaskNode ()
+        tryFindTask = tryFindTask ()
     }
 
     workerConfig |> Worker.Client.start |> Async.RunSynchronously

@@ -20,7 +20,7 @@ module Kdmid =
         tryProcessFirst: Request list -> Async<Result<Request, Error' list>>
     } with
 
-        static member create (task: WorkerTask) cfg ct =
+        static member create (task: WorkerActiveTask) cfg ct =
             let result = ResultBuilder()
 
             result {
