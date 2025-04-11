@@ -7,8 +7,6 @@ open Worker.DataAccess
 open Worker.Domain
 open EA.Worker
 
-[<Literal>]
-let private APP_NAME = "Worker"
 let resultAsync = ResultAsyncBuilder()
 
 [<EntryPoint>]
@@ -26,7 +24,7 @@ let main _ =
 
         let! taskGraph =
             {
-                Configuration.Connection.Section = APP_NAME
+                Configuration.Connection.Section = "Worker"
                 Configuration.Connection.Provider = configuration
             }
             |> TaskGraph.Configuration
@@ -47,7 +45,7 @@ let main _ =
 
         return
             Worker.Client.start {
-                Name = APP_NAME
+                Name = "Embassy Access Worker"
                 Configuration = configuration
                 RootTaskId = rootTaskHandler.Id
                 tryFindTask =
