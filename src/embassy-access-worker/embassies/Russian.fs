@@ -8,6 +8,8 @@ open EA.Core.Domain
 open EA.Worker.Domain
 open EA.Worker.Dependencies.Embassies.Russian
 
+let private ServiceId = "RUS" |> Graph.NodeIdValue
+
 let private createEmbassyId (task: ActiveTask) =
     task.Id.TryTakeRange 1 None
     |> Option.map (fun range -> range[.. range.Length - 2]) // Reduce the handler Id here (e.g. "RUS.SRB.BEG.SA" -> "RUS.SRB.BEG")
@@ -66,7 +68,6 @@ module private Kdmid =
                         |> Ok))
 
     module SearchAppointments =
-        let ServiceId = "RUS" |> Graph.NodeIdValue
         let HandlerId = "SA" |> Graph.NodeIdValue
 
         let handle (task, cfg, ct) =
@@ -87,7 +88,7 @@ let private SearchAppointmentsHandler = {
 let createHandlers (parentHandler: WorkerTaskHandler) =
     fun workerGraph ->
 
-        let taskId = Graph.NodeId.combine [ parentHandler.Id; Kdmid.SearchAppointments.ServiceId ]
+        let taskId = Graph.NodeId.combine [ parentHandler.Id; ServiceId ]
         let taskHandlers = [ SearchAppointmentsHandler ]
 
         workerGraph |> Worker.Client.createHandlers taskId taskHandlers
