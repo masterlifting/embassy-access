@@ -22,7 +22,7 @@ module private Fixture =
             FilePath = "./test_data/"
             FileName = $"{fileName}.html"
         }
-        |> FileSystem.Client.init
+        |> FileSystem.Provider.init
         |> ResultAsync.wrap FileSystem.Read.string
         |> ResultAsync.map (Option.defaultValue "")
         |> ResultAsync.map (fun data -> {
@@ -36,7 +36,7 @@ module private Fixture =
             FilePath = "./test_data/"
             FileName = fileName
         }
-        |> FileSystem.Client.init
+        |> FileSystem.Provider.init
         |> ResultAsync.wrap FileSystem.Read.bytes
         |> ResultAsync.map (Option.defaultValue [||])
         |> ResultAsync.map (fun data -> {
@@ -50,14 +50,14 @@ module private Fixture =
             FilePath = "./test_data/"
             FileName = $"{fileName}.html"
         }
-        |> FileSystem.Client.init
+        |> FileSystem.Provider.init
         |> ResultAsync.wrap FileSystem.Read.string
         |> ResultAsync.map (Option.defaultValue "")
 
     let Client = {
         initHttpClient =
             fun _ ->
-                Web.Clients.Http.Client.init {
+                Web.Clients.Http.Provider.init {
                     Host = "https://belgrad.kdmid.ru"
                     Headers = None
                 }
