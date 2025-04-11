@@ -14,10 +14,10 @@ let main _ =
     resultAsync {
         let configuration =
             Configuration.setYamls [
-                @"/settings/appsettings.yaml"
-                @"/settings/worker.yaml"
-                @"/settings/embassies.yaml"
-                @"/settings/embassies.rus.yaml"
+                @"/usr/src/embassy-access/src/embassy-access-worker/settings/appsettings.yaml"
+                @"/usr/src/embassy-access/src/embassy-access-worker/settings/worker.yaml"
+                @"/usr/src/embassy-access/src/embassy-access-worker/settings/embassies.yaml"
+                @"/usr/src/embassy-access/src/embassy-access-worker/settings/embassies.rus.yaml"
             ]
 
         Logging.useConsole configuration
