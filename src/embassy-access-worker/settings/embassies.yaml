@@ -60,6 +60,90 @@ Embassies:
             - Id: BEG
               Name: Belgrade
               TimeZone: 2
+        - Id: HUN
+          Name: Hungary
+          Description: In which city of Hungary is the Russian Embassy located?
+          Children:
+            - Id: BUD
+              Name: Budapest
+              TimeZone: 2
+        - Id: BIH
+          Name: Bosnia and Herzegovina
+          Description: In which city of Bosnia and Herzegovina is the Russian Embassy located?
+          Children:
+            - Id: SJJ
+              Name: Sarajevo
+              TimeZone: 2
+        - Id: DEU
+          Name: Germany
+          Description: In which city of Germany is the Russian Embassy located?
+          Children:
+            - Id: BER
+              Name: Berlin
+              TimeZone: 2
+        - Id: MNE
+          Name: Montenegro
+          Description: In which city of Montenegro is the Russian Embassy located?
+          Children:
+            - Id: TGD
+              Name: Podgorica
+              TimeZone: 2
+        - Id: ALB
+          Name: Albania
+          Description: In which city of Albania is the Russian Embassy located?
+          Children:
+            - Id: TIA
+              Name: Tirana
+              TimeZone: 2
+        - Id: FRA
+          Name: France
+          Description: In which city of France is the Russian Embassy located?
+          Children:
+            - Id: PAR
+              Name: Paris
+              TimeZone: 2
+        - Id: ITA
+          Name: Italy
+          Description: In which city of Italy is the Russian Embassy located?
+          Children:
+            - Id: ROM
+              Name: Rome
+              TimeZone: 2
+        - Id: IRL
+          Name: Ireland
+          Description: In which city of Ireland is the Russian Embassy located?
+          Children:
+            - Id: DUB
+              Name: Dublin
+              TimeZone: 1
+        - Id: CHE
+          Name: Switzerland
+          Description: In which city of Switzerland is the Russian Embassy located?
+          Children:
+            - Id: BRN
+              Name: Bern
+              TimeZone: 2
+        - Id: FIN
+          Name: Finland
+          Description: In which city of Finland is the Russian Embassy located?
+          Children:
+            - Id: HEL
+              Name: Helsinki
+              TimeZone: 3
+        - Id: NLD
+          Name: Netherlands
+          Description: In which city of Netherlands is the Russian Embassy located?
+          Children:
+            - Id: HAG
+              Name: The Hague
+              TimeZone: 2
+        - Id: SVN
+          Name: Slovenia
+          Description: In which city of Slovenia is the Russian Embassy located?
+          Children:
+            - Id: LJU
+              Name: Ljubljana
+              TimeZone: 2
     - Id: CHN
       Name: Chinese
       Description: In which country is the Chinese Embassy located?
