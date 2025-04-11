@@ -63,13 +63,8 @@ module Kdmid =
                     |> Result.map (fun client -> client, notify)
                     |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
 
-                let taskName =
-                    match task.Description with
-                    | Some description -> $"%i{task.Attempt}.'%s{task.Id.Value}' %s{description}. "
-                    | None -> $"%i{task.Attempt}.'%s{task.Id.Value}' "
-
                 return {
-                    TaskName = $"%i{task.Attempt}.'%s{task.Description |> Option.defaultValue task.Id.Value}'. "
+                    TaskName = ActiveTask.print task
                     getSubdomains = persistenceDeps.initKdmidSubdomains
                     getRequests = getRequests
                     tryProcessFirst = tryProcessFirst

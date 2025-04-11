@@ -83,20 +83,12 @@ module private Kdmid =
                             |> Log.wrn
                             |> Ok
                         | Some validResults, None -> deps.TaskName + validResults |> Log.scs |> Ok
-                        | None, Some invalidResults ->
-                            {
-                                Message = invalidResults
-                                Code = None
-                            }
-                            |> Operation
-                            |> Error
-                        | None, None -> $"{deps.TaskName}Data to handle not found." |> Log.dbg |> Ok))
+                        | None, Some invalidResults -> deps.TaskName + invalidResults |> Log.crt |> Ok
+                        | None, None -> $"{deps.TaskName} Requests not found." |> Log.dbg |> Ok))
 
     module SearchAppointments =
         [<Literal>]
         let ID = "SA"
-        [<Literal>]
-        let NAME = "Search Appointments"
 
         let handle (task, cfg, ct) =
             let result = ResultBuilder()
@@ -113,15 +105,10 @@ let private SearchAppointmentsHandler = {
     Handler = Kdmid.SearchAppointments.handle |> Some
 }
 
-let private PassportReadinessHandler = {
-    Id = "PR" |> Graph.NodeIdValue
-    Handler = Kdmid.SearchAppointments.handle |> Some
-}
-
 let createHandlers (parentHandler: WorkerTaskHandler) =
     fun workerGraph ->
 
         let nodeId = Graph.Node.Id.combine [ parentHandler.Id; "RUS" |> Graph.NodeIdValue ]
-        let handlers = [ SearchAppointmentsHandler; PassportReadinessHandler ]
+        let handlers = [ SearchAppointmentsHandler ]
 
         workerGraph |> Worker.Client.createHandlers nodeId handlers

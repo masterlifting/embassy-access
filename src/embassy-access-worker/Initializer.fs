@@ -20,7 +20,7 @@ let run (task, cfg, ct) =
         |> Async.Start
 
         return
-            $"%i{task.Attempt}.'%s{task.Description |> Option.defaultValue task.Id.Value}'. Services have been initialized."
+            $"%s{ActiveTask.print task} Services have been initialized."
             |> Log.scs
             |> Ok
     }
