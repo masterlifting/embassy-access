@@ -66,8 +66,8 @@ module private Kdmid =
                         |> Ok))
 
     module SearchAppointments =
-        [<Literal>]
-        let ID = "SA"
+        let ServiceId = "RUS" |> Graph.NodeIdValue
+        let HandlerId = "SA" |> Graph.NodeIdValue
 
         let handle (task, cfg, ct) =
             let result = ResultBuilder()
@@ -80,14 +80,14 @@ module private Kdmid =
             |> ResultAsync.wrap id
 
 let private SearchAppointmentsHandler = {
-    Id = Kdmid.SearchAppointments.ID |> Graph.NodeIdValue
+    Id = Kdmid.SearchAppointments.HandlerId
     Handler = Kdmid.SearchAppointments.handle |> Some
 }
 
 let createHandlers (parentHandler: WorkerTaskHandler) =
     fun workerGraph ->
 
-        let nodeId = Graph.NodeId.combine [ parentHandler.Id; "RUS" |> Graph.NodeIdValue ]
-        let handlers = [ SearchAppointmentsHandler ]
+        let taskId = Graph.NodeId.combine [ parentHandler.Id; Kdmid.SearchAppointments.ServiceId ]
+        let taskHandlers = [ SearchAppointmentsHandler ]
 
-        workerGraph |> Worker.Client.createHandlers nodeId handlers
+        workerGraph |> Worker.Client.createHandlers taskId taskHandlers
