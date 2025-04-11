@@ -56,7 +56,7 @@ type Dependencies = {
 
             let getService serviceId =
                 deps.getServiceGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
+                |> ResultAsync.map (Graph.BFS.tryFind serviceId)
                 |> ResultAsync.bind (function
                     | None ->
                         $"Service '%s{serviceId.Value}' for the chat '%s{deps.Chat.Id.ValueStr}'"
@@ -66,7 +66,7 @@ type Dependencies = {
 
             let getEmbassy embassyId =
                 deps.getEmbassyGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
+                |> ResultAsync.map (Graph.BFS.tryFind embassyId)
                 |> ResultAsync.bind (function
                     | None ->
                         $"Embassy '%s{embassyId.Value}' for the chat '%s{deps.Chat.Id.ValueStr}'"

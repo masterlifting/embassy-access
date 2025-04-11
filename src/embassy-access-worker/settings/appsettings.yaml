@@ -1,0 +1,8 @@
+# @format
+
+Logging:
+  LogLevel:
+    Default: Debug
+
+Persistence:
+  FileSystem: /usr/src/embassy-access-data

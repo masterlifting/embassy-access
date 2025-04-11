@@ -1,6 +1,7 @@
 ﻿module internal EA.Worker.Dependencies.Embassies.Russian
 
 open System
+open EA.Worker.Domain.Embassies.Russian
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
@@ -16,36 +17,53 @@ module Kdmid =
     open EA.Telegram.Dependencies.Embassies.Russian
 
     type Dependencies = {
+        TaskName: string
         getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
         tryProcessFirst: Request list -> Async<Result<Request, Error' list>>
     } with
 
-        static member create (task: WorkerTask) cfg ct =
+        static member create (task: ActiveTask) cfg ct =
             let result = ResultBuilder()
 
             result {
-                let! persistenceDeps = Persistence.Dependencies.create cfg
-                let! telegramDeps = Telegram.Dependencies.create cfg ct
+                let! persistence = Persistence.Dependencies.create cfg
+                let! telegram = Telegram.Dependencies.create cfg ct
 
                 let notificationDeps: Kdmid.Notification.Dependencies = {
-                    translateMessages = telegramDeps.Culture.translateSeq
-                    setRequestAppointments = telegramDeps.Persistence.setRequestAppointments
-                    getRequestChats = telegramDeps.Persistence.getRequestChats
-                    sendMessages = telegramDeps.Web.Telegram.sendMessages
+                    translateMessages = telegram.Culture.translateSeq
+                    setRequestAppointments = telegram.Persistence.setRequestAppointments
+                    getRequestChats = telegram.Persistence.getRequestChats
+                    sendMessages = telegram.Web.Telegram.sendMessages
                 }
 
                 let notify notification =
                     notificationDeps
                     |> Message.Notification.spread notification
-                    |> ResultAsync.mapError (_.Message >> Log.critical)
+                    |> ResultAsync.mapError (_.Message >> Log.crt)
                     |> Async.Ignore
 
-                let getRequests embassyId =
-                    persistenceDeps.RequestStorage
-                    |> Request.Query.findManyByEmbassyId embassyId
+                let inline equalCountry (embassyId: Graph.NodeId) =
+                    let embassyCountry =
+                        embassyId
+                        |> Graph.NodeId.split
+                        |> Seq.skip 1
+                        |> Seq.truncate 2
+                        |> Graph.NodeId.combine
+                    let taskCountry =
+                        task.Id
+                        |> Graph.NodeId.split
+                        |> Seq.skip 1
+                        |> Seq.truncate 2
+                        |> Graph.NodeId.combine
+                    embassyCountry = taskCountry
+
+                let getRequests partServiceId =
+                    persistence.RequestStorage
+                    |> Request.Query.findManyByPartServiceId partServiceId
                     |> ResultAsync.map (
                         List.filter (fun request ->
-                            request.IsBackground
+                            equalCountry request.Service.Embassy.Id
+                            && request.IsBackground
                             && (request.ProcessState <> InProcess
                                 || request.ProcessState = InProcess
                                    && request.Modified < DateTime.UtcNow.Subtract task.Duration))
@@ -54,13 +72,14 @@ module Kdmid =
                 let tryProcessFirst requests =
                     {
                         CancellationToken = ct
-                        RequestStorage = persistenceDeps.RequestStorage
+                        RequestStorage = persistence.RequestStorage
                     }
                     |> Kdmid.Client.init
                     |> Result.map (fun client -> client, notify)
                     |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
 
                 return {
+                    TaskName = ActiveTask.print task
                     getRequests = getRequests
                     tryProcessFirst = tryProcessFirst
                 }

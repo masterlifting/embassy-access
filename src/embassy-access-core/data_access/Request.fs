@@ -117,17 +117,17 @@ module private InMemory =
             |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
             |> async.Return
 
-        let findManyByEmbassyName name client =
-            client
-            |> loadData
-            |> Result.map (Seq.filter (fun x -> x.Service.EmbassyName = name))
-            |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
-            |> async.Return
-
         let findManyByServiceId (id: Graph.NodeId) client =
             client
             |> loadData
             |> Result.map (Seq.filter (fun x -> x.Service.ServiceId = id.Value))
+            |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
+            |> async.Return
+
+        let findManyByPartServiceId (id: Graph.NodeId) client =
+            client
+            |> loadData
+            |> Result.map (Seq.filter (fun x -> x.Service.ServiceId.Contains id.Value))
             |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
             |> async.Return
 
@@ -189,7 +189,7 @@ module private InMemory =
 
             client
             |> loadData
-            |> Result.map (Array.filter (fun request -> not (idSet.Contains(request.Id))))
+            |> Result.map (Array.filter (fun request -> not (idSet.Contains request.Id)))
             |> Result.bind (fun data -> client |> Command.Json.save data)
             |> async.Return
 
@@ -223,10 +223,10 @@ module private FileSystem =
             |> ResultAsync.map (Seq.filter (fun x -> x.Service.ServiceId = id.Value))
             |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
 
-        let findManyByEmbassyName name client =
+        let findManyByPartServiceId (id: Graph.NodeId) client =
             client
             |> loadData
-            |> ResultAsync.map (Seq.filter (fun x -> x.Service.EmbassyName = name))
+            |> ResultAsync.map (Seq.filter (fun x -> x.Service.ServiceId.Contains id.Value))
             |> ResultAsync.bind (Seq.map _.ToDomain() >> Result.choose)
 
         let findManyByIds (ids: RequestId seq) client =
@@ -282,7 +282,7 @@ module private FileSystem =
 
             client
             |> loadData
-            |> ResultAsync.map (Array.filter (fun request -> not (idSet.Contains(request.Id))))
+            |> ResultAsync.map (Array.filter (fun request -> not (idSet.Contains request.Id)))
             |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
 
 let private toPersistenceStorage storage =
@@ -316,16 +316,16 @@ module Query =
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyId embassyId
         | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
-    let findManyByEmbassyName name storage =
-        match storage |> toPersistenceStorage with
-        | Storage.InMemory client -> client |> InMemory.Query.findManyByEmbassyName name
-        | Storage.FileSystem client -> client |> FileSystem.Query.findManyByEmbassyName name
-        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
-
     let findManyByServiceId id storage =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Query.findManyByServiceId id
         | Storage.FileSystem client -> client |> FileSystem.Query.findManyByServiceId id
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
+
+    let findManyByPartServiceId id storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Query.findManyByPartServiceId id
+        | Storage.FileSystem client -> client |> FileSystem.Query.findManyByPartServiceId id
         | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyByIds ids storage =

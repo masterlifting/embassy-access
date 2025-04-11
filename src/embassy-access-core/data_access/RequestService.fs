@@ -2,7 +2,6 @@
 
 open System
 open Infrastructure.Domain
-open Infrastructure.Prelude
 open EA.Core.Domain
 
 type RequestServiceEntity() =
@@ -23,7 +22,6 @@ type RequestServiceEntity() =
         Embassy = {
             Id = this.EmbassyId |> Graph.NodeIdValue
             Name = this.EmbassyName
-            ShortName = this.EmbassyName |> Graph.Node.Name.split |> Seq.last
             Description = this.EmbassyDescription
             TimeZone = this.EmbassyTimeZone
         }

@@ -2,48 +2,61 @@
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Storages.Domain
+open Worker.Dependencies
 open Worker.DataAccess
 open Worker.Domain
 open EA.Worker
 
-[<Literal>]
-let private APP_NAME = "Worker"
+let resultAsync = ResultAsyncBuilder()
 
 [<EntryPoint>]
 let main _ =
+    resultAsync {
+        let configuration =
+            Configuration.setYamls [
+                @"settings\appsettings.yaml"
+                @"settings\worker.yaml"
+                @"settings\embassies.yaml"
+                @"settings\embassies.rus.yaml"
+            ]
 
-    let configuration = Configuration.getYaml "appsettings"
-    Logging.useConsole configuration
+        Logging.useConsole configuration
 
-    let rootHandler = {
-        Id = "WRK" |> Graph.NodeIdValue
-        Name = APP_NAME
-        Handler = Initializer.run |> Some
-    }
-
-    let appHandlers = Graph.Node(rootHandler, [ Embassies.Russian.register () ])
-
-    let getTaskNode handlers =
-        fun nodeId ->
+        let! taskGraph =
             {
-                Configuration.Connection.Section = APP_NAME
+                Configuration.Connection.Section = "Worker"
                 Configuration.Connection.Provider = configuration
             }
             |> TaskGraph.Configuration
             |> TaskGraph.init
-            |> ResultAsync.wrap (TaskGraph.create handlers)
-            |> ResultAsync.map (Graph.DFS.tryFindById nodeId)
-            |> ResultAsync.bind (function
-                | Some node -> Ok node
-                | None -> $"Task handler Id '%s{nodeId.Value}' not found." |> NotFound |> Error)
+            |> ResultAsync.wrap TaskGraph.get
 
-    let workerConfig = {
-        Name = rootHandler.Name
-        Configuration = configuration
-        TaskNodeRootId = rootHandler.Id
-        getTaskNode = getTaskNode appHandlers
+        let rootTaskHandler = {
+            Id = "WRK" |> Graph.NodeIdValue
+            Handler = Initializer.run |> Some
+        }
+
+        let taskHandlers =
+            Graph.Node(
+                rootTaskHandler,
+                [ taskGraph |> Embassies.Russian.createHandlers rootTaskHandler ]
+                |> List.choose id
+            )
+
+        return
+            Worker.Client.start {
+                Name = "Embassy Access Worker"
+                Configuration = configuration
+                RootTaskId = rootTaskHandler.Id
+                tryFindTask =
+                    fun taskId ->
+                        taskGraph
+                        |> Worker.Client.registerHandlers taskHandlers
+                        |> Graph.DFS.tryFind taskId
+                        |> Ok
+                        |> async.Return
+            }
+            |> Async.map (fun _ -> 0 |> Ok)
     }
-
-    workerConfig |> Worker.Client.start |> Async.RunSynchronously
-
-    0
+    |> Async.RunSynchronously
+    |> Result.defaultWith (fun error -> failwithf $"Failed to start EA.Worker: %s{error.Message}")

@@ -29,13 +29,13 @@ let private createMessage chatId msgIdOpt nameOpt columns data =
 
 let private toEmbassy chatId messageId buttonGroupName (embassies: EmbassyNode seq) =
     embassies
-    |> Seq.map (fun embassy -> Router.Embassies(Method.Get(Get.Embassy(embassy.Id))).Value, embassy.ShortName)
+    |> Seq.map (fun embassy -> Router.Embassies(Method.Get(Get.Embassy embassy.Id)).Value, embassy.Name)
     |> createMessage chatId messageId buttonGroupName 3
 
 let private toEmbassyService chatId messageId buttonGroupName embassyId (services: ServiceNode seq) =
     services
     |> Seq.map (fun service ->
-        Router.Embassies(Method.Get(Get.EmbassyService(embassyId, service.Id))).Value, service.ShortName)
+        Router.Embassies(Method.Get(Get.EmbassyService(embassyId, service.Id))).Value, service.Name)
     |> createMessage chatId (Some messageId) buttonGroupName 1
 
 let getEmbassyService embassyId serviceId =
@@ -46,7 +46,7 @@ let getEmbassyService embassyId serviceId =
             | [] ->
                 match serviceNode.Id.TryGetPart 1 with
                 | None ->
-                    $"Embassy service '{serviceNode.ShortName}' is not supported."
+                    $"Embassy service '{serviceNode.Value.Name}' is not supported."
                     |> NotSupported
                     |> Error
                     |> async.Return
@@ -54,7 +54,7 @@ let getEmbassyService embassyId serviceId =
                     match countryId.Value with
                     | Constants.RUSSIAN_NODE_ID -> deps.Russian |> Russian.Query.get embassyId serviceNode.Value
                     | _ ->
-                        $"Embassy service '{serviceNode.ShortName}' is not implemented. "
+                        $"Embassy service '{serviceNode.Value.Name}' is not implemented. "
                         + Constants.NOT_IMPLEMENTED
                         |> NotImplemented
                         |> Error
@@ -74,7 +74,7 @@ let getUserEmbassyService embassyId serviceId =
             | [] ->
                 match serviceNode.Id.TryGetPart 1 with
                 | None ->
-                    $"Embassy service '{serviceNode.ShortName}' is not supported."
+                    $"Embassy service '{serviceNode.Value.Name}' is not supported."
                     |> NotSupported
                     |> Error
                     |> async.Return
@@ -82,7 +82,7 @@ let getUserEmbassyService embassyId serviceId =
                     match countryId.Value with
                     | Constants.RUSSIAN_NODE_ID -> deps.Russian |> Russian.Query.userGet embassyId serviceNode.Value
                     | _ ->
-                        $"Embassy service '{serviceNode.ShortName}' is not implemented. "
+                        $"Embassy service '{serviceNode.Value.Name}' is not implemented. "
                         + Constants.NOT_IMPLEMENTED
                         |> NotImplemented
                         |> Error

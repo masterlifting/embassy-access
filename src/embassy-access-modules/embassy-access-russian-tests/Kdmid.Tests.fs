@@ -79,8 +79,7 @@ module private Fixture =
             Description = None
             Embassy = {
                 Id = "EMB.RUS.SRB.BEG" |> Graph.NodeIdValue
-                Name = [ "Russian"; "Germany"; "Berlin" ] |> Graph.Node.Name.combine
-                ShortName = "Berlin"
+                Name = "Berlin"
                 Description = None
                 TimeZone = 0.
             }

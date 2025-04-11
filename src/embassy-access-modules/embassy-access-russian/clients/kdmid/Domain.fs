@@ -2,11 +2,14 @@
 
 open System
 open System.Threading
+open Infrastructure.Domain
+open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Core.DataAccess
-open Infrastructure.Domain
 open Web.Clients
 open Web.Clients.Domain
+
+let private result = ResultBuilder()
 
 type Client = {
     initHttpClient: string -> Result<Http.Client, Error'>
@@ -25,38 +28,66 @@ type Dependencies = {
 }
 
 type Payload = {
-    EmbassyId: Graph.NodeId
     Subdomain: string
     Id: int
     Cd: string
     Ems: string option
 } with
 
-    static member print value =
-        value
-        |> Http.Route.toUri
-        |> Result.bind Http.Route.toQueryParams
-        |> Result.map (Seq.map (fun p -> $"%s{p.Key}=%s{p.Value}"))
-        |> Result.map (String.concat ",")
+    static member print(payload: Payload) =
+        let ems =
+            payload.Ems
+            |> Option.map (fun ems -> $"; EMS:%s{ems}")
+            |> Option.defaultValue ""
+        $"'ID:%i{payload.Id}; CD:%s{payload.Cd}{ems} (%s{payload.Subdomain})'"
+
+    static member create(payload: string) =
+        result {
+            let! uri = payload |> Web.Clients.Http.Route.toUri
+
+            let! hostParts =
+                match uri.Host.Split '.' with
+                | hostParts when hostParts.Length < 3 ->
+                    $"Kdmid host: '%s{uri.Host}' is not supported." |> NotSupported |> Error
+                | hostParts -> hostParts |> Ok
+
+            let subdomain = hostParts[0]
+
+            let! queryParams = uri |> Http.Route.toQueryParams
+
+            let! id =
+                queryParams
+                |> Map.tryFind "id"
+                |> Option.map (function
+                    | AP.IsInt id when id > 1000 -> id |> Ok
+                    | _ -> "Kdmid payload 'ID' query parameter is not supported." |> NotSupported |> Error)
+                |> Option.defaultValue ("Kdmid payload 'ID' query parameter not found." |> NotFound |> Error)
+
+            let! cd =
+                queryParams
+                |> Map.tryFind "cd"
+                |> Option.map (function
+                    | AP.IsLettersOrNumbers cd -> cd |> Ok
+                    | _ -> "Kdmid payload 'CD' query parameter is not supported." |> NotSupported |> Error)
+                |> Option.defaultValue ("Kdmid payload 'CD' query parameter not found." |> NotFound |> Error)
+
+            let! ems =
+                queryParams
+                |> Map.tryFind "ems"
+                |> Option.map (function
+                    | AP.IsLettersOrNumbers ems -> ems |> Some |> Ok
+                    | _ -> "Kdmid payload 'EMS' query parameter is not supported." |> NotSupported |> Error)
+                |> Option.defaultValue (None |> Ok)
+
+            return {
+                Subdomain = subdomain
+                Id = id
+                Cd = cd
+                Ems = ems
+            }
+        }
 
 module Constants =
-    let internal SUPPORTED_SUB_DOMAINS =
-        Map [
-            "belgrad", "EMB.RUS.SRB.BEG"
-            "budapest", "EMB.RUS.HUN.BUD"
-            "sarajevo", "EMB.RUS.BIH.SJJ"
-            "berlin", "EMB.RUS.DEU.BER"
-            "podgorica", "EMB.RUS.MNE.POD"
-            "tirana", "EMB.RUS.ALB.TIA"
-            "paris", "EMB.RUS.FRA.PAR"
-            "rome", "EMB.RUS.ITA.ROM"
-            "dublin", "EMB.RUS.IRL.DUB"
-            "bern", "EMB.RUS.CHE.BER"
-            "helsinki", "EMB.RUS.FIN.HEL"
-            "hague", "EMB.RUS.NLD.HAG"
-            "ljubljana", "EMB.RUS.SVN.LJU"
-        ]
-
     module ErrorCode =
         [<Literal>]
         let PAGE_HAS_ERROR = "PageHasError"
