@@ -1,6 +1,5 @@
 ﻿module internal EA.Worker.Embassies.Russian
 
-open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
@@ -24,27 +23,27 @@ let private createEmbassyId (task: ActiveTask) =
 
 module private Kdmid =
 
-    let private handleGroup pickOrder requests =
-        requests
-        |> pickOrder
-        |> ResultAsync.mapError Error'.combine
-        |> ResultAsync.bind (fun request ->
-            let errorFilter _ = true
-
-            match request |> Notification.tryCreate errorFilter with
-            | Some notification ->
-                match notification with
-                | Empty(_, message) -> $"{message} for '{request.Service.Name}'." |> Ok
-                | Unsuccessfully(_, error) -> error |> Error
-                | HasAppointments(_, appointments) ->
-                    $"Appointments found: {appointments.Count} for '{request.Service.Name}'." |> Ok
-                | HasConfirmations(_, confirmations) ->
-                    $"Confirmations found: {confirmations.Count} for '{request.Service.Name}'."
-                    |> Ok
-            | None -> $"No notifications created for '{request.Service.Name}'." |> Ok)
-
-    let startOrder embassyId =
+    let private processGroup requests =
         fun (deps: Kdmid.Dependencies) ->
+            deps.tryProcessFirst requests
+            |> ResultAsync.map (fun request ->
+                let errorFilter _ = true
+
+                match request |> Notification.tryCreate errorFilter with
+                | Some notification ->
+                    match notification with
+                    | Empty(_, message) -> $"{deps.TaskName} {message}." |> Log.dbg
+                    | Unsuccessfully(_, error) -> error.Message |> Log.crt
+                    | HasAppointments(_, appointments) ->
+                        $"{deps.TaskName} Appointments found: {appointments.Count}." |> Log.scs
+                    | HasConfirmations(_, confirmations) ->
+                        $"{deps.TaskName} Confirmations found: {confirmations.Count}." |> Log.scs
+                | None -> $"{deps.TaskName} No notifications created." |> Log.wrn)
+
+    let start embassyId =
+        fun (deps: Kdmid.Dependencies) ->
+            let inline processGroup requests = deps |> processGroup requests
+
             deps.getRequests embassyId
             |> ResultAsync.map (fun requests ->
                 requests
@@ -54,37 +53,17 @@ module private Kdmid =
                     |> Seq.sortByDescending _.Modified
                     |> Seq.truncate 5
                     |> Seq.toList
-                    |> handleGroup deps.tryProcessFirst))
+                    |> processGroup))
             |> ResultAsync.map (Async.Sequential >> Async.map Result.unzip)
             |> Async.bind (function
                 | Error error -> Error error |> async.Return
-                | Ok value ->
-                    value
-                    |> Async.map (fun (messages, errors) ->
-                        let validResults =
-                            messages
-                            |> List.map (fun message -> $" - {message}")
-                            |> String.concat Environment.NewLine
-                            |> function
-                                | AP.IsString x -> Environment.NewLine + x |> Some
-                                | _ -> None
-
-                        let invalidResults =
-                            errors
-                            |> List.map (fun error -> $" - {error.Message}")
-                            |> String.concat Environment.NewLine
-                            |> function
-                                | AP.IsString x -> Environment.NewLine + x |> Some
-                                | _ -> None
-
-                        match validResults, invalidResults with
-                        | Some validResults, Some invalidResults ->
-                            $"{deps.TaskName}{Environment.NewLine}Valid results:{validResults}{Environment.NewLine}Invalid results:{invalidResults}"
-                            |> Log.wrn
-                            |> Ok
-                        | Some validResults, None -> deps.TaskName + validResults |> Log.scs |> Ok
-                        | None, Some invalidResults -> deps.TaskName + invalidResults |> Log.crt |> Ok
-                        | None, None -> $"{deps.TaskName} Requests not found." |> Log.dbg |> Ok))
+                | Ok results ->
+                    results
+                    |> Async.map (fun (_, errors) ->
+                        errors
+                        |> Seq.concat
+                        |> Seq.iter (fun error -> deps.TaskName + " Error: " + error.Message |> Log.crt)
+                        |> Ok))
 
     module SearchAppointments =
         [<Literal>]
@@ -96,7 +75,7 @@ module private Kdmid =
             result {
                 let! deps = Kdmid.Dependencies.create task cfg ct
                 let! embassyId = task |> createEmbassyId
-                return startOrder embassyId deps
+                return start embassyId deps
             }
             |> ResultAsync.wrap id
 
