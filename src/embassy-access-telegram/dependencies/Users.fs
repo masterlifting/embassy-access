@@ -85,7 +85,7 @@ type Dependencies = {
                     | Some countryId ->
                         let serviceId =
                             [ Constants.SERVICE_NODE_ID |> Graph.NodeIdValue; countryId ]
-                            |> Graph.Node.Id.combine
+                            |> Graph.NodeId.combine
 
                         deps.getServiceGraph ()
                         |> ResultAsync.map (Graph.BFS.tryFind serviceId)

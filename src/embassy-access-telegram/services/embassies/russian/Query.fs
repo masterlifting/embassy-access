@@ -31,7 +31,7 @@ let get embassyId (service: ServiceNode) =
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoDateRangeConfirmation embassyId service)
         | _ ->
-            $"The service '%s{service.ShortName}' is not implemented. "
+            $"The service '%s{service.Name}' is not implemented. "
             + Constants.NOT_IMPLEMENTED
             |> NotImplemented
             |> Error
@@ -54,7 +54,7 @@ let userGet embassyId (service: ServiceNode) =
                 |> Kdmid.Dependencies.create
                 |> Result.bind (Kdmid.Query.getSubscriptions requests)
             | _ ->
-                $"The service '%s{service.ShortName}' is not implemented. "
+                $"The service '%s{service.Name}' is not implemented. "
                 + Constants.NOT_IMPLEMENTED
                 |> NotImplemented
                 |> Error)

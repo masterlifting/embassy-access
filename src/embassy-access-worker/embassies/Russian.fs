@@ -13,7 +13,7 @@ let private createEmbassyId (task: ActiveTask) =
     task.Id.TryTakeRange 1 None
     |> Option.map (fun range -> range[.. range.Length - 2]) // Reduce the handler Id here (e.g. "RUS.SRB.BEG.SA" -> "RUS.SRB.BEG")
     |> Option.map (fun range -> (Constants.EMBASSY_ROOT_ID |> Graph.NodeIdValue) :: range)
-    |> Option.map (Graph.Node.Id.combine >> Ok)
+    |> Option.map (Graph.NodeId.combine >> Ok)
     |> Option.defaultValue (
         Error
         <| Operation {
@@ -108,7 +108,7 @@ let private SearchAppointmentsHandler = {
 let createHandlers (parentHandler: WorkerTaskHandler) =
     fun workerGraph ->
 
-        let nodeId = Graph.Node.Id.combine [ parentHandler.Id; "RUS" |> Graph.NodeIdValue ]
+        let nodeId = Graph.NodeId.combine [ parentHandler.Id; "RUS" |> Graph.NodeIdValue ]
         let handlers = [ SearchAppointmentsHandler ]
 
         workerGraph |> Worker.Client.createHandlers nodeId handlers

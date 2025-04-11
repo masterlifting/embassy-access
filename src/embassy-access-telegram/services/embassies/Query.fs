@@ -29,13 +29,13 @@ let private createMessage chatId msgIdOpt nameOpt columns data =
 
 let private toEmbassy chatId messageId buttonGroupName (embassies: EmbassyNode seq) =
     embassies
-    |> Seq.map (fun embassy -> Router.Embassies(Method.Get(Get.Embassy(embassy.Id))).Value, embassy.ShortName)
+    |> Seq.map (fun embassy -> Router.Embassies(Method.Get(Get.Embassy embassy.Id)).Value, embassy.Name)
     |> createMessage chatId messageId buttonGroupName 3
 
 let private toEmbassyService chatId messageId buttonGroupName embassyId (services: ServiceNode seq) =
     services
     |> Seq.map (fun service ->
-        Router.Embassies(Method.Get(Get.EmbassyService(embassyId, service.Id))).Value, service.ShortName)
+        Router.Embassies(Method.Get(Get.EmbassyService(embassyId, service.Id))).Value, service.Name)
     |> createMessage chatId (Some messageId) buttonGroupName 1
 
 let getEmbassyService embassyId serviceId =

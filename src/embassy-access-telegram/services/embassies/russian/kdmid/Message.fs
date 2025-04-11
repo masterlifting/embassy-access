@@ -23,7 +23,7 @@ module Notification =
 
     let toSuccessfully (request: Request, msg: string) =
         fun chatId ->
-            $"{msg} for '{request.Service.Name}' of '{request.Service.Embassy.ShortName}'."
+            $"{msg} for '{request.Service.Name}' of '{request.Service.Embassy.Name}'."
             |> Text.create
             |> Message.createNew chatId
 
@@ -53,7 +53,7 @@ module Notification =
                     (chatId, New)
                     |> ButtonsGroup.create {
                         Name =
-                            $"Choose the appointment for subscription '{payload}' of service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}'"
+                            $"Choose the appointment for subscription '{payload}' of service '{request.Service.Name}' at '{request.Service.Embassy.Name}'"
                         Columns = 1
                         Buttons =
                             data
@@ -67,7 +67,7 @@ module Notification =
             |> Payload.create
             |> Result.map Payload.print
             |> Result.map (fun payload ->
-                $"The subscription '{payload}' for service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}' was successfully applied.
+                $"The subscription '{payload}' for service '{request.Service.Name}' at '{request.Service.Embassy.Name}' was successfully applied.
                 {Environment.NewLine}The response:{Environment.NewLine}
                 '{confirmations |> Seq.map _.Description |> String.concat Environment.NewLine}'"
                 |> Text.create
@@ -85,7 +85,7 @@ module Notification =
                 | HasAppointments(request, appointments) -> chatId |> toHasAppointments (request, appointments)
                 | HasConfirmations(request, confirmations) -> chatId |> toHasConfirmations (request, confirmations))
             |> Option.defaultValue (
-                $"I'm sorry, but I can't process your request for '{request.Service.Name}' of '{request.Service.Embassy.ShortName}'."
+                $"I'm sorry, but I can't process your request for '{request.Service.Name}' of '{request.Service.Embassy.Name}'."
                 |> Text.create
                 |> Message.createNew chatId
                 |> Ok
