@@ -27,7 +27,6 @@ type Dependencies = {
     CancellationToken: CancellationToken
 }
 
-
 type Payload = {
     Subdomain: string
     Id: int

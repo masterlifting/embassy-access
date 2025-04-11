@@ -2,6 +2,7 @@
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Storages.Domain
+open Worker.Dependencies
 open Worker.DataAccess
 open Worker.Domain
 open EA.Worker
@@ -53,13 +54,13 @@ let main _ =
             |> Ok
             |> async.Return
 
-    let workerConfig = {
+    let workerDeps: Worker.Dependencies = {
         Name = APP_NAME
         Configuration = configuration
-        TaskNodeRootId = rootHandler.Id
+        RootTaskId = rootHandler.Id
         tryFindTask = tryFindTask ()
     }
 
-    workerConfig |> Worker.Client.start |> Async.RunSynchronously
+    workerDeps |> Worker.Client.start |> Async.RunSynchronously
 
     0
