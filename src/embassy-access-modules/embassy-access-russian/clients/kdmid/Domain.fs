@@ -37,9 +37,9 @@ type Payload = {
     static member print(payload: Payload) =
         let ems =
             payload.Ems
-            |> Option.map (fun ems -> $", EMS: '%s{ems}'")
+            |> Option.map (fun ems -> $"; EMS:%s{ems}")
             |> Option.defaultValue ""
-        $"Subdomain: '%s{payload.Subdomain}', ID: '%i{payload.Id}', CD: '%s{payload.Cd}'{ems}"
+        $"'ID:%i{payload.Id}; CD:%s{payload.Cd}{ems} (%s{payload.Subdomain})'"
 
     static member create(payload: string) =
         result {
