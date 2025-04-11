@@ -1,4 +1,31 @@
 # @format
+KdmidSubdomains:
+  - Name: belgrad
+    EmbassyId: EMB.RUS.SRB.BEG
+  - Name: budapest
+    EmbassyId: EMB.RUS.HUN.BUD
+  - Name: sarajevo
+    EmbassyId: EMB.RUS.BIH.SJJ
+  - Name: berlin
+    EmbassyId: EMB.RUS.DEU.BER
+  - Name: podgorica
+    EmbassyId: EMB.RUS.MNE.POD
+  - Name: tirana
+    EmbassyId: EMB.RUS.ALB.TIA
+  - Name: paris
+    EmbassyId: EMB.RUS.FRA.PAR
+  - Name: rome
+    EmbassyId: EMB.RUS.ITA.ROM
+  - Name: dublin
+    EmbassyId: EMB.RUS.IRL.DUB
+  - Name: bern
+    EmbassyId: EMB.RUS.CHE.BER
+  - Name: helsinki
+    EmbassyId: EMB.RUS.FIN.HEL
+  - Name: hague
+    EmbassyId: EMB.RUS.NLD.HAG
+  - Name: ljubljana
+    EmbassyId: EMB.RUS.SVN.LJU
 
 KdmidRussianServicesInstructions: &KdmidRussianServicesInstructions
   Instruction: Take the link you received in your email after registering your request on the kdmid.ru website. Put the link instead of <link> in the command above. Send it to the chat (without apostrophes).
@@ -63,3 +90,4 @@ Services:
               Description: Renunciation options
               Children:
                 <<: *KdmidRussianServices
+

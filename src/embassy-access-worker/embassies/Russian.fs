@@ -90,7 +90,7 @@ module private Kdmid =
                             }
                             |> Operation
                             |> Error
-                        | None, None -> $"{deps.TaskName}No results found." |> Log.dbg |> Ok))
+                        | None, None -> $"{deps.TaskName}Data to handle not found." |> Log.dbg |> Ok))
 
     module SearchAppointments =
         [<Literal>]

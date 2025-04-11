@@ -8,6 +8,8 @@
 
     <ItemGroup>
         <Compile Include="domain\Constants.fs" />
+        <Compile Include="domain\Embassies.Russian.fs" />
+        <Compile Include="data_access\Embassies.Russian.fs" />
         <Compile Include="dependencies\Web.fs" />
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\AIProvider.fs" />

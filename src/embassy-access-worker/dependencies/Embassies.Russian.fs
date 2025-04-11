@@ -1,6 +1,7 @@
 ﻿module internal EA.Worker.Dependencies.Embassies.Russian
 
 open System
+open EA.Worker.Domain.Embassies.Russian
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
@@ -17,6 +18,7 @@ module Kdmid =
 
     type Dependencies = {
         TaskName: string
+        getSubdomains: unit -> Async<Result<KdmidSubdomain list, Error'>>
         getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
         tryProcessFirst: Request list -> Async<Result<Request, Error' list>>
     } with
@@ -63,6 +65,7 @@ module Kdmid =
 
                 return {
                     TaskName = $"%i{task.Attempt}.'%s{task.Description |> Option.defaultValue task.Id.Value}'. "
+                    getSubdomains = persistenceDeps.initKdmidSubdomains
                     getRequests = getRequests
                     tryProcessFirst = tryProcessFirst
                 }

@@ -10,6 +10,8 @@ open AIProvider.Services.DataAccess
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
+open EA.Worker.Domain
+open EA.Worker.DataAccess
 
 type Dependencies = {
     ChatStorage: Chat.ChatStorage
@@ -17,6 +19,7 @@ type Dependencies = {
     initCultureStorage: unit -> Result<Culture.Response.Storage, Error'>
     initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>
     initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>
+    initKdmidSubdomains: unit -> Async<Result<Embassies.Russian.KdmidSubdomain list, Error'>>
     resetData: unit -> Async<Result<unit, Error'>>
 } with
 
@@ -75,6 +78,15 @@ type Dependencies = {
                 |> ServiceGraph.Configuration
                 |> ServiceGraph.init
 
+            let initKdmidSubdomains () =
+                {
+                    Configuration.Connection.Section = "KdmidSubdomains"
+                    Configuration.Connection.Provider = cfg
+                }
+                |> Embassies.Russian.Configuration
+                |> Embassies.Russian.init
+                |> ResultAsync.wrap Embassies.Russian.getKdmidSubdomains
+
             let! chatStorage = initChatStorage ()
             let! requestStorage = initRequestStorage ()
 
@@ -102,6 +114,7 @@ type Dependencies = {
                 initCultureStorage = initCultureStorage
                 initEmbassyGraphStorage = initEmbassyGraphStorage
                 initServiceGraphStorage = initServiceGraphStorage
+                initKdmidSubdomains = initKdmidSubdomains
                 resetData = resetData
             }
         }

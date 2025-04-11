@@ -9,9 +9,6 @@ open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.Domain
 
-[<Literal>]
-let private Name = "Embassies"
-
 type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Provider
 
 type StorageType = Configuration of Configuration.Connection

@@ -33,7 +33,8 @@ module Notification =
     let toHasAppointments (request: Request, appointments: Appointment Set) =
         fun chatId ->
             request.Service.Payload
-            |> Payload.print
+            |> Payload.create
+            |> Result.map Payload.print
             |> Result.map (fun payload ->
                 appointments
                 |> Seq.map (fun appointment ->
@@ -63,7 +64,8 @@ module Notification =
     let toHasConfirmations (request: Request, confirmations: Confirmation Set) =
         fun chatId ->
             request.Service.Payload
-            |> Payload.print
+            |> Payload.create
+            |> Result.map Payload.print
             |> Result.map (fun payload ->
                 $"The subscription '{payload}' for service '{request.Service.Name}' at '{request.Service.Embassy.ShortName}' was successfully applied.
                 {Environment.NewLine}The response:{Environment.NewLine}
