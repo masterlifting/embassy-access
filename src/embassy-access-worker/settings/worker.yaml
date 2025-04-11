@@ -66,6 +66,7 @@ Worker:
         Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
         - Id: SRB
+          Parallel: true
           Tasks:
             - Id: SA
               Enabled: true
@@ -75,6 +76,90 @@ Worker:
               Schedule:
                 StartTime: 00:55:00
                 StopTime: 23:55:20
+                TimeZone: 2
+        - Id: HUN
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Hungary
+              Schedule:
+                TimeZone: 2
+        - Id: BIH
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Bosnia and Herzegovina
+              Schedule:
+                TimeZone: 2
+        - Id: DEU
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Germany
+              Schedule:
+                TimeZone: 2
+        - Id: MNE
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Montenegro
+              Schedule:
+                TimeZone: 2
+        - Id: ALB
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Albania
+              Schedule:
+                TimeZone: 2
+        - Id: FRA
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in France
+              Schedule:
+                TimeZone: 2
+        - Id: ITA
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Italy
+              Schedule:
+                TimeZone: 2
+        - Id: IRL
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Ireland
+              Schedule:
+                TimeZone: 1
+        - Id: CHE
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Switzerland
+              Schedule:
+                TimeZone: 2
+        - Id: FIN
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Finland
+              Schedule:
+                TimeZone: 3
+        - Id: NLD
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Netherlands
+              Schedule:
+                TimeZone: 2
+        - Id: SVN
+          Parallel: true
+          Tasks:
+            - Id: SA
+              Description: Search appointments for Russian embassy in Slovenia
+              Schedule:
                 TimeZone: 2
     - Id: CHN
       Parallel: true
