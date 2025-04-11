@@ -54,7 +54,7 @@ let main _ =
                     fun taskId ->
                         taskGraph
                         |> Worker.Client.registerHandlers taskHandlers
-                        |> Graph.DFS.tryFindById taskId
+                        |> Graph.DFS.tryFind taskId
                         |> Ok
                         |> async.Return
             }

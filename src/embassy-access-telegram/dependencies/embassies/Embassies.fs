@@ -30,7 +30,7 @@ type Dependencies = {
 
             let getEmbassyNode embassyId =
                 deps.getEmbassyGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
+                |> ResultAsync.map (Graph.BFS.tryFind embassyId)
                 |> ResultAsync.bind (function
                     | Some embassy -> Ok embassy
                     | None ->
@@ -41,7 +41,7 @@ type Dependencies = {
 
             let getEmbassyServiceGraph embassyId =
                 deps.getEmbassyGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFindById embassyId)
+                |> ResultAsync.map (Graph.BFS.tryFind embassyId)
                 |> ResultAsync.bindAsync (function
                     | None ->
                         $"Services of Embassy '%s{embassyId.Value}' is not implemented. "
@@ -64,7 +64,7 @@ type Dependencies = {
                                 |> Graph.Node.Id.combine
 
                             deps.getServiceGraph ()
-                            |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
+                            |> ResultAsync.map (Graph.BFS.tryFind serviceId)
                             |> ResultAsync.bind (function
                                 | None ->
                                     $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
@@ -75,7 +75,7 @@ type Dependencies = {
 
             let getServiceNode serviceId =
                 deps.getServiceGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFindById serviceId)
+                |> ResultAsync.map (Graph.BFS.tryFind serviceId)
                 |> ResultAsync.bind (function
                     | None ->
                         $"Service '%s{serviceId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
