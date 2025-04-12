@@ -1,6 +1,7 @@
 ﻿open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Infrastructure.Configuration.Domain
 open Persistence.Storages.Domain
 open Worker.Dependencies
 open Worker.DataAccess
@@ -12,13 +13,18 @@ let resultAsync = ResultAsyncBuilder()
 [<EntryPoint>]
 let main _ =
     resultAsync {
-        let configuration =
-            Configuration.setYamls [
-                @"settings\appsettings.yaml"
-                @"settings\worker.yaml"
-                @"settings\embassies.yaml"
-                @"settings\embassies.rus.yaml"
-            ]
+        let! configuration =
+            {
+                Files = [
+                    @"settings\appsettings.yaml"
+                    @"settings\worker.yaml"
+                    @"settings\embassies.yaml"
+                    @"settings\embassies.rus.yaml"
+                ]
+            }
+            |> Configuration.Client.Yaml
+            |> Configuration.Client.init
+            |> async.Return
 
         Logging.useConsole configuration
 
