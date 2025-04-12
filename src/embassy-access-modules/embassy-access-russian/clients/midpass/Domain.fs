@@ -1,13 +1,15 @@
 ﻿module EA.Russian.Clients.Domain.Midpass
 
 open System
+open EA.Core.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open System.Collections.Concurrent
 open Web.Clients.Domain
 
-type Client = Http.Client
-type ClientFactory = ConcurrentDictionary<string, Client>
+type Client = {
+    initHttpClient: string -> Result<Http.Client, Error'>
+    updateRequest: Request -> Async<Result<Request, Error'>>
+}
 
 type Dependencies = { Number: string }
 

@@ -32,7 +32,7 @@ type Dependencies = {
     printPayload: string -> Result<string, Error'>
 } with
 
-    static member create(deps: Russian.Dependencies) =
+    static member create(deps: Request.Dependencies) =
         let result = ResultBuilder()
 
         result {

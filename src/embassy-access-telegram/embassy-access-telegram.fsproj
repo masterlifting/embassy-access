@@ -31,13 +31,14 @@
         <Compile Include="dependencies\client\Client.fs" />
         <Compile Include="dependencies\client\Request.fs" />
         <Compile Include="dependencies\client\Notification.fs" />
-        <Compile Include="dependencies\embassies\russian\Russian.fs" />
         <Compile Include="dependencies\embassies\russian\Midpass.fs" />
         <Compile Include="dependencies\embassies\russian\Kdmid.fs" />
+        <Compile Include="dependencies\embassies\russian\Russian.fs" />
         <Compile Include="dependencies\embassies\Embassies.fs" />
         <Compile Include="dependencies\Users.fs" />
         <Compile Include="services\culture\Query.fs" />
         <Compile Include="services\culture\Command.fs" />
+        <Compile Include="services\embassies\Mapper.fs" />
         <Compile Include="services\embassies\Instruction.fs" />
         <Compile Include="services\embassies\Notification.fs" />
         <Compile Include="services\embassies\russian\kdmid\Query.fs" />

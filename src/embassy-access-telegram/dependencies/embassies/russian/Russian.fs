@@ -15,6 +15,8 @@ type Dependencies = {
     Chat: Chat
     MessageId: int
     CancellationToken: CancellationToken
+    Kdmid: EA.Russian.Clients.Domain.Kdmid.Dependencies
+    Midpass: EA.Russian.Clients.Domain.Midpass.Dependencies
     Culture: Culture.Dependencies
     ChatStorage: Chat.ChatStorage
     RequestStorage: Request.RequestStorage
@@ -35,11 +37,16 @@ type Dependencies = {
         result {
             let getChatRequests () =
                 deps.RequestStorage |> Request.Query.findManyByIds chat.Subscriptions
+            
+            let! kdmid = Kdmid.Dependencies.create deps
+            let! midpass = Midpass.Dependencies.create deps
 
             return {
                 Chat = chat
                 MessageId = deps.MessageId
                 CancellationToken = deps.CancellationToken
+                Kdmid = kdmid
+                Midpass = midpass
                 Culture = deps.Culture
                 ChatStorage = deps.ChatStorage
                 RequestStorage = deps.RequestStorage
