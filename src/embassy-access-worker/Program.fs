@@ -1,6 +1,7 @@
 ﻿open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Infrastructure.Configuration.Domain
 open Persistence.Storages.Domain
 open Worker.Dependencies
 open Worker.DataAccess
@@ -12,15 +13,23 @@ let resultAsync = ResultAsyncBuilder()
 [<EntryPoint>]
 let main _ =
     resultAsync {
-        let configuration =
-            Configuration.setYamls [
-                @"/usr/src/embassy-access/src/embassy-access-worker/settings/appsettings.yaml"
-                @"/usr/src/embassy-access/src/embassy-access-worker/settings/worker.yaml"
-                @"/usr/src/embassy-access/src/embassy-access-worker/settings/embassies.yaml"
-                @"/usr/src/embassy-access/src/embassy-access-worker/settings/embassies.rus.yaml"
-            ]
+        let! configuration =
+            {
+                Files = [
+                    @"/usr/src/embassy-access/src/embassy-access-worker/settings/appsettings.yaml"
+                    @"/usr/src/embassy-access/src/embassy-access-worker/settings/worker.yaml"
+                    @"/usr/src/embassy-access/src/embassy-access-worker/settings/embassies.yaml"
+                    @"/usr/src/embassy-access/src/embassy-access-worker/settings/embassies.rus.yaml"
+                ]
+            }
+            |> Configuration.Client.Yaml
+            |> Configuration.Client.init
+            |> async.Return
 
-        Logging.useConsole configuration
+        configuration
+        |> Logging.Client.tryFindLevel
+        |> Logging.Client.Console
+        |> Logging.Client.init
 
         let! taskGraph =
             {

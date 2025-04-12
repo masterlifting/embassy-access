@@ -27,7 +27,7 @@ type Dependencies = {
 
             let! fileStoragePath =
                 cfg
-                |> Configuration.getSection<string> "Persistence:FileSystem"
+                |> Configuration.Client.tryGetSection<string> "Persistence:FileSystem"
                 |> Option.map Ok
                 |> Option.defaultValue (
                     "The configuration section 'Persistence:FileSystem' not found."

@@ -15,7 +15,7 @@ type Dependencies = {
         let result = ResultBuilder()
 
         let inline getEnv name =
-            Configuration.getEnvVar name
+            Configuration.Client.tryGetEnv name None
             |> Result.bind (function
                 | Some value -> Ok value
                 | None -> $"Environment configuration '{name}'" |> NotFound |> Error)
