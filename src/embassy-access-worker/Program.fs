@@ -15,12 +15,7 @@ let main _ =
     resultAsync {
         let! configuration =
             {
-                Files = [
-                    @"settings\appsettings.yaml"
-                    @"settings\worker.yaml"
-                    @"settings\embassies.yaml"
-                    @"settings\embassies.rus.yaml"
-                ]
+                Files = [ @"appsettings.yaml"; @"worker.yaml"; @"embassies.yaml"; @"services.rus.yaml" ]
             }
             |> Configuration.Client.Yaml
             |> Configuration.Client.init
