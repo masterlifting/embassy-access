@@ -26,7 +26,10 @@ let main _ =
             |> Configuration.Client.init
             |> async.Return
 
-        Logging.useConsole configuration
+        configuration
+        |> Logging.Client.tryFindLevel
+        |> Logging.Client.Console
+        |> Logging.Client.init
 
         let! taskGraph =
             {
