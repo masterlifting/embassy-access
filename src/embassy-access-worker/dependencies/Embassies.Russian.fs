@@ -1,7 +1,6 @@
 ﻿module internal EA.Worker.Dependencies.Embassies.Russian
 
 open System
-open EA.Worker.Domain.Embassies.Russian
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain

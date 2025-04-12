@@ -52,10 +52,10 @@ let getEmbassyService embassyId serviceId =
                     |> async.Return
                 | Some countryId ->
                     match countryId.Value with
-                    | Constants.RUSSIAN_NODE_ID -> deps.Russian |> Russian.Query.get embassyId serviceNode.Value
+                    | Embassies.RUS -> deps.Russian |> Russian.Query.get embassyId serviceNode.Value
                     | _ ->
                         $"Embassy service '{serviceNode.Value.Name}' is not implemented. "
-                        + Constants.NOT_IMPLEMENTED
+                        + NOT_IMPLEMENTED
                         |> NotImplemented
                         |> Error
                         |> async.Return
@@ -80,10 +80,10 @@ let getUserEmbassyService embassyId serviceId =
                     |> async.Return
                 | Some countryId ->
                     match countryId.Value with
-                    | Constants.RUSSIAN_NODE_ID -> deps.Russian |> Russian.Query.userGet embassyId serviceNode.Value
+                    | Embassies.RUS -> deps.Russian |> Russian.Query.userGet embassyId serviceNode.Value
                     | _ ->
                         $"Embassy service '{serviceNode.Value.Name}' is not implemented. "
-                        + Constants.NOT_IMPLEMENTED
+                        + NOT_IMPLEMENTED
                         |> NotImplemented
                         |> Error
                         |> async.Return

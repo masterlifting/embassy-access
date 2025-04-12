@@ -1,4 +1,4 @@
-﻿module internal EA.Worker.Embassies.Russian
+﻿module internal EA.Worker.Embassies.Italian
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -7,7 +7,7 @@ open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Dependencies.Embassies.Russian
 
-let private ServiceId = Embassies.RUS |> Graph.NodeIdValue
+let private ServiceId = Embassies.ITA |> Graph.NodeIdValue
 
 module private Kdmid =
 

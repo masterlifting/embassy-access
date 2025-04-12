@@ -9,10 +9,10 @@ type Route =
     member this.Value =
         match this with
         | Status number -> [ "0"; number ]
-        |> String.concat Constants.Router.DELIMITER
+        |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
-        let parts = input.Split Constants.Router.DELIMITER
+        let parts = input.Split Router.DELIMITER
 
         match parts with
         | [| "0"; number |] -> Status number |> Ok

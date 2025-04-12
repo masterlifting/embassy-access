@@ -17,6 +17,7 @@
         <Compile Include="dependencies\Telegram.fs" />
         <Compile Include="dependencies\Embassies.Russian.fs" />
         <Compile Include="embassies\Russian.fs" />
+        <Compile Include="embassies\Italian.fs" />
         <Compile Include="Initializer.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>

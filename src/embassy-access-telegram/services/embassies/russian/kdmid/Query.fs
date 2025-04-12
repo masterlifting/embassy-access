@@ -3,6 +3,7 @@
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
+open EA.Core.Domain.Constants
 open EA.Core.Domain.Request
 open EA.Core.Domain.ProcessState
 open EA.Telegram.Domain
@@ -28,7 +29,7 @@ let private buildSubscriptionMenu (request: Request) =
         |> Router.RussianEmbassy
 
     match request.Service.Id.Split() with
-    | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
+    | [ _; Embassies.RUS; _; _; "0" ] ->
         Map [
             getRoute.Value, "Request available slots"
             deleteRoute.Value, "Delete subscription"

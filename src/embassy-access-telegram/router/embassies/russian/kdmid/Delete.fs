@@ -10,10 +10,10 @@ type Route =
     member this.Value =
         match this with
         | Subscription requestId -> [ "0"; requestId.ValueStr ]
-        |> String.concat Constants.Router.DELIMITER
+        |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
-        let parts = input.Split Constants.Router.DELIMITER
+        let parts = input.Split Router.DELIMITER
 
         match parts with
         | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Subscription

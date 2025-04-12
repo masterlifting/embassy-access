@@ -3,36 +3,34 @@
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
-open EA.Telegram.Domain
 open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Telegram.Services.Embassies.Russian
 
 let get embassyId (service: ServiceNode) =
     fun (deps: Russian.Dependencies) ->
         match service.Id.Split() with
-        | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ] ->
+        | [ _; Embassies.RUS; _; _; "0" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Message.Instruction.toCheckAppointments embassyId service)
-        | [ _; Constants.RUSSIAN_NODE_ID; _; _; "1" ] ->
+        | [ _; Embassies.RUS; _; _; "1" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoNotifications embassyId service)
-        | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "0" ] ->
+        | [ _; Embassies.RUS; _; _; "2"; "0" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoFirstAvailableConfirmation embassyId service)
-        | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "1" ] ->
+        | [ _; Embassies.RUS; _; _; "2"; "1" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoLastAvailableConfirmation embassyId service)
-        | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "2" ] ->
+        | [ _; Embassies.RUS; _; _; "2"; "2" ] ->
             deps
             |> Kdmid.Dependencies.create
             |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoDateRangeConfirmation embassyId service)
         | _ ->
-            $"The service '%s{service.Name}' is not implemented. "
-            + Constants.NOT_IMPLEMENTED
+            $"The service '%s{service.Name}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
             |> Error
             |> async.Return
@@ -45,16 +43,15 @@ let userGet embassyId (service: ServiceNode) =
         )
         |> ResultAsync.bind (fun requests ->
             match service.Id.Split() with
-            | [ _; Constants.RUSSIAN_NODE_ID; _; _; "0" ]
-            | [ _; Constants.RUSSIAN_NODE_ID; _; _; "1" ]
-            | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "0" ]
-            | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "1" ]
-            | [ _; Constants.RUSSIAN_NODE_ID; _; _; "2"; "2" ] ->
+            | [ _; Embassies.RUS; _; _; "0" ]
+            | [ _; Embassies.RUS; _; _; "1" ]
+            | [ _; Embassies.RUS; _; _; "2"; "0" ]
+            | [ _; Embassies.RUS; _; _; "2"; "1" ]
+            | [ _; Embassies.RUS; _; _; "2"; "2" ] ->
                 deps
                 |> Kdmid.Dependencies.create
                 |> Result.bind (Kdmid.Query.getSubscriptions requests)
             | _ ->
-                $"The service '%s{service.Name}' is not implemented. "
-                + Constants.NOT_IMPLEMENTED
+                $"The service '%s{service.Name}' is not implemented. " + NOT_IMPLEMENTED
                 |> NotImplemented
                 |> Error)

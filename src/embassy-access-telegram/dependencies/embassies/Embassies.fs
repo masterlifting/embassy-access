@@ -34,8 +34,7 @@ type Dependencies = {
                 |> ResultAsync.bind (function
                     | Some embassy -> Ok embassy
                     | None ->
-                        $"Embassy '%s{embassyId.Value}' is not implemented. "
-                        + Constants.NOT_IMPLEMENTED
+                        $"Embassy '%s{embassyId.Value}' is not implemented. " + NOT_IMPLEMENTED
                         |> NotImplemented
                         |> Error)
 
@@ -45,7 +44,7 @@ type Dependencies = {
                 |> ResultAsync.bindAsync (function
                     | None ->
                         $"Services of Embassy '%s{embassyId.Value}' is not implemented. "
-                        + Constants.NOT_IMPLEMENTED
+                        + NOT_IMPLEMENTED
                         |> NotImplemented
                         |> Error
                         |> async.Return
@@ -54,21 +53,20 @@ type Dependencies = {
                         match node.Id.TryGetPart 1 with
                         | None ->
                             $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
-                            + Constants.NOT_IMPLEMENTED
+                            + NOT_IMPLEMENTED
                             |> NotImplemented
                             |> Error
                             |> async.Return
                         | Some countryId ->
                             let serviceId =
-                                [ Constants.SERVICE_NODE_ID |> Graph.NodeIdValue; countryId ]
-                                |> Graph.NodeId.combine
+                                [ Services.ROOT_ID |> Graph.NodeIdValue; countryId ] |> Graph.NodeId.combine
 
                             deps.getServiceGraph ()
                             |> ResultAsync.map (Graph.BFS.tryFind serviceId)
                             |> ResultAsync.bind (function
                                 | None ->
                                     $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
-                                    + Constants.NOT_IMPLEMENTED
+                                    + NOT_IMPLEMENTED
                                     |> NotImplemented
                                     |> Error
                                 | Some serviceNode -> serviceNode |> Ok))
@@ -79,7 +77,7 @@ type Dependencies = {
                 |> ResultAsync.bind (function
                     | None ->
                         $"Service '%s{serviceId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
-                        + Constants.NOT_IMPLEMENTED
+                        + NOT_IMPLEMENTED
                         |> NotImplemented
                         |> Error
                     | Some serviceNode -> serviceNode |> Ok)

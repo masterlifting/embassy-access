@@ -142,10 +142,10 @@ type Route =
         | CheckAppointments model -> "5" :: model.Serialize()
         | SendAppointments model -> "6" :: model.Serialize()
         | ConfirmAppointment model -> "7" :: model.Serialize()
-        |> String.concat Constants.Router.DELIMITER
+        |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
-        let parts = input.Split Constants.Router.DELIMITER
+        let parts = input.Split Router.DELIMITER
 
         match parts with
         | [| "0"; serviceId; embassyId; isBackground; payload |] ->

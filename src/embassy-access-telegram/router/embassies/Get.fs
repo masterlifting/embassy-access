@@ -15,10 +15,10 @@ type Route =
         | Embassy id -> [ "1"; id.Value ]
         | EmbassyServices id -> [ "2"; id.Value ]
         | EmbassyService(embassyId, serviceId) -> [ "3"; embassyId.Value; serviceId.Value ]
-        |> String.concat Constants.Router.DELIMITER
+        |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
-        let parts = input.Split Constants.Router.DELIMITER
+        let parts = input.Split Router.DELIMITER
 
         match parts with
         | [| "0" |] -> Embassies |> Ok
