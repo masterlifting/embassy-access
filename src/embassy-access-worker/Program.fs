@@ -15,12 +15,7 @@ let main _ =
     resultAsync {
         let! configuration =
             {
-                Files = [
-                    @"/usr/src/embassy-access/src/embassy-access-worker/settings/appsettings.yaml"
-                    @"/usr/src/embassy-access/src/embassy-access-worker/settings/worker.yaml"
-                    @"/usr/src/embassy-access/src/embassy-access-worker/settings/embassies.yaml"
-                    @"/usr/src/embassy-access/src/embassy-access-worker/settings/embassies.rus.yaml"
-                ]
+                Files = [ "appsettings.yaml"; "worker.yaml"; "embassies.yaml"; "services.rus.yaml" ]
             }
             |> Configuration.Client.Yaml
             |> Configuration.Client.init

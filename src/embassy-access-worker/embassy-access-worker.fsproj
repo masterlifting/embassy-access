@@ -29,17 +29,21 @@
         <Content Include="data\Chats.json" />
         <Content Include="data\Requests.json" />
         <Content Include="data\Culture.json" />
+        <Content Include="settings\appsettings.yaml">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+          <Link>appsettings.yaml</Link>
+        </Content>
         <Content Include="settings\worker.yaml">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+          <Link>worker.yaml</Link>
         </Content>
         <Content Include="settings\embassies.yaml">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+          <Link>embassies.yaml</Link>
         </Content>
-        <Content Include="settings\embassies.rus.yaml">
+        <Content Include="settings\services.rus.yaml">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="settings\appsettings.yaml">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+          <Link>services.rus.yaml</Link>
         </Content>
     </ItemGroup>
 
