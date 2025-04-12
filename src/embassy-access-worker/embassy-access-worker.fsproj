@@ -35,6 +35,7 @@
         </Content>
         <Content Include="settings\worker.yaml">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+          <Link>worker.yaml</Link>
         </Content>
         <Content Include="settings\embassies.yaml">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -42,7 +43,7 @@
         </Content>
         <Content Include="settings\services.rus.yaml">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <Link>services.yaml</Link>
+          <Link>services.rus.yaml</Link>
         </Content>
     </ItemGroup>
 
