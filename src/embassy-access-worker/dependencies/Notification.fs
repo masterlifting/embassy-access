@@ -1,8 +1,8 @@
 ﻿[<RequireQualifiedAccess>]
-module internal EA.Worker.Dependencies.Telegram.Dependencies
+module internal EA.Worker.Dependencies.Notification.Dependencies
 
 open Infrastructure.Prelude
-open EA.Worker.Dependencies
+open EA.Telegram.Dependencies
 
 let create cfg ct =
     let result = ResultBuilder()
@@ -18,6 +18,13 @@ let create cfg ct =
         let culture: AIProvider.Services.Dependencies.Culture.Dependencies = {
             Provider = aiProvider
             Storage = cultureStorage
+        }
+        
+        let notificationDeps: Notification.Dependencies = {
+            translateMessages = telegram.Culture.translateSeq
+            setRequestAppointments = persistence.setRequestAppointments
+            getRequestChats = persistence.getRequestChats
+            sendMessages = web.Telegram.sendMessages
         }
 
         let tgCulture = EA.Telegram.Dependencies.Culture.Dependencies.create ct culture

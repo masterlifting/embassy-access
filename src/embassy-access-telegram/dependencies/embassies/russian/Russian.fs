@@ -26,6 +26,7 @@ type Dependencies = {
     getRequestChats: Request -> Async<Result<Chat list, Error'>>
     getChatRequests: unit -> Async<Result<Request list, Error'>>
     setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
+    
 } with
 
     static member create chat (deps: Request.Dependencies) =

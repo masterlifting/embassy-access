@@ -15,7 +15,9 @@
         <Compile Include="dependencies\AIProvider.fs" />
         <Compile Include="dependencies\Culture.fs" />
         <Compile Include="dependencies\Telegram.fs" />
-        <Compile Include="dependencies\Embassies.Russian.fs" />
+        <Compile Include="dependencies\Notification.fs" />
+        <Compile Include="dependencies\embassies\Russian.fs" />
+        <Compile Include="dependencies\embassies\Italian.fs" />
         <Compile Include="embassies\Russian.fs" />
         <Compile Include="embassies\Italian.fs" />
         <Compile Include="Initializer.fs" />

@@ -16,8 +16,7 @@
         <Compile Include="clients\kdmid\Web.Html.ConfirmationPage.fs" />
         <Compile Include="clients\kdmid\Service.fs" />
         <Compile Include="clients\midpass\Domain.fs" />
-        <Compile Include="clients\midpass\Client.fs" />
-        <Compile Include="Client.fs" />
+        <Compile Include="clients\midpass\Service.fs" />
     </ItemGroup>
 
     <ItemGroup>

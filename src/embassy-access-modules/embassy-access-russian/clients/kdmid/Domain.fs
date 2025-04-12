@@ -34,13 +34,6 @@ type Payload = {
     Ems: string option
 } with
 
-    static member print(payload: Payload) =
-        let ems =
-            payload.Ems
-            |> Option.map (fun ems -> $"; EMS:%s{ems}")
-            |> Option.defaultValue ""
-        $"'ID:%i{payload.Id}; CD:%s{payload.Cd}{ems} (%s{payload.Subdomain})'"
-
     static member create(payload: string) =
         result {
             let! uri = payload |> Web.Clients.Http.Route.toUri
@@ -86,6 +79,13 @@ type Payload = {
                 Ems = ems
             }
         }
+
+    static member print(payload: Payload) =
+        let ems =
+            payload.Ems
+            |> Option.map (fun ems -> $"; EMS:%s{ems}")
+            |> Option.defaultValue ""
+        $"'ID:%i{payload.Id}; CD:%s{payload.Cd}{ems} (%s{payload.Subdomain})'"
 
 module Constants =
     module ErrorCode =

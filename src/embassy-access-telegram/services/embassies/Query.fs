@@ -52,7 +52,7 @@ let getEmbassyService embassyId serviceId =
                     |> async.Return
                 | Some countryId ->
                     match countryId.Value with
-                    | Embassies.RUS -> deps.Russian |> Russian.Query.get embassyId serviceNode.Value
+                    | Embassies.RUS -> (deps.Chat.Id, deps.MessageId) |> Russian.Query.get embassyId serviceNode.Value
                     | _ ->
                         $"Embassy service '{serviceNode.Value.Name}' is not implemented. "
                         + NOT_IMPLEMENTED

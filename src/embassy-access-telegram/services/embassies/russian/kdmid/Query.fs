@@ -8,25 +8,21 @@ open EA.Core.Domain.Request
 open EA.Core.Domain.ProcessState
 open EA.Telegram.Domain
 open EA.Telegram.Router
-open EA.Telegram.Router.Embassies.Russian
+open EA.Telegram.Router.Embassies
+open EA.Telegram.Services.Embassies
 open EA.Telegram.Dependencies.Embassies.Russian
-open EA.Telegram.Services.Embassies.Russian.Kdmid
 open EA.Russian.Clients.Domain.Kdmid
 
 let private buildSubscriptionMenu (request: Request) =
     let getRoute =
         request.Id
-        |> Kdmid.Get.Appointments
-        |> Get.Kdmid
-        |> Method.Get
+        |> Russian.Kdmid.Get.Appointments
+        |> Russian.Get.Kdmid
+        |> Russian.Method.Get
         |> Router.RussianEmbassy
 
     let deleteRoute =
-        request.Id
-        |> Kdmid.Delete.Subscription
-        |> Delete.Kdmid
-        |> Method.Delete
-        |> Router.RussianEmbassy
+        request.Id |> Delete.Subscription |> Method.Delete |> Router.Embassies
 
     match request.Service.Id.Split() with
     | [ _; Embassies.RUS; _; _; "0" ] ->
@@ -44,9 +40,9 @@ let getSubscriptions (requests: Request list) =
         |> Seq.map (fun request ->
             let route =
                 request.Id
-                |> Kdmid.Get.SubscriptionsMenu
-                |> Get.Kdmid
-                |> Method.Get
+                |> Russian.Kdmid.Get.SubscriptionsMenu
+                |> Russian.Get.Kdmid
+                |> Russian.Method.Get
                 |> Router.RussianEmbassy
 
             request.Service.Payload
@@ -103,5 +99,7 @@ let getAppointments requestId =
             | Ready
             | Failed _
             | Completed _ ->
+                let printPayload = Payload.create >> Result.map Payload.print
+
                 deps.processRequest request
-                |> ResultAsync.bind (fun result -> deps.Chat.Id |> Message.Notification.create result))
+                |> ResultAsync.bind (fun result -> (deps.Chat.Id, printPayload) |> Notification.create result))

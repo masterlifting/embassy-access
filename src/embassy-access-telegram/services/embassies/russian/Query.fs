@@ -4,31 +4,22 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Telegram.Dependencies.Embassies.Russian
+open EA.Telegram.Services.Embassies
 open EA.Telegram.Services.Embassies.Russian
 
 let get embassyId (service: ServiceNode) =
-    fun (deps: Russian.Dependencies) ->
+    fun (chatId, messageId) ->
         match service.Id.Split() with
         | [ _; Embassies.RUS; _; _; "0" ] ->
-            deps
-            |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Kdmid.Message.Instruction.toCheckAppointments embassyId service)
+            (chatId, messageId) |> Instruction.toCheckAppointments embassyId service
         | [ _; Embassies.RUS; _; _; "1" ] ->
-            deps
-            |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoNotifications embassyId service)
+            (chatId, messageId) |> Instruction.toAutoNotifications embassyId service
         | [ _; Embassies.RUS; _; _; "2"; "0" ] ->
-            deps
-            |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoFirstAvailableConfirmation embassyId service)
+            (chatId, messageId) |> Instruction.toAutoFirstAvailableConfirmation embassyId service
         | [ _; Embassies.RUS; _; _; "2"; "1" ] ->
-            deps
-            |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoLastAvailableConfirmation embassyId service)
+            (chatId, messageId) |> Instruction.toAutoLastAvailableConfirmation embassyId service
         | [ _; Embassies.RUS; _; _; "2"; "2" ] ->
-            deps
-            |> Kdmid.Dependencies.create
-            |> ResultAsync.wrap (Kdmid.Message.Instruction.toAutoDateRangeConfirmation embassyId service)
+            (chatId, messageId) |> Instruction.toAutoDateRangeConfirmation embassyId service
         | _ ->
             $"The service '%s{service.Name}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented

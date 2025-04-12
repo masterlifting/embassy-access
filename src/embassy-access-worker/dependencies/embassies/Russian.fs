@@ -28,7 +28,7 @@ module Kdmid =
                 let! persistence = Persistence.Dependencies.create cfg
                 let! telegram = Telegram.Dependencies.create cfg ct
 
-                let notificationDeps: Kdmid.Notification.Dependencies = {
+                let notificationDeps: Notification.Dependencies = {
                     translateMessages = telegram.Culture.translateSeq
                     setRequestAppointments = telegram.Persistence.setRequestAppointments
                     getRequestChats = telegram.Persistence.getRequestChats

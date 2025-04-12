@@ -14,23 +14,6 @@ open EA.Telegram.Dependencies
 open EA.Russian.Clients.Kdmid
 open EA.Russian.Clients.Domain.Kdmid
 
-module Notification =
-
-    type Dependencies = {
-        getRequestChats: Request -> Async<Result<Chat list, Error'>>
-        setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
-        translateMessages: Culture -> Message seq -> Async<Result<Message list, Error'>>
-        sendMessages: Message seq -> Async<Result<unit, Error'>>
-    } with
-
-        static member create() =
-            fun (deps: Russian.Dependencies) -> {
-                translateMessages = deps.Culture.translateSeq
-                setRequestAppointments = deps.setRequestAppointments
-                getRequestChats = deps.getRequestChats
-                sendMessages = deps.sendMessages
-            }
-
 type Dependencies = {
     Chat: Chat
     MessageId: int
@@ -40,13 +23,13 @@ type Dependencies = {
     sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
     getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
     getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
-    getChatRequests: unit -> Async<Result<Request list, Error'>>
     getRequest: RequestId -> Async<Result<Request, Error'>>
     createRequest: string * ServiceNode * EmbassyNode * bool * ConfirmationState -> Async<Result<Request, Error'>>
     deleteRequest: RequestId -> Async<Result<unit, Error'>>
     processRequest: Request -> Async<Result<Request, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
     translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>>
+    printPayload: string -> Result<string, Error'>
 } with
 
     static member create(deps: Russian.Dependencies) =
@@ -139,11 +122,11 @@ type Dependencies = {
                 getRequest = getRequest
                 getService = getService
                 getEmbassy = getEmbassy
-                getChatRequests = deps.getChatRequests
                 createRequest = createRequest
                 deleteRequest = deleteRequest
                 processRequest = processRequest
                 translateMessageRes = translateMessageRes
                 translateMessagesRes = translateMessagesRes
+                printPayload = Payload.create >> Result.map Payload.print
             }
         }

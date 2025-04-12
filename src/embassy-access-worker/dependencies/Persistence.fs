@@ -1,15 +1,32 @@
 ﻿[<RequireQualifiedAccess>]
 module internal EA.Worker.Dependencies.Persistence
 
+open System
 open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Storages
 open Persistence.Storages.Domain
+open Worker.Domain
 open AIProvider.Services.DataAccess
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
+
+let inline private equalCountry (embassyId: Graph.NodeId)  (taskId: Graph.NodeId)=
+    let embassyCountry =
+        embassyId
+        |> Graph.NodeId.split
+        |> Seq.skip 1
+        |> Seq.truncate 2
+        |> Graph.NodeId.combine
+    let taskCountry =
+        taskId
+        |> Graph.NodeId.split
+        |> Seq.skip 1
+        |> Seq.truncate 2
+        |> Graph.NodeId.combine
+    embassyCountry = taskCountry
 
 type Dependencies = {
     ChatStorage: Chat.ChatStorage
@@ -17,6 +34,7 @@ type Dependencies = {
     initCultureStorage: unit -> Result<Culture.Response.Storage, Error'>
     initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>
     initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>
+    getRequests: Graph.NodeId * ActiveTask -> Async<Result<Request list, Error'>>
     resetData: unit -> Async<Result<unit, Error'>>
 } with
 
@@ -78,6 +96,18 @@ type Dependencies = {
             let! chatStorage = initChatStorage ()
             let! requestStorage = initRequestStorage ()
 
+            let getRequests (partServiceId, task: ActiveTask) =
+                requestStorage
+                |> Request.Query.findManyByPartServiceId partServiceId
+                |> ResultAsync.map (
+                    List.filter (fun request ->
+                        equalCountry request.Service.Embassy.Id task.Id
+                        && request.IsBackground
+                        && (request.ProcessState <> InProcess
+                            || request.ProcessState = InProcess
+                               && request.Modified < DateTime.UtcNow.Subtract task.Duration))
+                )
+
             let resetData () =
                 let resultAsync = ResultAsyncBuilder()
 
@@ -102,6 +132,7 @@ type Dependencies = {
                 initCultureStorage = initCultureStorage
                 initEmbassyGraphStorage = initEmbassyGraphStorage
                 initServiceGraphStorage = initServiceGraphStorage
+                getRequests = getRequests
                 resetData = resetData
             }
         }

@@ -12,6 +12,4 @@ let respond request chat =
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Method.Get(Get.Kdmid get) -> deps |> Kdmid.get get
-            | Method.Get(Get.Midpass get) -> deps |> Midpass.get get
-            | Method.Post(Post.Kdmid model) -> deps |> Kdmid.post model
-            | Method.Delete(Delete.Kdmid delete) -> deps |> Kdmid.delete delete)
+            | Method.Get(Get.Midpass get) -> deps |> Midpass.get get)

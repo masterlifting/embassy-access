@@ -16,34 +16,3 @@ let get request =
             >> deps.translateMessageRes
             >> deps.sendMessageRes
             <| deps)
-
-let post request =
-    fun (deps: Russian.Dependencies) ->
-        Kdmid.Dependencies.create deps
-        |> ResultAsync.wrap (fun deps ->
-
-            match request with
-            | Post.Subscribe model -> Command.subscribe model >> deps.translateMessageRes >> deps.sendMessageRes
-            | Post.CheckAppointments model ->
-                Command.checkAppointments model
-                >> deps.translateMessageRes
-                >> deps.sendMessageRes
-            | Post.SendAppointments model ->
-                Command.sendAppointments model
-                >> deps.translateMessagesRes
-                >> deps.sendMessagesRes
-            | Post.ConfirmAppointment model ->
-                Command.confirmAppointment model
-                >> deps.translateMessageRes
-                >> deps.sendMessageRes
-            |> fun send -> deps |> send)
-
-let delete request =
-    fun (deps: Russian.Dependencies) ->
-        Kdmid.Dependencies.create deps
-        |> ResultAsync.wrap (fun deps ->
-            match request with
-            | Delete.Subscription requestId -> Command.deleteSubscription requestId
-            >> deps.translateMessageRes
-            >> deps.sendMessageRes
-            <| deps)
