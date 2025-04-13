@@ -1,13 +1,12 @@
-﻿module EA.Russian.Clients.Kdmid.Web.Html.InitialPage
+﻿module EA.Russian.Services.Kdmid.Web.Html.InitialPage
 
 open System
-open EA.Russian.Clients.Kdmid
 open SkiaSharp
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
 open Web.Clients.Domain.Http
-open EA.Russian.Clients.Kdmid.Web
+open EA.Russian.Services.Kdmid.Web
 
 let private createHttpRequest queryParams = {
     Path = "/queue/orderinfo.aspx?" + queryParams

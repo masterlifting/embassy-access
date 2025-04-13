@@ -1,9 +1,9 @@
-﻿module EA.Russian.Clients.Kdmid.Client
+﻿module EA.Russian.Services.Kdmid.Client
 
 open System
 open Web.Clients
 open Web.Clients.Domain
-open EA.Russian.Clients.Domain.Kdmid
+open EA.Russian.Services.Domain.Kdmid
 
 let init (deps: Dependencies) =
     let initHttpClient subdomain =

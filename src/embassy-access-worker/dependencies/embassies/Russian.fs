@@ -3,17 +3,17 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Infrastructure.Logging
+open Worker.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
+open EA.Telegram.Services.Embassies
+open EA.Telegram.Dependencies
 open EA.Worker.Dependencies
-open Worker.Domain
-open EA.Russian.Clients
-open EA.Russian.Clients.Domain.Kdmid
+open EA.Russian.Services
 
 module Kdmid =
-    open Infrastructure.Logging
-    open EA.Telegram.Services.Embassies.Russian.Kdmid
-    open EA.Telegram.Dependencies.Embassies.Russian
+    open EA.Russian.Services.Domain.Kdmid
 
     type Dependencies = {
         TaskName: string
@@ -29,6 +29,7 @@ module Kdmid =
                 let! telegram = Telegram.Dependencies.create cfg ct
 
                 let notificationDeps: Notification.Dependencies = {
+                    printPayload = Payload.create >> Result.map Payload.print
                     translateMessages = telegram.Culture.translateSeq
                     setRequestAppointments = telegram.Persistence.setRequestAppointments
                     getRequestChats = telegram.Persistence.getRequestChats
@@ -37,7 +38,7 @@ module Kdmid =
 
                 let notify notification =
                     notificationDeps
-                    |> Message.Notification.spread notification
+                    |> Notification.spread notification
                     |> ResultAsync.mapError (_.Message >> Log.crt)
                     |> Async.Ignore
 

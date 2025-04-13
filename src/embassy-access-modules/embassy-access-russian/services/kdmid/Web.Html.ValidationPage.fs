@@ -1,12 +1,11 @@
-﻿module EA.Russian.Clients.Kdmid.Web.Html.ValidationPage
+﻿module EA.Russian.Services.Kdmid.Web.Html.ValidationPage
 
 open System
-open EA.Russian.Clients.Kdmid
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Parser
 open Web.Clients.Domain.Http
-open EA.Russian.Clients.Domain.Kdmid
+open EA.Russian.Services.Domain.Kdmid
 
 let private createHttpRequest queryParams formData =
 

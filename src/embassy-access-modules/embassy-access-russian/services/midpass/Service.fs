@@ -1,8 +1,8 @@
-﻿module EA.Russian.Clients.Midpass.Service
+﻿module EA.Russian.Services.Midpass.Service
 
 open EA.Core.Domain
 open Infrastructure.Domain
-open EA.Russian.Clients.Domain.Midpass
+open EA.Russian.Services.Domain.Midpass
 
 let tryProcess (request: Request) =
     fun (deps: Client) ->

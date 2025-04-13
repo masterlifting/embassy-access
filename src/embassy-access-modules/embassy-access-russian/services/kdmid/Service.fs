@@ -1,11 +1,11 @@
-﻿module EA.Russian.Clients.Kdmid.Service
+﻿module EA.Russian.Services.Kdmid.Service
 
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
-open EA.Russian.Clients.Kdmid.Web
-open EA.Russian.Clients.Domain.Kdmid
+open EA.Russian.Services.Kdmid.Web
+open EA.Russian.Services.Domain.Kdmid
 
 let private createPayload request =
     request.Service.Payload |> Payload.create

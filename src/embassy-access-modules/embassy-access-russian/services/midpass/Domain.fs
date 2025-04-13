@@ -1,7 +1,9 @@
-﻿module EA.Russian.Clients.Domain.Midpass
+﻿module EA.Russian.Services.Domain.Midpass
 
 open System
+open System.Threading
 open EA.Core.Domain
+open EA.Core.DataAccess
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain
@@ -11,7 +13,10 @@ type Client = {
     updateRequest: Request -> Async<Result<Request, Error'>>
 }
 
-type Dependencies = { Number: string }
+type Dependencies = {
+    RequestStorage: Request.RequestStorage
+    CancellationToken: CancellationToken
+}
 
 type Payload = {
     Value: int

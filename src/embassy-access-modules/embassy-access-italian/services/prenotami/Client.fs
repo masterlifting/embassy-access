@@ -1,8 +1,8 @@
-﻿module EA.Russian.Clients.Midpass.Client
+﻿module EA.Italian.Services.Prenotami.Client
 
 open Web.Clients
 open Web.Clients.Domain
-open EA.Russian.Clients.Domain.Midpass
+open EA.Italian.Services.Domain.Prenotami
 
 let init (deps: Dependencies) =
     let initHttpClient (url: string) =

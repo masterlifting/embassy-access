@@ -15,7 +15,6 @@
         <Compile Include="dependencies\AIProvider.fs" />
         <Compile Include="dependencies\Culture.fs" />
         <Compile Include="dependencies\Telegram.fs" />
-        <Compile Include="dependencies\Notification.fs" />
         <Compile Include="dependencies\embassies\Russian.fs" />
         <Compile Include="dependencies\embassies\Italian.fs" />
         <Compile Include="embassies\Russian.fs" />
@@ -52,6 +51,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
+        <ProjectReference Include="..\embassy-access-modules\embassy-access-italian\embassy-access-italian.fsproj" />
         <ProjectReference Include="..\embassy-access-telegram\embassy-access-telegram.fsproj" />
         <ProjectReference Include="..\embassy-access-modules\embassy-access-russian\embassy-access-russian.fsproj" />
     </ItemGroup>

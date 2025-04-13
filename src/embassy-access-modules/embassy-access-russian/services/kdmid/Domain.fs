@@ -1,4 +1,4 @@
-﻿module EA.Russian.Clients.Domain.Kdmid
+﻿module EA.Russian.Services.Domain.Kdmid
 
 open System
 open System.Threading

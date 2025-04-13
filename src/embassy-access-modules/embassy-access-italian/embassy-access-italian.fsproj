@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="services\prenotami\Domain.fs" />
+      <Compile Include="services\prenotami\Client.fs" />
+      <Compile Include="services\prenotami\Service.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
+      <ProjectReference Include="..\..\embassy-access-core\embassy-access-core.fsproj" />
+    </ItemGroup>
+
+</Project>
