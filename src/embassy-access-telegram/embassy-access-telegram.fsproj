@@ -18,8 +18,12 @@
         <Compile Include="router\embassies\russian\kdmid\Method.fs" />
         <Compile Include="router\embassies\russian\midpass\Get.fs" />
         <Compile Include="router\embassies\russian\midpass\Method.fs" />
-        <Compile Include="router\embassies\russian\Get.fs" />
-        <Compile Include="router\embassies\russian\Method.fs" />
+        <Compile Include="router\embassies\Get.fs" />
+        <Compile Include="router\embassies\Method.fs" />
+        <Compile Include="router\embassies\italian\prenotami\Get.fs" />
+        <Compile Include="router\embassies\italian\prenotami\Method.fs" />
+        <Compile Include="router\embassies\italian\Get.fs" />
+        <Compile Include="router\embassies\italian\Method.fs" />
         <Compile Include="router\Get.fs" />
         <Compile Include="router\Post.fs" />
         <Compile Include="router\Delete.fs" />
@@ -47,6 +51,7 @@
         <Compile Include="services\embassies\russian\midpass\Query.fs" />
         <Compile Include="services\embassies\russian\Query.fs" />
         <Compile Include="services\embassies\italian\prenotami\Query.fs" />
+        <Compile Include="services\embassies\italian\Query.fs" />
         <Compile Include="services\embassies\Query.fs" />
         <Compile Include="services\embassies\Command.fs" />
         <Compile Include="services\users\Query.fs" />
@@ -55,6 +60,8 @@
         <Compile Include="controllers\embassies\russian\Kdmid.fs" />
         <Compile Include="controllers\embassies\russian\Midpass.fs" />
         <Compile Include="controllers\embassies\russian\Russian.fs" />
+        <Compile Include="controllers\embassies\italian\Prenotami.fs" />
+        <Compile Include="controllers\embassies\italian\Italian.fs" />
         <Compile Include="controllers\Users.fs" />
         <Compile Include="controllers\Controller.fs" />
         <Compile Include="Client.fs" />

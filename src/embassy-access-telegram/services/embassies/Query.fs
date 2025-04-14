@@ -53,6 +53,7 @@ let getEmbassyService embassyId serviceId =
                 | Some countryId ->
                     match countryId.Value with
                     | Embassies.RUS -> (deps.Chat.Id, deps.MessageId) |> Russian.Query.get embassyId serviceNode.Value
+                    | Embassies.ITA -> (deps.Chat.Id, deps.MessageId) |> Italian.Query.get embassyId serviceNode.Value
                     | _ ->
                         $"Embassy service '{serviceNode.Value.Name}' is not implemented. "
                         + NOT_IMPLEMENTED
@@ -81,6 +82,7 @@ let getUserEmbassyService embassyId serviceId =
                 | Some countryId ->
                     match countryId.Value with
                     | Embassies.RUS -> deps.Russian |> Russian.Query.userGet embassyId serviceNode.Value
+                    | Embassies.ITA -> deps.Italian |> Italian.Query.userGet embassyId serviceNode.Value
                     | _ ->
                         $"Embassy service '{serviceNode.Value.Name}' is not implemented. "
                         + NOT_IMPLEMENTED
