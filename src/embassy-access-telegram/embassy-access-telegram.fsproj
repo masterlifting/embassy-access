@@ -46,6 +46,7 @@
         <Compile Include="services\embassies\russian\kdmid\Query.fs" />
         <Compile Include="services\embassies\russian\midpass\Query.fs" />
         <Compile Include="services\embassies\russian\Query.fs" />
+        <Compile Include="services\embassies\italian\prenotami\Query.fs" />
         <Compile Include="services\embassies\Query.fs" />
         <Compile Include="services\embassies\Command.fs" />
         <Compile Include="services\users\Query.fs" />
