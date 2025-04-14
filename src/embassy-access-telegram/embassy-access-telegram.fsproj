@@ -31,14 +31,16 @@
         <Compile Include="dependencies\client\Client.fs" />
         <Compile Include="dependencies\client\Request.fs" />
         <Compile Include="dependencies\client\Notification.fs" />
+        <Compile Include="dependencies\embassies\russian\Russian.fs" />
         <Compile Include="dependencies\embassies\russian\Midpass.fs" />
         <Compile Include="dependencies\embassies\russian\Kdmid.fs" />
-        <Compile Include="dependencies\embassies\russian\Russian.fs" />
+        <Compile Include="dependencies\embassies\italian\Italian.fs" />
+        <Compile Include="dependencies\embassies\italian\Prenotami.fs" />
         <Compile Include="dependencies\embassies\Embassies.fs" />
         <Compile Include="dependencies\Users.fs" />
+        <Compile Include="dependencies\Services.fs" />
         <Compile Include="services\culture\Query.fs" />
         <Compile Include="services\culture\Command.fs" />
-        <Compile Include="services\embassies\Mapper.fs" />
         <Compile Include="services\embassies\Instruction.fs" />
         <Compile Include="services\embassies\Notification.fs" />
         <Compile Include="services\embassies\russian\kdmid\Query.fs" />
@@ -60,6 +62,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\submodules\fsharp-ai-provider\src\fsharp-ai-provider.fsproj" />
         <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
+        <ProjectReference Include="..\embassy-access-modules\embassy-access-italian\embassy-access-italian.fsproj" />
         <ProjectReference Include="..\embassy-access-modules\embassy-access-russian\embassy-access-russian.fsproj" />
     </ItemGroup>
 

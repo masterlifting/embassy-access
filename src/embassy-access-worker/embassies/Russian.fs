@@ -21,7 +21,7 @@ module private Kdmid =
                 | Some notification ->
                     match notification with
                     | Empty(_, message) -> $"{deps.TaskName} {message}." |> Log.dbg
-                    | Unsuccessfully(_, error) -> error.Message |> Log.crt
+                    | Unsuccessfully(_, error) -> deps.TaskName + " " + error.Message |> Log.crt
                     | HasAppointments(_, appointments) ->
                         $"{deps.TaskName} Appointments found: {appointments.Count}." |> Log.scs
                     | HasConfirmations(_, confirmations) ->

@@ -66,27 +66,8 @@ let checkAppointments (model: Post.Model.CheckAppointments) =
                         && request.Service.Payload = model.Payload)
                 )
             
-            let printPayload, processRequest =
-                match model.EmbassyId.Split() |> Seq.skip 1 |> Seq.tryHead with
-                | Some Embassies.RUS ->
-                    match model.ServiceId.Split() with
-                    | [ _; Embassies.RUS; "0"; "0"; "1" ] ->
-                        let deps: EA.Russian.Clients.Domain.Midpass.Dependencies =
-                            {
-                                Number = model.Payload
-                            }
-                        let processRequest =
-                            deps |> EA.Russian.Clients.Midpass.Service.tryProcess
-                        let printPayload =
-                            deps |> EA.Russian.Clients.Domain.Midpass.Payload.create >> Result.map EA.Russian.Clients.Domain.Midpass.Payload.print
-                        (printPayload, processRequest) |> Ok
-                    | _ ->
-                        deps.Russian
-                        |> EA.Telegram.Dependencies.Embassies.Russian.Kdmid.Dependencies.create
-                        |> Result.map (fun x -> (x.printPayload, x.processRequest))
-                | _ -> $"{model.EmbassyId.Value} is not implemented yet. " + NOT_IMPLEMENTED |> NotImplemented |> Error
-                
-
+            let! service = EA.Telegram.Dependencies.Service.Dependencies.create model.ServiceId deps |> async.Return
+            
             return
                 match requestOpt with
                 | Some request ->
@@ -100,18 +81,18 @@ let checkAppointments (model: Post.Model.CheckAppointments) =
                     | Ready
                     | Failed _
                     | Completed _ ->
-                        deps.processRequest request
-                        |> ResultAsync.bind (fun result -> (deps.Chat.Id, deps.printPayload) |> Notification.create result)
+                        service.processRequest request
+                        |> ResultAsync.bind (fun result -> (deps.Chat.Id, service.printPayload) |> Notification.create result)
                 | None ->
                     resultAsync {
-                        let! service = deps.getService model.ServiceId
+                        let! serviceNode = deps.getService model.ServiceId
                         let! embassy = deps.getEmbassy model.EmbassyId
-                        let! request = deps.createRequest (model.Payload, service, embassy, false, Disabled)
+                        let! request = deps.createRequest (model.Payload, serviceNode, embassy, false, Disabled)
 
                         return
-                            deps.processRequest request
+                            service.processRequest request
                             |> ResultAsync.bind (fun result ->
-                                (deps.Chat.Id, deps.printPayload) |> Notification.create result)
+                                (deps.Chat.Id, service.printPayload) |> Notification.create result)
                     }
         }
 
@@ -124,7 +105,7 @@ let sendAppointments (model: Post.Model.SendAppointments) =
                 && request.Service.Embassy.Id = model.EmbassyId)
         )
         |> ResultAsync.bind (
-            Seq.map (fun r -> (deps.Chat.Id, deps.printPayload) |> Notification.create r)
+            Seq.map (fun r -> (deps.Chat.Id, (fun _ -> "" |> Ok)) |> Notification.create r) //TODO: Resolve this later
             >> Result.choose
         )
 
@@ -132,11 +113,13 @@ let confirmAppointment (model: Post.Model.ConfirmAppointment) =
     fun (deps: Embassies.Dependencies) ->
         deps.getRequest model.RequestId
         |> ResultAsync.bindAsync (fun request ->
-            deps.processRequest {
-                request with
-                    ConfirmationState = Appointment model.AppointmentId
-            })
-        |> ResultAsync.bind (fun r -> (deps.Chat.Id, deps.printPayload) |> Notification.create r)
+            EA.Telegram.Dependencies.Service.Dependencies.create request.Service.Id deps
+            |> ResultAsync.wrap(fun service ->
+                service.processRequest {
+                    request with
+                        ConfirmationState = Appointment model.AppointmentId
+                }
+                |> ResultAsync.bind (fun r -> (deps.Chat.Id, service.printPayload) |> Notification.create r)))
 
 let deleteSubscription requestId =
     fun (deps: Embassies.Dependencies) ->

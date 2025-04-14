@@ -6,8 +6,8 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain
 open EA.Core.Domain
-open EA.Russian.Clients.Kdmid
-open EA.Russian.Clients.Domain.Kdmid
+open EA.Russian.Services.Kdmid
+open EA.Russian.Services.Domain.Kdmid
 
 module private Fixture =
     open Persistence.Storages

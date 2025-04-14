@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Embassies.Russian.Midpass
+module EA.Telegram.Dependencies.Embassies.Italian.Prenotami
 
 open System.Threading
 open Infrastructure.Domain
@@ -12,10 +12,10 @@ type Dependencies = {
     CancellationToken: CancellationToken
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-    Service: EA.Russian.Services.Domain.Midpass.Dependencies
+    Service: EA.Italian.Services.Domain.Prenotami.Dependencies
 } with
 
-    static member create(deps: Russian.Dependencies) = {
+    static member create(deps: Italian.Dependencies) = {
         ChatId = deps.Chat.Id
         MessageId = deps.MessageId
         CancellationToken = deps.CancellationToken

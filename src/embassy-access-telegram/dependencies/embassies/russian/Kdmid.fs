@@ -11,8 +11,9 @@ open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
-open EA.Russian.Clients.Kdmid
-open EA.Russian.Clients.Domain.Kdmid
+open EA.Russian.Services.Kdmid
+open EA.Russian.Services.Domain.Kdmid
+open EA.Telegram.Dependencies.Embassies.Russian
 
 type Dependencies = {
     Chat: Chat
@@ -30,9 +31,10 @@ type Dependencies = {
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
     translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>>
     printPayload: string -> Result<string, Error'>
+    Service: EA.Russian.Services.Domain.Kdmid.Dependencies
 } with
 
-    static member create(deps: Request.Dependencies) =
+    static member create(deps: Russian.Dependencies) =
         let result = ResultBuilder()
 
         result {
@@ -128,5 +130,9 @@ type Dependencies = {
                 translateMessageRes = translateMessageRes
                 translateMessagesRes = translateMessagesRes
                 printPayload = Payload.create >> Result.map Payload.print
+                Service = {
+                    CancellationToken = deps.CancellationToken
+                    RequestStorage = deps.RequestStorage
+                }
             }
         }

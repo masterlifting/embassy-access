@@ -11,7 +11,7 @@ open EA.Telegram.Router
 open EA.Telegram.Router.Embassies
 open EA.Telegram.Services.Embassies
 open EA.Telegram.Dependencies.Embassies.Russian
-open EA.Russian.Clients.Domain.Kdmid
+open EA.Russian.Services.Domain.Kdmid
 
 let private buildSubscriptionMenu (request: Request) =
     let getRoute =

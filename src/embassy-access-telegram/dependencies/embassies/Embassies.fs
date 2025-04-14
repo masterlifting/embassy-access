@@ -12,6 +12,7 @@ open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Embassies.Russian
+open EA.Telegram.Dependencies.Embassies.Italian
 
 type Dependencies = {
     Chat: Chat
@@ -19,6 +20,7 @@ type Dependencies = {
     CancellationToken: CancellationToken
     Culture: Culture.Dependencies
     Russian: Russian.Dependencies
+    Italian: Italian.Dependencies
     getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
     getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
     getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
@@ -40,6 +42,7 @@ type Dependencies = {
 
         result {
             let! russianDeps = Russian.Dependencies.create chat deps
+            let! italianDeps = Italian.Dependencies.create chat deps
 
             let getEmbassyNode embassyId =
                 deps.getEmbassyGraph ()
@@ -170,6 +173,7 @@ type Dependencies = {
                 CancellationToken = deps.CancellationToken
                 Culture = deps.Culture
                 Russian = russianDeps
+                Italian = italianDeps
                 getEmbassiesGraph = deps.getEmbassyGraph
                 getEmbassyNode = getEmbassyNode
                 getServiceNode = getServiceNode
