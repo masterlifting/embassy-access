@@ -8,8 +8,6 @@
 
     <ItemGroup>
         <Compile Include="domain\Constants.fs" />
-        <Compile Include="domain\Embassies.Russian.fs" />
-        <Compile Include="data_access\Embassies.Russian.fs" />
         <Compile Include="dependencies\Web.fs" />
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\AIProvider.fs" />
@@ -43,9 +41,9 @@
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
           <Link>embassies.yaml</Link>
         </Content>
-        <Content Include="settings\services.rus.yaml">
+        <Content Include="settings\services.yaml">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <Link>services.rus.yaml</Link>
+          <Link>services.yaml</Link>
         </Content>
     </ItemGroup>
 

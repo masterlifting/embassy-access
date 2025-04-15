@@ -69,8 +69,7 @@ Worker:
           Parallel: true
           Tasks:
             - Id: SA
-              Enabled: true
-              Recursively: 00:01:00
+              Enabled: false
               Duration: 00:03:00
               Description: Search appointments for Russian embassy in Serbia
               Schedule:
@@ -191,15 +190,20 @@ Worker:
       Parallel: true
       Description: Italian
       Schedule:
-        Workdays: mon,tue,wed,thu,fri
+        Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
         - Id: SRB
-          Description: Serbia
+          Parallel: true
           Tasks:
             - Id: SA
+              Enabled: true
+              Recursively: 00:05:00
+              Duration: 00:03:00
               Description: Search appointments for Italian embassy in Serbia
-          Schedule:
-            TimeZone: 2
+              Schedule:
+                StartTime: 00:55:00
+                StopTime: 23:55:20
+                TimeZone: 2
     - Id: ESP
       Parallel: true
       Description: Spanish embassy

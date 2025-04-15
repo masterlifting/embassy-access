@@ -15,7 +15,12 @@ let main _ =
     resultAsync {
         let! configuration =
             {
-                Files = [ "appsettings.yaml"; "worker.yaml"; "embassies.yaml"; "services.rus.yaml" ]
+                Files = [
+                    "appsettings.yaml"
+                    "worker.yaml"
+                    "embassies.yaml"
+                    "services.yaml"
+                ]
             }
             |> Configuration.Client.Yaml
             |> Configuration.Client.init
@@ -43,7 +48,10 @@ let main _ =
         let taskHandlers =
             Graph.Node(
                 rootTaskHandler,
-                [ taskGraph |> Embassies.Russian.createHandlers rootTaskHandler ]
+                [
+                    taskGraph |> Embassies.Russian.createHandlers rootTaskHandler
+                    taskGraph |> Embassies.Italian.createHandlers rootTaskHandler
+                ]
                 |> List.choose id
             )
 
