@@ -14,7 +14,8 @@ type RequestServiceEntity() =
     member val EmbassyDescription: string option = None with get, set
     member val EmbassyTimeZone: float = 0. with get, set
 
-    member this.ToDomain() = {
+    member this.ToDomain() =
+        {
         Id = this.ServiceId |> Graph.NodeIdValue
         Name = this.ServiceName
         Payload = this.Payload
