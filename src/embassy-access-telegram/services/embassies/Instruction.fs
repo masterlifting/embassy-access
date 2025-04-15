@@ -58,19 +58,13 @@ let toCheckAppointments embassyId (service: ServiceNode) =
         |> async.Return
 
 let toAutoNotifications embassyId service =
-    fun (chatId, messageId) ->
-        (chatId, messageId)
-        |> toSubscribe embassyId service Disabled true
+    fun (chatId, messageId) -> (chatId, messageId) |> toSubscribe embassyId service Disabled true
 
 let toAutoFirstAvailableConfirmation embassyId service =
-    fun (chatId, messageId) ->
-        (chatId, messageId)
-        |> toSubscribe embassyId service FirstAvailable true
+    fun (chatId, messageId) -> (chatId, messageId) |> toSubscribe embassyId service FirstAvailable true
 
 let toAutoLastAvailableConfirmation embassyId service =
-    fun (chatId, messageId) ->
-        (chatId, messageId)
-        |> toSubscribe embassyId service LastAvailable true
+    fun (chatId, messageId) -> (chatId, messageId) |> toSubscribe embassyId service LastAvailable true
 
 let toAutoDateRangeConfirmation embassyId service =
     fun (chatId, messageId) ->

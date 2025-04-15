@@ -8,6 +8,9 @@
     <ItemGroup>
       <Compile Include="services\prenotami\Domain.fs" />
       <Compile Include="services\prenotami\Client.fs" />
+      <Compile Include="services\prenotami\Web.Http.fs" />
+      <Compile Include="services\prenotami\Web.Html.Common.fs" />
+      <Compile Include="services\prenotami\Web.Html.InitialPage.fs" />
       <Compile Include="services\prenotami\Service.fs" />
     </ItemGroup>
 

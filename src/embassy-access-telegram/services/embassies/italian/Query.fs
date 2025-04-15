@@ -9,14 +9,14 @@ open EA.Telegram.Services.Embassies
 let get embassyId (service: ServiceNode) =
     fun (chatId, messageId) ->
         match service.Id.Split() with
-        | [ _; Embassies.ITA; _; _; "0" ] ->
-            (chatId, messageId) |> Instruction.toCheckAppointments embassyId service
-        | [ _; Embassies.ITA; _; _; "1" ] ->
-            (chatId, messageId) |> Instruction.toAutoNotifications embassyId service
+        | [ _; Embassies.ITA; _; _; "0" ] -> (chatId, messageId) |> Instruction.toCheckAppointments embassyId service
+        | [ _; Embassies.ITA; _; _; "1" ] -> (chatId, messageId) |> Instruction.toAutoNotifications embassyId service
         | [ _; Embassies.ITA; _; _; "2"; "0" ] ->
-            (chatId, messageId) |> Instruction.toAutoFirstAvailableConfirmation embassyId service
+            (chatId, messageId)
+            |> Instruction.toAutoFirstAvailableConfirmation embassyId service
         | [ _; Embassies.ITA; _; _; "2"; "1" ] ->
-            (chatId, messageId) |> Instruction.toAutoLastAvailableConfirmation embassyId service
+            (chatId, messageId)
+            |> Instruction.toAutoLastAvailableConfirmation embassyId service
         | [ _; Embassies.ITA; _; _; "2"; "2" ] ->
             (chatId, messageId) |> Instruction.toAutoDateRangeConfirmation embassyId service
         | _ ->

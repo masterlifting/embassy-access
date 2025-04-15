@@ -16,7 +16,7 @@ type Route =
         | Post r -> [ "1"; r.Value ]
         | Delete r -> [ "2"; r.Value ]
         |> String.concat Router.DELIMITER
-        
+
 let parse (input: string) =
     let parts = input.Split Router.DELIMITER
     let remaining = parts[1..] |> String.concat Router.DELIMITER

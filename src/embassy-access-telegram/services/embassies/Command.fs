@@ -64,9 +64,11 @@ let checkAppointments (model: Post.Model.CheckAppointments) =
                         && request.Service.Embassy.Id = model.EmbassyId
                         && request.Service.Payload = model.Payload)
                 )
-            
-            let! service = EA.Telegram.Dependencies.Service.Dependencies.create model.ServiceId deps |> async.Return
-            
+
+            let! service =
+                EA.Telegram.Dependencies.Service.Dependencies.create model.ServiceId deps
+                |> async.Return
+
             return
                 match requestOpt with
                 | Some request ->
@@ -81,7 +83,8 @@ let checkAppointments (model: Post.Model.CheckAppointments) =
                     | Failed _
                     | Completed _ ->
                         service.processRequest request
-                        |> ResultAsync.bind (fun result -> (deps.Chat.Id, service.printPayload) |> Notification.create result)
+                        |> ResultAsync.bind (fun result ->
+                            (deps.Chat.Id, service.printPayload) |> Notification.create result)
                 | None ->
                     resultAsync {
                         let! serviceNode = deps.getService model.ServiceId
@@ -113,7 +116,7 @@ let confirmAppointment (model: Post.Model.ConfirmAppointment) =
         deps.getRequest model.RequestId
         |> ResultAsync.bindAsync (fun request ->
             EA.Telegram.Dependencies.Service.Dependencies.create request.Service.Id deps
-            |> ResultAsync.wrap(fun service ->
+            |> ResultAsync.wrap (fun service ->
                 service.processRequest {
                     request with
                         ConfirmationState = Appointment model.AppointmentId

@@ -13,7 +13,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 
-let inline private equalCountry (embassyId: Graph.NodeId)  (taskId: Graph.NodeId)=
+let inline private equalCountry (embassyId: Graph.NodeId) (taskId: Graph.NodeId) =
     let embassyCountry =
         embassyId
         |> Graph.NodeId.split
