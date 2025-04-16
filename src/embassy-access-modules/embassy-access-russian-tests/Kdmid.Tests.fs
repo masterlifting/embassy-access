@@ -85,7 +85,7 @@ module private Fixture =
             }
         }
         ProcessState = Ready
-        IsBackground = false
+        UseBackground = false
         Limits = Set.empty<Limit>
         ConfirmationState = FirstAvailable
         Appointments = Set.empty<Appointment>

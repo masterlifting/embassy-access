@@ -5,7 +5,7 @@ open Web.Clients.Domain
 open EA.Italian.Services.Domain.Prenotami
 
 let init (deps: Dependencies) =
-    let initHttpClient (payload: Payload) =
+    let initHttpClient (payload: Credentials) =
         let host = "https://prenotami.esteri.it"
         {
             Http.Host = host

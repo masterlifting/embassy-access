@@ -14,18 +14,9 @@ module private Prenotami =
         fun (deps: Prenotami.Dependencies) ->
             deps.tryProcessFirst requests
             |> ResultAsync.map (fun request ->
-                let errorFilter _ = true
-
-                match request |> Notification.tryCreate errorFilter with
-                | Some notification ->
-                    match notification with
-                    | Empty(_, message) -> $"{deps.TaskName} {message}." |> Log.dbg
-                    | Unsuccessfully(_, error) -> deps.TaskName + " " + error.Message |> Log.crt
-                    | HasAppointments(_, appointments) ->
-                        $"{deps.TaskName} Appointments found: {appointments.Count}." |> Log.scs
-                    | HasConfirmations(_, confirmations) ->
-                        $"{deps.TaskName} Confirmations found: {confirmations.Count}." |> Log.scs
-                | None -> $"{deps.TaskName} No notifications created." |> Log.wrn)
+                match request.Payload.Appointments.IsEmpty with
+                | true -> deps.TaskName +  " No appointments found" |> Log.dbg
+                | false -> deps.TaskName +  $" Appointments found: %i{request.Payload.Appointments.Count}" |> Log.scs)
 
     let start =
         fun (deps: Prenotami.Dependencies) ->
@@ -34,7 +25,7 @@ module private Prenotami =
             deps.getRequests ServiceId
             |> ResultAsync.map (fun requests ->
                 requests
-                |> Seq.groupBy (fun r -> r.Service.Id, r.Service.Payload)
+                |> Seq.groupBy _.Service.Id
                 |> Seq.map (fun (_, requests) ->
                     requests
                     |> Seq.sortByDescending _.Modified

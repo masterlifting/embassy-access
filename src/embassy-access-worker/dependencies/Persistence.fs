@@ -102,7 +102,7 @@ type Dependencies = {
                 |> ResultAsync.map (
                     List.filter (fun request ->
                         equalCountry request.Service.Embassy.Id task.Id
-                        && request.IsBackground
+                        && request.UseBackground
                         && (request.ProcessState <> InProcess
                             || request.ProcessState = InProcess
                                && request.Modified < DateTime.UtcNow.Subtract task.Duration))

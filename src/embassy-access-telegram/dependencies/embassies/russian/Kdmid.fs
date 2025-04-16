@@ -87,7 +87,7 @@ type Dependencies = {
                             Embassy = embassy
                         }
                         ProcessState = Ready
-                        IsBackground = inBackground
+                        UseBackground = inBackground
                         Limits = limits
                         ConfirmationState = confirmationState
                         Appointments = Set.empty<Appointment>

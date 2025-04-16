@@ -28,4 +28,9 @@ type Appointment = {
     Time: TimeOnly
     Confirmation: Confirmation option
     Description: string
-}
+} with
+    static member print (appointment: Appointment) =
+        let date = appointment.Date.ToString("yyyy-MM-dd")
+        let time = appointment.Time.ToString("HH:mm")
+        $"Appointment: {date} {time} - {appointment.Value}"
+        

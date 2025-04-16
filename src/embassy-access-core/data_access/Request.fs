@@ -45,10 +45,60 @@ type RequestEntity() =
                 Id = requestId
                 Service = this.Service.ToDomain()
                 ProcessState = processState
-                IsBackground = this.IsBackground
+                UseBackground = this.IsBackground
                 Limits = limitations |> Set.ofSeq
                 ConfirmationState = confirmationState
                 Appointments = appointments |> Set.ofSeq
+                Modified = this.Modified
+            }
+        }
+
+type RequestEntity'() =
+    member val Id = String.Empty with get, set
+    member val ServiceId = String.Empty with get, set
+    member val ServiceName = String.Empty with get, set
+    member val ServiceInstruction: string option = None with get, set
+    member val ServiceDescription: string option = None with get, set
+    member val EmbassyId = String.Empty with get, set
+    member val EmbassyName = String.Empty with get, set
+    member val EmbassyDescription: string option = None with get, set
+    member val EmbassyTimeZone: float = 0. with get, set
+    member val Payload = String.Empty with get, set
+    member val ProcessState = ProcessStateEntity() with get, set
+    member val UseBackground = false with get, set
+    member val Limits = Array.empty<LimitEntity> with get, set
+    member val Modified = DateTime.UtcNow with get, set
+
+    member this.ToDomain deserializePayload =
+        let result = ResultBuilder()
+
+        result {
+
+            let! serviceId = this.ServiceId |> Graph.NodeId.create
+            let! embassyId = this.EmbassyId |> Graph.NodeId.create
+            let! requestId = RequestId.parse this.Id
+            let! processState = this.ProcessState.ToDomain()
+            let! limitations = this.Limits |> Seq.map _.ToDomain() |> Result.choose
+            let! payload = this.Payload |> deserializePayload
+
+            return {
+                Id = requestId
+                Service = {
+                    Id = serviceId
+                    Name = this.ServiceName
+                    Instruction = this.ServiceInstruction
+                    Description = this.ServiceDescription
+                }
+                Embassy = {
+                    Id = embassyId
+                    Name = this.EmbassyName
+                    Description = this.EmbassyDescription
+                    TimeZone = this.EmbassyTimeZone
+                }
+                Payload = payload
+                ProcessState = processState
+                UseBackground = this.UseBackground
+                Limits = limitations |> Set.ofSeq
                 Modified = this.Modified
             }
         }
@@ -59,12 +109,34 @@ type private Request with
             Id = this.Id.ValueStr,
             Service = this.Service.ToEntity(),
             ProcessState = this.ProcessState.ToEntity(),
-            IsBackground = this.IsBackground,
+            IsBackground = this.UseBackground,
             Limits = (this.Limits |> Seq.map _.ToEntity() |> Seq.toArray),
             ConfirmationState = this.ConfirmationState.ToEntity(),
             Appointments = (this.Appointments |> Seq.map _.ToEntity() |> Seq.toArray),
             Modified = this.Modified
         )
+        
+type private Request'<'a> with
+    member private this.ToEntity serializePayload =
+        this.Payload
+        |> serializePayload
+        |> Result.map (fun payload ->
+            RequestEntity'(
+                Id = this.Id.ValueStr,
+                ServiceId = this.Service.Id.Value,
+                ServiceName = this.Service.Name,
+                ServiceInstruction = this.Service.Instruction,
+                ServiceDescription = this.Service.Description,
+                EmbassyId = this.Embassy.Id.Value,
+                EmbassyName = this.Embassy.Name,
+                EmbassyDescription = this.Embassy.Description,
+                EmbassyTimeZone = this.Embassy.TimeZone,
+                Payload = payload,
+                ProcessState = this.ProcessState.ToEntity(),
+                UseBackground = this.UseBackground,
+                Limits = (this.Limits |> Seq.map _.ToEntity() |> Seq.toArray),
+                Modified = this.Modified
+            ))
 
 module private Common =
     let create (request: Request) (data: RequestEntity array) =
@@ -77,6 +149,15 @@ module private Common =
         | Some index ->
             data[index] <- request.ToEntity()
             Ok data
+        | None -> $"The '{request.Id}' not found." |> NotFound |> Error
+
+    let updateNew<'a> (request: Request'<'a>) serializePayload (data: RequestEntity' array) =
+        match data |> Array.tryFindIndex (fun x -> x.Id = request.Id.ValueStr) with
+        | Some index ->
+            request.ToEntity serializePayload
+            |> Result.map (fun request ->
+                data[index] <- request
+                data)
         | None -> $"The '{request.Id}' not found." |> NotFound |> Error
 
     let updateSeq (requests: Request seq) (data: RequestEntity array) =
@@ -94,6 +175,7 @@ module private InMemory =
     open Persistence.Storages.InMemory
 
     let private loadData = Query.Json.get<RequestEntity>
+    let private loadDataNew = Query.Json.get<RequestEntity'>
 
     module Query =
 
@@ -154,6 +236,14 @@ module private InMemory =
             client
             |> loadData
             |> Result.bind (Common.update request)
+            |> Result.bind (fun data -> client |> Command.Json.save data)
+            |> Result.map (fun _ -> request)
+            |> async.Return
+
+        let updateNew<'a> (request: Request'<'a>) client =
+            client
+            |> loadDataNew
+            |> Result.bind (Common.updateNew<'a> request)
             |> Result.bind (fun data -> client |> Command.Json.save data)
             |> Result.map (fun _ -> request)
             |> async.Return
@@ -346,6 +436,11 @@ module Command =
         match storage |> toPersistenceStorage with
         | Storage.InMemory client -> client |> InMemory.Command.update request
         | Storage.FileSystem client -> client |> FileSystem.Command.update request
+        | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
+
+    let updateNew<'a> (request: Request'<'a>) storage =
+        match storage |> toPersistenceStorage with
+        | Storage.InMemory client -> client |> InMemory.Command.update request
         | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
 
     let updateSeq requests storage =

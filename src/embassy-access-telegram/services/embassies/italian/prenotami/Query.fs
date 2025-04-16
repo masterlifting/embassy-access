@@ -45,8 +45,8 @@ let getSubscriptions (requests: Request list) =
                 |> Router.ItalianEmbassy
 
             request.Service.Payload
-            |> Payload.create
-            |> Result.map Payload.print
+            |> Credentials.create
+            |> Result.map Credentials.print
             |> Result.map (fun payload -> route.Value, payload))
         |> Result.choose
         |> Result.map (fun data ->
@@ -74,8 +74,8 @@ let getSubscriptionsMenu requestId =
             | Failed _
             | Completed _ ->
                 request.Service.Payload
-                |> Payload.create
-                |> Result.map Payload.print
+                |> Credentials.create
+                |> Result.map Credentials.print
                 |> Result.map (fun payload ->
                     (deps.ChatId, Replace deps.MessageId)
                     |> ButtonsGroup.create {
@@ -98,7 +98,7 @@ let getAppointments requestId =
             | Ready
             | Failed _
             | Completed _ ->
-                let printPayload = Payload.create >> Result.map Payload.print
+                let printPayload = Credentials.create >> Result.map Credentials.print
 
                 deps.processRequest request
                 |> ResultAsync.bind (fun result -> (deps.ChatId, printPayload) |> Notification.create result))

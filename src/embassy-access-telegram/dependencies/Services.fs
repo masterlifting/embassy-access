@@ -47,8 +47,8 @@ type Dependencies = {
             | Some Embassies.ITA ->
                 {
                     printPayload =
-                        EA.Italian.Services.Domain.Prenotami.Payload.create
-                        >> Result.map EA.Italian.Services.Domain.Prenotami.Payload.print
+                        EA.Italian.Services.Domain.Prenotami.Credentials.create
+                        >> Result.map EA.Italian.Services.Domain.Prenotami.Credentials.print
                     processRequest =
                         fun request ->
                             deps.Italian

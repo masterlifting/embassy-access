@@ -8,7 +8,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain
 
-type Payload = {
+type Credentials = {
     Login: string
     Password: string
 } with
@@ -25,11 +25,30 @@ type Payload = {
             | false -> $"Prenotami payload: '%s{payload}' is not supported." |> NotSupported |> Error
         | _ -> $"Prenotami payload: '%s{payload}' is not supported." |> NotSupported |> Error
 
-    static member print(payload: Payload) = $"Login: '%s{payload.Login}'"
+    static member print(payload: Credentials) = $"Login: '%s{payload.Login}'"
+
+type Request = {
+    Credentials: Credentials
+    Appointments: Set<Appointment>
+} with
+
+    static member print(request: Request) =
+        request.Credentials
+        |> Credentials.print
+        |> fun v ->
+            v
+            + Environment.NewLine
+            + match request.Appointments.IsEmpty with
+              | true -> "No appointments found"
+              | false ->
+                  request.Appointments
+                  |> Seq.map (fun appointment -> appointment |> Appointment.print)
+                  |> String.concat ", "
+                  |> fun appointments -> $"Appointments: '%s{appointments}'"
 
 type Client = {
-    initHttpClient: Payload -> Result<Http.Client, Error'>
-    updateRequest: Request -> Async<Result<Request, Error'>>
+    initHttpClient: Credentials -> Result<Http.Client, Error'>
+    updateRequest: Request'<Request> -> Async<Result<Request'<Request>, Error'>>
     getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
 }
 

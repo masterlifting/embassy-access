@@ -7,30 +7,20 @@ open EA.Core.Domain
 open EA.Italian.Services.Prenotami.Web
 open EA.Italian.Services.Domain.Prenotami
 
-let private createPayload request =
-    request.Service.Payload |> Payload.create
-
-let private validateLimits request =
+let private validateLimits (request: Request'<Request>) =
     request
-    |> Request.validateLimits
+    |> Request'<Request>.validateLimits
     |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
 
-let private setFinalProcessState request requestPipe =
+let private setFinalProcessState (request: Request'<Request>) requestPipe =
     fun updateRequest ->
         requestPipe
         |> Async.bind (function
             | Ok r ->
-                Request.updateLimits {
+                Request'<Request>.updateLimits {
                     r with
                         Modified = DateTime.UtcNow
-                        ProcessState =
-                            match r.Appointments.IsEmpty with
-                            | true -> "No appointments found"
-                            | false ->
-                                match r.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
-                                | [] -> $"Found appointments: %i{r.Appointments.Count}"
-                                | confirmations -> $"Found confirmations: %i{confirmations.Length}"
-                            |> Completed
+                        ProcessState = r.Payload |> Request.print |> Completed
                 }
                 |> updateRequest
             | Error error ->
@@ -38,20 +28,20 @@ let private setFinalProcessState request requestPipe =
                 | Operation reason ->
                     match reason.Code with
                     | Some(Custom Constants.ErrorCode.INITIAL_PAGE_ERROR) -> request
-                    | _ -> request |> Request.updateLimits
-                | _ -> request |> Request.updateLimits
-                |> fun r ->
+                    | _ -> request |> Request'<Request>.updateLimits
+                | _ -> request |> Request'<Request>.updateLimits
+                |> fun (r: Request'<Request>) ->
                     updateRequest {
                         r with
                             ProcessState = Failed error
                             Modified = DateTime.UtcNow
                     })
 
-let tryProcess (request: Request) =
+let tryProcess (request: Request'<Request>) =
     fun (client: Client) ->
         // define
         let setInitialProcessState =
-            ResultAsync.wrap (fun r ->
+            ResultAsync.wrap (fun (r: Request'<Request>) ->
                 {
                     r with
                         ProcessState = InProcess
@@ -59,15 +49,14 @@ let tryProcess (request: Request) =
                 }
                 |> client.updateRequest)
 
-        let createPayload =
-            ResultAsync.bind (fun r -> r |> createPayload |> Result.map (fun payload -> r, payload))
-
         let createHttpClient =
-            ResultAsync.bind (fun (r, p) ->
-                p |> client.initHttpClient |> Result.map (fun httpClient -> httpClient, r, p))
+            ResultAsync.bind (fun (r: Request'<Request>) ->
+                r.Payload.Credentials
+                |> client.initHttpClient
+                |> Result.map (fun httpClient -> httpClient, r))
 
         let parseInitialPage =
-            ResultAsync.bindAsync (fun (httpClient, r, p) ->
+            ResultAsync.bindAsync (fun (httpClient, r) ->
                 (httpClient, client.getInitialPage)
                 |> Html.InitialPage.parse ()
                 |> ResultAsync.map (fun formData -> r)
@@ -84,36 +73,25 @@ let tryProcess (request: Request) =
         request
         |> validateLimits
         |> setInitialProcessState
-        |> createPayload
         |> createHttpClient
         |> parseInitialPage
         |> setFinalProcessState
 
-let tryProcessFirst (requests: Request seq) =
+let tryProcessFirst (requests: Request'<Request> seq) =
     fun (client: Client, notify) ->
 
-        let inline errorFilter _ = true
-
-        let rec processNextRequest (errors: Error' list) (remainingRequests: Request list) =
+        let rec processNextRequest (errors: Error' list) (remainingRequests: Request'<Request> list) =
             async {
                 match remainingRequests with
                 | [] -> return Error(List.rev errors)
                 | request :: requestsTail ->
                     match! client |> tryProcess request with
                     | Error error ->
-                        do!
-                            match request |> Notification.tryCreateFail error errorFilter with
-                            | None -> async.Return()
-                            | Some notification -> notification |> notify
-
+                        do! request |> notify
                         return! requestsTail |> processNextRequest (error :: errors)
 
                     | Ok result ->
-                        do!
-                            match result |> Notification.tryCreate errorFilter with
-                            | None -> async.Return()
-                            | Some notification -> notification |> notify
-
+                        do! result |> notify
                         return Ok result
             }
 

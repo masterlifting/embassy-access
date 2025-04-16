@@ -28,7 +28,32 @@ type Request = {
     ConfirmationState: ConfirmationState
     Appointments: Set<Appointment>
     Limits: Set<Limit>
-    IsBackground: bool
+    UseBackground: bool
+    Modified: DateTime
+} with
+
+    static member updateLimits request =
+        request.Limits
+        |> Seq.map Limit.update
+        |> fun limits -> {
+            request with
+                Limits = limits |> Set.ofSeq
+        }
+
+    static member validateLimits request =
+        request.Limits
+        |> Seq.map Limit.validate
+        |> Result.choose
+        |> Result.map (fun _ -> request)
+
+type Request'<'a> = {
+    Id: RequestId
+    Service: ServiceNode
+    Embassy: EmbassyNode
+    Payload: 'a
+    ProcessState: ProcessState
+    Limits: Set<Limit>
+    UseBackground: bool
     Modified: DateTime
 } with
 
