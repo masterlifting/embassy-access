@@ -10,7 +10,7 @@ module Model =
         ServiceId: Graph.NodeId
         EmbassyId: Graph.NodeId
         IsBackground: bool
-        ConfirmationState: ConfirmationState
+        ConfirmationState: Confirmation
         Payload: string
     } with
 
@@ -132,11 +132,11 @@ type Route =
         match this with
         | Subscribe model ->
             match model.ConfirmationState with
-            | ConfirmationState.Disabled -> "0" :: model.Serialize()
-            | ConfirmationState.Appointment appointmentId -> [ "1"; appointmentId.ValueStr ] @ model.Serialize()
-            | ConfirmationState.FirstAvailable -> "2" :: model.Serialize()
-            | ConfirmationState.LastAvailable -> "3" :: model.Serialize()
-            | ConfirmationState.DateTimeRange(start, finish) ->
+            | Confirmation.Disabled -> "0" :: model.Serialize()
+            | Confirmation.ForAppointment appointmentId -> [ "1"; appointmentId.ValueStr ] @ model.Serialize()
+            | Confirmation.FirstAvailable -> "2" :: model.Serialize()
+            | Confirmation.LastAvailable -> "3" :: model.Serialize()
+            | Confirmation.DateTimeRange(start, finish) ->
                 [ "4"; start |> String.fromDateTime; finish |> String.fromDateTime ]
                 @ model.Serialize()
         | CheckAppointments model -> "5" :: model.Serialize()
@@ -149,7 +149,7 @@ type Route =
 
         match parts with
         | [| "0"; serviceId; embassyId; isBackground; payload |] ->
-            ConfirmationState.Disabled
+            Confirmation.Disabled
             |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
             |> Result.map Route.Subscribe
         | [| "1"; appointmentId; serviceId; embassyId; isBackground; payload |] ->
@@ -157,22 +157,22 @@ type Route =
             |> AppointmentId.parse
             |> Result.bind (fun appointmentId ->
                 appointmentId
-                |> ConfirmationState.Appointment
+                |> Confirmation.ForAppointment
                 |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ])
             |> Result.map Route.Subscribe
         | [| "2"; serviceId; embassyId; payload; isBackground |] ->
-            ConfirmationState.FirstAvailable
+            Confirmation.FirstAvailable
             |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
             |> Result.map Route.Subscribe
         | [| "3"; serviceId; embassyId; payload; isBackground |] ->
-            ConfirmationState.LastAvailable
+            Confirmation.LastAvailable
             |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
             |> Result.map Route.Subscribe
         | [| "4"; start; finish; serviceId; embassyId; isBackground; payload |] ->
             match start, finish with
             | AP.IsDateTime start, AP.IsDateTime finish ->
                 (start, finish)
-                |> ConfirmationState.DateTimeRange
+                |> Confirmation.DateTimeRange
                 |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
                 |> Result.map Route.Subscribe
             | _ ->

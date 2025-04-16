@@ -2,21 +2,12 @@
 
 open System
 open System.Threading
-open EA.Core.Domain
-open EA.Core.DataAccess
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Infrastructure.SerDe
+open EA.Core.Domain
+open EA.Core.DataAccess
 open Web.Clients.Domain
-
-type Client = {
-    initHttpClient: string -> Result<Http.Client, Error'>
-    updateRequest: Request -> Async<Result<Request, Error'>>
-}
-
-type Dependencies = {
-    RequestStorage: Request.Table
-    CancellationToken: CancellationToken
-}
 
 type Payload = {
     Value: int
@@ -28,3 +19,17 @@ type Payload = {
         | _ -> $"Midpass payload: '%s{payload}' is not supported." |> NotSupported |> Error
 
     static member print(payload: Payload) = $"'ID:%i{payload.Value}'"
+
+    static member serialize(payload: Payload) = Json.serialize payload
+
+    static member deserialize(payload: string) = Json.deserialize<Payload> payload
+
+type Client = {
+    initHttpClient: string -> Result<Http.Client, Error'>
+    updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
+}
+
+type Dependencies = {
+    RequestsTable: Request.Table<Payload>
+    CancellationToken: CancellationToken
+}

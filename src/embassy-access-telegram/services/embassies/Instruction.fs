@@ -6,7 +6,7 @@ open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain.Service
-open EA.Core.Domain.ConfirmationState
+open EA.Core.Domain.Confirmation
 open EA.Telegram.Router
 open EA.Telegram.Router.Embassies
 open EA.Telegram.Router.Embassies.Post.Model

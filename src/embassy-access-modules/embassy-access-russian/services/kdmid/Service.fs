@@ -15,19 +15,12 @@ let private setFinalProcessState (request: Request<Payload>) requestPipe =
     fun updateRequest ->
         requestPipe
         |> Async.bind (function
-            | Ok (r: Request<Payload>) ->
+            | Ok(r: Request<Payload>) ->
                 r.UpdateLimits()
                 |> fun r -> {
                     r with
                         Modified = DateTime.UtcNow
-                        ProcessState =
-                            match r.Payload.Appointments.IsEmpty with
-                            | true -> "No appointments found"
-                            | false ->
-                                match r.Payload.Appointments |> Seq.choose _.Confirmation |> List.ofSeq with
-                                | [] -> $"Found appointments: %i{r.Payload.Appointments.Count}"
-                                | confirmations -> $"Found confirmations: %i{confirmations.Length}"
-                            |> Completed
+                        ProcessState = r.Payload |> Payload.print |> Completed
                 }
                 |> updateRequest
             | Error error ->

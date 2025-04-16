@@ -118,16 +118,15 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
 
             match date, time with
             | (true, date), (true, time) ->
-                Ok
-                <| {
-                       Id = AppointmentId.createNew ()
-                       Value = value
-                       Date = date
-                       Time = time
-                       Confirmation = None
-                       Description = window
-                   }
-
+                {
+                    Id = AppointmentId.createNew ()
+                    Value = value
+                    Date = date
+                    Time = time
+                    Confirmation = None
+                    Description = window
+                }
+                |> Ok
             | _ ->
                 Error
                 <| NotSupported $"Kdmid 'Appointments page' date '%s{dateTime}' is not supported."
@@ -146,8 +145,8 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
 
 let private createResult (request: Request<Payload>) (formData, appointments) =
     let request = {
-        request.Payload with
-            Appointments = appointments
+        request with
+            Request.Payload.Appointments = appointments
     }
 
     formData, request

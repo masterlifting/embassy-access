@@ -23,6 +23,6 @@ type Dependencies = {
         sendMessageRes = deps.sendMessageRes
         Service = {
             CancellationToken = deps.CancellationToken
-            RequestStorage = deps.RequestStorage
+            RequestsTable = deps.RequestStorage
         }
     }

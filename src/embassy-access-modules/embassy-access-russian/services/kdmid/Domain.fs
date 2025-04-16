@@ -4,6 +4,7 @@ open System
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Infrastructure.SerDe
 open EA.Core.Domain
 open EA.Core.DataAccess
 open Web.Clients
@@ -72,9 +73,28 @@ type Credentials = {
 
 type Payload = {
     Credentials: Credentials
+    Confirmation: Confirmation
     Appointments: Set<Appointment>
-    Confirmation: string
-}
+} with
+
+    static member print(payload: Payload) =
+        payload.Credentials
+        |> Credentials.print
+        |> fun v ->
+            v
+            + Environment.NewLine
+            + match payload.Appointments.IsEmpty with
+              | true -> "No appointments found"
+              | false ->
+                  payload.Appointments
+                  |> Seq.map (fun appointment -> appointment |> Appointment.print)
+                  |> String.concat Environment.NewLine
+                  
+    static member serialize (payload: Payload) =
+        payload |> Json.serialize
+        
+    static member deserialize (payload: string) =
+        payload |> Json.deserialize<Payload>
 
 type Client = {
     initHttpClient: string -> Result<Http.Client, Error'>

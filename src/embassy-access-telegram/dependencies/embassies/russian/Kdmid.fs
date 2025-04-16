@@ -25,7 +25,7 @@ type Dependencies = {
     getService: Graph.NodeId -> Async<Result<Service, Error'>>
     getEmbassy: Graph.NodeId -> Async<Result<Embassy, Error'>>
     getRequest: RequestId -> Async<Result<Request, Error'>>
-    createRequest: string * Service * Embassy * bool * ConfirmationState -> Async<Result<Request, Error'>>
+    createRequest: string * Service * Embassy * bool * Confirmation -> Async<Result<Request, Error'>>
     deleteRequest: RequestId -> Async<Result<unit, Error'>>
     processRequest: Request -> Async<Result<Request, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>

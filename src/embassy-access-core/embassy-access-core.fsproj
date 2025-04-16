@@ -7,10 +7,9 @@
         <Compile Include="domain\Constants.fs" />
         <Compile Include="domain\Embassy.fs" />
         <Compile Include="domain\Service.fs" />
-        <Compile Include="domain\Confirmation.fs" />
         <Compile Include="domain\Appointment.fs" />
         <Compile Include="domain\ProcessState.fs" />
-        <Compile Include="domain\ConfirmationState.fs" />
+        <Compile Include="domain\Confirmation.fs" />
         <Compile Include="domain\Limit.fs" />
         <Compile Include="domain\Request.fs" />
         <Compile Include="data_access\EmbassyGraph.fs" />

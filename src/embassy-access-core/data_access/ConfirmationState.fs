@@ -8,7 +8,7 @@ open EA.Core.Domain
 let private DISABLED = nameof Disabled
 
 [<Literal>]
-let private APPOINTMENT = nameof Appointment
+let private APPOINTMENT = nameof ForAppointment
 
 [<Literal>]
 let private FIRST_AVAILABLE = nameof FirstAvailable
@@ -31,7 +31,7 @@ type ConfirmationStateEntity() =
         | DISABLED -> Disabled |> Ok
         | APPOINTMENT ->
             match this.AppointmentId with
-            | Some id -> id |> AppointmentId.parse |> Result.map Appointment
+            | Some id -> id |> AppointmentId.parse |> Result.map ForAppointment
             | None -> $"{nameof AppointmentId} not found." |> NotFound |> Error
         | FIRST_AVAILABLE -> FirstAvailable |> Ok
         | LAST_AVAILABLE -> LastAvailable |> Ok
@@ -47,13 +47,13 @@ type ConfirmationStateEntity() =
             |> NotSupported
             |> Error
 
-type internal ConfirmationState with
+type internal Confirmation with
     member this.ToEntity() =
         let result = ConfirmationStateEntity()
 
         match this with
         | Disabled -> result.Type <- DISABLED
-        | Appointment appointmentId ->
+        | ForAppointment appointmentId ->
             result.Type <- APPOINTMENT
             result.AppointmentId <- Some appointmentId.ValueStr
         | FirstAvailable -> result.Type <- FIRST_AVAILABLE
