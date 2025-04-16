@@ -6,7 +6,7 @@ open EA.Core.Domain
 open EA.Telegram.Dependencies.Embassies.Italian
 open EA.Telegram.Services.Embassies
 
-let get embassyId (service: ServiceNode) =
+let get embassyId (service: Service) =
     fun (chatId, messageId) ->
         match service.Id.Split() with
         | [ _; Embassies.ITA; _; _; "0" ] -> (chatId, messageId) |> Instruction.toCheckAppointments embassyId service
@@ -25,7 +25,7 @@ let get embassyId (service: ServiceNode) =
             |> Error
             |> async.Return
 
-let userGet embassyId (service: ServiceNode) =
+let userGet embassyId (service: Service) =
     fun (deps: Italian.Dependencies) ->
         deps.getChatRequests ()
         |> ResultAsync.map (

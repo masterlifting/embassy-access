@@ -144,9 +144,9 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
         |> Result.map Set.ofList
         |> Result.map (fun appointments -> formData, appointments)
 
-let private createResult (request: Request) (formData, appointments) =
+let private createResult (request: Request<Payload>) (formData, appointments) =
     let request = {
-        request with
+        request.Payload with
             Appointments = appointments
     }
 

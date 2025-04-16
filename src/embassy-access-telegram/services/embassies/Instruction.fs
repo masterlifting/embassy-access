@@ -5,7 +5,7 @@ open System
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
-open EA.Core.Domain.ServiceNode
+open EA.Core.Domain.Service
 open EA.Core.Domain.ConfirmationState
 open EA.Telegram.Router
 open EA.Telegram.Router.Embassies
@@ -21,7 +21,7 @@ let private toResponse instruction route =
         |> Option.defaultValue message
         |> fun message -> (chatId, messageId |> Replace) |> Text.create message
 
-let private toSubscribe embassyId (service: ServiceNode) confirmationState isBackgroundTask =
+let private toSubscribe embassyId (service: Service) confirmationState isBackgroundTask =
     fun (chatId, messageId) ->
         let request =
             {
@@ -40,7 +40,7 @@ let private toSubscribe embassyId (service: ServiceNode) confirmationState isBac
         |> Ok
         |> async.Return
 
-let toCheckAppointments embassyId (service: ServiceNode) =
+let toCheckAppointments embassyId (service: Service) =
     fun (chatId, messageId) ->
         let request =
             {

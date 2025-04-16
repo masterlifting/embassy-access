@@ -12,7 +12,7 @@ open EA.Telegram.Services.Embassies
 open EA.Telegram.Dependencies.Embassies.Italian
 open EA.Italian.Services.Domain.Prenotami
 
-let private buildSubscriptionMenu (request: Request) =
+let private buildSubscriptionMenu (request: Payload) =
     let getRoute =
         request.Id
         |> Italian.Prenotami.Get.Appointments
@@ -33,7 +33,7 @@ let private buildSubscriptionMenu (request: Request) =
     |> Seq.map (fun x -> x.Key |> CallbackData |> Button.create x.Value)
     |> Set.ofSeq
 
-let getSubscriptions (requests: Request list) =
+let getSubscriptions (requests: Payload list) =
     fun (deps: Prenotami.Dependencies) ->
         requests
         |> Seq.map (fun request ->

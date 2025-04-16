@@ -3,6 +3,7 @@
 open System
 open Web.Clients
 open Web.Clients.Domain
+open EA.Core.DataAccess
 open EA.Russian.Services.Domain.Kdmid
 
 let init (deps: Dependencies) =
@@ -39,7 +40,7 @@ let init (deps: Dependencies) =
 
     {
         initHttpClient = initHttpClient
-        updateRequest = fun request -> deps.RequestStorage |> EA.Core.DataAccess.Request.Command.update request
+        updateRequest = fun request -> deps.RequestsTable |> Storage.Request.Command.update request
         getInitialPage =
             fun request httpClient ->
                 httpClient

@@ -7,20 +7,20 @@ open EA.Core.Domain
 open EA.Italian.Services.Prenotami.Web
 open EA.Italian.Services.Domain.Prenotami
 
-let private validateLimits (request: Request'<Request>) =
-    request
-    |> Request'<Request>.validateLimits
+let private validateLimits (request: Request<Payload>) =
+    request.ValidateLimits()
     |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
 
-let private setFinalProcessState (request: Request'<Request>) requestPipe =
+let private setFinalProcessState (request: Request<Payload>) requestPipe =
     fun updateRequest ->
         requestPipe
         |> Async.bind (function
-            | Ok r ->
-                Request'<Request>.updateLimits {
+            | Ok(r: Request<Payload>) ->
+                r.UpdateLimits()
+                |> fun r -> {
                     r with
                         Modified = DateTime.UtcNow
-                        ProcessState = r.Payload |> Request.print |> Completed
+                        ProcessState = r.Payload |> Payload.print |> Completed
                 }
                 |> updateRequest
             | Error error ->
@@ -28,20 +28,20 @@ let private setFinalProcessState (request: Request'<Request>) requestPipe =
                 | Operation reason ->
                     match reason.Code with
                     | Some(Custom Constants.ErrorCode.INITIAL_PAGE_ERROR) -> request
-                    | _ -> request |> Request'<Request>.updateLimits
-                | _ -> request |> Request'<Request>.updateLimits
-                |> fun (r: Request'<Request>) ->
+                    | _ -> request.UpdateLimits()
+                | _ -> request.UpdateLimits()
+                |> fun r ->
                     updateRequest {
                         r with
                             ProcessState = Failed error
                             Modified = DateTime.UtcNow
                     })
 
-let tryProcess (request: Request'<Request>) =
+let tryProcess (request: Request<Payload>) =
     fun (client: Client) ->
         // define
         let setInitialProcessState =
-            ResultAsync.wrap (fun (r: Request'<Request>) ->
+            ResultAsync.wrap (fun r ->
                 {
                     r with
                         ProcessState = InProcess
@@ -50,7 +50,7 @@ let tryProcess (request: Request'<Request>) =
                 |> client.updateRequest)
 
         let createHttpClient =
-            ResultAsync.bind (fun (r: Request'<Request>) ->
+            ResultAsync.bind (fun r ->
                 r.Payload.Credentials
                 |> client.initHttpClient
                 |> Result.map (fun httpClient -> httpClient, r))
@@ -77,10 +77,10 @@ let tryProcess (request: Request'<Request>) =
         |> parseInitialPage
         |> setFinalProcessState
 
-let tryProcessFirst (requests: Request'<Request> seq) =
+let tryProcessFirst (requests: Request<Payload> seq) =
     fun (client: Client, notify) ->
 
-        let rec processNextRequest (errors: Error' list) (remainingRequests: Request'<Request> list) =
+        let rec processNextRequest (errors: Error' list) (remainingRequests: Request<Payload> list) =
             async {
                 match remainingRequests with
                 | [] -> return Error(List.rev errors)

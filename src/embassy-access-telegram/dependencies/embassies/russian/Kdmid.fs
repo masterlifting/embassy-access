@@ -19,13 +19,13 @@ type Dependencies = {
     Chat: Chat
     MessageId: int
     CancellationToken: CancellationToken
-    RequestStorage: Request.RequestStorage
+    RequestStorage: Request.Table
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
     sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
-    getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
-    getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
+    getService: Graph.NodeId -> Async<Result<Service, Error'>>
+    getEmbassy: Graph.NodeId -> Async<Result<Embassy, Error'>>
     getRequest: RequestId -> Async<Result<Request, Error'>>
-    createRequest: string * ServiceNode * EmbassyNode * bool * ConfirmationState -> Async<Result<Request, Error'>>
+    createRequest: string * Service * Embassy * bool * ConfirmationState -> Async<Result<Request, Error'>>
     deleteRequest: RequestId -> Async<Result<unit, Error'>>
     processRequest: Request -> Async<Result<Request, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
@@ -69,7 +69,7 @@ type Dependencies = {
                         |> Error
                     | Some request -> request |> Ok)
 
-            let createRequest (payload, service: ServiceNode, embassy: EmbassyNode, inBackground, confirmationState) =
+            let createRequest (payload, service: Service, embassy: Embassy, inBackground, confirmationState) =
                 let requestId = RequestId.createNew ()
                 let limits = Limit.create (20u<attempts>, TimeSpan.FromDays 1) |> Set.singleton
 
@@ -102,7 +102,7 @@ type Dependencies = {
             let processRequest request =
                 {
                     CancellationToken = deps.CancellationToken
-                    RequestStorage = deps.RequestStorage
+                    RequestsTable = deps.RequestStorage
                 }
                 |> Client.init
                 |> ResultAsync.wrap (Service.tryProcess request)
@@ -129,10 +129,10 @@ type Dependencies = {
                 processRequest = processRequest
                 translateMessageRes = translateMessageRes
                 translateMessagesRes = translateMessagesRes
-                printPayload = Payload.create >> Result.map Payload.print
+                printPayload = Credentials.create >> Result.map Credentials.print
                 Service = {
                     CancellationToken = deps.CancellationToken
-                    RequestStorage = deps.RequestStorage
+                    RequestsTable = deps.RequestStorage
                 }
             }
         }

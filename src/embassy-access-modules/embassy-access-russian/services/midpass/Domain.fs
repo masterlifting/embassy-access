@@ -14,7 +14,7 @@ type Client = {
 }
 
 type Dependencies = {
-    RequestStorage: Request.RequestStorage
+    RequestStorage: Request.Table
     CancellationToken: CancellationToken
 }
 

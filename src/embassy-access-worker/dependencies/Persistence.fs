@@ -12,16 +12,17 @@ open AIProvider.Services.DataAccess
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
+open EA.Italian.Services.Domain
 
-let inline private equalCountry (embassyId: Graph.NodeId) (taskId: Graph.NodeId) =
+let inline private equalCountry (embassyId: EmbassyId) (taskId: ActiveTaskId) =
     let embassyCountry =
-        embassyId
+        embassyId.Value
         |> Graph.NodeId.split
         |> Seq.skip 1
         |> Seq.truncate 2
         |> Graph.NodeId.combine
     let taskCountry =
-        taskId
+        taskId.Value
         |> Graph.NodeId.split
         |> Seq.skip 1
         |> Seq.truncate 2
@@ -30,11 +31,12 @@ let inline private equalCountry (embassyId: Graph.NodeId) (taskId: Graph.NodeId)
 
 type Dependencies = {
     ChatStorage: Chat.ChatStorage
-    RequestStorage: Request.RequestStorage
+    initRussianKdmidRequestsStorage: unit -> Result<Request.Table<Kdmid.Payload>, Error'>
+    initItalianPrenotamiRequestsStorage: unit -> Result<Request.Table<Prenotami.Payload>, Error'>
     initCultureStorage: unit -> Result<Culture.Response.Storage, Error'>
-    initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>
-    initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>
-    getRequests: Graph.NodeId * ActiveTask -> Async<Result<Request list, Error'>>
+    initServiceGraphStorage: unit -> Result<ServiceGraph.Table, Error'>
+    initEmbassyGraphStorage: unit -> Result<EmbassyGraph.Table, Error'>
+    getRequests: ServiceId -> ActiveTask -> Request.Table<^a> -> Async<Result<Request<^a> list, Error'>>
     resetData: unit -> Async<Result<unit, Error'>>
 } with
 
@@ -96,17 +98,18 @@ type Dependencies = {
             let! chatStorage = initChatStorage ()
             let! requestStorage = initRequestStorage ()
 
-            let getRequests (partServiceId, task: ActiveTask) =
-                requestStorage
-                |> Request.Query.findManyByPartServiceId partServiceId
-                |> ResultAsync.map (
-                    List.filter (fun request ->
-                        equalCountry request.Service.Embassy.Id task.Id
-                        && request.UseBackground
-                        && (request.ProcessState <> InProcess
-                            || request.ProcessState = InProcess
-                               && request.Modified < DateTime.UtcNow.Subtract task.Duration))
-                )
+            let getRequests (serviceId: ServiceId) (task: ActiveTask) =
+                fun storage ->
+                    storage
+                    |> Storage.Request.Query.findManyWithServiceId serviceId
+                    |> ResultAsync.map (
+                        List.filter (fun request ->
+                            equalCountry request.Embassy.Id task.Id
+                            && request.UseBackground
+                            && (request.ProcessState <> InProcess
+                                || request.ProcessState = InProcess
+                                   && request.Modified < DateTime.UtcNow.Subtract task.Duration))
+                    )
 
             let resetData () =
                 let resultAsync = ResultAsyncBuilder()
@@ -128,7 +131,7 @@ type Dependencies = {
 
             return {
                 ChatStorage = chatStorage
-                RequestStorage = requestStorage
+                RussianRequestsStorage = requestStorage
                 initCultureStorage = initCultureStorage
                 initEmbassyGraphStorage = initEmbassyGraphStorage
                 initServiceGraphStorage = initServiceGraphStorage

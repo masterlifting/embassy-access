@@ -28,7 +28,7 @@ let create cfg ct =
             EA.Telegram.Dependencies.Persistence.Dependencies.create
                 ct
                 (fun () -> persistence.ChatStorage |> Ok)
-                (fun () -> persistence.RequestStorage |> Ok)
+                (fun () -> persistence.RussianRequestsStorage |> Ok)
                 persistence.initServiceGraphStorage
                 persistence.initEmbassyGraphStorage
 

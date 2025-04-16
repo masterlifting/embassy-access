@@ -17,8 +17,8 @@ type Dependencies = {
     CancellationToken: CancellationToken
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-    getRequest: RequestId -> Async<Result<Request, Error'>>
-    processRequest: Request -> Async<Result<Request, Error'>>
+    getRequest: RequestId -> Async<Result<Payload, Error'>>
+    processRequest: Payload -> Async<Result<Payload, Error'>>
     Service: EA.Italian.Services.Domain.Prenotami.Dependencies
 } with
 
@@ -35,7 +35,7 @@ type Dependencies = {
         let processRequest request =
             {
                 CancellationToken = deps.CancellationToken
-                RequestStorage = deps.RequestStorage
+                RequestsTable = deps.RequestStorage
             }
             |> Client.init
             |> ResultAsync.wrap (Service.tryProcess request)
@@ -49,6 +49,6 @@ type Dependencies = {
             processRequest = processRequest
             Service = {
                 CancellationToken = deps.CancellationToken
-                RequestStorage = deps.RequestStorage
+                RequestsTable = deps.RequestStorage
             }
         }

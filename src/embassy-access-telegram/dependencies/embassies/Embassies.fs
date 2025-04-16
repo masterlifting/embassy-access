@@ -21,17 +21,17 @@ type Dependencies = {
     Culture: Culture.Dependencies
     Russian: Russian.Dependencies
     Italian: Italian.Dependencies
-    getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
-    getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-    getEmbassiesGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-    getEmbassyServiceGraph: Graph.NodeId -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+    getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<Service>, Error'>>
+    getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<Embassy>, Error'>>
+    getEmbassiesGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
+    getEmbassyServiceGraph: Graph.NodeId -> Async<Result<Graph.Node<Service>, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
     sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
-    getService: Graph.NodeId -> Async<Result<ServiceNode, Error'>>
-    getEmbassy: Graph.NodeId -> Async<Result<EmbassyNode, Error'>>
+    getService: Graph.NodeId -> Async<Result<Service, Error'>>
+    getEmbassy: Graph.NodeId -> Async<Result<Embassy, Error'>>
     getChatRequests: unit -> Async<Result<Request list, Error'>>
     getRequest: RequestId -> Async<Result<Request, Error'>>
-    createRequest: string * ServiceNode * EmbassyNode * bool * ConfirmationState -> Async<Result<Request, Error'>>
+    createRequest: string * Service * Embassy * bool * ConfirmationState -> Async<Result<Request, Error'>>
     deleteRequest: RequestId -> Async<Result<unit, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
     translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>>
@@ -128,7 +128,7 @@ type Dependencies = {
                         |> Error
                     | Some request -> request |> Ok)
 
-            let createRequest (payload, service: ServiceNode, embassy: EmbassyNode, inBackground, confirmationState) =
+            let createRequest (payload, service: Service, embassy: Embassy, inBackground, confirmationState) =
                 let requestId = RequestId.createNew ()
                 let limits = Limit.create (20u<attempts>, TimeSpan.FromDays 1) |> Set.singleton
 

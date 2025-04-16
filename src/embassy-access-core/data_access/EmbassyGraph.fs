@@ -9,7 +9,7 @@ open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.Domain
 
-type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Provider
+type Table = Storage of Storage.Provider
 
 type StorageType = Configuration of Configuration.Connection
 
@@ -30,7 +30,7 @@ type EmbassyGraphEntity() =
             |> Result.map (fun children ->
                 Graph.Node(
                     {
-                        Id = nodeId
+                        Id = nodeId |> EmbassyId
                         Name = this.Name
                         Description = this.Description
                         TimeZone = this.TimeZone |> Option.defaultValue 0.
@@ -46,10 +46,9 @@ module private Configuration =
     let get client =
         client |> loadData |> Result.bind _.ToDomain() |> async.Return
 
-let private toPersistenceStorage storage =
-    storage
-    |> function
-        | EmbassyGraphStorage storage -> storage
+let private toStorage =
+    function
+    | Storage storage -> storage
 
 let init storageType =
     match storageType with
@@ -57,9 +56,10 @@ let init storageType =
         connection
         |> Storage.Connection.Configuration
         |> Storage.init
-        |> Result.map EmbassyGraphStorage
+        |> Result.map Storage
 
-let get storage =
-    match storage |> toPersistenceStorage with
+let get table =
+    let storage = table |> toStorage
+    match storage with
     | Storage.Configuration client -> client |> Configuration.get
     | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return

@@ -6,10 +6,10 @@ open Web.Clients
 open Web.Clients.Domain.Http
 open EA.Russian.Services.Domain.Kdmid
 
-let createQueryParams (payload: Payload) =
-    match payload.Ems with
-    | Some ems -> $"id=%i{payload.Id}&cd=%s{payload.Cd}&ems=%s{ems}"
-    | None -> $"id=%i{payload.Id}&cd=%s{payload.Cd}"
+let createQueryParams (credentials: Credentials) =
+    match credentials.Ems with
+    | Some ems -> $"id=%i{credentials.Id}&cd=%s{credentials.Cd}&ems=%s{ems}"
+    | None -> $"id=%i{credentials.Id}&cd=%s{credentials.Cd}"
 
 let getQueryParamsId queryParams =
     queryParams

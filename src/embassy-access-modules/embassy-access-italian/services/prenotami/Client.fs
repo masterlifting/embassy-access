@@ -2,10 +2,11 @@
 
 open Web.Clients
 open Web.Clients.Domain
+open EA.Core.DataAccess
 open EA.Italian.Services.Domain.Prenotami
 
 let init (deps: Dependencies) =
-    let initHttpClient (payload: Credentials) =
+    let initHttpClient (credentials: Credentials) =
         let host = "https://prenotami.esteri.it"
         {
             Http.Host = host
@@ -34,7 +35,7 @@ let init (deps: Dependencies) =
 
     {
         initHttpClient = initHttpClient
-        updateRequest = fun request -> deps.RequestStorage |> EA.Core.DataAccess.Request.Command.update request
+        updateRequest = fun request -> deps.RequestsTable |> Storage.Request.Command.update request
         getInitialPage =
             fun request httpClient ->
                 httpClient

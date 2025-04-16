@@ -10,24 +10,7 @@ open Web.Clients
 open Web.Clients.Domain
 
 let private result = ResultBuilder()
-
-type Client = {
-    initHttpClient: string -> Result<Http.Client, Error'>
-    updateRequest: Request -> Async<Result<Request, Error'>>
-    getCaptcha: Http.Request -> Http.Client -> Async<Result<Http.Response<byte array>, Error'>>
-    solveIntCaptcha: byte array -> Async<Result<int, Error'>>
-    getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
-    postValidationPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
-    postAppointmentsPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
-    postConfirmationPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
-}
-
-type Dependencies = {
-    RequestStorage: Request.RequestStorage
-    CancellationToken: CancellationToken
-}
-
-type Payload = {
+type Credentials = {
     Subdomain: string
     Id: int
     Cd: string
@@ -80,12 +63,35 @@ type Payload = {
             }
         }
 
-    static member print(payload: Payload) =
+    static member print(payload: Credentials) =
         let ems =
             payload.Ems
             |> Option.map (fun ems -> $"; EMS:%s{ems}")
             |> Option.defaultValue ""
         $"'ID:%i{payload.Id}; CD:%s{payload.Cd}{ems} (%s{payload.Subdomain})'"
+
+type Payload = {
+    Credentials: Credentials
+    Appointments: Set<Appointment>
+    Confirmation: string
+}
+
+type Client = {
+    initHttpClient: string -> Result<Http.Client, Error'>
+    updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
+    getCaptcha: Http.Request -> Http.Client -> Async<Result<Http.Response<byte array>, Error'>>
+    solveIntCaptcha: byte array -> Async<Result<int, Error'>>
+    getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
+    postValidationPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
+    postAppointmentsPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
+    postConfirmationPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
+}
+
+type Dependencies = {
+    RequestsTable: Request.Table<Payload>
+    CancellationToken: CancellationToken
+}
+
 
 module Constants =
     module ErrorCode =

@@ -21,52 +21,27 @@ type RequestId =
 
     static member createNew() = RequestId <| UUID16.createNew ()
 
-type Request = {
+type Request<'payload> = {
     Id: RequestId
-    Service: RequestService
-    ProcessState: ProcessState
-    ConfirmationState: ConfirmationState
-    Appointments: Set<Appointment>
-    Limits: Set<Limit>
-    UseBackground: bool
-    Modified: DateTime
-} with
-
-    static member updateLimits request =
-        request.Limits
-        |> Seq.map Limit.update
-        |> fun limits -> {
-            request with
-                Limits = limits |> Set.ofSeq
-        }
-
-    static member validateLimits request =
-        request.Limits
-        |> Seq.map Limit.validate
-        |> Result.choose
-        |> Result.map (fun _ -> request)
-
-type Request'<'a> = {
-    Id: RequestId
-    Service: ServiceNode
-    Embassy: EmbassyNode
-    Payload: 'a
+    Service: Service
+    Embassy: Embassy
+    Payload: 'payload
     ProcessState: ProcessState
     Limits: Set<Limit>
     UseBackground: bool
     Modified: DateTime
 } with
 
-    static member updateLimits request =
-        request.Limits
+    member this.UpdateLimits() =
+        this.Limits
         |> Seq.map Limit.update
         |> fun limits -> {
-            request with
+            this with
                 Limits = limits |> Set.ofSeq
         }
 
-    static member validateLimits request =
-        request.Limits
+    member this.ValidateLimits() =
+        this.Limits
         |> Seq.map Limit.validate
         |> Result.choose
-        |> Result.map (fun _ -> request)
+        |> Result.map (fun _ -> this)

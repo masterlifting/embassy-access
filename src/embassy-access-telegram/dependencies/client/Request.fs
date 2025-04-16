@@ -18,11 +18,11 @@ type Dependencies = {
     CancellationToken: CancellationToken
     Culture: Culture.Dependencies
     ChatStorage: Chat.ChatStorage
-    RequestStorage: Request.RequestStorage
+    RequestStorage: Request.Table
     getRequestChats: Request -> Async<Result<Chat list, Error'>>
     setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
-    getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-    getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+    getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
+    getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
     tryGetChat: unit -> Async<Result<Chat option, Error'>>
     getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
     setCurrentCulture: Culture -> Async<Result<unit, Error'>>

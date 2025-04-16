@@ -1,4 +1,5 @@
-﻿module EA.Core.DataAccess.ServiceGraph
+﻿[<RequireQualifiedAccess>]
+module EA.Core.DataAccess.ServiceGraph
 
 open System
 open Infrastructure.Domain
@@ -8,7 +9,7 @@ open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.Domain
 
-type ServiceGraphStorage = ServiceGraphStorage of Storage.Provider
+type Table = Storage of Storage.Provider
 
 type StorageType = Configuration of Configuration.Connection
 
@@ -29,7 +30,7 @@ type ServiceGraphEntity() =
             |> Result.map (fun children ->
                 Graph.Node(
                     {
-                        Id = nodeId
+                        Id = nodeId |> ServiceId
                         Name = this.Name
                         Instruction = this.Instruction
                         Description = this.Description
@@ -45,10 +46,9 @@ module private Configuration =
     let get client =
         client |> loadData |> Result.bind _.ToDomain() |> async.Return
 
-let private toPersistenceStorage storage =
-    storage
-    |> function
-        | ServiceGraphStorage storage -> storage
+let private toStorage =
+    function
+    | Storage storage -> storage
 
 let init storageType =
     match storageType with
@@ -56,9 +56,10 @@ let init storageType =
         connection
         |> Storage.Connection.Configuration
         |> Storage.init
-        |> Result.map ServiceGraphStorage
+        |> Result.map Storage
 
-let get storage =
-    match storage |> toPersistenceStorage with
+let get table =
+    let storage = table |> toStorage
+    match storage with
     | Storage.Configuration client -> client |> Configuration.get
     | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return

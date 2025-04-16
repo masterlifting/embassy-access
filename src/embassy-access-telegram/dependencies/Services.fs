@@ -34,8 +34,8 @@ type Dependencies = {
                 | _ ->
                     {
                         printPayload =
-                            EA.Russian.Services.Domain.Kdmid.Payload.create
-                            >> Result.map EA.Russian.Services.Domain.Kdmid.Payload.print
+                            EA.Russian.Services.Domain.Kdmid.Credentials.create
+                            >> Result.map EA.Russian.Services.Domain.Kdmid.Credentials.print
                         processRequest =
                             fun request ->
                                 deps.Russian

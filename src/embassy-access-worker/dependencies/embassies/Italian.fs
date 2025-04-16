@@ -15,8 +15,8 @@ module Prenotami =
 
     type Dependencies = {
         TaskName: string
-        getRequests: Graph.NodeId -> Async<Result<Request'<Request> list, Error'>>
-        tryProcessFirst: Request'<Request> list -> Async<Result<Request'<Request>, Error' list>>
+        tryProcessFirst: Request<Payload> list -> Async<Result<Request<Payload>, Error' list>>
+        getRequests: ServiceId -> Async<Result<Request<Payload> list, Error'>>
     } with
 
         static member create (task: ActiveTask) cfg ct =
@@ -25,6 +25,8 @@ module Prenotami =
             result {
                 let! persistence = Persistence.Dependencies.create cfg
                 let! telegram = Telegram.Dependencies.create cfg ct
+                
+                let! requestsStorage = persistence.initItalianPrenotamiRequestsStorage()
 
                 let notificationDeps: Notification.Dependencies = {
                     printPayload = Credentials.create >> Result.map Credentials.print
@@ -34,7 +36,7 @@ module Prenotami =
                     sendMessages = telegram.Web.Telegram.sendMessages
                 }
 
-                let notify (request: Request'<Request>) =
+                let notify (request: Request<Payload>) =
                     notificationDeps
                     |> Notification.spread notification
                     |> ResultAsync.mapError (_.Message >> Log.crt)
@@ -46,7 +48,7 @@ module Prenotami =
                 let tryProcessFirst requests =
                     {
                         CancellationToken = ct
-                        RequestStorage = persistence.RequestStorage
+                        RequestsTable = requestsStorage
                     }
                     |> Prenotami.Client.init
                     |> Result.map (fun client -> client, notify)

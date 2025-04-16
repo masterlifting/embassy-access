@@ -10,18 +10,18 @@ open Infrastructure.Prelude
 
 type Dependencies = {
     ChatStorage: Chat.ChatStorage
-    RequestStorage: Request.RequestStorage
+    RequestStorage: Request.Table
     setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
     getRequestChats: Request -> Async<Result<Chat list, Error'>>
-    getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-    getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+    getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
+    getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
 } with
 
     static member create ct =
         fun
             (initChatStorage: unit -> Result<Chat.ChatStorage, Error'>)
-            (initRequestStorage: unit -> Result<Request.RequestStorage, Error'>)
-            (initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>)
+            (initRequestStorage: unit -> Result<Request.Table, Error'>)
+            (initServiceGraphStorage: unit -> Result<ServiceGraph.Table, Error'>)
             (initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>) ->
 
             let result = ResultBuilder()

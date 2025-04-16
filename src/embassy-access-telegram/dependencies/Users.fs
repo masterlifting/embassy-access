@@ -17,11 +17,11 @@ type Dependencies = {
     Culture: Culture.Dependencies
     Embassies: Embassies.Dependencies
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-    getUserEmbassies: unit -> Async<Result<string option * EmbassyNode list, Error'>>
-    getUserEmbassyChildren: Graph.NodeId -> Async<Result<string option * EmbassyNode list, Error'>>
-    getUserEmbassyServices: Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
+    getUserEmbassies: unit -> Async<Result<string option * Embassy list, Error'>>
+    getUserEmbassyChildren: Graph.NodeId -> Async<Result<string option * Embassy list, Error'>>
+    getUserEmbassyServices: Graph.NodeId -> Async<Result<string option * Service list, Error'>>
     getUserEmbassyServiceChildren:
-        Graph.NodeId -> Graph.NodeId -> Async<Result<string option * ServiceNode list, Error'>>
+        Graph.NodeId -> Graph.NodeId -> Async<Result<string option * Service list, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
 } with
 

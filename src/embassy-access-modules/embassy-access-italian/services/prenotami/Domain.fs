@@ -2,11 +2,12 @@
 
 open System
 open System.Threading
+open Web.Clients.Domain
+open Infrastructure.Prelude
+open Infrastructure.SerDe
 open EA.Core.Domain
 open EA.Core.DataAccess
 open Infrastructure.Domain
-open Infrastructure.Prelude
-open Web.Clients.Domain
 
 type Credentials = {
     Login: string
@@ -27,33 +28,53 @@ type Credentials = {
 
     static member print(payload: Credentials) = $"Login: '%s{payload.Login}'"
 
-type Request = {
+type Payload = {
     Credentials: Credentials
     Appointments: Set<Appointment>
 } with
 
-    static member print(request: Request) =
-        request.Credentials
+    static member print(payload: Payload) =
+        payload.Credentials
         |> Credentials.print
         |> fun v ->
             v
             + Environment.NewLine
-            + match request.Appointments.IsEmpty with
+            + match payload.Appointments.IsEmpty with
               | true -> "No appointments found"
               | false ->
-                  request.Appointments
+                  payload.Appointments
                   |> Seq.map (fun appointment -> appointment |> Appointment.print)
                   |> String.concat ", "
                   |> fun appointments -> $"Appointments: '%s{appointments}'"
 
+    static member serialize key (payload: Payload) =
+        payload.Credentials.Password
+        |> String.encrypt key
+        |> Result.bind (fun password ->
+            Json.serialize {
+                payload with
+                    Payload.Credentials.Password = password
+            })
+
+    static member deserialize key (payload: string) =
+        payload
+        |> Json.deserialize<Payload>
+        |> Result.bind (fun payload ->
+            payload.Credentials.Password
+            |> String.decrypt key
+            |> Result.map (fun password -> {
+                payload with
+                    Payload.Credentials.Password = password
+            }))
+
 type Client = {
     initHttpClient: Credentials -> Result<Http.Client, Error'>
-    updateRequest: Request'<Request> -> Async<Result<Request'<Request>, Error'>>
+    updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
     getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
 }
 
 type Dependencies = {
-    RequestStorage: Request.RequestStorage
+    RequestsTable: Request.Table<Payload>
     CancellationToken: CancellationToken
 }
 

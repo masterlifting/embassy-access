@@ -29,7 +29,7 @@ module Kdmid =
                 let! telegram = Telegram.Dependencies.create cfg ct
 
                 let notificationDeps: Notification.Dependencies = {
-                    printPayload = Payload.create >> Result.map Payload.print
+                    printPayload = Credentials.create >> Result.map Credentials.print
                     translateMessages = telegram.Culture.translateSeq
                     setRequestAppointments = telegram.Persistence.setRequestAppointments
                     getRequestChats = telegram.Persistence.getRequestChats
@@ -58,7 +58,7 @@ module Kdmid =
                     embassyCountry = taskCountry
 
                 let getRequests partServiceId =
-                    persistence.RequestStorage
+                    persistence.RussianRequestsStorage
                     |> Request.Query.findManyByPartServiceId partServiceId
                     |> ResultAsync.map (
                         List.filter (fun request ->
@@ -72,7 +72,7 @@ module Kdmid =
                 let tryProcessFirst requests =
                     {
                         CancellationToken = ct
-                        RequestStorage = persistence.RequestStorage
+                        RequestsTable = persistence.RussianRequestsStorage
                     }
                     |> Kdmid.Client.init
                     |> Result.map (fun client -> client, notify)
