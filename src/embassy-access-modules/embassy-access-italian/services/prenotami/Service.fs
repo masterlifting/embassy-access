@@ -77,26 +77,21 @@ let tryProcess (request: Request<Payload>) =
         |> parseInitialPage
         |> setFinalProcessState
 
-let tryProcessFirst (requests: Request<Payload> seq) =
+let tryProcessFirst requests =
     fun (client: Client, notify) ->
 
-        let rec processNextRequest (errors: Error' list) (remainingRequests: Request<Payload> list) =
+        let rec processNextRequest (remainingRequests: Request<Payload> list) =
             async {
                 match remainingRequests with
-                | [] -> return Error(List.rev errors)
+                | [] -> return "All of the attempts to get the first available result have been reached. The Operation canceled." |> Canceled |> Error
                 | request :: requestsTail ->
                     match! client |> tryProcess request with
                     | Error error ->
-                        do!
-                            match request.Payload |> Payload.printError error with
-                            | Some msg -> msg |> notify
-                            | None -> async.Return()
-
-                        return! requestsTail |> processNextRequest (error :: errors)
-
+                        do! error |> Error |> notify
+                        return! requestsTail |> processNextRequest
                     | Ok result ->
-                        do! result.Payload |> Payload.print |> notify
+                        do! result |> Ok |> notify
                         return Ok result
             }
 
-        processNextRequest [] (requests |> List.ofSeq)
+        requests |> List.ofSeq |> processNextRequest

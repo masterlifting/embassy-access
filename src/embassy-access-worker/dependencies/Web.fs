@@ -17,13 +17,11 @@ type Dependencies = {
 
         result {
 
-            let initTelegramClient () =
+            let! telegramClient =
                 Configuration.Client.tryGetEnv TELEGRAM_BOT_TOKEN_KEY None
                 |> Result.bind (function
                     | Some token -> { Telegram.Token = token } |> Telegram.Provider.init
-                    | None -> $"The environment '{TELEGRAM_BOT_TOKEN_KEY}'" |> NotFound |> Error)
-
-            let! telegramClient = initTelegramClient ()
+                    | None -> $"The environment '{TELEGRAM_BOT_TOKEN_KEY}' not found." |> NotFound |> Error)
 
             return { TelegramClient = telegramClient }
         }

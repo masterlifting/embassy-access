@@ -24,8 +24,8 @@ let respond request chat =
                     match get with
                     | Get.Embassies -> Query.getEmbassies ()
                     | Get.Embassy embassyId -> Query.getEmbassy embassyId
-                    | Get.EmbassyServices embassyId -> Query.getEmbassyServices embassyId
-                    | Get.EmbassyService(embassyId, serviceId) -> Query.getEmbassyService embassyId serviceId
+                    | Get.UserEmbassy embassyId -> Query.getEmbassyServices embassyId
+                    | Get.UserEmbassies(embassyId, serviceId) -> Query.getEmbassyService embassyId serviceId
                 processSingleMessage handler <| deps
 
             | Method.Post post ->

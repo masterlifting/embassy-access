@@ -7,10 +7,12 @@ open EA.Telegram.Router.Embassies.Russian.Kdmid
 
 type Method =
     | Get of Get.Route
+    | Post of Post.Route
 
     member this.Value =
         match this with
         | Get r -> [ "0"; r.Value ]
+        | Post r -> [ "1"; r.Value ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
@@ -19,7 +21,8 @@ type Method =
 
         match parts[0] with
         | "0" -> remaining |> Get.Route.parse |> Result.map Get
+        | "1" -> remaining |> Post.Route.parse |> Result.map Post
         | _ ->
-            $"'{input}' of Embassies.Russian endpoint is not supported."
+            $"'{input}' of 'Embassies.Russian.Kdmid' endpoint is not supported."
             |> NotSupported
             |> Error

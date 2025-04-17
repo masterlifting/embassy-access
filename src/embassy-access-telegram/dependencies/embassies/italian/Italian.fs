@@ -38,7 +38,7 @@ type Dependencies = {
             return {
                 Chat = chat
                 MessageId = deps.MessageId
-                CancellationToken = deps.CancellationToken
+                CancellationToken = deps.ct
                 Culture = deps.Culture
                 ChatStorage = deps.ChatStorage
                 RequestStorage = deps.RequestStorage

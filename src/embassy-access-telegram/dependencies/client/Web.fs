@@ -11,7 +11,7 @@ module Telegram =
     open Web.Clients.Domain.Telegram.Producer
 
     type Dependencies = {
-        Client: Telegram.Client
+        initConsumer: (Consumer.Data -> Async<Result<unit, Error'>>) -> Web.Client.Consumer
         sendMessage: Message -> Async<Result<unit, Error'>>
         sendMessageRes: Async<Result<Message, Error'>> -> ChatId -> Async<Result<unit, Error'>>
         sendMessages: Message seq -> Async<Result<unit, Error'>>
@@ -20,31 +20,29 @@ module Telegram =
 
         static member create ct =
             fun (client: Telegram.Client) ->
-                let result = ResultBuilder()
+                let sendMessage message =
+                    client |> Producer.produce message ct |> ResultAsync.map ignore
 
-                result {
+                let sendMessageRes messageRes chatId =
+                    client |> Producer.produceResult messageRes chatId ct |> ResultAsync.map ignore
 
-                    let sendMessage message =
-                        client |> Producer.produce message ct |> ResultAsync.map ignore
+                let sendMessages messages =
+                    client |> Producer.produceSeq messages ct |> ResultAsync.map ignore
 
-                    let sendMessageRes messageRes chatId =
-                        client |> Producer.produceResult messageRes chatId ct |> ResultAsync.map ignore
+                let sendMessagesRes messagesRes chatId =
+                    client
+                    |> Producer.produceResultSeq messagesRes chatId ct
+                    |> ResultAsync.map ignore
 
-                    let sendMessages messages =
-                        client |> Producer.produceSeq messages ct |> ResultAsync.map ignore
+                let initTelegramConsumer handler =
+                    Web.Client.Consumer.Telegram(client, handler)
 
-                    let sendMessagesRes messagesRes chatId =
-                        client
-                        |> Producer.produceResultSeq messagesRes chatId ct
-                        |> ResultAsync.map ignore
-
-                    return {
-                        Client = client
-                        sendMessage = sendMessage
-                        sendMessageRes = sendMessageRes
-                        sendMessages = sendMessages
-                        sendMessagesRes = sendMessagesRes
-                    }
+                {
+                    initConsumer = initTelegramConsumer
+                    sendMessage = sendMessage
+                    sendMessageRes = sendMessageRes
+                    sendMessages = sendMessages
+                    sendMessagesRes = sendMessagesRes
                 }
 
 type Dependencies = {
@@ -52,12 +50,6 @@ type Dependencies = {
 } with
 
     static member create ct =
-        fun (client: Telegram.Client) ->
-            let result = ResultBuilder()
-
-            result {
-
-                let! telegramDeps = Telegram.Dependencies.create ct client
-
-                return { Telegram = telegramDeps }
-            }
+        fun (client: Telegram.Client) -> {
+            Telegram = Telegram.Dependencies.create ct client
+        }

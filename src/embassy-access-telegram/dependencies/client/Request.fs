@@ -13,18 +13,16 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 
 type Dependencies = {
+    ct: CancellationToken
     ChatId: ChatId
     MessageId: int
-    CancellationToken: CancellationToken
-    Culture: Culture.Dependencies
-    ChatStorage: Chat.Storage
+    Client: Client.Dependencies
+    tryGetChat: unit -> Async<Result<Chat option, Error'>>
     RequestStorage: Request.Storage
     getRequestChats: Request -> Async<Result<Chat list, Error'>>
     setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
     getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
     getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
-    tryGetChat: unit -> Async<Result<Chat option, Error'>>
-    getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
     setCurrentCulture: Culture -> Async<Result<unit, Error'>>
     sendMessage: Message -> Async<Result<unit, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
@@ -38,30 +36,13 @@ type Dependencies = {
 
             result {
 
-                let tryGetChat () =
-                    deps.Persistence.ChatStorage |> Chat.Query.tryFindById payload.ChatId
+                let! chatStorage = deps.Persistence.initChatStorage ()
 
-                let getAvailableCultures () =
-                    [
-                        English, "English"
-                        Russian, "Русский"
-                        Chinese, "中文"
-                        Spanish, "Español"
-                        Hindi, "हिन्दी"
-                        Arabic, "العربية"
-                        Serbian, "Српски"
-                        Portuguese, "Português"
-                        French, "Français"
-                        German, "Deutsch"
-                        Japanese, "日本語"
-                        Korean, "한국어"
-                    ]
-                    |> Map
-                    |> Ok
-                    |> async.Return
+                let tryGetChat () =
+                    chatStorage |> Storage.Chat.Query.tryFindById payload.ChatId
 
                 let setCurrentCulture culture =
-                    deps.Persistence.ChatStorage |> Chat.Command.setCulture payload.ChatId culture
+                    chatStorage |> Storage.Chat.Command.setCulture payload.ChatId culture
 
                 let sendMessageRes data =
                     deps.Web.Telegram.sendMessageRes data payload.ChatId
@@ -70,18 +51,17 @@ type Dependencies = {
                     deps.Web.Telegram.sendMessagesRes data payload.ChatId
 
                 return {
+                    ct = deps.ct
                     ChatId = payload.ChatId
                     MessageId = payload.MessageId
-                    CancellationToken = deps.CancellationToken
                     Culture = deps.Culture
-                    ChatStorage = deps.Persistence.ChatStorage
+                    ChatStorage = chatStorage
                     RequestStorage = deps.Persistence.RequestStorage
                     getRequestChats = deps.Persistence.getRequestChats
                     setRequestAppointments = deps.Persistence.setRequestAppointments
                     getServiceGraph = deps.Persistence.getServiceGraph
                     getEmbassyGraph = deps.Persistence.getEmbassyGraph
                     tryGetChat = tryGetChat
-                    getAvailableCultures = getAvailableCultures
                     setCurrentCulture = setCurrentCulture
                     sendMessage = deps.Web.Telegram.sendMessage
                     sendMessageRes = sendMessageRes

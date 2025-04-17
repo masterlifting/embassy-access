@@ -1,23 +1,23 @@
-﻿module EA.Telegram.Router.Embassies.Russian.Kdmid.Get
+﻿module EA.Telegram.Router.Subscriptions.Get
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
 open EA.Core.Domain
 
 type Route =
-    | Appointments of RequestId
+    | Menu of RequestId
 
     member this.Value =
         match this with
-        | Appointments requestId -> [ "0"; requestId.ValueStr ]
+        | Menu requestId -> [ "0"; requestId.ValueStr ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
         let parts = input.Split Router.DELIMITER
 
         match parts with
-        | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Appointments
+        | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Menu
         | _ ->
-            $"'{parts}' of 'Embassies.Russian.Kdmid.Get' endpoint is not supported."
+            $"'{parts}' of 'Subscriptions.Get' endpoint is not supported."
             |> NotSupported
             |> Error

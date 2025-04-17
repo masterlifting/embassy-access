@@ -1,98 +1,99 @@
-﻿module EA.Telegram.Router.Embassies.Post
+﻿module EA.Telegram.Router.Embassies.Russian.Kdmid.Post
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Telegram.Domain
 open EA.Core.Domain
 
-module Model =
+module Models =
+
     type Subscribe = {
-        ServiceId: Graph.NodeId
-        EmbassyId: Graph.NodeId
-        IsBackground: bool
-        ConfirmationState: Confirmation
-        Payload: string
+        Url: string
+        ServiceId: ServiceId
+        EmbassyId: EmbassyId
+        Confirmation: Confirmation
+        UseBackground: bool
     } with
 
         member this.Serialize() = [
-            this.ServiceId.Value
-            this.EmbassyId.Value
-            match this.IsBackground with
+            this.ServiceId.ValueStr
+            this.EmbassyId.ValueStr
+            match this.UseBackground with
             | true -> "1"
             | false -> "0"
-            this.Payload
+            this.Url
         ]
 
-        static member deserialize (parts: string list) confirmationState =
+        static member deserialize (parts: string list) confirmation =
             match parts with
-            | [ serviceId; embassyId; isBackground; payload ] ->
-                match isBackground with
+            | [ serviceId; embassyId; useBackground; payload ] ->
+                match useBackground with
                 | "0" -> false |> Ok
                 | "1" -> true |> Ok
                 | _ ->
-                    $"'{isBackground}' of Embassies.Russian.Kdmid.Post.Subscribe endpoint is not supported."
+                    $"'{useBackground}' of 'Embassies.Russian.Kdmid.Post.Subscribe' endpoint is not supported."
                     |> NotSupported
                     |> Error
-                |> Result.map (fun isBackground -> {
-                    ServiceId = serviceId |> Graph.NodeIdValue
-                    EmbassyId = embassyId |> Graph.NodeIdValue
-                    Payload = payload
-                    ConfirmationState = confirmationState
-                    IsBackground = isBackground
+                |> Result.map (fun useBackground -> {
+                    Url = payload
+                    ServiceId = serviceId |> Graph.NodeIdValue |> ServiceId
+                    EmbassyId = embassyId |> Graph.NodeIdValue |> EmbassyId
+                    Confirmation = confirmation
+                    UseBackground = useBackground
                 })
             | _ ->
-                $"'{parts}' of Embassies.Russian.Kdmid.Post.Subscribe endpoint is not supported."
+                $"'{parts}' of 'Embassies.Russian.Kdmid.Post.Subscribe' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
     type CheckAppointments = {
-        ServiceId: Graph.NodeId
-        EmbassyId: Graph.NodeId
-        Payload: string
+        Uri: string
+        ServiceId: ServiceId
+        EmbassyId: EmbassyId
     } with
 
-        member this.Serialize() = [ this.ServiceId.Value; this.EmbassyId.Value; this.Payload ]
+        member this.Serialize() = [ this.ServiceId.ValueStr; this.EmbassyId.ValueStr; this.Uri ]
 
         static member deserialize(parts: string list) =
             match parts with
             | [ serviceId; embassyId; payload ] ->
                 {
-                    ServiceId = serviceId |> Graph.NodeIdValue
-                    EmbassyId = embassyId |> Graph.NodeIdValue
-                    Payload = payload
+                    Uri = payload
+                    ServiceId = serviceId |> Graph.NodeIdValue |> ServiceId
+                    EmbassyId = embassyId |> Graph.NodeIdValue |> EmbassyId
                 }
                 |> Ok
             | _ ->
-                $"'{parts}' of Embassies.Russian.Kdmid.Post.CheckAppointments endpoint is not supported."
+                $"'{parts}' of 'Embassies.Russian.Kdmid.Post.CheckAppointments' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
     type SendAppointments = {
-        ServiceId: Graph.NodeId
-        EmbassyId: Graph.NodeId
-        AppointmentIds: Set<AppointmentId>
+        ServiceId: ServiceId
+        EmbassyId: EmbassyId
+        Appointments: Set<AppointmentId>
     } with
 
         member this.Serialize() = [
-            this.ServiceId.Value
-            this.EmbassyId.Value
-            this.AppointmentIds |> Set.map _.ValueStr |> Set.toArray |> String.concat ","
+            this.ServiceId.ValueStr
+            this.EmbassyId.ValueStr
+            this.Appointments |> Set.map _.ValueStr |> Set.toArray |> String.concat ","
         ]
 
         static member deserialize(parts: string list) =
             match parts with
-            | [ serviceId; embassyId; appointmentIds ] ->
-                appointmentIds.Split ','
+            | [ serviceId; embassyId; appointments ] ->
+                appointments.Split ','
                 |> Array.map AppointmentId.parse
                 |> Array.toList
                 |> Result.choose
                 |> Result.map (fun appointmentIds -> {
-                    ServiceId = serviceId |> Graph.NodeIdValue
-                    EmbassyId = embassyId |> Graph.NodeIdValue
-                    AppointmentIds = appointmentIds |> Set.ofList
+                    ServiceId = serviceId |> Graph.NodeIdValue |> ServiceId
+                    EmbassyId = embassyId |> Graph.NodeIdValue |> EmbassyId
+                    Appointments = appointmentIds |> Set.ofList
                 })
             | _ ->
-                $"'{parts}' of Embassies.Russian.Kdmid.Post.SendAppointments endpoint is not supported."
+                $"'{parts}' of 'Embassies.Russian.Kdmid.Post.SendAppointments' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
@@ -116,11 +117,11 @@ module Model =
                         AppointmentId = appointmentId
                     }))
             | _ ->
-                $"'{parts}' of Embassies.Russian.Kdmid.Post.ConfirmAppointment endpoint is not supported."
+                $"'{parts}' of 'Embassies.Russian.Kdmid.Post.ConfirmAppointment' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
-open Model
+open Models
 
 type Route =
     | Subscribe of Subscribe
@@ -131,7 +132,7 @@ type Route =
     member this.Value =
         match this with
         | Subscribe model ->
-            match model.ConfirmationState with
+            match model.Confirmation with
             | Confirmation.Disabled -> "0" :: model.Serialize()
             | Confirmation.ForAppointment appointmentId -> [ "1"; appointmentId.ValueStr ] @ model.Serialize()
             | Confirmation.FirstAvailable -> "2" :: model.Serialize()
@@ -176,7 +177,7 @@ type Route =
                 |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
                 |> Result.map Route.Subscribe
             | _ ->
-                $"Start: '{start}' or Finish: '{finish}' of Embassies.Russian.Kdmid.Post.KdmidSubscribe endpoint is not supported."
+                $"Start: '{start}' or Finish: '{finish}' of 'Embassies.Russian.Kdmid.Post.KdmidSubscribe' endpoint is not supported."
                 |> NotSupported
                 |> Error
         | [| "5"; serviceId; embassyId; payload |] ->
@@ -192,6 +193,6 @@ type Route =
             |> ConfirmAppointment.deserialize
             |> Result.map Route.ConfirmAppointment
         | _ ->
-            $"'{parts}' of Embassies.Russian.Kdmid.Post endpoint is not supported."
+            $"'{parts}' of 'Embassies.Russian.Kdmid.Post' endpoint is not supported."
             |> NotSupported
             |> Error

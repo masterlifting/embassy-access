@@ -5,8 +5,8 @@ open System.Threading
 open EA.Telegram.Dependencies
 
 type Dependencies = {
-    CancellationToken: CancellationToken
-    Culture: Culture.Dependencies
+    ct: CancellationToken
     Web: Web.Dependencies
+    Culture: Culture.Dependencies
     Persistence: Persistence.Dependencies
 }

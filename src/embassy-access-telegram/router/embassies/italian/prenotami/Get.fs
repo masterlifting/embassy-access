@@ -6,12 +6,10 @@ open EA.Core.Domain
 
 type Route =
     | Appointments of RequestId
-    | SubscriptionsMenu of RequestId
 
     member this.Value =
         match this with
         | Appointments requestId -> [ "0"; requestId.ValueStr ]
-        | SubscriptionsMenu requestId -> [ "1"; requestId.ValueStr ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
@@ -19,8 +17,7 @@ type Route =
 
         match parts with
         | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Appointments
-        | [| "1"; requestId |] -> RequestId.parse requestId |> Result.map SubscriptionsMenu
         | _ ->
-            $"'{parts}' of Embassies.Italian.Prenotami.Get endpoint is not supported."
+            $"'{parts}' of 'Embassies.Italian.Prenotami.Get' endpoint is not supported."
             |> NotSupported
             |> Error

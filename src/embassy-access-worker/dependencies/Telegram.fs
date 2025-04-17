@@ -20,24 +20,22 @@ let create cfg ct =
             Storage = cultureStorage
         }
 
-        let tgCulture = EA.Telegram.Dependencies.Culture.Dependencies.create ct culture
-
-        let! tgWeb = EA.Telegram.Dependencies.Web.Dependencies.create ct web.TelegramClient
-
-        let! tgPersistence =
-            EA.Telegram.Dependencies.Persistence.Dependencies.create
-                ct
-                (fun () -> persistence.initChatStorage |> Ok)
-                (fun () -> persistence.RussianRequestsStorage |> Ok)
-                persistence.initServiceStorage
-                persistence.initEmbassyStorage
-
-        let result: EA.Telegram.Dependencies.Client.Dependencies = {
-            CancellationToken = ct
-            Culture = tgCulture
-            Web = tgWeb
-            Persistence = tgPersistence
+        let client: EA.Telegram.Dependencies.Client.Dependencies = {
+            ct = ct
+            Web = EA.Telegram.Dependencies.Web.Dependencies.create ct web.TelegramClient
+            Culture = EA.Telegram.Dependencies.Culture.Dependencies.create ct culture
+            Persistence = {
+                initChatStorage = persistence.initChatStorage
+                initServiceStorage = persistence.initServiceStorage
+                initEmbassyStorage = persistence.initEmbassyStorage
+                RussianStorage = {
+                    initKdmidRequestStorage = persistence.RussianStorage.initKdmidRequestStorage
+                }
+                ItalianStorage = {
+                    initPrenotamiRequestStorage = persistence.ItalianStorage.initPrenotamiRequestStorage
+                }
+            }
         }
 
-        return result
+        return client
     }

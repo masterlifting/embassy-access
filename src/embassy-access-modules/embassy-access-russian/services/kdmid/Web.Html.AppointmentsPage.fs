@@ -144,12 +144,11 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
         |> Result.map (fun appointments -> formData, appointments)
 
 let private createResult (request: Request<Payload>) (formData, appointments) =
-    let request = {
+    formData,
+    {
         request with
             Request.Payload.Appointments = appointments
     }
-
-    formData, request
 
 let parse queryParams formDataMap request =
     fun (httpClient, postAppointmentsPage) ->

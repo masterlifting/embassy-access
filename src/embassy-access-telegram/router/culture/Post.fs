@@ -22,4 +22,4 @@ type Route =
         match parts with
         | [| "0"; code |] -> code |> Culture.parse |> SetCulture |> Ok
         | [| "1"; route; code |] -> (route, code |> Culture.parse) |> SetCultureCallback |> Ok
-        | _ -> $"'{parts}' of Culture.Post endpoint is not supported." |> NotSupported |> Error
+        | _ -> $"'{parts}' of 'Culture.Post' endpoint is not supported." |> NotSupported |> Error

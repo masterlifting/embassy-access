@@ -48,24 +48,20 @@ type Payload = {
             v
             + Environment.NewLine
             + match payload.Appointments.IsEmpty with
-              | true -> "No appointments found"
+              | true -> "No appointments found."
               | false ->
                   payload.Appointments
                   |> Seq.map (fun appointment -> appointment |> Appointment.print)
                   |> String.concat ", "
                   |> fun appointments -> $"Appointments: '%s{appointments}'"
 
-    static member printError (error: Error') (payload: Payload) =
+    static member printError (error: Error') =
         match error with
         | Operation reason ->
             match reason.Code with
             | Some(Custom Constants.ErrorCode.INITIAL_PAGE_ERROR) -> error.Message |> Some
             | _ -> None
         | _ -> None
-        |> Option.map (fun message ->
-            payload.Credentials
-            |> Credentials.print
-            |> fun v -> v + Environment.NewLine + message)
 
     static member serialize key (payload: Payload) =
         payload.Credentials.Password

@@ -7,18 +7,16 @@ open EA.Telegram.Router
 
 type Route =
     | Culture of Culture.Method.Route
-    | Users of Users.Method.Route
+    | Services of Services.Method.Route
     | Embassies of Embassies.Method.Route
-    | RussianEmbassy of Embassies.Russian.Method.Route
-    | ItalianEmbassy of Embassies.Italian.Method.Route
+    | Subscriptions of Subscriptions.Method.Route
 
     member this.Value =
         match this with
         | Culture r -> [ "0"; r.Value ]
-        | Users r -> [ "1"; r.Value ]
+        | Services r -> [ "1"; r.Value ]
         | Embassies r -> [ "2"; r.Value ]
-        | RussianEmbassy r -> [ "3"; r.Value ]
-        | ItalianEmbassy r -> [ "4"; r.Value ]
+        | Subscriptions r -> [ "3"; r.Value ]
         |> String.concat Router.DELIMITER
 
 let parse (input: string) =
@@ -27,11 +25,10 @@ let parse (input: string) =
 
     match parts[0] with
     | "0" -> remaining |> Culture.Method.parse |> Result.map Culture
-    | "1" -> remaining |> Users.Method.parse |> Result.map Users
+    | "1" -> remaining |> Services.Method.parse |> Result.map Services
     | "2" -> remaining |> Embassies.Method.parse |> Result.map Embassies
-    | "3" -> remaining |> Embassies.Russian.Method.parse |> Result.map RussianEmbassy
-    | "4" -> remaining |> Embassies.Italian.Method.parse |> Result.map ItalianEmbassy
+    | "3" -> remaining |> Subscriptions.Method.parse |> Result.map Subscriptions
     | "/culture" -> Culture(Culture.Method.Get(Culture.Get.Route.Cultures)) |> Ok
-    | "/mine" -> Users(Users.Method.Get(Users.Get.Route.UserEmbassies)) |> Ok
     | "/start" -> Embassies(Embassies.Method.Get(Embassies.Get.Route.Embassies)) |> Ok
-    | _ -> $"'{input}' for the application is not supported." |> NotSupported |> Error
+    | "/mine" -> Embassies(Embassies.Method.Get(Embassies.Get.Route.UserEmbassies)) |> Ok
+    | _ -> $"'{input}' for the application router is not supported." |> NotSupported |> Error

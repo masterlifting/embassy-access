@@ -15,8 +15,10 @@ module private Prenotami =
             deps.tryProcessFirst requests
             |> ResultAsync.map (fun request ->
                 match request.Payload.Appointments.IsEmpty with
-                | true -> deps.TaskName +  " No appointments found" |> Log.dbg
-                | false -> deps.TaskName +  $" Appointments found: %i{request.Payload.Appointments.Count}" |> Log.scs)
+                | true -> deps.TaskName + " No appointments found." |> Log.dbg
+                | false ->
+                    deps.TaskName + $" Appointments found: %i{request.Payload.Appointments.Count}"
+                    |> Log.scs)
 
     let start =
         fun (deps: Prenotami.Dependencies) ->
@@ -39,7 +41,6 @@ module private Prenotami =
                     results
                     |> Async.map (fun (_, errors) ->
                         errors
-                        |> Seq.concat
                         |> Seq.iter (fun error -> deps.TaskName + " Error: " + error.Message |> Log.crt)
                         |> Ok))
 

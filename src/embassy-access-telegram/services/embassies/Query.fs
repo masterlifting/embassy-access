@@ -35,7 +35,7 @@ let private toEmbassy chatId messageId buttonGroupName (embassies: Embassy seq) 
 let private toEmbassyService chatId messageId buttonGroupName embassyId (services: Service seq) =
     services
     |> Seq.map (fun service ->
-        Router.Embassies(Method.Get(Get.EmbassyService(embassyId, service.Id))).Value, service.Name)
+        Router.Embassies(Method.Get(Get.UserEmbassies(embassyId, service.Id))).Value, service.Name)
     |> createMessage chatId (Some messageId) buttonGroupName 1
 
 let getEmbassyService embassyId serviceId =

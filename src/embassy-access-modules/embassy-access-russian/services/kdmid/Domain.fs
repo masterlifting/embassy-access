@@ -107,7 +107,7 @@ type Payload = {
             v
             + Environment.NewLine
             + match payload.Appointments.IsEmpty with
-              | true -> "No appointments found"
+              | true -> "No appointments found."
               | false ->
                   payload.Appointments
                   |> Seq.map (fun appointment -> appointment |> Appointment.print)

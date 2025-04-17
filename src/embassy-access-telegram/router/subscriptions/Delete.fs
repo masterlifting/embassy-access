@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Embassies.Delete
+﻿module EA.Telegram.Router.Subscriptions.Delete
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
@@ -18,6 +18,6 @@ type Route =
         match parts with
         | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Subscription
         | _ ->
-            $"'{parts}' of Embassies.Russian.Kdmid.Delete endpoint is not supported."
+            $"'{parts}' of 'Subscriptions.Delete' endpoint is not supported."
             |> NotSupported
             |> Error

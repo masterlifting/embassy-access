@@ -22,4 +22,4 @@ let parse (input: string) =
     match parts[0] with
     | "0" -> remaining |> Get.Route.parse |> Result.map Get
     | "1" -> remaining |> Post.Route.parse |> Result.map Post
-    | _ -> $"'{input}' of Culture endpoint is not supported." |> NotSupported |> Error
+    | _ -> $"'{input}' of 'Culture' endpoint is not supported." |> NotSupported |> Error

@@ -14,7 +14,7 @@ let run (task, cfg, ct) =
         |> Async.Start
 
         Persistence.Dependencies.create cfg
-        |> ResultAsync.wrap _.resetData()
+        |> ResultAsync.wrap _.cleanData()
         |> ResultAsync.mapError (_.Message >> Log.crt)
         |> Async.Ignore
         |> Async.Start
