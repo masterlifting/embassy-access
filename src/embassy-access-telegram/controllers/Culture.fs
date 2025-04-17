@@ -9,19 +9,25 @@ open EA.Telegram.Services.Culture
 
 let respond request entrypoint =
     fun (deps: Request.Dependencies) ->
-        match request with
-        | Method.Get get ->
-            match get with
-            | Get.Cultures -> deps |> Query.getCultures () |> deps.sendMessageRes
-        | Method.Post post ->
-            match post with
-            | Post.SetCulture culture -> deps |> Command.setCulture culture |> deps.sendMessageRes
-            | Post.SetCultureCallback(callback, culture) ->
-                deps
-                |> Command.setCultureCallback culture
-                |> ResultAsync.bindAsync (fun _ ->
-                    Router.parse callback
-                    |> ResultAsync.wrap (fun route -> deps |> entrypoint route))
+        deps
+        |> Culture.Dependencies.create deps.ct
+        |> fun cultureDeps ->
+            match request with
+            | Method.Get get ->
+                match get with
+                | Get.Cultures -> cultureDeps |> Query.getCultures deps.ChatId |> deps.sendMessage
+            | Method.Post post ->
+                match post with
+                | Post.SetCulture culture ->
+                    cultureDeps
+                    |> Command.setCulture culture deps.ChatId deps.MessageId
+                    |> deps.sendMessageRes
+                | Post.SetCultureCallback(callback, culture) ->
+                    cultureDeps
+                    |> Command.setCultureCallback culture
+                    |> ResultAsync.bindAsync (fun _ ->
+                        Router.parse callback
+                        |> ResultAsync.wrap (fun route -> deps |> entrypoint route))
 
 let apply (request: Router.Route) callback =
     fun (deps: Request.Dependencies) ->

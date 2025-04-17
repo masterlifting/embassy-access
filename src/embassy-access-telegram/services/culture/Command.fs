@@ -6,13 +6,13 @@ open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Telegram.Dependencies
 
-let setCulture (culture: Culture) =
-    fun (deps: Request.Dependencies) ->
+let setCulture (culture: Culture) chatId messageId =
+    fun (deps: Culture.Dependencies) ->
         culture
-        |> deps.setCurrentCulture
+        |> deps.setCurrent
         |> ResultAsync.map (fun _ ->
-            (deps.ChatId, Replace deps.MessageId)
+            (chatId, Replace messageId)
             |> Text.create $"The language has been changed to the '{culture.Name}'")
 
 let setCultureCallback (culture: Culture) =
-    fun (deps: Request.Dependencies) -> culture |> deps.setCurrentCulture
+    fun (deps: Culture.Dependencies) -> culture |> deps.setCurrent

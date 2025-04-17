@@ -41,8 +41,7 @@ type Dependencies = {
                 let tryGetChat () =
                     chatStorage |> Storage.Chat.Query.tryFindById payload.ChatId
 
-                let setCurrentCulture culture =
-                    chatStorage |> Storage.Chat.Command.setCulture payload.ChatId culture
+                
 
                 let sendMessageRes data =
                     deps.Web.Telegram.sendMessageRes data payload.ChatId

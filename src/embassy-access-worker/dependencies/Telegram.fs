@@ -22,8 +22,8 @@ let create cfg ct =
 
         let client: EA.Telegram.Dependencies.Client.Dependencies = {
             ct = ct
+            Culture = culture
             Web = EA.Telegram.Dependencies.Web.Dependencies.create ct web.TelegramClient
-            Culture = EA.Telegram.Dependencies.Culture.Dependencies.create ct culture
             Persistence = {
                 initChatStorage = persistence.initChatStorage
                 initServiceStorage = persistence.initServiceStorage

@@ -5,9 +5,8 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider.Services
 open AIProvider.Services.Domain
-open AIProvider.Services.DataAccess
-open AIProvider.Services.Dependencies
 open Web.Clients.Domain.Telegram.Producer
+open EA.Telegram.DataAccess
 
 module private Payload =
     module Error =
@@ -93,7 +92,8 @@ module private Payload =
                 |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
 
 type Dependencies = {
-    getAvailableCultures: unit -> Map<Culture, string>
+    getAvailable: unit -> Map<Culture, string>
+    setCurrent: Culture -> Async<Result<unit, Error'>>
     translate: Culture -> Message -> Async<Result<Message, Error'>>
     translateSeq: Culture -> Message seq -> Async<Result<Message list, Error'>>
     translateRes: Culture -> Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
@@ -101,28 +101,33 @@ type Dependencies = {
 } with
 
     static member create ct =
-        fun (deps: Culture.Dependencies) ->
-            
-            let getAvailableCultures () =
-                    [
-                        English, "English"
-                        Russian, "Русский"
-                        Chinese, "中文"
-                        Spanish, "Español"
-                        Hindi, "हिन्दी"
-                        Arabic, "العربية"
-                        Serbian, "Српски"
-                        Portuguese, "Português"
-                        French, "Français"
-                        German, "Deutsch"
-                        Japanese, "日本語"
-                        Korean, "한국어"
-                    ]
-                    |> Map
-            
+        fun (deps: Request.Dependencies) ->
+
+            let getAvailable () =
+                [
+                    English, "English"
+                    Russian, "Русский"
+                    Chinese, "中文"
+                    Spanish, "Español"
+                    Hindi, "हिन्दी"
+                    Arabic, "العربية"
+                    Serbian, "Српски"
+                    Portuguese, "Português"
+                    French, "Français"
+                    German, "Deutsch"
+                    Japanese, "日本語"
+                    Korean, "한국어"
+                ]
+                |> Map
+
+            let setCurrent culture =
+                deps.Client.Persistence.initChatStorage ()
+                |> ResultAsync.wrap (Storage.Chat.Command.setCulture deps.ChatId culture)
+
             let shield = Shield.create ''' '''
 
-            let translate request = deps |> Culture.translate request ct
+            let translate request =
+                deps.Client.Culture |> Culture.translate request ct
 
             let translateError culture error =
                 (translate, shield)
@@ -153,7 +158,8 @@ type Dependencies = {
                 |> ResultAsync.mapErrorAsync (translateError culture)
 
             {
-                getAvailableCultures = getAvailableCultures
+                getAvailable = getAvailable
+                setCurrent = setCurrent
                 translate = translate
                 translateSeq = translateSeq
                 translateRes = translateRes

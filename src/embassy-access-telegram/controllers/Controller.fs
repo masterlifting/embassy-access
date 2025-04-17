@@ -2,7 +2,6 @@
 module EA.Telegram.Controllers.Controller
 
 open EA.Telegram.Router
-open EA.Telegram.Controllers.Embassies
 open EA.Telegram.Controllers.Embassies.Russian
 open EA.Telegram.Controllers.Embassies.Italian
 
