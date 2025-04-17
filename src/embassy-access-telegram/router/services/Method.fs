@@ -7,6 +7,8 @@ open EA.Telegram.Router.Services
 
 type Route =
     | Get of Get.Route
+    | Russian of Russian.Method.Route
+    | Italian of Italian.Method.Route
 
     member this.Value =
         match this with

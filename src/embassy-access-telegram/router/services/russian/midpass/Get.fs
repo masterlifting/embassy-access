@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Embassies.Russian.Midpass.Get
+﻿module EA.Telegram.Router.Services.Russian.Midpass.Get
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
@@ -17,6 +17,6 @@ type Route =
         match parts with
         | [| "0"; number |] -> Status number |> Ok
         | _ ->
-            $"'{parts}' of 'Embassies.Russian.Midpass.Get' endpoint is not supported."
+            $"'{parts}' of 'Services.Russian.Midpass.Get' endpoint is not supported."
             |> NotSupported
             |> Error

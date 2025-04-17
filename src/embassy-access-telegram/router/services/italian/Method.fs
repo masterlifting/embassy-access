@@ -1,9 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Router.Embassies.Italian.Method
+module EA.Telegram.Router.Services.Italian.Method
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Router.Embassies.Italian
+open EA.Telegram.Router.Services.Italian
 
 type Route =
     | Prenotami of Prenotami.Get.Route
@@ -20,6 +20,6 @@ type Route =
         match parts[0] with
         | "0" -> remaining |> Prenotami.Get.Route.parse |> Result.map Prenotami
         | _ ->
-            $"'{parts}' of 'Embassies.Italian' endpoint is not supported."
+            $"'{parts}' of 'Services.Italian' endpoint is not supported."
             |> NotSupported
             |> Error

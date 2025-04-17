@@ -1,11 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Controllers.Embassies.Embassies
-
-open Infrastructure.Prelude
-open EA.Telegram.Router.Embassies
-open EA.Telegram.Dependencies
-open EA.Telegram.Dependencies.Embassies
-open EA.Telegram.Services.Embassies
+module EA.Telegram.Controllers.Services
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->
@@ -22,10 +16,10 @@ let respond request chat =
             | Method.Get get ->
                 let handler =
                     match get with
-                    | Get.Embassies -> Query.getEmbassies ()
                     | Get.Embassy embassyId -> Query.getEmbassy embassyId
-                    | Get.UserEmbassy embassyId -> Query.getEmbassyServices embassyId
-                    | Get.UserEmbassies(embassyId, serviceId) -> Query.getEmbassyService embassyId serviceId
+                    | Get.Embassies -> Query.getEmbassies ()
+                    | Get.UserEmbassy embassyId -> Query.getUserEmbassy embassyId
+                    | Get.UserEmbassies -> Query.getUserEmbassies ()
                 processSingleMessage handler <| deps
 
             | Method.Post post ->

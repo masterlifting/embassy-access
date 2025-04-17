@@ -1,9 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Router.Embassies.Russian.Kdmid.Method
+module EA.Telegram.Router.Services.Russian.Midpass.Method
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Router.Embassies.Russian.Kdmid
+open EA.Telegram.Router.Services.Russian.Midpass
 
 type Method =
     | Get of Get.Route
@@ -23,6 +23,6 @@ type Method =
         | "0" -> remaining |> Get.Route.parse |> Result.map Get
         | "1" -> remaining |> Post.Route.parse |> Result.map Post
         | _ ->
-            $"'{input}' of 'Embassies.Russian.Kdmid' endpoint is not supported."
+            $"'{input}' of 'Services.Russian.Midpass' endpoint is not supported."
             |> NotSupported
             |> Error

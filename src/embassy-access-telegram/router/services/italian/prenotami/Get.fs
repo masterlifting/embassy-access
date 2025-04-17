@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Embassies.Russian.Kdmid.Get
+﻿module EA.Telegram.Router.Services.Italian.Prenotami.Get
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
@@ -18,6 +18,6 @@ type Route =
         match parts with
         | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Appointments
         | _ ->
-            $"'{parts}' of 'Embassies.Russian.Kdmid.Get' endpoint is not supported."
+            $"'{parts}' of 'Services.Italian.Prenotami.Get' endpoint is not supported."
             |> NotSupported
             |> Error

@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Embassies.Russian.Kdmid.Post
+﻿module EA.Telegram.Router.Services.Russian.Kdmid.Post
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -31,7 +31,7 @@ module Models =
                 | "0" -> false |> Ok
                 | "1" -> true |> Ok
                 | _ ->
-                    $"'{useBackground}' of 'Embassies.Russian.Kdmid.Post.Subscribe' endpoint is not supported."
+                    $"'{useBackground}' of 'Services.Russian.Kdmid.Post.Subscribe' endpoint is not supported."
                     |> NotSupported
                     |> Error
                 |> Result.map (fun useBackground -> {
@@ -42,7 +42,7 @@ module Models =
                     UseBackground = useBackground
                 })
             | _ ->
-                $"'{parts}' of 'Embassies.Russian.Kdmid.Post.Subscribe' endpoint is not supported."
+                $"'{parts}' of 'Services.Russian.Kdmid.Post.Subscribe' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
@@ -64,7 +64,7 @@ module Models =
                 }
                 |> Ok
             | _ ->
-                $"'{parts}' of 'Embassies.Russian.Kdmid.Post.CheckAppointments' endpoint is not supported."
+                $"'{parts}' of 'Services.Russian.Kdmid.Post.CheckAppointments' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
@@ -93,7 +93,7 @@ module Models =
                     Appointments = appointmentIds |> Set.ofList
                 })
             | _ ->
-                $"'{parts}' of 'Embassies.Russian.Kdmid.Post.SendAppointments' endpoint is not supported."
+                $"'{parts}' of 'Services.Russian.Kdmid.Post.SendAppointments' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
@@ -117,7 +117,7 @@ module Models =
                         AppointmentId = appointmentId
                     }))
             | _ ->
-                $"'{parts}' of 'Embassies.Russian.Kdmid.Post.ConfirmAppointment' endpoint is not supported."
+                $"'{parts}' of 'Services.Russian.Kdmid.Post.ConfirmAppointment' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
@@ -177,7 +177,7 @@ type Route =
                 |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
                 |> Result.map Route.Subscribe
             | _ ->
-                $"Start: '{start}' or Finish: '{finish}' of 'Embassies.Russian.Kdmid.Post.KdmidSubscribe' endpoint is not supported."
+                $"Start: '{start}' or Finish: '{finish}' of 'Services.Russian.Kdmid.Post.KdmidSubscribe' endpoint is not supported."
                 |> NotSupported
                 |> Error
         | [| "5"; serviceId; embassyId; payload |] ->
@@ -193,6 +193,6 @@ type Route =
             |> ConfirmAppointment.deserialize
             |> Result.map Route.ConfirmAppointment
         | _ ->
-            $"'{parts}' of 'Embassies.Russian.Kdmid.Post' endpoint is not supported."
+            $"'{parts}' of 'Services.Russian.Kdmid.Post' endpoint is not supported."
             |> NotSupported
             |> Error

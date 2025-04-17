@@ -12,7 +12,6 @@ let rec respond request =
 
     match request with
     | Router.Culture value -> Culture.respond value respond
-    | Router.Users value -> value |> Users.respond |> useCulture
     | Router.Embassies value -> value |> Embassies.respond |> useCulture
-    | Router.RussianEmbassy value -> value |> Russian.respond |> useCulture
-    | Router.ItalianEmbassy value -> value |> Italian.respond |> useCulture
+    | Router.Services value -> value |> Russian.respond |> useCulture
+    | Router.Subscriptions value -> value |> Italian.respond |> useCulture

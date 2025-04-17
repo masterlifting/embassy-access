@@ -104,7 +104,7 @@ let getEmbassyServices embassyId =
             |> Seq.map _.Value
             |> toEmbassyService deps.Chat.Id deps.MessageId node.Value.Description embassyId)
 
-let getEmbassy embassyId =
+let getEmbassy (embassyId: EmbassyId) =
     fun (deps: Embassies.Dependencies) ->
         deps.getEmbassyNode embassyId
         |> ResultAsync.bindAsync (function
@@ -117,6 +117,26 @@ let getEmbassy embassyId =
                 |> async.Return)
 
 let getEmbassies () =
+    fun (deps: Embassies.Dependencies) ->
+        deps.getEmbassiesGraph ()
+        |> ResultAsync.map (fun node ->
+            node.Children
+            |> Seq.map _.Value
+            |> toEmbassy deps.Chat.Id None node.Value.Description)
+
+let getUserEmbassy (embassyId: EmbassyId) =
+    fun (deps: Embassies.Dependencies) ->
+        deps.getEmbassyNode embassyId
+        |> ResultAsync.bindAsync (function
+            | AP.Leaf value -> deps |> getUserEmbassyService value.Id
+            | AP.Node node ->
+                node.Children
+                |> Seq.map _.Value
+                |> toEmbassy deps.Chat.Id (Some deps.MessageId) node.Value.Description
+                |> Ok
+                |> async.Return)
+        
+let getUserEmbassies () =
     fun (deps: Embassies.Dependencies) ->
         deps.getEmbassiesGraph ()
         |> ResultAsync.map (fun node ->

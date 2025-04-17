@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Embassies.Italian.Prenotami.Post
+﻿module EA.Telegram.Router.Services.Italian.Prenotami.Post
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -32,7 +32,7 @@ module Models =
                 | "0" -> false |> Ok
                 | "1" -> true |> Ok
                 | _ ->
-                    $"'{useBackground}' of 'Embassies.Italian.Prenotami.Post.Subscribe' endpoint is not supported."
+                    $"'{useBackground}' of 'Services.Italian.Prenotami.Post.Subscribe' endpoint is not supported."
                     |> NotSupported
                     |> Error
                 |> Result.map (fun useBackground -> {
@@ -43,7 +43,7 @@ module Models =
                     UseBackground = useBackground
                 })
             | _ ->
-                $"'{parts}' of 'Embassies.Italian.Prenotami.Post.Subscribe' endpoint is not supported."
+                $"'{parts}' of 'Services.Italian.Prenotami.Post.Subscribe' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
@@ -67,7 +67,7 @@ module Models =
                 }
                 |> Ok
             | _ ->
-                $"'{parts}' of 'Embassies.Italian.Prenotami.Post.CheckAppointments' endpoint is not supported."
+                $"'{parts}' of 'Services.Italian.Prenotami.Post.CheckAppointments' endpoint is not supported."
                 |> NotSupported
                 |> Error
                 
@@ -96,7 +96,7 @@ module Models =
                     Appointments = appointmentIds |> Set.ofList
                 })
             | _ ->
-                $"'{parts}' of 'Embassies.Italian.Prenotami.Post.SendAppointments' endpoint is not supported."
+                $"'{parts}' of 'Services.Italian.Prenotami.Post.SendAppointments' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
@@ -131,6 +131,6 @@ type Route =
             |> SendAppointments.deserialize
             |> Result.map Route.SendAppointments
         | _ ->
-            $"'{parts}' of 'Embassies.Italian.Prenotami.Post' endpoint is not supported."
+            $"'{parts}' of 'Services.Italian.Prenotami.Post' endpoint is not supported."
             |> NotSupported
             |> Error

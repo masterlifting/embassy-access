@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Embassies.Russian.Midpass.Post
+﻿module EA.Telegram.Router.Services.Russian.Midpass.Post
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
@@ -29,7 +29,7 @@ module Models =
                 | "0" -> false |> Ok
                 | "1" -> true |> Ok
                 | _ ->
-                    $"'{useBackground}' of 'Embassies.Russian.Midpass.Post.Subscribe' endpoint is not supported."
+                    $"'{useBackground}' of 'Services.Russian.Midpass.Post.Subscribe' endpoint is not supported."
                     |> NotSupported
                     |> Error
                 |> Result.map (fun useBackground -> {
@@ -39,7 +39,7 @@ module Models =
                     UseBackground = useBackground
                 })
             | _ ->
-                $"'{parts}' of 'Embassies.Russian.Midpass.Post.Subscribe' endpoint is not supported."
+                $"'{parts}' of 'Services.Russian.Midpass.Post.Subscribe' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
@@ -61,7 +61,7 @@ module Models =
                 }
                 |> Ok
             | _ ->
-                $"'{parts}' of 'Embassies.Russian.Midpass.Post.CheckStatus' endpoint is not supported."
+                $"'{parts}' of 'Services.Russian.Midpass.Post.CheckStatus' endpoint is not supported."
                 |> NotSupported
                 |> Error
                 
@@ -83,7 +83,7 @@ module Models =
                 }
                 |> Ok
             | _ ->
-                $"'{parts}' of 'Embassies.Russian.Midpass.Post.SendStatus' endpoint is not supported."
+                $"'{parts}' of 'Services.Russian.Midpass.Post.SendStatus' endpoint is not supported."
                 |> NotSupported
                 |> Error
 
@@ -118,6 +118,6 @@ type Route =
             |> SendStatus.deserialize
             |> Result.map Route.SendStatus
         | _ ->
-            $"'{parts}' of 'Embassies.Russian.Midpass.Post' endpoint is not supported."
+            $"'{parts}' of 'Services.Russian.Midpass.Post' endpoint is not supported."
             |> NotSupported
             |> Error
