@@ -14,10 +14,9 @@
         <Compile Include="domain\Request.fs" />
         <Compile Include="data_access\EmbassyGraph.fs" />
         <Compile Include="data_access\ServiceGraph.fs" />
-        <Compile Include="data_access\Confirmation.fs" />
         <Compile Include="data_access\Appointment.fs" />
         <Compile Include="data_access\ProcessState.fs" />
-        <Compile Include="data_access\ConfirmationState.fs" />
+        <Compile Include="data_access\Confirmation.fs" />
         <Compile Include="data_access\Limit.fs" />
         <Compile Include="data_access\request\Request.fs" />
         <Compile Include="data_access\request\FileSystem.fs" />

@@ -9,6 +9,14 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open Infrastructure.Domain
 
+module Constants =
+    module ErrorCode =
+        [<Literal>]
+        let PAGE_HAS_ERROR = "PageHasError"
+
+        [<Literal>]
+        let INITIAL_PAGE_ERROR = "InitialPageError"
+
 type Credentials = {
     Login: string
     Password: string
@@ -47,6 +55,18 @@ type Payload = {
                   |> String.concat ", "
                   |> fun appointments -> $"Appointments: '%s{appointments}'"
 
+    static member printError (error: Error') (payload: Payload) =
+        match error with
+        | Operation reason ->
+            match reason.Code with
+            | Some(Custom Constants.ErrorCode.INITIAL_PAGE_ERROR) -> error.Message |> Some
+            | _ -> None
+        | _ -> None
+        |> Option.map (fun message ->
+            payload.Credentials
+            |> Credentials.print
+            |> fun v -> v + Environment.NewLine + message)
+
     static member serialize key (payload: Payload) =
         payload.Credentials.Password
         |> String.encrypt key
@@ -74,14 +94,6 @@ type Client = {
 }
 
 type Dependencies = {
-    RequestsTable: Request.Table<Payload>
+    RequestStorage: Request.Storage<Payload>
     CancellationToken: CancellationToken
 }
-
-module Constants =
-    module ErrorCode =
-        [<Literal>]
-        let PAGE_HAS_ERROR = "PageHasError"
-
-        [<Literal>]
-        let INITIAL_PAGE_ERROR = "InitialPageError"

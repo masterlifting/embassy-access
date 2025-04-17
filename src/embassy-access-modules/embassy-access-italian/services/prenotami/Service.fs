@@ -87,11 +87,15 @@ let tryProcessFirst (requests: Request<Payload> seq) =
                 | request :: requestsTail ->
                     match! client |> tryProcess request with
                     | Error error ->
-                        do! request |> notify
+                        do!
+                            match request.Payload |> Payload.printError error with
+                            | Some msg -> msg |> notify
+                            | None -> async.Return()
+
                         return! requestsTail |> processNextRequest (error :: errors)
 
                     | Ok result ->
-                        do! result |> notify
+                        do! result.Payload |> Payload.print |> notify
                         return Ok result
             }
 

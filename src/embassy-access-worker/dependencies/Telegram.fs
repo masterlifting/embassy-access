@@ -27,10 +27,10 @@ let create cfg ct =
         let! tgPersistence =
             EA.Telegram.Dependencies.Persistence.Dependencies.create
                 ct
-                (fun () -> persistence.ChatStorage |> Ok)
+                (fun () -> persistence.initChatStorage |> Ok)
                 (fun () -> persistence.RussianRequestsStorage |> Ok)
-                persistence.initServiceGraphStorage
-                persistence.initEmbassyGraphStorage
+                persistence.initServiceStorage
+                persistence.initEmbassyStorage
 
         let result: EA.Telegram.Dependencies.Client.Dependencies = {
             CancellationToken = ct

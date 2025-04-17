@@ -22,7 +22,7 @@ module private Prenotami =
         fun (deps: Prenotami.Dependencies) ->
             let inline processGroup requests = deps |> processGroup requests
 
-            deps.getRequests ServiceId
+            deps.getRequests (ServiceId |> Service.ServiceId)
             |> ResultAsync.map (fun requests ->
                 requests
                 |> Seq.groupBy _.Service.Id

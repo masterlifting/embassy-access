@@ -72,7 +72,7 @@ module Kdmid =
                 let tryProcessFirst requests =
                     {
                         CancellationToken = ct
-                        RequestsTable = persistence.RussianRequestsStorage
+                        RequestStorage = persistence.RussianRequestsStorage
                     }
                     |> Kdmid.Client.init
                     |> Result.map (fun client -> client, notify)

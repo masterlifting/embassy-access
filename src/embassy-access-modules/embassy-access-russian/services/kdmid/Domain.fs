@@ -10,6 +10,29 @@ open EA.Core.DataAccess
 open Web.Clients
 open Web.Clients.Domain
 
+module Constants =
+    module ErrorCode =
+        [<Literal>]
+        let PAGE_HAS_ERROR = "PageHasError"
+
+        [<Literal>]
+        let REQUEST_NOT_CONFIRMED = "RequestNotConfirmed"
+
+        [<Literal>]
+        let REQUEST_AWAITING_LIST = "RequestAwaitingList"
+
+        [<Literal>]
+        let REQUEST_DELETED = "RequestDeleted"
+
+        [<Literal>]
+        let REQUEST_BLOCKED = "RequestBlocked"
+
+        [<Literal>]
+        let REQUEST_NOT_FOUND = "RequestNotFound"
+
+        [<Literal>]
+        let INITIAL_PAGE_ERROR = "InitialPageError"
+
 let private result = ResultBuilder()
 type Credentials = {
     Subdomain: string
@@ -89,12 +112,26 @@ type Payload = {
                   payload.Appointments
                   |> Seq.map (fun appointment -> appointment |> Appointment.print)
                   |> String.concat Environment.NewLine
-                  
-    static member serialize (payload: Payload) =
-        payload |> Json.serialize
-        
-    static member deserialize (payload: string) =
-        payload |> Json.deserialize<Payload>
+
+    static member printError (error: Error') (payload: Payload) =
+        match error with
+        | Operation reason ->
+            match reason.Code with
+            | Some(Custom Constants.ErrorCode.REQUEST_AWAITING_LIST)
+            | Some(Custom Constants.ErrorCode.REQUEST_NOT_CONFIRMED)
+            | Some(Custom Constants.ErrorCode.REQUEST_BLOCKED)
+            | Some(Custom Constants.ErrorCode.REQUEST_NOT_FOUND)
+            | Some(Custom Constants.ErrorCode.REQUEST_DELETED) -> error.Message |> Some
+            | _ -> None
+        | _ -> None
+        |> Option.map (fun message ->
+            payload.Credentials
+            |> Credentials.print
+            |> fun v -> v + Environment.NewLine + message)
+
+    static member serialize(payload: Payload) = payload |> Json.serialize
+
+    static member deserialize(payload: string) = payload |> Json.deserialize<Payload>
 
 type Client = {
     initHttpClient: string -> Result<Http.Client, Error'>
@@ -108,30 +145,6 @@ type Client = {
 }
 
 type Dependencies = {
-    RequestsTable: Request.Table<Payload>
+    RequestStorage: Request.Storage<Payload>
     CancellationToken: CancellationToken
 }
-
-
-module Constants =
-    module ErrorCode =
-        [<Literal>]
-        let PAGE_HAS_ERROR = "PageHasError"
-
-        [<Literal>]
-        let REQUEST_NOT_CONFIRMED = "RequestNotConfirmed"
-
-        [<Literal>]
-        let REQUEST_AWAITING_LIST = "RequestAwaitingList"
-
-        [<Literal>]
-        let REQUEST_DELETED = "RequestDeleted"
-
-        [<Literal>]
-        let REQUEST_BLOCKED = "RequestBlocked"
-
-        [<Literal>]
-        let REQUEST_NOT_FOUND = "RequestNotFound"
-
-        [<Literal>]
-        let INITIAL_PAGE_ERROR = "InitialPageError"

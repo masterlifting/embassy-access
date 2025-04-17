@@ -19,7 +19,7 @@ type Dependencies = {
     Chat: Chat
     MessageId: int
     CancellationToken: CancellationToken
-    RequestStorage: Request.Table
+    RequestStorage: Request.Storage
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
     sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
     getService: Graph.NodeId -> Async<Result<Service, Error'>>
@@ -102,7 +102,7 @@ type Dependencies = {
             let processRequest request =
                 {
                     CancellationToken = deps.CancellationToken
-                    RequestsTable = deps.RequestStorage
+                    RequestStorage = deps.RequestStorage
                 }
                 |> Client.init
                 |> ResultAsync.wrap (Service.tryProcess request)
@@ -132,7 +132,7 @@ type Dependencies = {
                 printPayload = Credentials.create >> Result.map Credentials.print
                 Service = {
                     CancellationToken = deps.CancellationToken
-                    RequestsTable = deps.RequestStorage
+                    RequestStorage = deps.RequestStorage
                 }
             }
         }

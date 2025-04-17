@@ -7,36 +7,20 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Storages
 open Persistence.Storages.Domain
-open Worker.Domain
 open AIProvider.Services.DataAccess
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
+open EA.Russian.Services.Domain
 open EA.Italian.Services.Domain
 
-let inline private equalCountry (embassyId: EmbassyId) (taskId: ActiveTaskId) =
-    let embassyCountry =
-        embassyId.Value
-        |> Graph.NodeId.split
-        |> Seq.skip 1
-        |> Seq.truncate 2
-        |> Graph.NodeId.combine
-    let taskCountry =
-        taskId.Value
-        |> Graph.NodeId.split
-        |> Seq.skip 1
-        |> Seq.truncate 2
-        |> Graph.NodeId.combine
-    embassyCountry = taskCountry
-
 type Dependencies = {
-    ChatStorage: Chat.ChatStorage
-    initRussianKdmidRequestsStorage: unit -> Result<Request.Table<Kdmid.Payload>, Error'>
-    initItalianPrenotamiRequestsStorage: unit -> Result<Request.Table<Prenotami.Payload>, Error'>
+    initChatStorage: unit -> Result<Chat.Storage, Error'>
+    initServiceStorage: unit -> Result<ServiceGraph.Storage, Error'>
+    initEmbassyStorage: unit -> Result<EmbassyGraph.Storage, Error'>
+    initRussianKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload>, Error'>
+    initItalianPrenotamiRequestStorage: unit -> Result<Request.Storage<Prenotami.Payload>, Error'>
     initCultureStorage: unit -> Result<Culture.Response.Storage, Error'>
-    initServiceGraphStorage: unit -> Result<ServiceGraph.Table, Error'>
-    initEmbassyGraphStorage: unit -> Result<EmbassyGraph.Table, Error'>
-    getRequests: ServiceId -> ActiveTask -> Request.Table<^a> -> Async<Result<Request<^a> list, Error'>>
     resetData: unit -> Async<Result<unit, Error'>>
 } with
 
@@ -55,6 +39,12 @@ type Dependencies = {
                     |> Error
                 )
 
+            let! appKey =
+                cfg
+                |> Configuration.Client.tryGetSection<string> "AppKey"
+                |> Option.map Ok
+                |> Option.defaultValue ("The configuration section 'AppKey' not found." |> NotFound |> Error)
+
             let initCultureStorage () =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
@@ -68,18 +58,26 @@ type Dependencies = {
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "Chats.json"
                 }
-                |> Chat.FileSystem
-                |> Chat.init
+                |> Storage.Chat.FileSystem
+                |> Storage.Chat.init
 
-            let initRequestStorage () =
+            let initRussianKdmidRequestStorage () =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "Requests.json"
+                    FileSystem.Connection.FileName = "Requests.Rus.Kdmid.json"
                 }
-                |> Request.FileSystem
-                |> Request.init
+                |> Storage.Request.FileSystem
+                |> Storage.Request.init (Kdmid.Payload.serialize, Kdmid.Payload.deserialize)
 
-            let initEmbassyGraphStorage () =
+            let initItalianPrenotamiRequestStorage () =
+                {
+                    FileSystem.Connection.FilePath = fileStoragePath
+                    FileSystem.Connection.FileName = "Requests.Ita.Prenotami.json"
+                }
+                |> Storage.Request.FileSystem
+                |> Storage.Request.init (Prenotami.Payload.serialize appKey, Prenotami.Payload.deserialize appKey)
+
+            let initEmbassyStorage () =
                 {
                     Configuration.Connection.Section = "Embassies"
                     Configuration.Connection.Provider = cfg
@@ -87,7 +85,7 @@ type Dependencies = {
                 |> EmbassyGraph.Configuration
                 |> EmbassyGraph.init
 
-            let initServiceGraphStorage () =
+            let initServiceStorage () =
                 {
                     Configuration.Connection.Section = "Services"
                     Configuration.Connection.Provider = cfg
@@ -96,46 +94,58 @@ type Dependencies = {
                 |> ServiceGraph.init
 
             let! chatStorage = initChatStorage ()
-            let! requestStorage = initRequestStorage ()
-
-            let getRequests (serviceId: ServiceId) (task: ActiveTask) =
-                fun storage ->
-                    storage
-                    |> Storage.Request.Query.findManyWithServiceId serviceId
-                    |> ResultAsync.map (
-                        List.filter (fun request ->
-                            equalCountry request.Embassy.Id task.Id
-                            && request.UseBackground
-                            && (request.ProcessState <> InProcess
-                                || request.ProcessState = InProcess
-                                   && request.Modified < DateTime.UtcNow.Subtract task.Duration))
-                    )
+            let! russianKdmidRequestStorage = initRussianKdmidRequestStorage ()
+            let! italianPrenotamiRequestStorage = initItalianPrenotamiRequestStorage ()
 
             let resetData () =
                 let resultAsync = ResultAsyncBuilder()
 
                 resultAsync {
+                    let! subscriptions = chatStorage |> Storage.Chat.Query.getSubscriptions |> ResultAsync.map Set.ofSeq
 
-                    let! subscriptions = chatStorage |> Chat.Query.getSubscriptions |> ResultAsync.map Set.ofSeq
+                    let! russianKdmidRequestIdentifiers =
+                        russianKdmidRequestStorage
+                        |> Storage.Request.Query.getIdentifiers
+                        |> ResultAsync.map Set.ofSeq
 
-                    let! requestIdentifiers =
-                        requestStorage |> Request.Query.getIdentifiers |> ResultAsync.map Set.ofSeq
+                    let! italianPrenotamiRequestIdentifiers =
+                        italianPrenotamiRequestStorage
+                        |> Storage.Request.Query.getIdentifiers
+                        |> ResultAsync.map Set.ofSeq
 
-                    let existingData = subscriptions |> Set.intersect <| requestIdentifiers
-                    let subscriptionsToRemove = existingData |> Set.difference subscriptions
-                    let requestIdsToRemove = existingData |> Set.difference requestIdentifiers
+                    // All valid request IDs
+                    let allRequestIdentifiers =
+                        Set.union russianKdmidRequestIdentifiers italianPrenotamiRequestIdentifiers
 
-                    do! chatStorage |> Chat.Command.deleteSubscriptions subscriptionsToRemove
-                    return requestStorage |> Request.Command.deleteMany requestIdsToRemove
+                    // Subscriptions that reference nonexistent requests
+                    let subscriptionsToRemove = Set.difference subscriptions allRequestIdentifiers
+
+                    // Requests that aren't referenced by any subscription
+                    let russianKdmidRequestIdsToRemove =
+                        Set.difference russianKdmidRequestIdentifiers subscriptions
+                    let italianPrenotamiRequestIdsToRemove =
+                        Set.difference italianPrenotamiRequestIdentifiers subscriptions
+
+                    // Delete all invalid subscriptions in one operation
+                    do! chatStorage |> Storage.Chat.Command.deleteSubscriptions subscriptionsToRemove
+
+                    // Delete invalid requests
+                    do!
+                        russianKdmidRequestStorage
+                        |> Storage.Request.Command.deleteMany russianKdmidRequestIdsToRemove
+
+                    return
+                        italianPrenotamiRequestStorage
+                        |> Storage.Request.Command.deleteMany italianPrenotamiRequestIdsToRemove
                 }
 
             return {
-                ChatStorage = chatStorage
-                RussianRequestsStorage = requestStorage
+                initServiceStorage = initServiceStorage
+                initEmbassyStorage = initEmbassyStorage
                 initCultureStorage = initCultureStorage
-                initEmbassyGraphStorage = initEmbassyGraphStorage
-                initServiceGraphStorage = initServiceGraphStorage
-                getRequests = getRequests
+                initChatStorage = fun () -> chatStorage |> Ok
+                initRussianKdmidRequestStorage = fun () -> russianKdmidRequestStorage |> Ok
+                initItalianPrenotamiRequestStorage = fun () -> italianPrenotamiRequestStorage |> Ok
                 resetData = resetData
             }
         }

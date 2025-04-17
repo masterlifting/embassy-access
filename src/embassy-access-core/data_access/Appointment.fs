@@ -2,12 +2,11 @@
 
 open System
 open EA.Core.Domain
-open EA.Core.DataAccess.Confirmation
 
 type AppointmentEntity() =
     member val Id = String.Empty with get, set
     member val Value = String.Empty with get, set
-    member val Confirmation: ConfirmationEntity option = None with get, set
+    member val Confirmation: string option = None with get, set
     member val DateTime = DateTime.UtcNow with get, set
     member val Description = String.Empty with get, set
 
@@ -17,7 +16,7 @@ type AppointmentEntity() =
         |> Result.map (fun id -> {
             Id = id
             Value = this.Value
-            Confirmation = this.Confirmation |> Option.map _.ToDomain()
+            Confirmation = this.Confirmation
             Date = DateOnly.FromDateTime this.DateTime
             Time = TimeOnly.FromDateTime this.DateTime
             Description = this.Description
@@ -28,7 +27,7 @@ type internal Appointment with
         AppointmentEntity(
             Id = this.Id.ValueStr,
             Value = this.Value,
-            Confirmation = (this.Confirmation |> Option.map _.ToEntity()),
+            Confirmation = this.Confirmation,
             DateTime = this.Date.ToDateTime this.Time,
             Description = this.Description
         )

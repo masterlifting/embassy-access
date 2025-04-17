@@ -9,8 +9,7 @@ open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.Domain
 
-type Table = Storage of Storage.Provider
-
+type Storage = Provider of Storage.Provider
 type StorageType = Configuration of Configuration.Connection
 
 type ServiceGraphEntity() =
@@ -46,9 +45,9 @@ module private Configuration =
     let get client =
         client |> loadData |> Result.bind _.ToDomain() |> async.Return
 
-let private toStorage =
+let private toProvider =
     function
-    | Storage storage -> storage
+    | Provider provider -> provider
 
 let init storageType =
     match storageType with
@@ -56,10 +55,10 @@ let init storageType =
         connection
         |> Storage.Connection.Configuration
         |> Storage.init
-        |> Result.map Storage
+        |> Result.map Provider
 
-let get table =
-    let storage = table |> toStorage
-    match storage with
+let get storage =
+    let provider = storage |> toProvider
+    match provider with
     | Storage.Configuration client -> client |> Configuration.get
-    | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
+    | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return

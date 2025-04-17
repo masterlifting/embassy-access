@@ -26,7 +26,7 @@ module Prenotami =
                 let! persistence = Persistence.Dependencies.create cfg
                 let! telegram = Telegram.Dependencies.create cfg ct
                 
-                let! requestsStorage = persistence.initItalianPrenotamiRequestsStorage()
+                let! requestsStorage = persistence.initItalianPrenotamiRequestStorage()
 
                 let notificationDeps: Notification.Dependencies = {
                     printPayload = Credentials.create >> Result.map Credentials.print
@@ -48,7 +48,7 @@ module Prenotami =
                 let tryProcessFirst requests =
                     {
                         CancellationToken = ct
-                        RequestsTable = requestsStorage
+                        RequestStorage = requestsStorage
                     }
                     |> Prenotami.Client.init
                     |> Result.map (fun client -> client, notify)

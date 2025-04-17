@@ -102,18 +102,6 @@ let tryProcess (request: Request<Payload>) =
 let tryProcessFirst (requests: Request<Payload> seq) =
     fun (client: Client, notify) ->
 
-        let inline errorFilter error =
-            match error with
-            | Operation reason ->
-                match reason.Code with
-                | Some(Custom Constants.ErrorCode.REQUEST_AWAITING_LIST)
-                | Some(Custom Constants.ErrorCode.REQUEST_NOT_CONFIRMED)
-                | Some(Custom Constants.ErrorCode.REQUEST_BLOCKED)
-                | Some(Custom Constants.ErrorCode.REQUEST_NOT_FOUND)
-                | Some(Custom Constants.ErrorCode.REQUEST_DELETED) -> true
-                | _ -> false
-            | _ -> false
-
         let rec processNextRequest (errors: Error' list) (remainingRequests: Request<Payload> list) =
             async {
                 match remainingRequests with
@@ -121,11 +109,15 @@ let tryProcessFirst (requests: Request<Payload> seq) =
                 | request :: requestsTail ->
                     match! client |> tryProcess request with
                     | Error error ->
-                        do! request |> notify
+                        do!
+                            match request.Payload |> Payload.printError error with
+                            | Some msg -> msg |> notify
+                            | None -> async.Return()
+
                         return! requestsTail |> processNextRequest (error :: errors)
 
                     | Ok result ->
-                        do! result |> notify
+                        do! result.Payload |> Payload.print |> notify
                         return Ok result
             }
 

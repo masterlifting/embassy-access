@@ -9,10 +9,10 @@ open Persistence
 open EA.Core.DataAccess.ProcessState
 open EA.Core.DataAccess.Limit
 
-type Table<'payload> =
-    | Storage of
+type Storage<'payload> =
+    | Provider of
         {|
-            Provider: Storage.Provider
+            Type: Storage.Provider
             serializePayload: 'payload -> Result<string, Error'>
             deserializePayload: string -> Result<'payload, Error'>
         |}
@@ -67,7 +67,7 @@ type internal Entity() =
             }
         }
 
-type internal Request<'a> with
+type private Request<'a> with
     member private this.ToEntity serializePayload =
         this.Payload
         |> serializePayload

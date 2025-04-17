@@ -9,8 +9,8 @@ open EA.Telegram.DataAccess
 open Infrastructure.Prelude
 
 type Dependencies = {
-    ChatStorage: Chat.ChatStorage
-    RequestStorage: Request.Table
+    ChatStorage: Chat.Storage
+    RequestStorage: Request.Storage
     setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
     getRequestChats: Request -> Async<Result<Chat list, Error'>>
     getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
@@ -19,9 +19,9 @@ type Dependencies = {
 
     static member create ct =
         fun
-            (initChatStorage: unit -> Result<Chat.ChatStorage, Error'>)
-            (initRequestStorage: unit -> Result<Request.Table, Error'>)
-            (initServiceGraphStorage: unit -> Result<ServiceGraph.Table, Error'>)
+            (initChatStorage: unit -> Result<Chat.Storage, Error'>)
+            (initRequestStorage: unit -> Result<Request.Storage, Error'>)
+            (initServiceGraphStorage: unit -> Result<ServiceGraph.Storage, Error'>)
             (initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>) ->
 
             let result = ResultBuilder()

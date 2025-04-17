@@ -8,7 +8,10 @@
     <ItemGroup>
         <Compile Include="domain\Constants.fs" />
         <Compile Include="domain\Chat.fs" />
-        <Compile Include="data_access\Chat.fs" />
+        <Compile Include="data_access\chat\Chat.fs" />
+        <Compile Include="data_access\chat\FileSystem.fs" />
+        <Compile Include="data_access\chat\InMemory.fs" />
+        <Compile Include="data_access\chat\Storage.fs" />
         <Compile Include="router\culture\Get.fs" />
         <Compile Include="router\culture\Post.fs" />
         <Compile Include="router\culture\Method.fs" />

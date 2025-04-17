@@ -30,6 +30,6 @@ type Client = {
 }
 
 type Dependencies = {
-    RequestsTable: Request.Table<Payload>
+    RequestStorage: Request.Storage<Payload>
     CancellationToken: CancellationToken
 }

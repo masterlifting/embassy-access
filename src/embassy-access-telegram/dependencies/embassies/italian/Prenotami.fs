@@ -35,7 +35,7 @@ type Dependencies = {
         let processRequest request =
             {
                 CancellationToken = deps.CancellationToken
-                RequestsTable = deps.RequestStorage
+                RequestStorage = deps.RequestStorage
             }
             |> Client.init
             |> ResultAsync.wrap (Service.tryProcess request)
@@ -49,6 +49,6 @@ type Dependencies = {
             processRequest = processRequest
             Service = {
                 CancellationToken = deps.CancellationToken
-                RequestsTable = deps.RequestStorage
+                RequestStorage = deps.RequestStorage
             }
         }
