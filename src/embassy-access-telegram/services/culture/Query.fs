@@ -22,7 +22,7 @@ let private createMessage chatId msgIdOpt nameOpt data =
         }
     |> Message.tryReplace msgIdOpt chatId
 
-let getCultures chatId =
+let getCultures () =
     fun (deps: Culture.Dependencies) ->
         deps.getAvailable ()
         |> Seq.map (fun culture ->
@@ -30,9 +30,9 @@ let getCultures chatId =
             let name = culture.Value
 
             route.Value, name)
-        |> createMessage chatId None (Some "Choose your language")
+        |> createMessage deps.ChatId None (Some "Choose your language")
 
-let getCulturesCallback callback chatId =
+let getCulturesCallback callback =
     fun (deps: Culture.Dependencies) ->
         deps.getAvailable ()
         |> Seq.map (fun culture ->
@@ -41,4 +41,4 @@ let getCulturesCallback callback chatId =
             let name = culture.Value
 
             (route.Value, name))
-        |> createMessage chatId None (Some "Choose your language")
+        |> createMessage deps.ChatId None (Some "Choose your language")

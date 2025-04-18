@@ -23,6 +23,7 @@ type Dependencies = {
     sendMessagesRes: Async<Result<Producer.Message seq, Error'>> -> Async<Result<unit, Error'>>
     getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
     getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
+    getServiceNode: ServiceId -> Async<Result<Graph.Node<Embassy>, Error'>>
     getRequestChats: Request -> Async<Result<Chat list, Error'>>
     getChatRequests: unit -> Async<Result<Request list, Error'>>
     setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
@@ -35,6 +36,16 @@ type Dependencies = {
         result {
             let getChatRequests () =
                 deps.RequestStorage |> Request.Query.findManyByIds chat.Subscriptions
+                
+            let getServiceNode (serviceId: ServiceId) =
+                deps.getServiceGraph ()
+                |> ResultAsync.map (Graph.BFS.tryFind serviceId.Value)
+                |> ResultAsync.bind (function
+                    | Some embassy -> Ok embassy
+                    | None ->
+                        $"Embassy '%s{embassyId.Value}' is not implemented. " + NOT_IMPLEMENTED
+                        |> NotImplemented
+                        |> Error)
 
             return {
                 Chat = chat

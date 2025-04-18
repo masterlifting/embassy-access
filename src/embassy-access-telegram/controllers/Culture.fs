@@ -9,19 +9,15 @@ open EA.Telegram.Services.Culture
 
 let respond request entrypoint =
     fun (deps: Request.Dependencies) ->
-        deps
-        |> Culture.Dependencies.create deps.ct
+        Culture.Dependencies.create deps
         |> fun cultureDeps ->
             match request with
             | Method.Get get ->
                 match get with
-                | Get.Cultures -> cultureDeps |> Query.getCultures deps.ChatId |> deps.sendMessage
+                | Get.Cultures -> cultureDeps |> Query.getCultures () |> deps.sendMessage
             | Method.Post post ->
                 match post with
-                | Post.SetCulture culture ->
-                    cultureDeps
-                    |> Command.setCulture culture deps.ChatId deps.MessageId
-                    |> deps.sendMessageRes
+                | Post.SetCulture culture -> cultureDeps |> Command.setCulture culture |> deps.sendMessageRes
                 | Post.SetCultureCallback(callback, culture) ->
                     cultureDeps
                     |> Command.setCultureCallback culture
@@ -35,11 +31,13 @@ let apply (request: Router.Route) callback =
         |> ResultAsync.bindAsync (function
             | Some chat -> deps |> callback chat
             | None ->
-                deps
-                |> Query.getCulturesCallback request.Value
-                |> deps.sendMessageRes
-                |> ResultAsync.mapErrorAsync (fun error ->
-                    deps
-                    |> Query.getCultures ()
-                    |> deps.sendMessageRes
-                    |> Async.map (fun _ -> error)))
+                Culture.Dependencies.create deps
+                |> fun cultureDeps ->
+                    cultureDeps
+                    |> Query.getCulturesCallback request.Value
+                    |> deps.sendMessage
+                    |> ResultAsync.mapErrorAsync (fun error ->
+                        cultureDeps
+                        |> Query.getCultures ()
+                        |> deps.sendMessage
+                        |> Async.map (fun _ -> error)))

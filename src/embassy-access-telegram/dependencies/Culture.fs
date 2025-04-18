@@ -5,6 +5,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open AIProvider.Services
 open AIProvider.Services.Domain
+open Web.Clients.Domain.Telegram
 open Web.Clients.Domain.Telegram.Producer
 open EA.Telegram.DataAccess
 
@@ -92,6 +93,8 @@ module private Payload =
                 |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
 
 type Dependencies = {
+    ChatId: ChatId
+    MessageId: int
     getAvailable: unit -> Map<Culture, string>
     setCurrent: Culture -> Async<Result<unit, Error'>>
     translate: Culture -> Message -> Async<Result<Message, Error'>>
@@ -100,68 +103,69 @@ type Dependencies = {
     translateSeqRes: Culture -> Async<Result<Message seq, Error'>> -> Async<Result<Message list, Error'>>
 } with
 
-    static member create ct =
-        fun (deps: Request.Dependencies) ->
+    static member create(deps: Request.Dependencies) =
 
-            let getAvailable () =
-                [
-                    English, "English"
-                    Russian, "Русский"
-                    Chinese, "中文"
-                    Spanish, "Español"
-                    Hindi, "हिन्दी"
-                    Arabic, "العربية"
-                    Serbian, "Српски"
-                    Portuguese, "Português"
-                    French, "Français"
-                    German, "Deutsch"
-                    Japanese, "日本語"
-                    Korean, "한국어"
-                ]
-                |> Map
+        let getAvailable () =
+            [
+                English, "English"
+                Russian, "Русский"
+                Chinese, "中文"
+                Spanish, "Español"
+                Hindi, "हिन्दी"
+                Arabic, "العربية"
+                Serbian, "Српски"
+                Portuguese, "Português"
+                French, "Français"
+                German, "Deutsch"
+                Japanese, "日本語"
+                Korean, "한국어"
+            ]
+            |> Map
 
-            let setCurrent culture =
-                deps.Client.Persistence.initChatStorage ()
-                |> ResultAsync.wrap (Storage.Chat.Command.setCulture deps.ChatId culture)
+        let setCurrent culture =
+            deps.Client.Persistence.initChatStorage ()
+            |> ResultAsync.wrap (Storage.Chat.Command.setCulture deps.ChatId culture)
 
-            let shield = Shield.create ''' '''
+        let shield = Shield.create ''' '''
 
-            let translate request =
-                deps.Client.Culture |> Culture.translate request ct
+        let translate request =
+            deps.Client.Culture |> Culture.translate request deps.ct
 
-            let translateError culture error =
-                (translate, shield)
-                |> Payload.Error.translate culture error
-                |> Async.map (function
-                    | Ok error -> error
-                    | Error error -> error)
+        let translateError culture error =
+            (translate, shield)
+            |> Payload.Error.translate culture error
+            |> Async.map (function
+                | Ok error -> error
+                | Error error -> error)
 
-            let translate culture message =
-                match message with
-                | Text payload -> (translate, shield) |> Payload.Text.translate culture payload
-                | ButtonsGroup payload -> (translate, shield) |> Payload.ButtonsGroup.translate culture payload
+        let translate culture message =
+            match message with
+            | Text payload -> (translate, shield) |> Payload.Text.translate culture payload
+            | ButtonsGroup payload -> (translate, shield) |> Payload.ButtonsGroup.translate culture payload
 
-            let translateSeq culture messages =
-                messages
-                |> Seq.map (translate culture)
-                |> Async.Sequential
-                |> Async.map Result.choose
+        let translateSeq culture messages =
+            messages
+            |> Seq.map (translate culture)
+            |> Async.Sequential
+            |> Async.map Result.choose
 
-            let translateRes culture msgRes =
-                msgRes
-                |> ResultAsync.bindAsync (translate culture)
-                |> ResultAsync.mapErrorAsync (translateError culture)
+        let translateRes culture msgRes =
+            msgRes
+            |> ResultAsync.bindAsync (translate culture)
+            |> ResultAsync.mapErrorAsync (translateError culture)
 
-            let translateSeqRes culture msgSeqRes =
-                msgSeqRes
-                |> ResultAsync.bindAsync (translateSeq culture)
-                |> ResultAsync.mapErrorAsync (translateError culture)
+        let translateSeqRes culture msgSeqRes =
+            msgSeqRes
+            |> ResultAsync.bindAsync (translateSeq culture)
+            |> ResultAsync.mapErrorAsync (translateError culture)
 
-            {
-                getAvailable = getAvailable
-                setCurrent = setCurrent
-                translate = translate
-                translateSeq = translateSeq
-                translateRes = translateRes
-                translateSeqRes = translateSeqRes
-            }
+        {
+            ChatId = deps.ChatId
+            MessageId = deps.MessageId
+            getAvailable = getAvailable
+            setCurrent = setCurrent
+            translate = translate
+            translateSeq = translateSeq
+            translateRes = translateRes
+            translateSeqRes = translateSeqRes
+        }

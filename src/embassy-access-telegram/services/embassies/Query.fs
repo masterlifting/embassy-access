@@ -11,7 +11,7 @@ open EA.Telegram.Router.Embassies
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Embassies
 
-let private createMessage chatId msgIdOpt nameOpt columns data =
+let private createButtonsGroup chatId msgIdOpt nameOpt columns data =
     let name = nameOpt |> Option.defaultValue "Choose from the list"
 
     match data |> Seq.length with
@@ -27,16 +27,18 @@ let private createMessage chatId msgIdOpt nameOpt columns data =
         }
     |> Message.tryReplace msgIdOpt chatId
 
-let private toEmbassy chatId messageId buttonGroupName (embassies: Embassy seq) =
+let private toButtonsGroup chatId messageId buttonGroupName (embassies: Embassy seq) =
     embassies
-    |> Seq.map (fun embassy -> Router.Embassies(Method.Get(Get.Embassy embassy.Id)).Value, embassy.Name)
-    |> createMessage chatId messageId buttonGroupName 3
+    |> Seq.map (fun embassy ->
+        let route = Router.Embassies(Method.Get(Get.Embassy embassy.Id))
+        route.Value, embassy.Name)
+    |> createButtonsGroup chatId (Some messageId) buttonGroupName 3
 
 let private toEmbassyService chatId messageId buttonGroupName embassyId (services: Service seq) =
     services
     |> Seq.map (fun service ->
         Router.Embassies(Method.Get(Get.UserEmbassies(embassyId, service.Id))).Value, service.Name)
-    |> createMessage chatId (Some messageId) buttonGroupName 1
+    |> createButtonsGroup chatId (Some messageId) buttonGroupName 1
 
 let getEmbassyService embassyId serviceId =
     fun (deps: Embassies.Dependencies) ->
@@ -107,22 +109,37 @@ let getEmbassyServices embassyId =
 let getEmbassy (embassyId: EmbassyId) =
     fun (deps: Embassies.Dependencies) ->
         deps.getEmbassyNode embassyId
-        |> ResultAsync.bindAsync (function
-            | AP.Leaf value -> deps |> getEmbassyServices value.Id
+        |> ResultAsync.bind (function
+            | AP.Leaf value ->
+                match
+                    value.Id.Value
+                    |> Graph.NodeId.split
+                    |> Seq.skip 1
+                    |> Seq.tryHead
+                    |> Option.map _.Value
+                with
+                | Some countryId ->
+                    match countryId with
+                    | Embassies.RUS ->
+                        let route = Router.Services(Services.Method.Russian(Services.Russian.Method.Get(Services.Get.Services value.Id)))
+                    | Embassies.ITA ->
+                        let route = Router.Services(Services.Method.Italian(Services.Italian.Method.Get(Services.Get.Services value.Id)))
+                    | _ ->
+                        $"Embassy '%s{value.Name}' is not implemented. " + NOT_IMPLEMENTED
+                        |> NotImplemented
+                        |> Error
+                | None ->
+                    $"Embassy '%s{value.Name}' is not implemented. " + NOT_IMPLEMENTED
+                    |> NotImplemented
+                    |> Error
             | AP.Node node ->
                 node.Children
                 |> Seq.map _.Value
-                |> toEmbassy deps.Chat.Id (Some deps.MessageId) node.Value.Description
-                |> Ok
-                |> async.Return)
+                |> toButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
+                |> Ok)
 
 let getEmbassies () =
-    fun (deps: Embassies.Dependencies) ->
-        deps.getEmbassiesGraph ()
-        |> ResultAsync.map (fun node ->
-            node.Children
-            |> Seq.map _.Value
-            |> toEmbassy deps.Chat.Id None node.Value.Description)
+    fun (deps: Embassies.Dependencies) -> deps |> getEmbassy (Embassies.ROOT_ID |> Graph.NodeIdValue |> EmbassyId)
 
 let getUserEmbassy (embassyId: EmbassyId) =
     fun (deps: Embassies.Dependencies) ->
@@ -132,14 +149,14 @@ let getUserEmbassy (embassyId: EmbassyId) =
             | AP.Node node ->
                 node.Children
                 |> Seq.map _.Value
-                |> toEmbassy deps.Chat.Id (Some deps.MessageId) node.Value.Description
+                |> toButtonsGroup deps.Chat.Id (Some deps.MessageId) node.Value.Description
                 |> Ok
                 |> async.Return)
-        
+
 let getUserEmbassies () =
     fun (deps: Embassies.Dependencies) ->
         deps.getEmbassiesGraph ()
         |> ResultAsync.map (fun node ->
             node.Children
             |> Seq.map _.Value
-            |> toEmbassy deps.Chat.Id None node.Value.Description)
+            |> toButtonsGroup deps.Chat.Id None node.Value.Description)

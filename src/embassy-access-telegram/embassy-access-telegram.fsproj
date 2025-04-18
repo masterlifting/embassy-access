@@ -17,6 +17,7 @@
         <Compile Include="router\culture\Method.fs" />
         <Compile Include="router\embassies\Get.fs" />
         <Compile Include="router\embassies\Method.fs" />
+        <Compile Include="router\services\Get.fs" />
         <Compile Include="router\services\russian\kdmid\Get.fs" />
         <Compile Include="router\services\russian\kdmid\Post.fs" />
         <Compile Include="router\services\russian\kdmid\Method.fs" />
@@ -28,7 +29,6 @@
         <Compile Include="router\services\italian\prenotami\Post.fs" />
         <Compile Include="router\services\italian\prenotami\Method.fs" />
         <Compile Include="router\services\italian\Method.fs" />
-        <Compile Include="router\services\Get.fs" />
         <Compile Include="router\services\Method.fs" />
         <Compile Include="router\subscriptions\Get.fs" />
         <Compile Include="router\subscriptions\Delete.fs" />

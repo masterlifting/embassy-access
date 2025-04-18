@@ -3,9 +3,11 @@ module EA.Telegram.Router.Services.Russian.Method
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
+open EA.Telegram.Router.Services
 open EA.Telegram.Router.Services.Russian
 
 type Route =
+    | Get of Get.Route
     | Kdmid of Kdmid.Get.Route
     | Midpass of Midpass.Get.Route
 

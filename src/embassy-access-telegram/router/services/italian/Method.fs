@@ -3,9 +3,11 @@ module EA.Telegram.Router.Services.Italian.Method
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
+open EA.Telegram.Router.Services
 open EA.Telegram.Router.Services.Italian
 
 type Route =
+    | Get of Get.Route
     | Prenotami of Prenotami.Get.Route
 
     member this.Value =

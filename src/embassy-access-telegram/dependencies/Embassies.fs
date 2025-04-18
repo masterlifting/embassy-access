@@ -22,7 +22,7 @@ type Dependencies = {
     Russian: Russian.Dependencies
     Italian: Italian.Dependencies
     getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<Service>, Error'>>
-    getEmbassyNode: Graph.NodeId -> Async<Result<Graph.Node<Embassy>, Error'>>
+    getEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy>, Error'>>
     getEmbassiesGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
     getEmbassyServiceGraph: Graph.NodeId -> Async<Result<Graph.Node<Service>, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
