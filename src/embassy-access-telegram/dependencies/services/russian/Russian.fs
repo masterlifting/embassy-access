@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Embassies.Russian.Russian
+module EA.Telegram.Dependencies.Services.Russian.Russian
 
 open System.Threading
 open Infrastructure.Domain

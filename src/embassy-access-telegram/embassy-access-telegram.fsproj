@@ -39,13 +39,13 @@
         <Compile Include="dependencies\client\Client.fs" />
         <Compile Include="dependencies\client\Request.fs" />
         <Compile Include="dependencies\Culture.fs" />
-        <Compile Include="dependencies\Embassies.fs" />
         <Compile Include="dependencies\services\russian\Russian.fs" />
         <Compile Include="dependencies\services\russian\Midpass.fs" />
         <Compile Include="dependencies\services\russian\Kdmid.fs" />
         <Compile Include="dependencies\services\italian\Italian.fs" />
         <Compile Include="dependencies\services\italian\Prenotami.fs" />
         <Compile Include="dependencies\services\Services.fs" />
+        <Compile Include="dependencies\Embassies.fs" />
         <Compile Include="dependencies\Subscriptions.fs" />
         <Compile Include="dependencies\Users.fs" />
         <Compile Include="services\culture\Query.fs" />

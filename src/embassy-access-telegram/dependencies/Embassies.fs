@@ -9,30 +9,18 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
-open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
-open EA.Telegram.Dependencies.Embassies.Russian
-open EA.Telegram.Dependencies.Embassies.Italian
+open EA.Telegram.Dependencies.Services.Russian
 
 type Dependencies = {
     Chat: Chat
     MessageId: int
     CancellationToken: CancellationToken
-    Culture: Culture.Dependencies
-    Russian: Russian.Dependencies
-    Italian: Italian.Dependencies
-    getServiceNode: Graph.NodeId -> Async<Result<Graph.Node<Service>, Error'>>
-    getEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy>, Error'>>
-    getEmbassiesGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
-    getEmbassyServiceGraph: Graph.NodeId -> Async<Result<Graph.Node<Service>, Error'>>
+    initServicesDeps: unit -> Result<Services.Dependencies, Error'>
+    getEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
+    getUserEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
     sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
-    getService: Graph.NodeId -> Async<Result<Service, Error'>>
-    getEmbassy: Graph.NodeId -> Async<Result<Embassy, Error'>>
-    getChatRequests: unit -> Async<Result<Request list, Error'>>
-    getRequest: RequestId -> Async<Result<Request, Error'>>
-    createRequest: string * Service * Embassy * bool * Confirmation -> Async<Result<Request, Error'>>
-    deleteRequest: RequestId -> Async<Result<unit, Error'>>
     translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
     translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>>
 } with
@@ -41,18 +29,11 @@ type Dependencies = {
         let result = ResultBuilder()
 
         result {
-            let! russianDeps = Russian.Dependencies.create chat deps
             let! italianDeps = Italian.Dependencies.create chat deps
 
-            let getEmbassyNode embassyId =
+            let getEmbassyNode (embassyId: EmbassyId) =
                 deps.getEmbassyGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFind embassyId)
-                |> ResultAsync.bind (function
-                    | Some embassy -> Ok embassy
-                    | None ->
-                        $"Embassy '%s{embassyId.Value}' is not implemented. " + NOT_IMPLEMENTED
-                        |> NotImplemented
-                        |> Error)
+                |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
 
             let getEmbassyServiceGraph embassyId =
                 deps.getEmbassyGraph ()
@@ -172,8 +153,8 @@ type Dependencies = {
                 MessageId = deps.MessageId
                 CancellationToken = deps.ct
                 Culture = deps.Culture
-                Russian = russianDeps
-                Italian = italianDeps
+                initRussianDeps = fun () -> Russian.Dependencies.create chat deps
+                initItalianDeps = italianDeps
                 getEmbassiesGraph = deps.getEmbassyGraph
                 getEmbassyNode = getEmbassyNode
                 getServiceNode = getServiceNode

@@ -1,12 +1,21 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Service
+module EA.Telegram.Dependencies.Services
 
+open System.Threading
 open EA.Core.Domain
+open EA.Telegram.Domain
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Telegram.Dependencies.Embassies
+open EA.Telegram.Dependencies.Services.Russian
+open EA.Telegram.Dependencies.Services.Italian
 
 type Dependencies = {
+    Chat: Chat
+    MessageId: int
+    CancellationToken: CancellationToken
+    Culture: Culture.Dependencies
+    initRussianDeps: unit -> Result<Russian.Dependencies, Error'>
+    initItalianDeps: unit -> Result<Italian.Dependencies, Error'>
     processRequest: Request -> Async<Result<Request, Error'>>
     printPayload: string -> Result<string, Error'>
 } with
@@ -25,7 +34,7 @@ type Dependencies = {
                             >> Result.map EA.Russian.Services.Domain.Midpass.Payload.print
                         processRequest =
                             fun request ->
-                                deps.Russian
+                                deps.initRussianDeps
                                 |> EA.Telegram.Dependencies.Embassies.Russian.Midpass.Dependencies.create
                                 |> fun x -> x.Service |> EA.Russian.Services.Midpass.Client.init
                                 |> ResultAsync.wrap (EA.Russian.Services.Midpass.Service.tryProcess request)
@@ -38,7 +47,7 @@ type Dependencies = {
                             >> Result.map EA.Russian.Services.Domain.Kdmid.Credentials.print
                         processRequest =
                             fun request ->
-                                deps.Russian
+                                deps.initRussianDeps
                                 |> EA.Telegram.Dependencies.Embassies.Russian.Kdmid.Dependencies.create
                                 |> Result.bind (fun x -> x.Service |> EA.Russian.Services.Kdmid.Client.init)
                                 |> ResultAsync.wrap (EA.Russian.Services.Kdmid.Service.tryProcess request)

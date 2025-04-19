@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Dependencies.Embassies.Italian.Italian
+﻿module EA.Telegram.Dependencies.Services.Italian.Italian
 
 open System.Threading
 open Infrastructure.Domain

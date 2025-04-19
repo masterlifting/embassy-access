@@ -1,9 +1,9 @@
-﻿module EA.Telegram.Services.Embassies.Russian.Query
+﻿module EA.Telegram.Services.Services.Russian.Query
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
-open EA.Telegram.Dependencies.Embassies.Russian
+open EA.Telegram.Dependencies.Services.Russian
 open EA.Telegram.Services.Embassies
 
 let getService (serviceId: ServiceId) (embassyId: EmbassyId) =

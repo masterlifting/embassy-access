@@ -66,7 +66,7 @@ let checkAppointments (model: Post.Model.CheckAppointments) =
                 )
 
             let! service =
-                EA.Telegram.Dependencies.Service.Dependencies.create model.ServiceId deps
+                EA.Telegram.Dependencies.Services.Dependencies.create model.ServiceId deps
                 |> async.Return
 
             return
@@ -115,7 +115,7 @@ let confirmAppointment (model: Post.Model.ConfirmAppointment) =
     fun (deps: Embassies.Dependencies) ->
         deps.getRequest model.RequestId
         |> ResultAsync.bindAsync (fun request ->
-            EA.Telegram.Dependencies.Service.Dependencies.create request.Service.Id deps
+            EA.Telegram.Dependencies.Services.Dependencies.create request.Service.Id deps
             |> ResultAsync.wrap (fun service ->
                 service.processRequest {
                     request with
