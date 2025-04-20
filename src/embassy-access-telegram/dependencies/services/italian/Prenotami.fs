@@ -9,6 +9,7 @@ open Web.Clients.Domain.Telegram
 open Web.Clients.Domain.Telegram.Producer
 open EA.Italian.Services.Domain.Prenotami
 open EA.Italian.Services.Prenotami
+open EA.Telegram.Dependencies.Services.Italian
 
 type Dependencies = {
     ChatId: ChatId

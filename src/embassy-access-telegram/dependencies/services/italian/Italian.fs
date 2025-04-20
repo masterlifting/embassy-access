@@ -28,7 +28,7 @@ type Dependencies = {
 
 } with
 
-    static member create chat (deps: Request.Dependencies) =
+    static member create (deps: Services.Dependencies) =
         let result = ResultBuilder()
 
         result {

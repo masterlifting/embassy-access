@@ -1,11 +1,98 @@
-﻿module EA.Telegram.Services.Embassies.Italian.Query
+﻿module EA.Telegram.Services.Services.Italian.Query
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
-open EA.Telegram.Dependencies.Embassies.Italian
+open EA.Telegram.Dependencies.Services.Italian
 open EA.Telegram.Services.Embassies
 
+let getService (serviceId: ServiceId) (embassyId: EmbassyId) =
+    fun (deps: Russian.Dependencies) ->
+        deps.getServiceGraph embassyId
+        |> ResultAsync.bind (function
+            | AP.Leaf value ->
+                match
+                    value.Id.Value
+                    |> Graph.NodeId.split
+                    |> Seq.skip 1
+                    |> Seq.tryHead
+                    |> Option.map _.Value
+                with
+                | Some countryId ->
+                    match countryId with
+                    | Embassies.RUS ->
+                        let route = Router.Services(Services.Method.Russian(Services.Russian.Method.Get(Services.Get.Services value.Id)))
+                    | Embassies.ITA ->
+                        let route = Router.Services(Services.Method.Italian(Services.Italian.Method.Get(Services.Get.Services value.Id)))
+                    | _ ->
+                        $"Embassy '%s{value.Name}' is not implemented. " + NOT_IMPLEMENTED
+                        |> NotImplemented
+                        |> Error
+                | None ->
+                    $"Embassy '%s{value.Name}' is not implemented. " + NOT_IMPLEMENTED
+                    |> NotImplemented
+                    |> Error
+            | AP.Node node ->
+                node.Children
+                |> Seq.map _.Value
+                |> toButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
+                |> Ok)
+
+let getServices (embassyId: EmbassyId) =
+    fun (deps: Italian.Dependencies) ->
+        let serviceId =
+            Graph.NodeId.combine
+                [
+                    Services.ROOT_ID |> Graph.NodeIdValue
+                    Embassies.RUS |> Graph.NodeIdValue
+                ]
+                |> ServiceId
+        deps |> getService serviceId embassyId
+        
+let getUserService (serviceId: ServiceId) (embassyId: EmbassyId) =
+    fun (deps: Russian.Dependencies) ->
+        deps.getServiceGraph embassyId
+        |> ResultAsync.bind (function
+            | AP.Leaf value ->
+                match
+                    value.Id.Value
+                    |> Graph.NodeId.split
+                    |> Seq.skip 1
+                    |> Seq.tryHead
+                    |> Option.map _.Value
+                with
+                | Some countryId ->
+                    match countryId with
+                    | Embassies.RUS ->
+                        let route = Router.Services(Services.Method.Russian(Services.Russian.Method.Get(Services.Get.Services value.Id)))
+                    | Embassies.ITA ->
+                        let route = Router.Services(Services.Method.Italian(Services.Italian.Method.Get(Services.Get.Services value.Id)))
+                    | _ ->
+                        $"Embassy '%s{value.Name}' is not implemented. " + NOT_IMPLEMENTED
+                        |> NotImplemented
+                        |> Error
+                | None ->
+                    $"Embassy '%s{value.Name}' is not implemented. " + NOT_IMPLEMENTED
+                    |> NotImplemented
+                    |> Error
+            | AP.Node node ->
+                node.Children
+                |> Seq.map _.Value
+                |> toButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
+                |> Ok)
+
+let getUserServices (embassyId: EmbassyId) =
+    fun (deps: Italian.Dependencies) ->
+        let serviceId =
+            Graph.NodeId.combine
+                [
+                    Services.ROOT_ID |> Graph.NodeIdValue
+                    Embassies.RUS |> Graph.NodeIdValue
+                ]
+                |> ServiceId
+        deps |> getService serviceId embassyId
+        
+        
 let get embassyId (service: Service) =
     fun (chatId, messageId) ->
         match service.Id.Split() with

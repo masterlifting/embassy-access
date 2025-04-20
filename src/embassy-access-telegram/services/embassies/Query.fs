@@ -63,7 +63,7 @@ let getUserEmbassy (embassyId: EmbassyId) =
                 |> Ok
                 |> async.Return
             | None ->
-                $"You have no embassy '%s{embassyId.ValueStr}' in your list."
+                $"You have no embassies of '%s{embassyId.ValueStr}' in your list."
                 |> NotFound
                 |> Error
                 |> async.Return)

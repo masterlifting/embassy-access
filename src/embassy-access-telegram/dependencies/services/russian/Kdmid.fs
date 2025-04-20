@@ -14,6 +14,7 @@ open EA.Telegram.Dependencies
 open EA.Russian.Services.Kdmid
 open EA.Russian.Services.Domain.Kdmid
 open EA.Telegram.Dependencies.Embassies.Russian
+open EA.Telegram.Dependencies.Services.Russian
 
 type Dependencies = {
     Chat: Chat

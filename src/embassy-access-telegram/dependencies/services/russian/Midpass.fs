@@ -5,6 +5,7 @@ open System.Threading
 open Infrastructure.Domain
 open Web.Clients.Domain.Telegram
 open Web.Clients.Domain.Telegram.Producer
+open EA.Telegram.Dependencies.Services.Russian
 
 type Dependencies = {
     ChatId: ChatId

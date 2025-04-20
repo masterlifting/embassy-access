@@ -14,14 +14,12 @@ type Dependencies = {
     MessageId: int
     CancellationToken: CancellationToken
     Culture: Culture.Dependencies
-    initRussianDeps: unit -> Result<Russian.Dependencies, Error'>
-    initItalianDeps: unit -> Result<Italian.Dependencies, Error'>
     processRequest: Request -> Async<Result<Request, Error'>>
     printPayload: string -> Result<string, Error'>
 } with
 
-    static member create(serviceId: Graph.NodeId) =
-        fun (deps: Embassies.Dependencies) ->
+    static member create() =
+        fun (deps: Request.Dependencies) ->
             let requestIdParts = serviceId.Split() |> List.skip 1
 
             match requestIdParts |> List.tryHead with
