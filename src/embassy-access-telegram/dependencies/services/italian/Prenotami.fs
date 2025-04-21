@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Embassies.Italian.Prenotami
+module EA.Telegram.Dependencies.Services.Italian.Prenotami
 
 open System.Threading
 open EA.Core.Domain
@@ -51,7 +51,7 @@ type Dependencies = {
                 CancellationToken = deps.CancellationToken
                 RequestStorage = deps.RequestStorage
             }
-        }
+        } |> Ok
 
 module Notification =
     open EA.Telegram.Domain

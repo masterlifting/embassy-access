@@ -18,8 +18,7 @@ type Dependencies = {
     printPayload: string -> Result<string, Error'>
 } with
 
-    static member create() =
-        fun (deps: Request.Dependencies) ->
+    static member create (deps: Request.Dependencies) =
             let requestIdParts = serviceId.Split() |> List.skip 1
 
             match requestIdParts |> List.tryHead with

@@ -9,7 +9,8 @@ open EA.Telegram.Services.Embassies
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->
-        Embassies.Dependencies.create chat deps
+        deps
+        |> Embassies.Dependencies.create chat
         |> ResultAsync.wrap (fun deps ->
             let inline processSingleMessage handler =
                 handler >> deps.translateMessageRes >> deps.sendMessageRes

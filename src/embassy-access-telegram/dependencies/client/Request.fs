@@ -16,6 +16,7 @@ type Dependencies = {
     ct: CancellationToken
     ChatId: ChatId
     MessageId: int
+    ChatStorage: Chat.Storage
     Client: Client.Dependencies
     tryGetChat: unit -> Async<Result<Chat option, Error'>>
     RequestStorage: Request.Storage
@@ -41,14 +42,12 @@ type Dependencies = {
                 let tryGetChat () =
                     chatStorage |> Storage.Chat.Query.tryFindById payload.ChatId
 
-                
-
                 let sendMessageRes data =
                     deps.Web.Telegram.sendMessageRes data payload.ChatId
 
                 let sendMessagesRes data =
                     deps.Web.Telegram.sendMessagesRes data payload.ChatId
-
+                    
                 return {
                     ct = deps.ct
                     ChatId = payload.ChatId

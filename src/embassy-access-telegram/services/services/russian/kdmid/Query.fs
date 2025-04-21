@@ -1,5 +1,8 @@
-﻿module EA.Telegram.Services.Embassies.Russian.Kdmid.Query
+﻿module EA.Telegram.Services.Services.Russian.Kdmid.Query
 
+open EA.Core.Domain
+open EA.Telegram.Dependencies.Services.Russian
+open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
@@ -12,6 +15,23 @@ open EA.Telegram.Router.Embassies
 open EA.Telegram.Services.Embassies
 open EA.Telegram.Dependencies.Embassies.Russian
 open EA.Russian.Services.Domain.Kdmid
+
+let private (|CheckSlotsNow|SlotsAutoNotification|BookFirstSlot|BookLastSlot|BookFirstSlotInPeriod|ServiceNotFound|)
+    (serviceId: ServiceId)
+    =
+    match serviceId.Value.Split() with
+    | [ _; _; _; _; _; "0" ] -> CheckSlotsNow
+    | [ _; _; _; _; _; "1" ] -> SlotsAutoNotification
+    | [ _; _; _; _; _; "2"; "0" ] -> BookFirstSlot
+    | [ _; _; _; _; _; "2"; "1" ] -> BookLastSlot
+    | [ _; _; _; _; _; "2"; "2" ] -> BookFirstSlotInPeriod
+    | _ -> ServiceNotFound
+let getService (serviceId: ServiceId) (embassyId: EmbassyId) =
+    fun (deps: Kdmid.Dependencies) ->
+        $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
+        |> NotImplemented
+        |> Error
+        |> async.Return
 
 let private buildSubscriptionMenu (request: Request) =
     let getRoute =

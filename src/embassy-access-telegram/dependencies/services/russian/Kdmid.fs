@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Embassies.Russian.Kdmid
+module EA.Telegram.Dependencies.Services.Russian.Kdmid
 
 open System
 open System.Threading

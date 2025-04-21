@@ -15,15 +15,7 @@ type Dependencies = {
     Chat: Chat
     MessageId: int
     CancellationToken: CancellationToken
-    Culture: Culture.Dependencies
-    ChatStorage: Chat.Storage
-    RequestStorage: Request.Storage
-    sendMessages: Producer.Message seq -> Async<Result<unit, Error'>>
-    sendMessageRes: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-    sendMessagesRes: Async<Result<Producer.Message seq, Error'>> -> Async<Result<unit, Error'>>
-    getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
-    getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
-    getServiceNode: ServiceId -> Async<Result<Graph.Node<Embassy>, Error'>>
+    getServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
     getRequestChats: Request -> Async<Result<Chat list, Error'>>
     getChatRequests: unit -> Async<Result<Request list, Error'>>
     setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>

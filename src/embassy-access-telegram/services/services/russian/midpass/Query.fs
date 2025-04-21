@@ -1,12 +1,16 @@
-﻿module EA.Telegram.Services.Embassies.Russian.Midpass.Query
+﻿module EA.Telegram.Services.Services.Russian.Midpass.Query
 
 open EA.Core.Domain
 open Infrastructure.Domain
-open EA.Telegram.Dependencies.Embassies.Russian
+open EA.Telegram.Dependencies.Services.Russian
 
-let checkStatus (_: string) =
-    fun (_: Midpass.Dependencies) ->
-        "The Midpass service is not implemented yet. " + NOT_IMPLEMENTED
-        |> NotImplemented
-        |> Error
-        |> async.Return
+let private (|PassportStatus|ServiceNotFound|)
+    (serviceId: ServiceId)
+    =
+    match serviceId.Value.Split() with
+    | [ _; _; _; "1"; ] -> PassportStatus
+    | _ -> ServiceNotFound
+
+let getService (serviceId: ServiceId) (embassyId: EmbassyId) =
+    fun (deps: Midpass.Dependencies) ->
+        $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED |> NotImplemented |> Error |> async.Return

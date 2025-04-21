@@ -26,7 +26,8 @@ let getEmbassy (embassyId: EmbassyId) =
         deps.getEmbassyNode embassyId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) ->
-                deps.initServicesDeps ()
+                 deps.Request
+                |> EA.Telegram.Dependencies.Services.Dependencies.create
                 |> ResultAsync.wrap (Services.Query.getService embassyId)
             | Some(AP.Node node) ->
                 node.Children
@@ -34,7 +35,7 @@ let getEmbassy (embassyId: EmbassyId) =
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.Embassy embassy.Id))
                     route.Value, embassy.Name)
-                |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
+                |> createButtonsGroup deps.ChatId deps.MessageId node.Value.Description
                 |> Ok
                 |> async.Return
             | None ->
@@ -51,7 +52,8 @@ let getUserEmbassy (embassyId: EmbassyId) =
         deps.getUserEmbassyNode embassyId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) ->
-                deps.initServicesDeps ()
+                deps.Request
+                |> EA.Telegram.Dependencies.Services.Dependencies.create
                 |> ResultAsync.wrap (Services.Query.getUserService embassyId)
             | Some(AP.Node node) ->
                 node.Children
@@ -59,7 +61,7 @@ let getUserEmbassy (embassyId: EmbassyId) =
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.UserEmbassy embassy.Id))
                     route.Value, embassy.Name)
-                |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
+                |> createButtonsGroup deps.ChatId deps.MessageId node.Value.Description
                 |> Ok
                 |> async.Return
             | None ->

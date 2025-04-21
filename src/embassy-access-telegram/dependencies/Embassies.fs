@@ -5,169 +5,41 @@ open System
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Web.Clients.Domain.Telegram
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
+open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Services.Russian
 
 type Dependencies = {
-    Chat: Chat
+    ChatId: ChatId
     MessageId: int
-    CancellationToken: CancellationToken
-    initServicesDeps: unit -> Result<Services.Dependencies, Error'>
+    Request: Request.Dependencies
     getEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
     getUserEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
-    sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-    sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
-    translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
-    translateMessagesRes: Async<Result<Message list, Error'>> -> Async<Result<Message seq, Error'>>
 } with
 
-    static member create chat (deps: Request.Dependencies) =
+    static member create (chat: Chat) (deps: Request.Dependencies) =
         let result = ResultBuilder()
 
         result {
-            let! italianDeps = Italian.Dependencies.create chat deps
-
             let getEmbassyNode (embassyId: EmbassyId) =
-                deps.getEmbassyGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
-
-            let getEmbassyServiceGraph embassyId =
-                deps.getEmbassyGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFind embassyId)
-                |> ResultAsync.bindAsync (function
-                    | None ->
-                        $"Services of Embassy '%s{embassyId.Value}' is not implemented. "
-                        + NOT_IMPLEMENTED
-                        |> NotImplemented
-                        |> Error
-                        |> async.Return
-                    | Some node ->
-                        // try to get the countryId from the embassyId. It should be the second part of the embassyId
-                        match node.Id.TryGetPart 1 with
-                        | None ->
-                            $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
-                            + NOT_IMPLEMENTED
-                            |> NotImplemented
-                            |> Error
-                            |> async.Return
-                        | Some countryId ->
-                            let serviceId =
-                                [ Services.ROOT_ID |> Graph.NodeIdValue; countryId ] |> Graph.NodeId.combine
-
-                            deps.getServiceGraph ()
-                            |> ResultAsync.map (Graph.BFS.tryFind serviceId)
-                            |> ResultAsync.bind (function
-                                | None ->
-                                    $"Services of Embassy '%s{embassyId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
-                                    + NOT_IMPLEMENTED
-                                    |> NotImplemented
-                                    |> Error
-                                | Some serviceNode -> serviceNode |> Ok))
-
-            let getServiceNode serviceId =
-                deps.getServiceGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFind serviceId)
-                |> ResultAsync.bind (function
-                    | None ->
-                        $"Service '%s{serviceId.Value}' for the chat '%s{deps.ChatId.ValueStr}' is not implemented. "
-                        + NOT_IMPLEMENTED
-                        |> NotImplemented
-                        |> Error
-                    | Some serviceNode -> serviceNode |> Ok)
-
-            let getService serviceId =
-                deps.getServiceGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFind serviceId)
-                |> ResultAsync.bind (function
-                    | None ->
-                        $"Service '%s{serviceId.Value}' for the chat '%s{chat.Id.ValueStr}'"
-                        |> NotFound
-                        |> Error
-                    | Some serviceNode -> serviceNode.Value |> Ok)
-
-            let getEmbassy embassyId =
-                deps.getEmbassyGraph ()
-                |> ResultAsync.map (Graph.BFS.tryFind embassyId)
-                |> ResultAsync.bind (function
-                    | None ->
-                        $"Embassy '%s{embassyId.Value}' for the chat '%s{chat.Id.ValueStr}'"
-                        |> NotFound
-                        |> Error
-                    | Some embassyNode -> embassyNode.Value |> Ok)
-
-            let getRequest requestId =
-                deps.RequestStorage
-                |> Request.Query.tryFindById requestId
-                |> ResultAsync.bind (function
-                    | None ->
-                        $"Request '%s{requestId.ValueStr}' for the chat '%s{chat.Id.ValueStr}'"
-                        |> NotFound
-                        |> Error
-                    | Some request -> request |> Ok)
-
-            let createRequest (payload, service: Service, embassy: Embassy, inBackground, confirmationState) =
-                let requestId = RequestId.createNew ()
-                let limits = Limit.create (20u<attempts>, TimeSpan.FromDays 1) |> Set.singleton
-
-                deps.ChatStorage
-                |> Chat.Command.createChatSubscription chat.Id requestId
-                |> ResultAsync.bindAsync (fun _ ->
-                    deps.RequestStorage
-                    |> Request.Command.create {
-                        Id = requestId
-                        Service = {
-                            Id = service.Id
-                            Name = service.Name
-                            Payload = payload
-                            Description = service.Description
-                            Embassy = embassy
-                        }
-                        ProcessState = Ready
-                        UseBackground = inBackground
-                        Limits = limits
-                        ConfirmationState = confirmationState
-                        Appointments = Set.empty<Appointment>
-                        Modified = DateTime.UtcNow
-                    })
-            let getChatRequests () =
-                deps.RequestStorage |> Request.Query.findManyByIds chat.Subscriptions
-
-            let deleteRequest requestId =
-                deps.ChatStorage
-                |> Chat.Command.deleteChatSubscription chat.Id requestId
-                |> ResultAsync.bindAsync (fun _ -> deps.RequestStorage |> Request.Command.delete requestId)
-
-            let translateMessageRes = deps.Culture.translateRes chat.Culture
-
-            let translateMessagesRes =
-                ResultAsync.map Seq.ofList
-                >> deps.Culture.translateSeqRes chat.Culture
-                >> ResultAsync.map Seq.ofList
+                deps.getEmbassyGraph () |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
+                
+            let private userSubscriptionsFilter (embassyId: EmbassyId) =
+                chat.Subscriptions |> Seq.map _.EmbassyId |> Seq.contains embassyId.Value
+            
+            let getUserEmbassyNode (embassyId: EmbassyId) =
+                deps.getEmbassyGraph () |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
 
             return {
-                Chat = chat
+                ChatId = deps.ChatId
                 MessageId = deps.MessageId
-                CancellationToken = deps.ct
-                Culture = deps.Culture
-                initRussianDeps = fun () -> Russian.Dependencies.create chat deps
-                initItalianDeps = italianDeps
-                getEmbassiesGraph = deps.getEmbassyGraph
+                Request = deps
                 getEmbassyNode = getEmbassyNode
-                getServiceNode = getServiceNode
-                getEmbassyServiceGraph = getEmbassyServiceGraph
-                translateMessageRes = translateMessageRes
-                translateMessagesRes = translateMessagesRes
-                sendMessageRes = deps.sendMessageRes
-                sendMessagesRes = deps.sendMessagesRes
-                getService = getService
-                getEmbassy = getEmbassy
-                getChatRequests = getChatRequests
-                getRequest = getRequest
-                createRequest = createRequest
-                deleteRequest = deleteRequest
+                getUserEmbassyNode = getUserEmbassyNode
             }
         }

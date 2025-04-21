@@ -12,6 +12,7 @@ module Russian =
 
     type Dependencies = {
         initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload>, Error'>
+        initMidpassRequestStorage: unit -> Result<Request.Storage<Midpass.Payload>, Error'>
     }
 
 module Italian =

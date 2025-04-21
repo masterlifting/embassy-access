@@ -8,13 +8,11 @@ open EA.Telegram.Dependencies.Services.Russian
 open EA.Telegram.Dependencies.Services.Italian
 
 let private tryParse (embassyId: EmbassyId) =
-    embassyId.Value
-    |> Graph.NodeId.split
+    embassyId.Value.Split()
     |> Seq.skip 1
     |> Seq.tryHead
-    |> Option.map _.Value
 
-let getService (embassyId: EmbassyId) =
+let getService embassyId =
     fun (deps: Services.Dependencies) ->
         match tryParse embassyId with
         | Some embassy ->
@@ -36,7 +34,7 @@ let getService (embassyId: EmbassyId) =
             |> Error
             |> async.Return
 
-let getUserService (embassyId: EmbassyId) =
+let getUserService embassyId =
     fun (deps: Services.Dependencies) ->
         match tryParse embassyId with
         | Some embassy' ->

@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Embassies.Russian.Midpass
+module EA.Telegram.Dependencies.Services.Russian.Midpass
 
 open System.Threading
 open Infrastructure.Domain
@@ -16,14 +16,5 @@ type Dependencies = {
     Service: EA.Russian.Services.Domain.Midpass.Dependencies
 } with
 
-    static member create(deps: Russian.Dependencies) = {
-        ChatId = deps.Chat.Id
-        MessageId = deps.MessageId
-        CancellationToken = deps.CancellationToken
-        translateMessageRes = deps.Culture.translateRes deps.Chat.Culture
-        sendMessageRes = deps.sendMessageRes
-        Service = {
-            CancellationToken = deps.CancellationToken
-            RequestStorage = deps.RequestStorage
-        }
-    }
+    static member create(deps: Russian.Dependencies) = "Not implemented" |> NotImplemented |> Error
+    

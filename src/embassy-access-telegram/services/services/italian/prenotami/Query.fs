@@ -1,5 +1,7 @@
-﻿module EA.Telegram.Services.Embassies.Italian.Prenotami.Query
+﻿module EA.Telegram.Services.Services.Italian.Prenotami.Query
 
+open EA.Core.Domain
+open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
@@ -9,9 +11,23 @@ open EA.Core.Domain.ProcessState
 open EA.Telegram.Router
 open EA.Telegram.Router.Embassies
 open EA.Telegram.Services.Embassies
-open EA.Telegram.Dependencies.Embassies.Italian
+open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services.Domain.Prenotami
 
+open EA.Telegram.Dependencies.Services.Russian
+
+let private (|CheckSlotsNow|SlotsAutoNotification|ServiceNotFound|)
+    (serviceId: ServiceId)
+    =
+    match serviceId.Value.Split() with
+    | [ _; _; _; _; "0" ] -> CheckSlotsNow
+    | [ _; _; _; _; "1" ] -> SlotsAutoNotification
+    | _ -> ServiceNotFound
+
+
+let getService (serviceId: ServiceId) (embassyId: EmbassyId) =
+    fun (deps: Prenotami.Dependencies) ->
+        $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED |> NotImplemented |> Error |> async.Return
 let private buildSubscriptionMenu (request: Payload) =
     let getRoute =
         request.Id

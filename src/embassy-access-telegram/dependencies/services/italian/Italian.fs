@@ -17,6 +17,7 @@ type Dependencies = {
     Culture: Culture.Dependencies
     ChatStorage: Chat.Storage
     RequestStorage: Request.Storage
+    getServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
     sendMessages: Producer.Message seq -> Async<Result<unit, Error'>>
     sendMessageRes: Async<Result<Producer.Message, Error'>> -> Async<Result<unit, Error'>>
     sendMessagesRes: Async<Result<Producer.Message seq, Error'>> -> Async<Result<unit, Error'>>
