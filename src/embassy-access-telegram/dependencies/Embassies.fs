@@ -2,36 +2,39 @@
 module EA.Telegram.Dependencies.Embassies.Embassies
 
 open System
-open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Clients.Domain.Telegram
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
-open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
-open EA.Telegram.Dependencies.Services.Russian
 
 type Dependencies = {
     Chat: Chat
     MessageId: int
     Request: Request.Dependencies
     getEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
+    sendMessageRes: Async<Result<Message,Error'>> -> Async<Result<unit,Error'>>
 } with
 
     static member create (chat: Chat) (deps: Request.Dependencies) =
         let result = ResultBuilder()
 
         result {
+            let culture = Culture.Dependencies.create deps
+
             let getEmbassyNode (embassyId: EmbassyId) =
                 deps.getEmbassyGraph () |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
+
+            let sendMessageRes data =
+                data |> culture.translateRes chat.Culture |> deps.sendMessageRes
 
             return {
                 Chat = chat
                 MessageId = deps.MessageId
                 Request = deps
                 getEmbassyNode = getEmbassyNode
+                sendMessageRes = sendMessageRes
             }
         }

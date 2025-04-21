@@ -51,13 +51,9 @@
         <Compile Include="services\culture\Command.fs" />
         <Compile Include="services\subscriptions\Query.fs" />
         <Compile Include="services\subscriptions\Command.fs" />
-        <Compile Include="services\services\russian\kdmid\Instruction.fs" />
-        <Compile Include="services\services\russian\kdmid\Notification.fs" />
         <Compile Include="services\services\russian\kdmid\Query.fs" />
         <Compile Include="services\services\russian\midpass\Query.fs" />
         <Compile Include="services\services\russian\Query.fs" />
-        <Compile Include="services\services\italian\prenotami\Instruction.fs" />
-        <Compile Include="services\services\italian\prenotami\Notification.fs" />
         <Compile Include="services\services\italian\prenotami\Query.fs" />
         <Compile Include="services\services\italian\Query.fs" />
         <Compile Include="services\services\Query.fs" />

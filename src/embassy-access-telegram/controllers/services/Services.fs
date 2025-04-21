@@ -1,36 +1,37 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Controllers.Services
 
+open Infrastructure.Prelude
+open EA.Telegram.Router.Services
+open EA.Telegram.Dependencies
+open EA.Telegram.Dependencies.Services.Russian
+open EA.Telegram.Dependencies.Services.Italian
+open EA.Telegram.Services.Services
+
 let respond request chat =
     fun (deps: Request.Dependencies) ->
-        Embassies.Dependencies.create chat deps
+        deps
+        |> Services.Dependencies.create chat
         |> ResultAsync.wrap (fun deps ->
-            let inline processSingleMessage handler =
-                handler >> deps.translateMessageRes >> deps.sendMessageRes
-
-            let inline processMultipleMessages handler =
-                handler >> deps.translateMessagesRes >> deps.sendMessagesRes
 
             match request with
-
-            | Method.Get get ->
-                let handler =
-                    match get with
-                    | Get.Embassy embassyId -> Query.getEmbassy embassyId
-                    | Get.Embassies -> Query.getEmbassies ()
-                    | Get.UserEmbassy embassyId -> Query.getUserEmbassy embassyId
-                    | Get.UserEmbassies -> Query.getUserEmbassies ()
-                processSingleMessage handler <| deps
-
-            | Method.Post post ->
-                let handler =
-                    match post with
-                    | Post.Subscribe model -> model |> Command.subscribe |> processSingleMessage
-                    | Post.CheckAppointments model -> model |> Command.checkAppointments |> processSingleMessage
-                    | Post.SendAppointments model -> model |> Command.sendAppointments |> processMultipleMessages
-                    | Post.ConfirmAppointment model -> model |> Command.confirmAppointment |> processSingleMessage
-                handler deps
-
-            | Method.Delete delete ->
-                match delete with
-                | Delete.Subscription requestId -> processSingleMessage (Command.deleteSubscription requestId) <| deps)
+            | Method.Russian russian ->
+                match russian with
+                | Russian.Method.Get get ->
+                    Russian.Dependencies.create deps
+                    |> ResultAsync.wrap (fun deps ->
+                        match get with
+                        | Get.Services embassyId -> deps |> Russian.Query.getServices embassyId
+                        | Get.Service(embassyId, serviceId) -> deps |> Russian.Query.getService embassyId serviceId
+                        | Get.UserServices embassyId -> deps |> Russian.Query.getUserServices embassyId
+                        | Get.UserService(embassyId, serviceId) -> deps |> Russian.Query.getUserService embassyId serviceId)
+            | Method.Italian italian ->
+                match italian with
+                | Italian.Method.Get get ->
+                    Italian.Dependencies.create deps
+                    |> ResultAsync.wrap (fun deps ->
+                        match get with
+                        | Get.Services embassyId -> deps |> Italian.Query.getServices embassyId
+                        | Get.Service(embassyId, serviceId) -> deps |> Italian.Query.getService embassyId serviceId
+                        | Get.UserServices embassyId -> deps |> Italian.Query.getUserServices embassyId
+                        | Get.UserService(embassyId, serviceId) -> deps |> Italian.Query.getUserService embassyId serviceId))

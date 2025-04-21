@@ -1,7 +1,7 @@
 ﻿module EA.Telegram.Services.Services.Russian.Midpass.Query
 
-open EA.Core.Domain
 open Infrastructure.Domain
+open EA.Core.Domain
 open EA.Telegram.Dependencies.Services.Russian
 
 let private (|PassportStatus|ServiceNotFound|)

@@ -2,11 +2,10 @@
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Core.Domain
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
+open EA.Core.Domain
 open EA.Telegram.Dependencies.Services.Russian
-open EA.Telegram.Services.Embassies
 open EA.Telegram.Router
 open EA.Telegram.Router.Services
 
@@ -72,7 +71,7 @@ let getServices embassyId =
             |> ServiceId
         deps |> getService embassyId serviceId
 
-let getUserService serviceId embassyId =
+let getUserService embassyId serviceId =
     fun (deps: Russian.Dependencies) ->
         deps.getServiceNode serviceId
         |> ResultAsync.bindAsync (function

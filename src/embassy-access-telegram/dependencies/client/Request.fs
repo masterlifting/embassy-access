@@ -25,6 +25,7 @@ type Dependencies = {
     getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
     getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
     setCurrentCulture: Culture -> Async<Result<unit, Error'>>
+    translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
     sendMessage: Message -> Async<Result<unit, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
     sendMessages: Message seq -> Async<Result<unit, Error'>>
@@ -36,7 +37,6 @@ type Dependencies = {
             let result = ResultBuilder()
 
             result {
-
                 let! chatStorage = deps.Persistence.initChatStorage ()
 
                 let tryGetChat () =
