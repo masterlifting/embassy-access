@@ -8,6 +8,7 @@ open EA.Core.Domain
 open EA.Telegram.Router
 open EA.Telegram.Router.Embassies
 open EA.Telegram.Services
+open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Embassies
 
 let private createButtonsGroup chatId messageId name buttons =
@@ -20,14 +21,16 @@ let private createButtonsGroup chatId messageId name buttons =
             |> Set.ofSeq
     }
     |> Message.tryReplace (Some messageId) chatId
+    |> Ok
+    |> async.Return
 
-let getEmbassy (embassyId: EmbassyId) =
+let getEmbassy embassyId =
     fun (deps: Embassies.Dependencies) ->
         deps.getEmbassyNode embassyId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) ->
-                 deps.Request
-                |> EA.Telegram.Dependencies.Services.Dependencies.create
+                deps.Request
+                |> Services.Dependencies.create deps.Chat
                 |> ResultAsync.wrap (Services.Query.getService embassyId)
             | Some(AP.Node node) ->
                 node.Children
@@ -35,9 +38,7 @@ let getEmbassy (embassyId: EmbassyId) =
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.Embassy embassy.Id))
                     route.Value, embassy.Name)
-                |> createButtonsGroup deps.ChatId deps.MessageId node.Value.Description
-                |> Ok
-                |> async.Return
+                |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"Embassy '%s{embassyId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
                 |> NotImplemented
@@ -47,23 +48,25 @@ let getEmbassy (embassyId: EmbassyId) =
 let getEmbassies () =
     fun (deps: Embassies.Dependencies) -> deps |> getEmbassy (Embassies.ROOT_ID |> Graph.NodeIdValue |> EmbassyId)
 
-let getUserEmbassy (embassyId: EmbassyId) =
+let getUserEmbassy embassyId =
     fun (deps: Embassies.Dependencies) ->
-        deps.getUserEmbassyNode embassyId
+        deps.getEmbassyNode embassyId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) ->
                 deps.Request
-                |> EA.Telegram.Dependencies.Services.Dependencies.create
+                |> Services.Dependencies.create deps.Chat
                 |> ResultAsync.wrap (Services.Query.getUserService embassyId)
             | Some(AP.Node node) ->
+
+                let userEmbassyIds = deps.Chat.Subscriptions |> Seq.map _.EmbassyId.Value
+
                 node.Children
                 |> Seq.map _.Value
+                |> Seq.filter (fun embassy -> embassy.Id.Value.In userEmbassyIds)
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.UserEmbassy embassy.Id))
                     route.Value, embassy.Name)
-                |> createButtonsGroup deps.ChatId deps.MessageId node.Value.Description
-                |> Ok
-                |> async.Return
+                |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"You have no embassies of '%s{embassyId.ValueStr}' in your list."
                 |> NotFound

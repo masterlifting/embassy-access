@@ -15,11 +15,10 @@ open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Services.Russian
 
 type Dependencies = {
-    ChatId: ChatId
+    Chat: Chat
     MessageId: int
     Request: Request.Dependencies
     getEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
-    getUserEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
 } with
 
     static member create (chat: Chat) (deps: Request.Dependencies) =
@@ -28,18 +27,11 @@ type Dependencies = {
         result {
             let getEmbassyNode (embassyId: EmbassyId) =
                 deps.getEmbassyGraph () |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
-                
-            let private userSubscriptionsFilter (embassyId: EmbassyId) =
-                chat.Subscriptions |> Seq.map _.EmbassyId |> Seq.contains embassyId.Value
-            
-            let getUserEmbassyNode (embassyId: EmbassyId) =
-                deps.getEmbassyGraph () |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
 
             return {
-                ChatId = deps.ChatId
+                Chat = chat
                 MessageId = deps.MessageId
                 Request = deps
                 getEmbassyNode = getEmbassyNode
-                getUserEmbassyNode = getUserEmbassyNode
             }
         }
