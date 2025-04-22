@@ -10,11 +10,10 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 open EA.Worker.Dependencies
 open EA.Italian.Services
-open EA.Telegram.Dependencies.Embassies.Italian
+open EA.Telegram.Dependencies.Services.Italian
 
 module Prenotami =
     open EA.Italian.Services.Domain.Prenotami
-    open EA.Telegram.Services.Embassies.Italian.Prenotami
 
     type Dependencies = {
         TaskName: string
@@ -59,7 +58,7 @@ module Prenotami =
 
                 let notify (requestRes: Result<Request<Payload>, Error'>) =
                     requestRes
-                    |> ResultAsync.wrap (fun r -> notificationDeps |> Notification.spread r)
+                    |> ResultAsync.wrap (fun r -> notificationDeps |> Prenotami.Notification.spread r)
                     |> ResultAsync.mapError (_.Message >> Log.crt)
                     |> Async.Ignore
 

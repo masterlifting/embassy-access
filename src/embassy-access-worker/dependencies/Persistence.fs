@@ -10,6 +10,7 @@ open Persistence.Storages.Domain
 open AIProvider.Services.DataAccess
 open EA.Core.Domain
 open EA.Core.DataAccess
+open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Russian.Services.Domain
 open EA.Italian.Services.Domain
@@ -26,7 +27,12 @@ let private cleanData subscriptions =
                 |> Storage.Request.Query.getIdentifiers
                 |> ResultAsync.map Set.ofSeq
 
-            let requestIdsToRemove = subscriptions |> Set.difference <| requestIdentifiers
+            let subscriptionIds =
+                subscriptions
+                |> Seq.map _.Id
+                |> Set.ofSeq
+                
+            let requestIdsToRemove = subscriptionIds |> Set.difference <| requestIdentifiers
 
             do! chatStorage |> Storage.Chat.Command.deleteSubscriptions requestIdsToRemove
             return requestStorage |> Storage.Request.Command.deleteMany requestIdsToRemove
@@ -36,7 +42,8 @@ module Russian =
 
     type Dependencies = {
         initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload>, Error'>
-        cleanData: Set<RequestId> -> Chat.Storage -> Async<Result<unit, Error'>>
+        initMidpassRequestStorage: unit -> Result<Request.Storage<Midpass.Payload>, Error'>
+        cleanData: Set<Subscription> -> Chat.Storage -> Async<Result<unit, Error'>>
     } with
 
         static member create fileStoragePath =
@@ -47,16 +54,29 @@ module Russian =
                 }
                 |> Storage.Request.FileSystem
                 |> Storage.Request.init (Kdmid.Payload.serialize, Kdmid.Payload.deserialize)
+            
+            let initMidpassRequestStorage () =
+                {
+                    FileSystem.Connection.FilePath = fileStoragePath
+                    FileSystem.Connection.FileName = "Requests.Rus.Midpass.json"
+                }
+                |> Storage.Request.FileSystem
+                |> Storage.Request.init (Midpass.Payload.serialize, Midpass.Payload.deserialize)
 
             result {
 
                 let! kdmidRequestStorage = initKdmidRequestStorage ()
+                let! midpassRequestStorage = initMidpassRequestStorage ()
 
                 let cleanData subscriptions chatStorage =
-                    (chatStorage, kdmidRequestStorage) |> cleanData subscriptions
+                    resultAsync {
+                        do!  (chatStorage, kdmidRequestStorage) |> cleanData subscriptions
+                        return (chatStorage, midpassRequestStorage) |> cleanData subscriptions
+                    }
 
                 return {
                     initKdmidRequestStorage = fun () -> kdmidRequestStorage |> Ok
+                    initMidpassRequestStorage = fun () -> midpassRequestStorage |> Ok
                     cleanData = cleanData
                 }
             }
@@ -65,7 +85,7 @@ module Italian =
 
     type Dependencies = {
         initPrenotamiRequestStorage: unit -> Result<Request.Storage<Prenotami.Payload>, Error'>
-        cleanData: Set<RequestId> -> Chat.Storage -> Async<Result<unit, Error'>>
+        cleanData: Set<Subscription> -> Chat.Storage -> Async<Result<unit, Error'>>
     } with
 
         static member create fileStoragePath fileStorageKey =

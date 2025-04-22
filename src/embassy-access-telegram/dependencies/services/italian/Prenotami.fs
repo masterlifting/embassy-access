@@ -18,7 +18,9 @@ type Dependencies = {
     Service: EA.Italian.Services.Domain.Prenotami.Dependencies
 } with
 
-    static member create(deps: Italian.Dependencies) = "Not implemented" |> NotImplemented |> Error
+    static member create(deps: Italian.Dependencies) =
+        "Not implemented" |> NotImplemented |> Error
+
 module Notification =
     open EA.Telegram.Domain
 

@@ -38,9 +38,9 @@
         <Compile Include="router\Router.fs" />
         <Compile Include="dependencies\client\Web.fs" />
         <Compile Include="dependencies\client\Persistence.fs" />
+        <Compile Include="dependencies\client\Culture.fs" />
         <Compile Include="dependencies\client\Client.fs" />
         <Compile Include="dependencies\client\Request.fs" />
-        <Compile Include="dependencies\Culture.fs" />
         <Compile Include="dependencies\services\Services.fs" />
         <Compile Include="dependencies\services\russian\Russian.fs" />
         <Compile Include="dependencies\services\russian\Midpass.fs" />

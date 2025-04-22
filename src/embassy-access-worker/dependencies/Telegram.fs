@@ -15,10 +15,11 @@ let create cfg ct =
         let! aiProvider = aiProvider.initProvider ()
         let! cultureStorage = persistence.initCultureStorage ()
 
-        let culture: AIProvider.Services.Dependencies.Culture.Dependencies = {
-            Provider = aiProvider
-            Storage = cultureStorage
-        }
+        let culture =
+            EA.Telegram.Dependencies.Culture.Dependencies.create ct {
+                Provider = aiProvider
+                Storage = cultureStorage
+            }
 
         let client: EA.Telegram.Dependencies.Client.Dependencies = {
             ct = ct
@@ -30,6 +31,7 @@ let create cfg ct =
                 initEmbassyStorage = persistence.initEmbassyStorage
                 RussianStorage = {
                     initKdmidRequestStorage = persistence.RussianStorage.initKdmidRequestStorage
+                    initMidpassRequestStorage = persistence.RussianStorage.initMidpassRequestStorage
                 }
                 ItalianStorage = {
                     initPrenotamiRequestStorage = persistence.ItalianStorage.initPrenotamiRequestStorage

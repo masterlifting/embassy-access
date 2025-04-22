@@ -3,11 +3,9 @@ module EA.Telegram.Dependencies.Culture
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open AIProvider.Services
 open AIProvider.Services.Domain
-open Web.Clients.Domain.Telegram
+open AIProvider.Services.Dependencies
 open Web.Clients.Domain.Telegram.Producer
-open EA.Telegram.DataAccess
 
 module private Payload =
     module Error =
@@ -93,72 +91,70 @@ module private Payload =
                 |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
 
 type Dependencies = {
-    ChatId: ChatId
-    MessageId: int
     getAvailable: unit -> Map<Culture, string>
-    setCurrent: Culture -> Async<Result<unit, Error'>>
     translate: Culture -> Message -> Async<Result<Message, Error'>>
     translateSeq: Culture -> Message seq -> Async<Result<Message list, Error'>>
     translateRes: Culture -> Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
     translateSeqRes: Culture -> Async<Result<Message seq, Error'>> -> Async<Result<Message list, Error'>>
 } with
 
-    static member create(deps: Request.Dependencies) =
+    static member create ct =
+        fun (deps: Culture.Dependencies) ->
 
-        let getAvailable () =
-            [
-                English, "English"
-                Russian, "Русский"
-                Chinese, "中文"
-                Spanish, "Español"
-                Hindi, "हिन्दी"
-                Arabic, "العربية"
-                Serbian, "Српски"
-                Portuguese, "Português"
-                French, "Français"
-                German, "Deutsch"
-                Japanese, "日本語"
-                Korean, "한국어"
-            ]
-            |> Map
+            let getAvailable () =
+                [
+                    English, "English"
+                    Russian, "Русский"
+                    Chinese, "中文"
+                    Spanish, "Español"
+                    Hindi, "हिन्दी"
+                    Arabic, "العربية"
+                    Serbian, "Српски"
+                    Portuguese, "Português"
+                    French, "Français"
+                    German, "Deutsch"
+                    Japanese, "日本語"
+                    Korean, "한국어"
+                ]
+                |> Map
 
-        let shield = Shield.create ''' '''
+            let shield = Shield.create ''' '''
 
-        let translateError culture error =
-            (deps.translate, shield)
-            |> Payload.Error.translate culture error
-            |> Async.map (function
-                | Ok error -> error
-                | Error error -> error)
+            let translate request =
+                deps |> AIProvider.Services.Culture.translate request ct
 
-        let translate culture message =
-            match message with
-            | Text payload -> (deps.translate, shield) |> Payload.Text.translate culture payload
-            | ButtonsGroup payload -> (deps.translate, shield) |> Payload.ButtonsGroup.translate culture payload
+            let translateError culture error =
+                (translate, shield)
+                |> Payload.Error.translate culture error
+                |> Async.map (function
+                    | Ok error -> error
+                    | Error error -> error)
 
-        let translateSeq culture messages =
-            messages
-            |> Seq.map (translate culture)
-            |> Async.Sequential
-            |> Async.map Result.choose
+            let translate culture message =
+                match message with
+                | Text payload -> (translate, shield) |> Payload.Text.translate culture payload
+                | ButtonsGroup payload -> (translate, shield) |> Payload.ButtonsGroup.translate culture payload
 
-        let translateRes culture msgRes =
-            msgRes
-            |> ResultAsync.bindAsync (translate culture)
-            |> ResultAsync.mapErrorAsync (translateError culture)
+            let translateSeq culture messages =
+                messages
+                |> Seq.map (translate culture)
+                |> Async.Sequential
+                |> Async.map Result.choose
 
-        let translateSeqRes culture msgSeqRes =
-            msgSeqRes
-            |> ResultAsync.bindAsync (translateSeq culture)
-            |> ResultAsync.mapErrorAsync (translateError culture)
+            let translateRes culture msgRes =
+                msgRes
+                |> ResultAsync.bindAsync (translate culture)
+                |> ResultAsync.mapErrorAsync (translateError culture)
 
-        {
-            ChatId = deps.ChatId
-            MessageId = deps.MessageId
-            getAvailable = getAvailable
-            setCurrent = deps.setCulture
-            translate = translate
-            translateSeq = translateSeq
-            translateRes = translateRes
-            translateSeqRes = translateSeqRes
-        }
+            let translateSeqRes culture msgSeqRes =
+                msgSeqRes
+                |> ResultAsync.bindAsync (translateSeq culture)
+                |> ResultAsync.mapErrorAsync (translateError culture)
+
+            {
+                getAvailable = getAvailable
+                translate = translate
+                translateSeq = translateSeq
+                translateRes = translateRes
+                translateSeqRes = translateSeqRes
+            }

@@ -20,16 +20,18 @@ type Dependencies = {
         let result = ResultBuilder()
 
         result {
-            let culture = Culture.Dependencies.create deps
 
             let getServiceNode (serviceId: ServiceId) =
                 deps.getServiceGraph () |> ResultAsync.map (Graph.BFS.tryFind serviceId.Value)
+                
+            let sendMessageRes data =
+                data |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes
 
             return {
                 Chat = chat
                 MessageId = deps.MessageId
                 Request = deps
                 getServiceNode = getServiceNode
-                sendMessageRes = deps.sendMessageRes
+                sendMessageRes = sendMessageRes
             }
         }

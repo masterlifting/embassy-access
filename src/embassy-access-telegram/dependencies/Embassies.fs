@@ -22,13 +22,11 @@ type Dependencies = {
         let result = ResultBuilder()
 
         result {
-            let culture = Culture.Dependencies.create deps
-
             let getEmbassyNode (embassyId: EmbassyId) =
                 deps.getEmbassyGraph () |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
 
             let sendMessageRes data =
-                data |> culture.translateRes chat.Culture |> deps.sendMessageRes
+                data |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes
 
             return {
                 Chat = chat

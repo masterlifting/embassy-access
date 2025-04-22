@@ -22,8 +22,9 @@ type Dependencies = {
     getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
     sendMessage: Message -> Async<Result<unit, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
+    translateMessageRes: Culture -> Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
+    getAvailableCultures: unit -> Map<Culture, string>
     setCulture: Culture -> Async<Result<unit, Error'>>
-    translate: Culture.Request -> Async<Result<Response, Error'>>
 } with
 
     static member create(payload: Consumer.Payload<_>) =
@@ -48,9 +49,6 @@ type Dependencies = {
                     deps.Persistence.initChatStorage ()
                     |> ResultAsync.wrap (Storage.Chat.Command.setCulture payload.ChatId culture)
 
-                let translate request =
-                    deps.Culture |> AIProvider.Services.Culture.translate request deps.ct
-
                 return {
                     ct = deps.ct
                     ChatId = payload.ChatId
@@ -60,7 +58,8 @@ type Dependencies = {
                     getServiceGraph = getServiceGraph
                     sendMessage = deps.Web.Telegram.sendMessage
                     sendMessageRes = sendMessageRes
+                    translateMessageRes = deps.Culture.translateRes
+                    getAvailableCultures = deps.Culture.getAvailable
                     setCulture = setCulture
-                    translate = translate
                 }
             }

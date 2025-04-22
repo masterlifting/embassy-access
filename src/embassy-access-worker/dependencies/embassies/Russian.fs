@@ -1,24 +1,24 @@
 ﻿module internal EA.Worker.Dependencies.Embassies.Russian
 
-open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Telegram.Services.Embassies
+open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 open EA.Worker.Dependencies
 open EA.Russian.Services
+open EA.Telegram.Dependencies.Services.Russian
 
 module Kdmid =
     open EA.Russian.Services.Domain.Kdmid
 
     type Dependencies = {
         TaskName: string
-        getRequests: Graph.NodeId -> Async<Result<Request list, Error'>>
-        tryProcessFirst: Request list -> Async<Result<Request, Error' list>>
+        tryProcessFirst: Request<Payload> seq -> Async<Result<Request<Payload>, Error'>>
+        getRequests: ServiceId -> Async<Result<Request<Payload> list, Error'>>
     } with
 
         static member create (task: ActiveTask) cfg ct =
@@ -27,52 +27,49 @@ module Kdmid =
             result {
                 let! persistence = Persistence.Dependencies.create cfg
                 let! telegram = Telegram.Dependencies.create cfg ct
+                
+                let! chatStorage = persistence.initChatStorage()
+                let! requestStorage = persistence.RussianStorage.initKdmidRequestStorage()
+                
+                let getRequestChats request =
+                    requestStorage
+                    |> Storage.Request.Query.findManyByServiceId request.Service.Id
+                    |> ResultAsync.map (Seq.map _.Id)
+                    |> ResultAsync.bindAsync (fun subscriptionIds ->
+                        chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptionIds)
 
-                let notificationDeps: Notification.Dependencies = {
-                    printPayload = Credentials.create >> Result.map Credentials.print
-                    translateMessages = telegram.Culture.translateSeq
-                    setRequestAppointments = telegram.Persistence.setRequestAppointments
-                    getRequestChats = telegram.Persistence.getRequestChats
+                let setRequestAppointments serviceId appointments =
+                        requestStorage
+                        |> Storage.Request.Query.findManyByServiceId serviceId
+                        |> ResultAsync.map (fun requests ->
+                            requests
+                            |> Seq.map (fun request -> {
+                                request with
+                                    Request.Payload.Appointments = appointments
+                            }))
+                        |> ResultAsync.bindAsync (fun requests -> requestStorage |> Storage.Request.Command.updateSeq requests)
+                        
+                let notificationDeps: Kdmid.Notification.Dependencies = {
+                    getRequestChats = getRequestChats
+                    setRequestAppointments = setRequestAppointments
                     sendMessages = telegram.Web.Telegram.sendMessages
+                    translateMessages = telegram.Culture.translateSeq
                 }
 
-                let notify notification =
-                    notificationDeps
-                    |> Notification.spread notification
+                let notify (requestRes: Result<Request<Payload>, Error'>) =
+                    requestRes
+                    |> ResultAsync.wrap (fun r -> notificationDeps |> Kdmid.Notification.spread r)
                     |> ResultAsync.mapError (_.Message >> Log.crt)
                     |> Async.Ignore
 
-                let inline equalCountry (embassyId: Graph.NodeId) =
-                    let embassyCountry =
-                        embassyId
-                        |> Graph.NodeId.split
-                        |> Seq.skip 1
-                        |> Seq.truncate 2
-                        |> Graph.NodeId.combine
-                    let taskCountry =
-                        task.Id
-                        |> Graph.NodeId.split
-                        |> Seq.skip 1
-                        |> Seq.truncate 2
-                        |> Graph.NodeId.combine
-                    embassyCountry = taskCountry
-
-                let getRequests partServiceId =
-                    persistence.RussianRequestsStorage
-                    |> Request.Query.findManyByPartServiceId partServiceId
-                    |> ResultAsync.map (
-                        List.filter (fun request ->
-                            equalCountry request.Service.Embassy.Id
-                            && request.UseBackground
-                            && (request.ProcessState <> InProcess
-                                || request.ProcessState = InProcess
-                                   && request.Modified < DateTime.UtcNow.Subtract task.Duration))
-                    )
+                let getRequests serviceId =
+                    requestStorage
+                    |> Common.getRequests serviceId task
 
                 let tryProcessFirst requests =
                     {
                         CancellationToken = ct
-                        RequestStorage = persistence.RussianRequestsStorage
+                        RequestStorage = requestStorage
                     }
                     |> Kdmid.Client.init
                     |> Result.map (fun client -> client, notify)
