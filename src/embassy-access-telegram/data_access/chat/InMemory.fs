@@ -17,7 +17,7 @@ module Query =
         client
         |> loadData
         |> Result.map (Seq.collect _.Subscriptions)
-        |> Result.map (Seq.map RequestId.parse)
+        |> Result.map (Seq.map _.ToDomain())
         |> Result.bind Result.choose
         |> async.Return
 
@@ -33,7 +33,7 @@ module Query =
     let findManyBySubscription (subscriptionId: RequestId) client =
         client
         |> loadData
-        |> Result.map (Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y = subscriptionId.ValueStr)))
+        |> Result.map (Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun y -> y.Id = subscriptionId.ValueStr)))
         |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
         |> async.Return
 
@@ -42,7 +42,7 @@ module Query =
 
         client
         |> loadData
-        |> Result.map (Seq.filter (fun x -> x.Subscriptions |> Seq.exists subscriptionIds.Contains))
+        |> Result.map (Seq.filter (fun x -> x.Subscriptions |> Seq.exists(fun s -> subscriptionIds.Contains s.Id)))
         |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
         |> async.Return
 
@@ -63,15 +63,23 @@ module Command =
         |> Result.map (fun _ -> chat)
         |> async.Return
 
-    let createChatSubscription (chatId: ChatId) (subscription: RequestId) client =
+    let createChatSubscription (chatId: ChatId) (subscription: Subscription) client =
         client
         |> loadData
         |> Result.bind (fun data ->
             match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
             | None -> $"The '{chatId}' not found." |> NotFound |> Error
             | Some index ->
+                
                 data[index].Subscriptions <-
-                    data[index].Subscriptions |> Set |> Set.add subscription.ValueStr |> Seq.toList
+                    data[index].Subscriptions
+                    |> List.append [
+                        Subscriptions.Entity(
+                            Id = subscription.Id.ValueStr,
+                            EmbassyId = subscription.EmbassyId.ValueStr,
+                            ServiceId = subscription.ServiceId.ValueStr
+                        )
+                    ]
 
                 data |> Ok)
         |> Result.bind (fun data -> client |> Command.Json.save data)
@@ -86,7 +94,7 @@ module Command =
             | Some index ->
                 data[index].Subscriptions <-
                     data[index].Subscriptions
-                    |> List.filter (fun subValue -> subValue <> subscription.ValueStr)
+                    |> List.filter (fun s -> s.Id <> subscription.ValueStr)
 
                 data |> Ok)
         |> Result.bind (fun data -> client |> Command.Json.save data)
@@ -101,8 +109,8 @@ module Command =
             | Some index ->
                 data[index].Subscriptions <-
                     data[index].Subscriptions
-                    |> List.filter (fun subValue ->
-                        not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = subValue)))
+                    |> List.filter (fun s ->
+                        not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = s.Id)))
 
                 data |> Ok)
         |> Result.bind (fun data -> client |> Command.Json.save data)
@@ -116,8 +124,8 @@ module Command =
             |> Seq.iter (fun chat ->
                 chat.Subscriptions <-
                     chat.Subscriptions
-                    |> List.filter (fun subValue ->
-                        not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = subValue))))
+                    |> List.filter (fun s ->
+                        not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = s.Id))))
 
             data |> Ok)
         |> Result.bind (fun data -> client |> Command.Json.save data)

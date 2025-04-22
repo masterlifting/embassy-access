@@ -1,11 +1,12 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Services
+module EA.Telegram.Dependencies.Services.Services
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Telegram.Domain
+open EA.Telegram.Dependencies
 
 type Dependencies = {
     Chat: Chat
@@ -24,14 +25,11 @@ type Dependencies = {
             let getServiceNode (serviceId: ServiceId) =
                 deps.getServiceGraph () |> ResultAsync.map (Graph.BFS.tryFind serviceId.Value)
 
-            let sendMessageRes data =
-                data |> culture.translateRes chat.Culture |> deps.sendMessageRes
-
             return {
                 Chat = chat
                 MessageId = deps.MessageId
                 Request = deps
                 getServiceNode = getServiceNode
-                sendMessageRes = sendMessageRes
+                sendMessageRes = deps.sendMessageRes
             }
         }

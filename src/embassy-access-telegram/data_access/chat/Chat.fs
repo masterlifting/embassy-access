@@ -6,22 +6,19 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence
 open Web.Clients.Domain.Telegram
-open EA.Core.Domain
 open EA.Telegram.Domain
+open EA.Telegram.DataAccess
 
 type Storage = Provider of Storage.Provider
 
-type Entity() =
+type internal Entity() =
     member val Id = 0L with get, set
-    member val Subscriptions = List.empty<string> with get, set
+    member val Subscriptions = List.empty<Subscriptions.Entity> with get, set
     member val Culture = String.Empty with get, set
 
     member this.ToDomain() =
         this.Subscriptions
-        |> Seq.map (fun x ->
-            match x with
-            | AP.IsUUID16 id -> Ok <| RequestId id
-            | _ -> $"The subscription '{x}' is not supported." |> NotSupported |> Error)
+        |> Seq.map _.ToDomain()
         |> Result.choose
         |> Result.map Set.ofList
         |> Result.map (fun subscriptions -> {
@@ -30,19 +27,19 @@ type Entity() =
             Culture = this.Culture |> Culture.parse
         })
 
+type internal Subscription with
+    member internal this.ToEntity() =
+        Subscriptions.Entity(
+            Id = this.Id.ValueStr,
+            EmbassyId = this.EmbassyId.ValueStr,
+            ServiceId = this.ServiceId.ValueStr
+        )
+
 type private Chat with
     member private this.ToEntity() =
-        let result = Entity()
+        let result = Entity(Id = this.Id.Value, Culture = this.Culture.Code)
 
-        result.Id <- this.Id.Value
-
-        result.Subscriptions <-
-            this.Subscriptions
-            |> Seq.map (function
-                | RequestId id -> string id)
-            |> Seq.toList
-
-        result.Culture <- this.Culture.Code
+        result.Subscriptions <- this.Subscriptions |> Seq.map _.ToEntity() |> Seq.toList
 
         result
 

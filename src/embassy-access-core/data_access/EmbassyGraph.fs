@@ -21,7 +21,7 @@ type EmbassyGraphEntity() =
 
     member this.ToDomain() =
         this.Id
-        |> Graph.NodeId.create
+        |> Graph.NodeId.parse
         |> Result.bind (fun nodeId ->
             match this.Children with
             | null -> List.empty |> Ok

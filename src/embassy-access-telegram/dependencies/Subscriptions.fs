@@ -1,2 +1,3 @@
-﻿module embassy-access-telegram.dependencies.Subscriptions
+﻿[<RequireQualifiedAccess>]
+module EA.Telegram.Dependencies.Subscriptions
 

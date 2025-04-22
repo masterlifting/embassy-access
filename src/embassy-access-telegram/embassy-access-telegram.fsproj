@@ -7,7 +7,9 @@
 
     <ItemGroup>
         <Compile Include="domain\Constants.fs" />
+        <Compile Include="domain\Subscription.fs" />
         <Compile Include="domain\Chat.fs" />
+        <Compile Include="data_access\Subscriptions.fs" />
         <Compile Include="data_access\chat\Chat.fs" />
         <Compile Include="data_access\chat\FileSystem.fs" />
         <Compile Include="data_access\chat\InMemory.fs" />
@@ -17,7 +19,6 @@
         <Compile Include="router\culture\Method.fs" />
         <Compile Include="router\embassies\Get.fs" />
         <Compile Include="router\embassies\Method.fs" />
-        <Compile Include="router\services\Get.fs" />
         <Compile Include="router\services\russian\kdmid\Get.fs" />
         <Compile Include="router\services\russian\kdmid\Post.fs" />
         <Compile Include="router\services\russian\kdmid\Method.fs" />
@@ -29,6 +30,7 @@
         <Compile Include="router\services\italian\prenotami\Post.fs" />
         <Compile Include="router\services\italian\prenotami\Method.fs" />
         <Compile Include="router\services\italian\Method.fs" />
+        <Compile Include="router\services\Get.fs" />
         <Compile Include="router\services\Method.fs" />
         <Compile Include="router\subscriptions\Get.fs" />
         <Compile Include="router\subscriptions\Delete.fs" />
@@ -52,21 +54,19 @@
         <Compile Include="services\subscriptions\Query.fs" />
         <Compile Include="services\subscriptions\Command.fs" />
         <Compile Include="services\services\russian\kdmid\Query.fs" />
+        <Compile Include="services\services\russian\kdmid\Command.fs" />
         <Compile Include="services\services\russian\midpass\Query.fs" />
+        <Compile Include="services\services\russian\midpass\Command.fs" />
         <Compile Include="services\services\russian\Query.fs" />
         <Compile Include="services\services\italian\prenotami\Query.fs" />
+        <Compile Include="services\services\italian\prenotami\Command.fs" />
         <Compile Include="services\services\italian\Query.fs" />
         <Compile Include="services\services\Query.fs" />
-        <Compile Include="services\services\Command.fs" />
         <Compile Include="services\embassies\Query.fs" />
-        <Compile Include="services\embassies\Command.fs" />
         <Compile Include="controllers\Culture.fs" />
         <Compile Include="controllers\Embassies.fs" />
-        <Compile Include="controllers\services\russian\Kdmid.fs" />
-        <Compile Include="controllers\services\russian\Midpass.fs" />
-        <Compile Include="controllers\services\russian\Russian.fs" />
-        <Compile Include="controllers\services\italian\Prenotami.fs" />
-        <Compile Include="controllers\services\italian\Italian.fs" />
+        <Folder Include="controllers\services\russian\" />
+        <Folder Include="controllers\services\italian\" />
         <Compile Include="controllers\services\Services.fs" />
         <Compile Include="controllers\Subscriptions.fs" />
         <Compile Include="controllers\Controller.fs" />

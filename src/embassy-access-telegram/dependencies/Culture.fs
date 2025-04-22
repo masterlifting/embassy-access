@@ -122,17 +122,10 @@ type Dependencies = {
             ]
             |> Map
 
-        let setCurrent culture =
-            deps.Client.Persistence.initChatStorage ()
-            |> ResultAsync.wrap (Storage.Chat.Command.setCulture deps.ChatId culture)
-
         let shield = Shield.create ''' '''
 
-        let translate request =
-            deps.Client.Culture |> Culture.translate request deps.ct
-
         let translateError culture error =
-            (translate, shield)
+            (deps.translate, shield)
             |> Payload.Error.translate culture error
             |> Async.map (function
                 | Ok error -> error
@@ -140,8 +133,8 @@ type Dependencies = {
 
         let translate culture message =
             match message with
-            | Text payload -> (translate, shield) |> Payload.Text.translate culture payload
-            | ButtonsGroup payload -> (translate, shield) |> Payload.ButtonsGroup.translate culture payload
+            | Text payload -> (deps.translate, shield) |> Payload.Text.translate culture payload
+            | ButtonsGroup payload -> (deps.translate, shield) |> Payload.ButtonsGroup.translate culture payload
 
         let translateSeq culture messages =
             messages
@@ -163,7 +156,7 @@ type Dependencies = {
             ChatId = deps.ChatId
             MessageId = deps.MessageId
             getAvailable = getAvailable
-            setCurrent = setCurrent
+            setCurrent = deps.setCulture
             translate = translate
             translateSeq = translateSeq
             translateRes = translateRes

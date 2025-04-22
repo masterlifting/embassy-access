@@ -38,8 +38,8 @@ type internal Entity() =
 
         result {
 
-            let! serviceId = this.ServiceId |> Graph.NodeId.create
-            let! embassyId = this.EmbassyId |> Graph.NodeId.create
+            let! serviceId = this.ServiceId |> Graph.NodeId.parse
+            let! embassyId = this.EmbassyId |> Graph.NodeId.parse
             let! requestId = RequestId.parse this.Id
             let! processState = this.ProcessState.ToDomain()
             let! limitations = this.Limits |> Seq.map _.ToDomain() |> Result.choose
