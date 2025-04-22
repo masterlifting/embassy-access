@@ -55,6 +55,7 @@
         <Compile Include="services\subscriptions\Command.fs" />
         <Compile Include="services\services\russian\kdmid\Query.fs" />
         <Compile Include="services\services\russian\kdmid\Command.fs" />
+        <Compile Include="services\services\russian\kdmid\Notification.fs" />
         <Compile Include="services\services\russian\midpass\Query.fs" />
         <Compile Include="services\services\russian\midpass\Command.fs" />
         <Compile Include="services\services\russian\Query.fs" />

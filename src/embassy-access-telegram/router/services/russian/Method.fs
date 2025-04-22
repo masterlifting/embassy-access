@@ -6,8 +6,8 @@ open EA.Telegram.Domain
 open EA.Telegram.Router.Services.Russian
 
 type Route =
-    | Kdmid of Kdmid.Get.Route
-    | Midpass of Midpass.Get.Route
+    | Kdmid of Kdmid.Method.Route
+    | Midpass of Midpass.Method.Route
 
     member this.Value =
         match this with
@@ -20,8 +20,8 @@ type Route =
         let remaining = parts[1..] |> String.concat Router.DELIMITER
 
         match parts[0] with
-        | "0" -> remaining |> Kdmid.Get.Route.parse |> Result.map Kdmid
-        | "1" -> remaining |> Midpass.Get.Route.parse |> Result.map Midpass
+        | "0" -> remaining |> Kdmid.Method.Route.parse |> Result.map Kdmid
+        | "1" -> remaining |> Midpass.Method.Route.parse |> Result.map Midpass
         | _ ->
             $"'{parts}' of 'Services.Russian' endpoint is not supported."
             |> NotSupported

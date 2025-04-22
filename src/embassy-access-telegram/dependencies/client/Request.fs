@@ -48,6 +48,16 @@ type Dependencies = {
                 let setCulture culture =
                     deps.Persistence.initChatStorage ()
                     |> ResultAsync.wrap (Storage.Chat.Command.setCulture payload.ChatId culture)
+                    
+                let spreadMessages data =
+                    data
+                    |> ResultAsync.map (Seq.groupBy fst)
+                    |> ResultAsync.map (Seq.map (fun (culture, group) -> culture, group |> Seq.map snd |> List.ofSeq))
+                    |> ResultAsync.map (Seq.map (fun (culture, group) -> deps.Culture.translateSeq culture group))
+                    |> ResultAsync.bindAsync (Async.Parallel >> Async.map Result.choose)
+                    |> ResultAsync.map (Seq.collect id)
+                    |> ResultAsync.bindAsync deps.Web.Telegram.sendMessages
+
 
                 return {
                     ct = deps.ct

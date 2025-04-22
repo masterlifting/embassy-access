@@ -24,8 +24,9 @@ type Dependencies = {
             let getServiceNode (serviceId: ServiceId) =
                 deps.getServiceGraph () |> ResultAsync.map (Graph.BFS.tryFind serviceId.Value)
                 
-            let sendMessageRes data =
-                data |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes
+            let sendMessageRes msg =
+                msg |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes
+            
 
             return {
                 Chat = chat

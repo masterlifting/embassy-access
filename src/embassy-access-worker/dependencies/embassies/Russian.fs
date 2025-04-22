@@ -51,7 +51,7 @@ module Kdmid =
                         
                 let notificationDeps: Kdmid.Notification.Dependencies = {
                     getRequestChats = getRequestChats
-                    setRequestAppointments = setRequestAppointments
+                    setAppointments = setRequestAppointments
                     sendMessages = telegram.Web.Telegram.sendMessages
                     translateMessages = telegram.Culture.translateSeq
                 }

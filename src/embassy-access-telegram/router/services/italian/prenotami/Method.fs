@@ -5,7 +5,7 @@ open Infrastructure.Domain
 open EA.Telegram.Domain
 open EA.Telegram.Router.Services.Italian.Prenotami
 
-type Method =
+type Route =
     | Get of Get.Route
     | Post of Post.Route
 

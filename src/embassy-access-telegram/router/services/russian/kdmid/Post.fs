@@ -7,7 +7,7 @@ open EA.Core.Domain
 
 module Models =
 
-    type Subscribe = {
+    type CreateSubscription = {
         Url: string
         ServiceId: ServiceId
         EmbassyId: EmbassyId
@@ -124,14 +124,14 @@ module Models =
 open Models
 
 type Route =
-    | Subscribe of Subscribe
+    | CreateSubscription of CreateSubscription
     | CheckAppointments of CheckAppointments
     | SendAppointments of SendAppointments
     | ConfirmAppointment of ConfirmAppointment
 
     member this.Value =
         match this with
-        | Subscribe model ->
+        | CreateSubscription model ->
             match model.Confirmation with
             | Confirmation.Disabled -> "0" :: model.Serialize()
             | Confirmation.ForAppointment appointmentId -> [ "1"; appointmentId.ValueStr ] @ model.Serialize()
@@ -151,31 +151,31 @@ type Route =
         match parts with
         | [| "0"; serviceId; embassyId; isBackground; payload |] ->
             Confirmation.Disabled
-            |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
-            |> Result.map Route.Subscribe
+            |> CreateSubscription.deserialize [ serviceId; embassyId; isBackground; payload ]
+            |> Result.map Route.CreateSubscription
         | [| "1"; appointmentId; serviceId; embassyId; isBackground; payload |] ->
             appointmentId
             |> AppointmentId.parse
             |> Result.bind (fun appointmentId ->
                 appointmentId
                 |> Confirmation.ForAppointment
-                |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ])
-            |> Result.map Route.Subscribe
+                |> CreateSubscription.deserialize [ serviceId; embassyId; isBackground; payload ])
+            |> Result.map Route.CreateSubscription
         | [| "2"; serviceId; embassyId; payload; isBackground |] ->
             Confirmation.FirstAvailable
-            |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
-            |> Result.map Route.Subscribe
+            |> CreateSubscription.deserialize [ serviceId; embassyId; isBackground; payload ]
+            |> Result.map Route.CreateSubscription
         | [| "3"; serviceId; embassyId; payload; isBackground |] ->
             Confirmation.LastAvailable
-            |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
-            |> Result.map Route.Subscribe
+            |> CreateSubscription.deserialize [ serviceId; embassyId; isBackground; payload ]
+            |> Result.map Route.CreateSubscription
         | [| "4"; start; finish; serviceId; embassyId; isBackground; payload |] ->
             match start, finish with
             | AP.IsDateTime start, AP.IsDateTime finish ->
                 (start, finish)
                 |> Confirmation.DateTimeRange
-                |> Subscribe.deserialize [ serviceId; embassyId; isBackground; payload ]
-                |> Result.map Route.Subscribe
+                |> CreateSubscription.deserialize [ serviceId; embassyId; isBackground; payload ]
+                |> Result.map Route.CreateSubscription
             | _ ->
                 $"Start: '{start}' or Finish: '{finish}' of 'Services.Russian.Kdmid.Post.KdmidSubscribe' endpoint is not supported."
                 |> NotSupported
