@@ -4,11 +4,10 @@ open System
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Infrastructure.SerDe
-open EA.Core.Domain
-open EA.Core.DataAccess
 open Web.Clients
 open Web.Clients.Domain
+open EA.Core.Domain
+open EA.Core.DataAccess
 
 module Constants =
     module ErrorCode =
@@ -41,7 +40,7 @@ type Credentials = {
     Ems: string option
 } with
 
-    static member create(payload: string) =
+    static member parse(payload: string) =
         result {
             let! uri = payload |> Web.Clients.Http.Route.toUri
 
@@ -94,10 +93,15 @@ type Credentials = {
             |> Option.defaultValue ""
         $"'ID:%i{payload.Id}; CD:%s{payload.Cd}{ems} (%s{payload.Subdomain})'"
 
+type PayloadState =
+    | NoAppointments
+    | HasAppointments of Set<Appointment>
+    | HasConfirmation of string * Appointment
+
 type Payload = {
     Credentials: Credentials
     Confirmation: Confirmation
-    Appointments: Set<Appointment>
+    State: PayloadState
 } with
 
     static member print(payload: Payload) =
@@ -106,13 +110,16 @@ type Payload = {
         |> fun v ->
             v
             + Environment.NewLine
-            + match payload.Appointments.IsEmpty with
-              | true -> "No appointments found."
-              | false ->
-                  payload.Appointments
+            + match payload.State with
+              | NoAppointments -> "No appointments found."
+              | HasAppointments appointments ->
+                  appointments
                   |> Seq.map (fun appointment -> appointment |> Appointment.print)
                   |> String.concat Environment.NewLine
-
+              | HasConfirmation(message, appointment) ->
+                  let appointmentStr = appointment |> Appointment.print
+                  $"%s{message} %s{appointmentStr}"
+    
     static member printError (error: Error') (payload: Payload) =
         match error with
         | Operation reason ->
@@ -128,10 +135,6 @@ type Payload = {
             payload.Credentials
             |> Credentials.print
             |> fun v -> v + Environment.NewLine + message)
-
-    static member serialize(payload: Payload) = payload |> Json.serialize
-
-    static member deserialize(payload: string) = payload |> Json.deserialize<Payload>
 
 type Client = {
     initHttpClient: string -> Result<Http.Client, Error'>

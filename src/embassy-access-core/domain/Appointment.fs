@@ -26,13 +26,10 @@ type Appointment = {
     Value: string
     Date: DateOnly
     Time: TimeOnly
-    Confirmation: string option
     Description: string
 } with
     static member print (appointment: Appointment) =
         let date = appointment.Date.ToString("yyyy-MM-dd")
         let time = appointment.Time.ToString("HH:mm")
-        match appointment.Confirmation with
-        | Some confirmation -> $"Confirmed appointment: '%s{confirmation}'"
-        | None -> $"Available appointment '%s{appointment.Value}' on '%s{date} %s{time}'"
+        $"Available appointment '%s{appointment.Value}' on '%s{date} %s{time}'"
         

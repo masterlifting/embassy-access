@@ -39,6 +39,7 @@ let private cleanData subscriptions =
         }
 
 module Russian =
+    open EA.Russian.Services.DataAccess.Kdmid
 
     type Dependencies = {
         initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload>, Error'>

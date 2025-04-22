@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Compile Include="services\kdmid\Domain.fs" />
+        <Compile Include="services\kdmid\DataAccess.fs" />
         <Compile Include="services\kdmid\Client.fs" />
         <Compile Include="services\kdmid\Web.Http.fs" />
         <Compile Include="services\kdmid\Web.Html.Common.fs" />
