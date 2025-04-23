@@ -60,7 +60,7 @@ type Dependencies = {
 
 
                 return {
-                    ct = deps.ct
+                    ct = deps.CT
                     ChatId = payload.ChatId
                     MessageId = payload.MessageId
                     tryGetChat = tryGetChat

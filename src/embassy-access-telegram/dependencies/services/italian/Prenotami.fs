@@ -26,7 +26,6 @@ module Notification =
 
     type Dependencies = {
         getRequestChats: Request<Payload> -> Async<Result<Chat list, Error'>>
-        setRequestAppointments: ServiceId -> Appointment Set -> Async<Result<Request<Payload> list, Error'>>
         translateMessages: Culture -> Message seq -> Async<Result<Message list, Error'>>
         sendMessages: Message seq -> Async<Result<unit, Error'>>
     }

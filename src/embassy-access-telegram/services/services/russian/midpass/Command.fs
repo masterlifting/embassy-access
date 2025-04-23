@@ -1,1 +1,1 @@
-﻿module EA.Telegram.Services.Services.Russian.Kdmid.Command
+﻿module EA.Telegram.Services.Services.Russian.Midpass.Command

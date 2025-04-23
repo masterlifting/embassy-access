@@ -27,11 +27,8 @@ let private cleanData subscriptions =
                 |> Storage.Request.Query.getIdentifiers
                 |> ResultAsync.map Set.ofSeq
 
-            let subscriptionIds =
-                subscriptions
-                |> Seq.map _.Id
-                |> Set.ofSeq
-                
+            let subscriptionIds = subscriptions |> Seq.map _.Id |> Set.ofSeq
+
             let requestIdsToRemove = subscriptionIds |> Set.difference <| requestIdentifiers
 
             do! chatStorage |> Storage.Chat.Command.deleteSubscriptions requestIdsToRemove
@@ -55,7 +52,7 @@ module Russian =
                 }
                 |> Storage.Request.FileSystem
                 |> Storage.Request.init (Kdmid.Payload.serialize, Kdmid.Payload.deserialize)
-            
+
             let initMidpassRequestStorage () =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
@@ -71,7 +68,7 @@ module Russian =
 
                 let cleanData subscriptions chatStorage =
                     resultAsync {
-                        do!  (chatStorage, kdmidRequestStorage) |> cleanData subscriptions
+                        do! (chatStorage, kdmidRequestStorage) |> cleanData subscriptions
                         return (chatStorage, midpassRequestStorage) |> cleanData subscriptions
                     }
 
@@ -83,6 +80,7 @@ module Russian =
             }
 
 module Italian =
+    open EA.Italian.Services.DataAccess.Prenotami
 
     type Dependencies = {
         initPrenotamiRequestStorage: unit -> Result<Request.Storage<Prenotami.Payload>, Error'>

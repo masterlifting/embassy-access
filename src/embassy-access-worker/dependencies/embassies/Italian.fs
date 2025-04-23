@@ -6,10 +6,10 @@ open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies
-open EA.Worker.Dependencies
 open EA.Italian.Services
+open EA.Worker.Dependencies
+open EA.Telegram.DataAccess
+open EA.Telegram.Services.Services.Italian
 open EA.Telegram.Dependencies.Services.Italian
 
 module Prenotami =
@@ -27,10 +27,10 @@ module Prenotami =
             result {
                 let! persistence = Persistence.Dependencies.create cfg
                 let! telegram = Telegram.Dependencies.create cfg ct
-                
-                let! chatStorage = persistence.initChatStorage()
-                let! requestStorage = persistence.ItalianStorage.initPrenotamiRequestStorage()
-                
+
+                let! chatStorage = persistence.initChatStorage ()
+                let! requestStorage = persistence.ItalianStorage.initPrenotamiRequestStorage ()
+
                 let getRequestChats request =
                     requestStorage
                     |> Storage.Request.Query.findManyByServiceId request.Service.Id
@@ -38,20 +38,8 @@ module Prenotami =
                     |> ResultAsync.bindAsync (fun subscriptionIds ->
                         chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptionIds)
 
-                let setRequestAppointments serviceId appointments =
-                        requestStorage
-                        |> Storage.Request.Query.findManyByServiceId serviceId
-                        |> ResultAsync.map (fun requests ->
-                            requests
-                            |> Seq.map (fun request -> {
-                                request with
-                                    Request.Payload.Appointments = appointments
-                            }))
-                        |> ResultAsync.bindAsync (fun requests -> requestStorage |> Storage.Request.Command.updateSeq requests)
-                        
                 let notificationDeps: Prenotami.Notification.Dependencies = {
                     getRequestChats = getRequestChats
-                    setRequestAppointments = setRequestAppointments
                     sendMessages = telegram.Web.Telegram.sendMessages
                     translateMessages = telegram.Culture.translateSeq
                 }
@@ -63,8 +51,7 @@ module Prenotami =
                     |> Async.Ignore
 
                 let getRequests serviceId =
-                    requestStorage
-                    |> Common.getRequests serviceId task
+                    requestStorage |> Common.getRequests serviceId task
 
                 let tryProcessFirst requests =
                     {

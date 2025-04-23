@@ -33,11 +33,12 @@ module Constants =
         let INITIAL_PAGE_ERROR = "InitialPageError"
 
 let private result = ResultBuilder()
+
 type Credentials = {
-    Subdomain: string
     Id: int
     Cd: string
     Ems: string option
+    Subdomain: string
 } with
 
     static member parse(payload: string) =
@@ -97,6 +98,17 @@ type PayloadState =
     | NoAppointments
     | HasAppointments of Set<Appointment>
     | HasConfirmation of string * Appointment
+    
+    static member print(payloadState: PayloadState) =
+        match payloadState with
+        | NoAppointments -> "No appointments found."
+        | HasAppointments appointments ->
+            appointments
+            |> Seq.map Appointment.print
+            |> String.concat Environment.NewLine
+        | HasConfirmation(message, appointment) ->
+            let appointmentStr = appointment |> Appointment.print
+            $"%s{message} %s{appointmentStr}"
 
 type Payload = {
     Credentials: Credentials
@@ -107,18 +119,10 @@ type Payload = {
     static member print(payload: Payload) =
         payload.Credentials
         |> Credentials.print
-        |> fun v ->
-            v
+        |> fun credentials ->
+            credentials
             + Environment.NewLine
-            + match payload.State with
-              | NoAppointments -> "No appointments found."
-              | HasAppointments appointments ->
-                  appointments
-                  |> Seq.map (fun appointment -> appointment |> Appointment.print)
-                  |> String.concat Environment.NewLine
-              | HasConfirmation(message, appointment) ->
-                  let appointmentStr = appointment |> Appointment.print
-                  $"%s{message} %s{appointmentStr}"
+            + PayloadState.print payload.State
     
     static member printError (error: Error') (payload: Payload) =
         match error with
@@ -131,10 +135,10 @@ type Payload = {
             | Some(Custom Constants.ErrorCode.REQUEST_DELETED) -> error.Message |> Some
             | _ -> None
         | _ -> None
-        |> Option.map (fun message ->
+        |> Option.map (fun error ->
             payload.Credentials
             |> Credentials.print
-            |> fun v -> v + Environment.NewLine + message)
+            |> fun credentials -> credentials + Environment.NewLine + error)
 
 type Client = {
     initHttpClient: string -> Result<Http.Client, Error'>

@@ -15,15 +15,13 @@ let create cfg ct =
         let! aiProvider = aiProvider.initProvider ()
         let! cultureStorage = persistence.initCultureStorage ()
 
-        let culture =
-            EA.Telegram.Dependencies.Culture.Dependencies.create ct {
-                Provider = aiProvider
-                Storage = cultureStorage
-            }
-
         let client: EA.Telegram.Dependencies.Client.Dependencies = {
-            ct = ct
-            Culture = culture
+            CT = ct
+            Culture =
+                EA.Telegram.Dependencies.Culture.Dependencies.create ct {
+                    Provider = aiProvider
+                    Storage = cultureStorage
+                }
             Web = EA.Telegram.Dependencies.Web.Dependencies.create ct web.TelegramClient
             Persistence = {
                 initChatStorage = persistence.initChatStorage

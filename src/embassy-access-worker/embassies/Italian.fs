@@ -10,15 +10,16 @@ open EA.Worker.Dependencies.Embassies.Italian
 let private ServiceId = Embassies.ITA |> Graph.NodeIdValue
 
 module private Prenotami =
+    open EA.Italian.Services.Domain.Prenotami
+
     let private processGroup requests =
         fun (deps: Prenotami.Dependencies) ->
             deps.tryProcessFirst requests
             |> ResultAsync.map (fun request ->
-                match request.Payload.Appointments.IsEmpty with
-                | true -> deps.TaskName + " No appointments found." |> Log.dbg
-                | false ->
-                    deps.TaskName + $" Appointments found: %i{request.Payload.Appointments.Count}"
-                    |> Log.scs)
+                match request.Payload.State with
+                | NoAppointments -> deps.TaskName + " No appointments found." |> Log.dbg
+                | HasAppointments appointments ->
+                    deps.TaskName + $" Appointments found: %i{appointments.Count}" |> Log.scs)
 
     let start =
         fun (deps: Prenotami.Dependencies) ->

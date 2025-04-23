@@ -6,10 +6,10 @@ open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies
-open EA.Worker.Dependencies
 open EA.Russian.Services
+open EA.Worker.Dependencies
+open EA.Telegram.DataAccess
+open EA.Telegram.Services.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
 
 module Kdmid =
@@ -27,10 +27,10 @@ module Kdmid =
             result {
                 let! persistence = Persistence.Dependencies.create cfg
                 let! telegram = Telegram.Dependencies.create cfg ct
-                
-                let! chatStorage = persistence.initChatStorage()
-                let! requestStorage = persistence.RussianStorage.initKdmidRequestStorage()
-                
+
+                let! chatStorage = persistence.initChatStorage ()
+                let! requestStorage = persistence.RussianStorage.initKdmidRequestStorage ()
+
                 let getRequestChats request =
                     requestStorage
                     |> Storage.Request.Query.findManyByServiceId request.Service.Id
@@ -39,16 +39,20 @@ module Kdmid =
                         chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptionIds)
 
                 let setRequestAppointments serviceId appointments =
-                        requestStorage
-                        |> Storage.Request.Query.findManyByServiceId serviceId
-                        |> ResultAsync.map (fun requests ->
-                            requests
-                            |> Seq.map (fun request -> {
-                                request with
-                                    Request.Payload.Appointments = appointments
-                            }))
-                        |> ResultAsync.bindAsync (fun requests -> requestStorage |> Storage.Request.Command.updateSeq requests)
-                        
+                    requestStorage
+                    |> Storage.Request.Query.findManyByServiceId serviceId
+                    |> ResultAsync.map (fun requests ->
+                        requests
+                        |> Seq.map (fun request -> {
+                            request with
+                                Payload = {
+                                    request.Payload with
+                                        State = HasAppointments appointments
+                                }
+                        }))
+                    |> ResultAsync.bindAsync (fun requests ->
+                        requestStorage |> Storage.Request.Command.updateSeq requests)
+
                 let notificationDeps: Kdmid.Notification.Dependencies = {
                     getRequestChats = getRequestChats
                     setAppointments = setRequestAppointments
@@ -63,8 +67,7 @@ module Kdmid =
                     |> Async.Ignore
 
                 let getRequests serviceId =
-                    requestStorage
-                    |> Common.getRequests serviceId task
+                    requestStorage |> Common.getRequests serviceId task
 
                 let tryProcessFirst requests =
                     {

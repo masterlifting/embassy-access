@@ -6,3 +6,4 @@ Logging:
 
 Persistence:
   FileSystem: ..\..\..\data
+  Key: "e3b0c442-98fc-1c14-9afc-4c6f8d2a1e7b"

@@ -10,14 +10,19 @@ open EA.Worker.Dependencies.Embassies.Russian
 let private ServiceId = Embassies.RUS |> Graph.NodeIdValue
 
 module private Kdmid =
+    open EA.Russian.Services.Domain.Kdmid
+    
     let private processGroup requests =
         fun (deps: Kdmid.Dependencies) ->
             deps.tryProcessFirst requests
             |> ResultAsync.map (fun request ->
-                match request.Payload.Appointments.IsEmpty with
-                | true -> deps.TaskName + " No appointments found." |> Log.dbg
-                | false ->
-                    deps.TaskName + $" Appointments found: %i{request.Payload.Appointments.Count}"
+                match request.Payload.State with
+                | NoAppointments -> deps.TaskName + " No appointments found." |> Log.dbg
+                | HasAppointments appointments ->
+                    deps.TaskName + $" Appointments found: %i{appointments.Count}" |> Log.scs
+                | HasConfirmation(msg, appointment) ->
+                    deps.TaskName
+                    + $" Confirmation found: %s{msg}. %s{Appointment.print appointment}"
                     |> Log.scs)
 
     let start =

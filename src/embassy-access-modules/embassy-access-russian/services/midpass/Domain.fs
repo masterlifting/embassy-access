@@ -10,15 +10,19 @@ open EA.Core.DataAccess
 open Web.Clients.Domain
 
 type Payload = {
-    Value: int
+    Number: int
+    State: string option
 } with
 
-    static member create(payload: string) =
+    static member parse(payload: string) =
         match payload with
-        | AP.IsInt id -> { Value = id } |> Ok
+        | AP.IsInt id -> { Number = id; State = None } |> Ok
         | _ -> $"Midpass payload: '%s{payload}' is not supported." |> NotSupported |> Error
 
-    static member print(payload: Payload) = $"'ID:%i{payload.Value}'"
+    static member print(payload: Payload) =
+        match payload.State with
+        | Some state -> $"Number: '%i{payload.Number}', State: '%s{state}'"
+        | None -> $"Number: '%i{payload.Number}'"
 
     static member serialize(payload: Payload) = Json.serialize payload
 

@@ -123,7 +123,6 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
                     Value = value
                     Date = date
                     Time = time
-                    Confirmation = None
                     Description = window
                 }
                 |> Ok
@@ -143,11 +142,17 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
         |> Result.map Set.ofList
         |> Result.map (fun appointments -> formData, appointments)
 
-let private createResult (request: Request<Payload>) (formData, appointments) =
+let private createResult (request: Request<Payload>) (formData, appointments: Set<Appointment>) =
     formData,
     {
         request with
-            Request.Payload.Appointments = appointments
+            Payload = {
+                request.Payload with
+                    State =
+                        match appointments.IsEmpty with
+                        | true -> NoAppointments
+                        | false -> HasAppointments appointments
+            }
     }
 
 let parse queryParams formDataMap request =

@@ -38,4 +38,4 @@ let private consume data =
 let listen (deps: Client.Dependencies) =
     let handler = fun data -> consume data deps
     let consumer = deps.Web.Telegram.initConsumer handler
-    Web.Client.consume consumer deps.ct
+    Web.Client.consume consumer deps.CT

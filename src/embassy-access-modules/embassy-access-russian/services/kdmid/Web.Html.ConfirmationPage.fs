@@ -10,40 +10,44 @@ open EA.Core.Domain
 open EA.Russian.Services.Kdmid.Web
 
 let private handleRequestConfirmation (request: Request<Payload>) =
-    let payload = request.Payload
-    match payload.Confirmation with
-    | Confirmation.Disabled -> Ok <| None
-    | Confirmation.ForAppointment appointmentId ->
-        match payload.Appointments |> Seq.tryFind (fun x -> x.Id = appointmentId) with
-        | Some appointment -> Ok <| Some appointment
-        | None -> Error <| NotFound $"AppointmentId '{appointmentId.ValueStr}' not found."
-    | Confirmation.FirstAvailable ->
-        match payload.Appointments |> Seq.tryHead with
-        | Some appointment -> Ok <| Some appointment
-        | None -> Error <| NotFound "First available appointment not found."
-    | Confirmation.LastAvailable ->
-        match payload.Appointments |> Seq.tryLast with
-        | Some appointment -> Ok <| Some appointment
-        | None -> Error <| NotFound "Last available appointment not found."
-    | Confirmation.DateTimeRange(min, max) ->
+    match request.Payload.State with
+    | NoAppointments -> Error <| NotFound "No appointments found to confirm."
+    | HasConfirmation _ -> Error <| NotFound "Request already has confirmation."
+    | HasAppointments appointments ->
+        match request.Payload.Confirmation with
+        | Confirmation.Disabled -> Ok <| None
+        | Confirmation.ForAppointment appointmentId ->
+            match appointments |> Seq.tryFind (fun x -> x.Id = appointmentId) with
+            | Some appointment -> Ok <| Some appointment
+            | None -> Error <| NotFound $"AppointmentId '{appointmentId.ValueStr}' not found."
+        | Confirmation.FirstAvailable ->
+            match appointments |> Seq.tryHead with
+            | Some appointment -> Ok <| Some appointment
+            | None -> Error <| NotFound "First available appointment not found."
+        | Confirmation.LastAvailable ->
+            match appointments |> Seq.tryLast with
+            | Some appointment -> Ok <| Some appointment
+            | None -> Error <| NotFound "Last available appointment not found."
+        | Confirmation.DateTimeRange(min, max) ->
 
-        let minDate = DateOnly.FromDateTime min
-        let maxDate = DateOnly.FromDateTime max
+            let minDate = DateOnly.FromDateTime min
+            let maxDate = DateOnly.FromDateTime max
 
-        let minTime = TimeOnly.FromDateTime min
-        let maxTime = TimeOnly.FromDateTime max
+            let minTime = TimeOnly.FromDateTime min
+            let maxTime = TimeOnly.FromDateTime max
 
-        let appointment =
-            payload.Appointments
-            |> Seq.filter (fun x -> x.Date >= minDate && x.Date <= maxDate)
-            |> Seq.filter (fun x -> x.Time >= minTime && x.Time <= maxTime)
-            |> Seq.tryHead
+            let appointment =
+                appointments
+                |> Seq.filter (fun x -> x.Date >= minDate && x.Date <= maxDate)
+                |> Seq.filter (fun x -> x.Time >= minTime && x.Time <= maxTime)
+                |> Seq.tryHead
 
-        match appointment with
-        | Some appointment -> Ok <| Some appointment
-        | None ->
-            Error
-            <| NotFound $"Appointment in the range '{min.ToShortDateString()}' - '{max.ToShortDateString()}' not found."
+            match appointment with
+            | Some appointment -> Ok <| Some appointment
+            | None ->
+                Error
+                <| NotFound
+                    $"Appointment in the range '{min.ToShortDateString()}' - '{max.ToShortDateString()}' not found."
 
 let private createHttpRequest queryParamsId formData =
 
@@ -82,13 +86,7 @@ let private setConfirmation (request: Request<Payload>) (appointment: Appointmen
         Payload = {
             request.Payload with
                 Confirmation = Disabled
-                Appointments =
-                    request.Payload.Appointments
-                    |> Set.filter (fun x -> x.Id <> appointment.Id)
-                    |> Set.add {
-                        appointment with
-                            Confirmation = Some confirmation
-                    }
+                State = HasConfirmation(confirmation, appointment)
         }
 }
 

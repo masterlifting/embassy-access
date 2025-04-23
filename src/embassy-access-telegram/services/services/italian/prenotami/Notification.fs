@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Services.Russian.Kdmid.Notification
+﻿module EA.Telegram.Services.Services.Italian.Prenotami.Notification
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -6,13 +6,13 @@ open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Telegram.Router
-open EA.Telegram.Router.Services.Russian.Kdmid
+open EA.Telegram.Router.Services.Italian.Prenotami
 open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies.Services.Russian
-open EA.Russian.Services.Domain.Kdmid
+open EA.Telegram.Dependencies.Services.Italian
+open EA.Italian.Services.Domain.Prenotami
 
 let spread (request: Request<Payload>) =
-    fun (deps: Kdmid.Notification.Dependencies) ->
+    fun (deps: Prenotami.Notification.Dependencies) ->
 
     match request.ProcessState with
     | InProcess -> Ok() |> async.Return
@@ -25,9 +25,6 @@ let spread (request: Request<Payload>) =
     | Completed _ ->
         match request.Payload.State with
         | NoAppointments -> Ok() |> async.Return
-        | HasConfirmation(msg, _) ->
-            // msg |> Text.create |> Message.createNew chatId |> Some
-            $"Confirmation message is not implemented yet: %s{msg}" |> NotImplemented |> Error |> async.Return
         | HasAppointments appointments ->
             // appointments
             // |> Seq.map (fun a ->
