@@ -13,19 +13,22 @@ open EA.Telegram.Dependencies.Services
 open EA.Telegram.Dependencies.Embassies
 
 let private createButtonsGroup chatId messageId name buttons =
-    ButtonsGroup.create {
-        Name = name |> Option.defaultValue "Choose what you need to visit"
-        Columns = 3
-        Buttons =
-            buttons
-            |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-            |> Set.ofSeq
-    }
-    |> Message.tryReplace (Some messageId) chatId
+    match buttons |> Seq.isEmpty with
+    | true -> "No available embassies for you here." |> Text.create
+    | false ->
+        ButtonsGroup.create {
+            Name = name |> Option.defaultValue "Choose what you need to visit"
+            Columns = 3
+            Buttons =
+                buttons
+                |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
+                |> Set.ofSeq
+        }
+    |> Message.tryReplace messageId chatId
     |> Ok
     |> async.Return
 
-let getEmbassy embassyId =
+let private getEmbassy' embassyId firstCall =
     fun (deps: Embassies.Dependencies) ->
         deps.getEmbassyNode embassyId
         |> ResultAsync.bindAsync (function
@@ -34,24 +37,25 @@ let getEmbassy embassyId =
                 |> Services.Dependencies.create deps.Chat
                 |> ResultAsync.wrap (Services.Query.getServices embassyId)
             | Some(AP.Node node) ->
+
+                let messageId =
+                    match firstCall with
+                    | true -> None
+                    | false -> deps.MessageId |> Some
+
                 node.Children
                 |> Seq.map _.Value
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.Embassy embassy.Id))
                     route.Value, embassy.Name)
-                |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
+                |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"Embassy '%s{embassyId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
                 |> NotImplemented
                 |> Error
                 |> async.Return)
 
-let getEmbassies () =
-    fun (deps: Embassies.Dependencies) ->
-        let embassyId = Embassies.ROOT_ID |> Graph.NodeIdValue |> EmbassyId
-        deps |> getEmbassy embassyId
-
-let getUserEmbassy embassyId =
+let private getUserEmbassy' embassyId firstCall =
     fun (deps: Embassies.Dependencies) ->
         deps.getEmbassyNode embassyId
         |> ResultAsync.bindAsync (function
@@ -61,6 +65,11 @@ let getUserEmbassy embassyId =
                 |> ResultAsync.wrap (Services.Query.getUserServices embassyId)
             | Some(AP.Node node) ->
 
+                let messageId =
+                    match firstCall with
+                    | true -> None
+                    | false -> deps.MessageId |> Some
+
                 let userEmbassyIds = deps.Chat.Subscriptions |> Seq.map _.EmbassyId.Value
 
                 node.Children
@@ -69,14 +78,25 @@ let getUserEmbassy embassyId =
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.UserEmbassy embassy.Id))
                     route.Value, embassy.Name)
-                |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
+                |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"You have no embassies of '%s{embassyId.ValueStr}' in your list."
                 |> NotFound
                 |> Error
                 |> async.Return)
 
+let getEmbassy embassyId =
+    fun (deps: Embassies.Dependencies) -> deps |> getEmbassy' embassyId false
+
+let getEmbassies () =
+    fun (deps: Embassies.Dependencies) ->
+        let embassyId = Embassies.ROOT_ID |> Graph.NodeIdValue |> EmbassyId
+        deps |> getEmbassy' embassyId true
+
+let getUserEmbassy embassyId =
+    fun (deps: Embassies.Dependencies) -> deps |> getUserEmbassy' embassyId false
+
 let getUserEmbassies () =
     fun (deps: Embassies.Dependencies) ->
         let embassyId = Embassies.ROOT_ID |> Graph.NodeIdValue |> EmbassyId
-        deps |> getUserEmbassy embassyId
+        deps |> getUserEmbassy' embassyId true

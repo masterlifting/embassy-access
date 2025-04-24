@@ -13,14 +13,17 @@ open EA.Telegram.Dependencies.Services.Russian
 open EA.Telegram.Dependencies.Services.Italian
 
 let private createButtonsGroup chatId messageId name buttons =
-    ButtonsGroup.create {
-        Name = name |> Option.defaultValue "Choose what you need to get"
-        Columns = 3
-        Buttons =
-            buttons
-            |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-            |> Set.ofSeq
-    }
+    match buttons |> Seq.isEmpty with
+    | true -> "No available services for you here." |> Text.create
+    | false ->
+        ButtonsGroup.create {
+            Name = name |> Option.defaultValue "Choose what you need to get"
+            Columns = 1
+            Buttons =
+                buttons
+                |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
+                |> Set.ofSeq
+        }
     |> Message.tryReplace (Some messageId) chatId
     |> Ok
     |> async.Return
