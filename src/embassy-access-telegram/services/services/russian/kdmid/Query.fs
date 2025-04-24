@@ -9,6 +9,9 @@ open EA.Telegram.Router
 open EA.Telegram.Router.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
 
+[<Literal>]
+let private PAST_LINK_HERE = "<past your link from the email instead of this>"
+
 let private (|CheckSlotsNow|SlotsAutoNotification|BookFirstSlot|BookLastSlot|BookFirstSlotInPeriod|ServiceNotFound|)
     (serviceId: ServiceId)
     =
@@ -23,7 +26,7 @@ let private (|CheckSlotsNow|SlotsAutoNotification|BookFirstSlot|BookLastSlot|Boo
 let private createKdmidInstruction chatId method =
     let route =
         Router.Services(Services.Method.Russian(Services.Russian.Method.Kdmid(Kdmid.Method.Post(method))))
-    $"To use this service, please send the following command back to the bot: {String.addLines 2 + route.Value}"
+    $"To use this service, please send the following command back to the bot: {String.addLines 2}'{route.Value}'{String.addLines 2}Without apostrophes, please."
     |> Text.create
     |> Message.createNew chatId
     |> Ok
@@ -31,27 +34,27 @@ let private createKdmidInstruction chatId method =
 
 let private checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.CheckSlotsNow(serviceId, embassyId, "<past your link from the email here>")
+        Kdmid.Post.CheckSlotsNow(serviceId, embassyId, PAST_LINK_HERE)
         |> createKdmidInstruction deps.ChatId
 
 let private slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.SlotsAutoNotification(serviceId, embassyId, "<past your link from the email here>")
+        Kdmid.Post.SlotsAutoNotification(serviceId, embassyId, PAST_LINK_HERE)
         |> createKdmidInstruction deps.ChatId
 
 let private bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.BookFirstSlot(serviceId, embassyId, "<past your link from the email here>")
+        Kdmid.Post.BookFirstSlot(serviceId, embassyId, PAST_LINK_HERE)
         |> createKdmidInstruction deps.ChatId
 
 let private bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.BookLastSlot(serviceId, embassyId, "<past your link from the email here>")
+        Kdmid.Post.BookLastSlot(serviceId, embassyId, PAST_LINK_HERE)
         |> createKdmidInstruction deps.ChatId
 
 let private bookFirstSlotInPeriod (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, "<past your link from the email here>")
+        Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, PAST_LINK_HERE)
         |> createKdmidInstruction deps.ChatId
 
 let getService (serviceId: ServiceId) (embassyId: EmbassyId) =
