@@ -25,23 +25,37 @@ let private createButtonsGroup chatId messageId name buttons =
     |> Ok
     |> async.Return
 
-let private tryDefineService (embassyId: EmbassyId) (serviceId: ServiceId) =
+let private (|RUS|ITA|EmbassyNotFound|) (embassyId: EmbassyId) =
+    match embassyId.Value.Split() |> Seq.skip 1 |> Seq.tryHead with
+    | Some id ->
+        match id with
+        | Embassies.RUS -> RUS
+        | Embassies.ITA -> ITA
+        | _ -> EmbassyNotFound
+    | _ -> EmbassyNotFound
+
+let private tryCreateServiceRootId (embassyId: EmbassyId) =
+    match embassyId with
+    | RUS -> Embassies.RUS |> Ok
+    | ITA -> Embassies.ITA |> Ok
+    | EmbassyNotFound ->
+        $"Embassy '%s{embassyId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
+        |> NotImplemented
+        |> Error
+    |> Result.map (fun embassyIdValue ->
+        Graph.NodeId.combine [ Graph.NodeIdValue Services.ROOT_ID; Graph.NodeIdValue embassyIdValue ]
+        |> ServiceId)
+
+let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) =
     fun (deps: Services.Dependencies) ->
-        match embassyId.Value.Split() |> Seq.skip 1 |> Seq.tryHead with
-        | Some embassy ->
-            match embassy with
-            | Embassies.RUS ->
-                Russian.Dependencies.create deps
-                |> ResultAsync.wrap (Russian.Query.getService embassyId serviceId)
-            | Embassies.ITA ->
-                Italian.Dependencies.create deps
-                |> ResultAsync.wrap (Italian.Query.getService embassyId serviceId)
-            | _ ->
-                $"Service for '%s{embassy}' is not implemented. " + NOT_IMPLEMENTED
-                |> NotImplemented
-                |> Error
-                |> async.Return
-        | None ->
+        match embassyId with
+        | RUS ->
+            Russian.Dependencies.create deps
+            |> ResultAsync.wrap (Russian.Query.getService embassyId serviceId)
+        | ITA ->
+            Italian.Dependencies.create deps
+            |> ResultAsync.wrap (Italian.Query.getService embassyId serviceId)
+        | EmbassyNotFound ->
             $"Service for '%s{embassyId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
             |> Error
@@ -51,7 +65,7 @@ let getService embassyId serviceId =
     fun (deps: Services.Dependencies) ->
         deps.getServiceNode serviceId
         |> ResultAsync.bindAsync (function
-            | Some(AP.Leaf _) -> deps |> tryDefineService embassyId serviceId
+            | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId
             | Some(AP.Node node) ->
                 node.Children
                 |> Seq.map _.Value
@@ -67,14 +81,15 @@ let getService embassyId serviceId =
 
 let getServices embassyId =
     fun (deps: Services.Dependencies) ->
-        let serviceId = Services.ROOT_ID |> Graph.NodeIdValue |> ServiceId
-        deps |> getService embassyId serviceId
+        embassyId
+        |> tryCreateServiceRootId
+        |> ResultAsync.wrap (fun serviceId -> deps |> getService embassyId serviceId)
 
 let getUserService embassyId serviceId =
     fun (deps: Services.Dependencies) ->
         deps.getServiceNode serviceId
         |> ResultAsync.bindAsync (function
-            | Some(AP.Leaf _) -> deps |> tryDefineService embassyId serviceId
+            | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId
             | Some(AP.Node node) ->
 
                 let userServiceIds = deps.Chat.Subscriptions |> Seq.map _.ServiceId.Value
@@ -94,5 +109,6 @@ let getUserService embassyId serviceId =
 
 let getUserServices embassyId =
     fun (deps: Services.Dependencies) ->
-        let serviceId = Services.ROOT_ID |> Graph.NodeIdValue |> ServiceId
-        deps |> getService embassyId serviceId
+        embassyId
+        |> tryCreateServiceRootId
+        |> ResultAsync.wrap (fun serviceId -> deps |> getUserService embassyId serviceId)

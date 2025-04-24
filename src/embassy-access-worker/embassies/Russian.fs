@@ -11,7 +11,7 @@ let private ServiceId = Embassies.RUS |> Graph.NodeIdValue
 
 module private Kdmid =
     open EA.Russian.Services.Domain.Kdmid
-    
+
     let private processGroup requests =
         fun (deps: Kdmid.Dependencies) ->
             deps.tryProcessFirst requests

@@ -42,7 +42,7 @@ module Query =
 
         client
         |> loadData
-        |> Result.map (Seq.filter (fun x -> x.Subscriptions |> Seq.exists(fun s -> subscriptionIds.Contains s.Id)))
+        |> Result.map (Seq.filter (fun x -> x.Subscriptions |> Seq.exists (fun s -> subscriptionIds.Contains s.Id)))
         |> Result.bind (Seq.map _.ToDomain() >> Result.choose)
         |> async.Return
 
@@ -70,7 +70,7 @@ module Command =
             match data |> Seq.tryFindIndex (fun chat -> chat.Id = chatId.Value) with
             | None -> $"The '{chatId}' not found." |> NotFound |> Error
             | Some index ->
-                
+
                 data[index].Subscriptions <-
                     data[index].Subscriptions
                     |> List.append [
@@ -109,8 +109,7 @@ module Command =
             | Some index ->
                 data[index].Subscriptions <-
                     data[index].Subscriptions
-                    |> List.filter (fun s ->
-                        not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = s.Id)))
+                    |> List.filter (fun s -> not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = s.Id)))
 
                 data |> Ok)
         |> Result.bind (fun data -> client |> Command.Json.save data)
@@ -124,8 +123,7 @@ module Command =
             |> Seq.iter (fun chat ->
                 chat.Subscriptions <-
                     chat.Subscriptions
-                    |> List.filter (fun s ->
-                        not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = s.Id))))
+                    |> List.filter (fun s -> not (subscriptions |> Set.exists (fun sub -> sub.ValueStr = s.Id))))
 
             data |> Ok)
         |> Result.bind (fun data -> client |> Command.Json.save data)

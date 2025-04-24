@@ -8,7 +8,7 @@ open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Services
 open EA.Telegram.Dependencies.Services.Russian
 open EA.Telegram.Dependencies.Services.Italian
-open EA.Telegram.Services
+open EA.Telegram.Services.Services
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->
@@ -19,10 +19,10 @@ let respond request chat =
             match request with
             | Method.Get get ->
                 match get with
-                | Get.Services embassyId -> deps |> Services.Query.getServices embassyId
-                | Get.Service(embassyId, serviceId) -> deps |> Services.Query.getService embassyId serviceId
-                | Get.UserServices embassyId -> deps |> Services.Query.getUserServices embassyId
-                | Get.UserService(embassyId, serviceId) -> deps |> Services.Query.getUserService embassyId serviceId
+                | Get.Services embassyId -> deps |> Query.getServices embassyId
+                | Get.Service(embassyId, serviceId) -> deps |> Query.getService embassyId serviceId
+                | Get.UserServices embassyId -> deps |> Query.getUserServices embassyId
+                | Get.UserService(embassyId, serviceId) -> deps |> Query.getUserService embassyId serviceId
                 |> deps.sendMessageRes
             | Method.Russian russian ->
                 match russian with

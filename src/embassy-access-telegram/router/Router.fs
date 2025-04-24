@@ -31,4 +31,7 @@ let parse (input: string) =
     | "/culture" -> Culture(Culture.Method.Get(Culture.Get.Route.Cultures)) |> Ok
     | "/start" -> Embassies(Embassies.Method.Get(Embassies.Get.Route.Embassies)) |> Ok
     | "/mine" -> Embassies(Embassies.Method.Get(Embassies.Get.Route.UserEmbassies)) |> Ok
-    | _ -> $"'{input}' for the application router is not supported." |> NotSupported |> Error
+    | _ ->
+        $"'{input}' for the application router is not supported."
+        |> NotSupported
+        |> Error

@@ -64,7 +64,7 @@ module Models =
                 $"'{parts}' of 'Services.Russian.Midpass.Post.CheckStatus' endpoint is not supported."
                 |> NotSupported
                 |> Error
-                
+
     type SendStatus = {
         Status: string
         ServiceId: ServiceId

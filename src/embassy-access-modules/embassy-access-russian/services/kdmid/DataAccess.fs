@@ -12,8 +12,8 @@ open EA.Russian.Services.Domain.Kdmid
 let private result = ResultBuilder()
 
 [<RequireQualifiedAccess>]
-module internal Credentials =
-    
+module Credentials =
+
     type Entity() =
         member val Id = 0 with get, set
         member val Cd = String.Empty with get, set
@@ -52,8 +52,8 @@ module internal Credentials =
             }
 
 [<RequireQualifiedAccess>]
-module internal PayloadState =
-    
+module PayloadState =
+
     [<Literal>]
     let NO_APPOINTMENTS = nameof NoAppointments
 
@@ -63,7 +63,6 @@ module internal PayloadState =
     [<Literal>]
     let HAS_CONFIRMATION = nameof HasConfirmation
 
-    
     type Entity() =
         member val Type = NO_APPOINTMENTS with get, set
         member val Appointments = Array.empty<AppointmentEntity> with get, set
@@ -96,7 +95,7 @@ module internal PayloadState =
                 |> Error
 
 [<RequireQualifiedAccess>]
-module internal Payload =
+module Payload =
     type Entity() =
         member val State = PayloadState.Entity() with get, set
         member val Credentials = Credentials.Entity() with get, set
@@ -117,8 +116,8 @@ module internal Payload =
 
 type Credentials with
     member internal this.ToEntity() =
-     Credentials.Entity(Id = this.Id, Cd = this.Cd, Ems = this.Ems, Subdomain = this.Subdomain)
-     
+        Credentials.Entity(Id = this.Id, Cd = this.Cd, Ems = this.Ems, Subdomain = this.Subdomain)
+
 type PayloadState with
     member internal this.ToEntity() =
         let result = PayloadState.Entity()

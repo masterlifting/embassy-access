@@ -98,14 +98,11 @@ type PayloadState =
     | NoAppointments
     | HasAppointments of Set<Appointment>
     | HasConfirmation of string * Appointment
-    
+
     static member print(payloadState: PayloadState) =
         match payloadState with
         | NoAppointments -> "No appointments found."
-        | HasAppointments appointments ->
-            appointments
-            |> Seq.map Appointment.print
-            |> String.concat Environment.NewLine
+        | HasAppointments appointments -> appointments |> Seq.map Appointment.print |> String.concat Environment.NewLine
         | HasConfirmation(message, appointment) ->
             let appointmentStr = appointment |> Appointment.print
             $"%s{message} %s{appointmentStr}"
@@ -119,11 +116,8 @@ type Payload = {
     static member print(payload: Payload) =
         payload.Credentials
         |> Credentials.print
-        |> fun credentials ->
-            credentials
-            + Environment.NewLine
-            + PayloadState.print payload.State
-    
+        |> fun credentials -> credentials + Environment.NewLine + PayloadState.print payload.State
+
     static member printError (error: Error') (payload: Payload) =
         match error with
         | Operation reason ->

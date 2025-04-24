@@ -28,8 +28,8 @@ type Appointment = {
     Time: TimeOnly
     Description: string
 } with
-    static member print (appointment: Appointment) =
+
+    static member print(appointment: Appointment) =
         let date = appointment.Date.ToString("yyyy-MM-dd")
         let time = appointment.Time.ToString("HH:mm")
         $"Available appointment '%s{appointment.Value}' on '%s{date} %s{time}'"
-        

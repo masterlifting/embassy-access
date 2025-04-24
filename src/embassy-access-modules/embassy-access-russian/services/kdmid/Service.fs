@@ -105,7 +105,11 @@ let tryProcessFirst requests =
         let rec processNextRequest (remainingRequests: Request<Payload> list) =
             async {
                 match remainingRequests with
-                | [] -> return "All of the attempts to get the first available result have been reached. The Operation canceled." |> Canceled |> Error
+                | [] ->
+                    return
+                        "All of the attempts to get the first available result have been reached. The Operation canceled."
+                        |> Canceled
+                        |> Error
                 | request :: requestsTail ->
                     match! client |> tryProcess request with
                     | Error error ->

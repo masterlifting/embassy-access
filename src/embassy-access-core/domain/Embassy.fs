@@ -10,7 +10,7 @@ type EmbassyId =
     member this.Value =
         match this with
         | EmbassyId id -> id
-        
+
     member this.ValueStr = this.Value.Value
 
 type Embassy = {

@@ -11,12 +11,12 @@ open EA.Core.DataAccess
 type StorageType =
     | InMemory of InMemory.Connection
     | FileSystem of FileSystem.Connection
-    
+
 let private toProvider =
     function
     | Request.Provider provider -> provider
 
-let init (serializePayload, deserializePayload)  =
+let init (serializePayload, deserializePayload) =
     fun storageType ->
         match storageType with
         | FileSystem connection -> connection |> Storage.Connection.FileSystem |> Storage.init
@@ -47,22 +47,34 @@ module Query =
     let findManyByEmbassyId embassyId storage =
         let provider = storage |> toProvider
         match provider.Type with
-        | Storage.InMemory client -> client |> InMemory.Request.Query.findManyByEmbassyId embassyId provider.deserializePayload
-        | Storage.FileSystem client -> client |> FileSystem.Request.Query.findManyByEmbassyId embassyId provider.deserializePayload
+        | Storage.InMemory client ->
+            client
+            |> InMemory.Request.Query.findManyByEmbassyId embassyId provider.deserializePayload
+        | Storage.FileSystem client ->
+            client
+            |> FileSystem.Request.Query.findManyByEmbassyId embassyId provider.deserializePayload
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyByServiceId id storage =
         let provider = storage |> toProvider
         match provider.Type with
-        | Storage.InMemory client -> client |> InMemory.Request.Query.findManyByServiceId id provider.deserializePayload
-        | Storage.FileSystem client -> client |> FileSystem.Request.Query.findManyByServiceId id provider.deserializePayload
+        | Storage.InMemory client ->
+            client
+            |> InMemory.Request.Query.findManyByServiceId id provider.deserializePayload
+        | Storage.FileSystem client ->
+            client
+            |> FileSystem.Request.Query.findManyByServiceId id provider.deserializePayload
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyWithServiceId id storage =
         let provider = storage |> toProvider
         match provider.Type with
-        | Storage.InMemory client -> client |> InMemory.Request.Query.findManyWithServiceId id provider.deserializePayload
-        | Storage.FileSystem client -> client |> FileSystem.Request.Query.findManyWithServiceId id provider.deserializePayload
+        | Storage.InMemory client ->
+            client
+            |> InMemory.Request.Query.findManyWithServiceId id provider.deserializePayload
+        | Storage.FileSystem client ->
+            client
+            |> FileSystem.Request.Query.findManyWithServiceId id provider.deserializePayload
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyByIds ids storage =
@@ -92,14 +104,20 @@ module Command =
         let provider = storage |> toProvider
         match provider.Type with
         | Storage.InMemory client -> client |> InMemory.Request.Command.updateSeq requests provider.serializePayload
-        | Storage.FileSystem client -> client |> FileSystem.Request.Command.updateSeq requests provider.serializePayload
+        | Storage.FileSystem client ->
+            client
+            |> FileSystem.Request.Command.updateSeq requests provider.serializePayload
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let createOrUpdate request storage =
         let provider = storage |> toProvider
         match provider.Type with
-        | Storage.InMemory client -> client |> InMemory.Request.Command.createOrUpdate request provider.serializePayload
-        | Storage.FileSystem client -> client |> FileSystem.Request.Command.createOrUpdate request provider.serializePayload
+        | Storage.InMemory client ->
+            client
+            |> InMemory.Request.Command.createOrUpdate request provider.serializePayload
+        | Storage.FileSystem client ->
+            client
+            |> FileSystem.Request.Command.createOrUpdate request provider.serializePayload
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let delete id storage =

@@ -17,7 +17,7 @@ type Storage<'payload> =
             deserializePayload: string -> Result<'payload, Error'>
         |}
 
-type internal Entity() =
+type Entity() =
     member val Id = String.Empty with get, set
     member val ServiceId = String.Empty with get, set
     member val ServiceName = String.Empty with get, set

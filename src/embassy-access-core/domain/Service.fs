@@ -9,7 +9,7 @@ type ServiceId =
     member this.Value =
         match this with
         | ServiceId id -> id
-        
+
     member this.ValueStr = this.Value.Value
 
 type Service = {

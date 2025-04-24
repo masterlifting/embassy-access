@@ -15,7 +15,7 @@ type Dependencies = {
     MessageId: int
     Request: Request.Dependencies
     getEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
-    sendMessageRes: Async<Result<Message,Error'>> -> Async<Result<unit,Error'>>
+    sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
 } with
 
     static member create (chat: Chat) (deps: Request.Dependencies) =

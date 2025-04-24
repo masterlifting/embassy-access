@@ -70,7 +70,7 @@ module Models =
                 $"'{parts}' of 'Services.Italian.Prenotami.Post.CheckAppointments' endpoint is not supported."
                 |> NotSupported
                 |> Error
-                
+
     type SendAppointments = {
         ServiceId: ServiceId
         EmbassyId: EmbassyId

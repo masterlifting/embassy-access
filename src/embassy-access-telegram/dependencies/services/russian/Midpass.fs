@@ -16,5 +16,5 @@ type Dependencies = {
     Service: EA.Russian.Services.Domain.Midpass.Dependencies
 } with
 
-    static member create(deps: Russian.Dependencies) = "Not implemented" |> NotImplemented |> Error
-    
+    static member create(deps: Russian.Dependencies) =
+        "Not implemented" |> NotImplemented |> Error

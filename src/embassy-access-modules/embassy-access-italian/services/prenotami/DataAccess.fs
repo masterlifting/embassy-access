@@ -10,8 +10,8 @@ open EA.Italian.Services.Domain.Prenotami
 let private result = ResultBuilder()
 
 [<RequireQualifiedAccess>]
-module internal Credentials =
-    
+module Credentials =
+
     type Entity() =
         member val Login = String.Empty with get, set
         member val Password = String.Empty with get, set
@@ -29,22 +29,18 @@ module internal Credentials =
                     | "" -> $"Password '{this.Password}' is not supported." |> NotSupported |> Error
                     | v -> v |> Ok
 
-                return {
-                    Login = login
-                    Password = password
-                }
+                return { Login = login; Password = password }
             }
 
 [<RequireQualifiedAccess>]
-module internal PayloadState =
-    
+module PayloadState =
+
     [<Literal>]
     let NO_APPOINTMENTS = nameof NoAppointments
 
     [<Literal>]
     let HAS_APPOINTMENTS = nameof HasAppointments
 
-    
     type Entity() =
         member val Type = NO_APPOINTMENTS with get, set
         member val Appointments = Array.empty<AppointmentEntity> with get, set
@@ -66,7 +62,7 @@ module internal PayloadState =
                 |> Error
 
 [<RequireQualifiedAccess>]
-module internal Payload =
+module Payload =
     type Entity() =
         member val State = PayloadState.Entity() with get, set
         member val Credentials = Credentials.Entity() with get, set
@@ -84,8 +80,8 @@ module internal Payload =
 
 type Credentials with
     member internal this.ToEntity() =
-     Credentials.Entity(Login = this.Login, Password = this.Password)
-     
+        Credentials.Entity(Login = this.Login, Password = this.Password)
+
 type PayloadState with
     member internal this.ToEntity() =
         let result = PayloadState.Entity()
@@ -110,11 +106,10 @@ type Payload with
     static member serialize key (payload: Payload) =
         payload.Credentials.Password
         |> String.encrypt key
-        |> Result.map (fun password ->
-            {
-                payload with
-                    Payload.Credentials.Password = password
-            })
+        |> Result.map (fun password -> {
+            payload with
+                Payload.Credentials.Password = password
+        })
         |> Result.map _.ToEntity()
         |> Result.bind Json.serialize
 

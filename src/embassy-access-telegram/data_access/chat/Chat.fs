@@ -11,7 +11,7 @@ open EA.Telegram.DataAccess
 
 type Storage = Provider of Storage.Provider
 
-type internal Entity() =
+type Entity() =
     member val Id = 0L with get, set
     member val Subscriptions = List.empty<Subscriptions.Entity> with get, set
     member val Culture = String.Empty with get, set

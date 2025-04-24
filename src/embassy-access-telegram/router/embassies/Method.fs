@@ -7,7 +7,7 @@ open EA.Telegram.Router.Embassies
 
 type Route =
     | Get of Get.Route
-    
+
     member this.Value =
         match this with
         | Get r -> [ "0"; r.Value ]

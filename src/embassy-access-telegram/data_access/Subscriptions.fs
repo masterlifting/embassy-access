@@ -6,7 +6,7 @@ open Infrastructure.Domain
 open EA.Core.Domain
 open EA.Telegram.Domain
 
-type internal Entity() =
+type Entity() =
     member val Id = String.Empty with get, set
     member val ServiceId = String.Empty with get, set
     member val EmbassyId = String.Empty with get, set

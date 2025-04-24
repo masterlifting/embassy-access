@@ -21,4 +21,7 @@ let parse (input: string) =
     match parts[0] with
     | "0" -> remaining |> Get.Route.parse |> Result.map Get
     | "1" -> remaining |> Delete.Route.parse |> Result.map Delete
-    | _ -> $"'{input}' of 'Subscriptions' endpoint is not supported." |> NotSupported |> Error
+    | _ ->
+        $"'{input}' of 'Subscriptions' endpoint is not supported."
+        |> NotSupported
+        |> Error
