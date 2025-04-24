@@ -128,6 +128,11 @@ type Route =
     | CheckAppointments of CheckAppointments
     | SendAppointments of SendAppointments
     | ConfirmAppointment of ConfirmAppointment
+    | CheckSlotsNow of ServiceId * EmbassyId * string
+    | SlotsAutoNotification of ServiceId * EmbassyId * string
+    | BookFirstSlot of ServiceId * EmbassyId * string
+    | BookLastSlot of ServiceId * EmbassyId * string
+    | BookFirstSlotInPeriod of ServiceId * EmbassyId * string
 
     member this.Value =
         match this with
@@ -143,6 +148,21 @@ type Route =
         | CheckAppointments model -> "5" :: model.Serialize()
         | SendAppointments model -> "6" :: model.Serialize()
         | ConfirmAppointment model -> "7" :: model.Serialize()
+        | CheckSlotsNow(serviceId, embassyId, payload) -> [ "8"; serviceId.ValueStr; embassyId.ValueStr; payload ]
+        | SlotsAutoNotification(serviceId, embassyId, payload) -> [
+            "9"
+            serviceId.ValueStr
+            embassyId.ValueStr
+            payload
+          ]
+        | BookFirstSlot(serviceId, embassyId, payload) -> [ "10"; serviceId.ValueStr; embassyId.ValueStr; payload ]
+        | BookLastSlot(serviceId, embassyId, payload) -> [ "11"; serviceId.ValueStr; embassyId.ValueStr; payload ]
+        | BookFirstSlotInPeriod(serviceId, embassyId, payload) -> [
+            "12"
+            serviceId.ValueStr
+            embassyId.ValueStr
+            payload
+          ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =

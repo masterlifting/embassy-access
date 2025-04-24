@@ -8,6 +8,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Italian.Services
 open EA.Worker.Dependencies
+open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Services.Services.Italian
 open EA.Telegram.Dependencies.Services.Italian
@@ -38,10 +39,16 @@ module Prenotami =
                     |> ResultAsync.bindAsync (fun subscriptionIds ->
                         chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptionIds)
 
+                let sendTranslatedMessagesRes chat messages =
+                    messages
+                    |> telegram.Culture.translateSeq chat.Culture
+                    |> ResultAsync.map Seq.ofList
+                    |> telegram.Web.Telegram.sendMessagesRes
+                    |> fun f -> f chat.Id
+
                 let notificationDeps: Prenotami.Notification.Dependencies = {
                     getRequestChats = getRequestChats
-                    sendMessages = telegram.Web.Telegram.sendMessages
-                    translateMessages = telegram.Culture.translateSeq
+                    sendTranslatedMessagesRes = sendTranslatedMessagesRes
                 }
 
                 let notify (requestRes: Result<Request<Payload>, Error'>) =

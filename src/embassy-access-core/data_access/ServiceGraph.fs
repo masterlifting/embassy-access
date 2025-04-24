@@ -15,7 +15,6 @@ type StorageType = Configuration of Configuration.Connection
 type ServiceGraphEntity() =
     member val Id: string = String.Empty with get, set
     member val Name: string = String.Empty with get, set
-    member val Instruction: string option = None with get, set
     member val Description: string option = None with get, set
     member val Children: ServiceGraphEntity[] | null = [||] with get, set
 
@@ -31,7 +30,6 @@ type ServiceGraphEntity() =
                     {
                         Id = nodeId |> ServiceId
                         Name = this.Name
-                        Instruction = this.Instruction
                         Description = this.Description
                     },
                     children

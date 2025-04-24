@@ -17,7 +17,7 @@ let private createButtonsGroup chatId messageId name buttons =
     | true -> "No available services for you here." |> Text.create
     | false ->
         ButtonsGroup.create {
-            Name = name |> Option.defaultValue "Choose what you need to get"
+            Name = name |> Option.defaultValue "Choose the service you want to get"
             Columns = 1
             Buttons =
                 buttons
@@ -29,7 +29,7 @@ let private createButtonsGroup chatId messageId name buttons =
     |> async.Return
 
 let private (|RUS|ITA|EmbassyNotFound|) (embassyId: EmbassyId) =
-    match embassyId.Value.Split() |> Seq.skip 1 |> Seq.tryHead with
+    match embassyId.Value |> Graph.NodeId.splitValues |> Seq.skip 1 |> Seq.tryHead with
     | Some id ->
         match id with
         | Embassies.RUS -> RUS
@@ -42,7 +42,8 @@ let private tryCreateServiceRootId (embassyId: EmbassyId) =
     | RUS -> Embassies.RUS |> Ok
     | ITA -> Embassies.ITA |> Ok
     | EmbassyNotFound ->
-        $"Embassy '%s{embassyId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
+        $"Services for embassy '%s{embassyId.ValueStr}' is not implemented. "
+        + NOT_IMPLEMENTED
         |> NotImplemented
         |> Error
     |> Result.map (fun embassyIdValue ->
@@ -53,13 +54,15 @@ let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) =
     fun (deps: Services.Dependencies) ->
         match embassyId with
         | RUS ->
-            Russian.Dependencies.create deps
-            |> ResultAsync.wrap (Russian.Query.getService embassyId serviceId)
+            deps
+            |> Russian.Dependencies.create
+            |> Russian.Query.getService embassyId serviceId
         | ITA ->
-            Italian.Dependencies.create deps
-            |> ResultAsync.wrap (Italian.Query.getService embassyId serviceId)
+            deps
+            |> Italian.Dependencies.create
+            |> Italian.Query.getService embassyId serviceId
         | EmbassyNotFound ->
-            $"Service for '%s{embassyId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
+            $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
             |> Error
             |> async.Return
@@ -99,13 +102,13 @@ let getUserService embassyId serviceId =
 
                 node.Children
                 |> Seq.map _.Value
-                |> Seq.filter (fun service -> service.Id.Value.In userServiceIds)
+                |> Seq.filter (fun service -> service.Id.Value.IsInSeq userServiceIds)
                 |> Seq.map (fun service ->
                     let route = Router.Services(Method.Get(Get.UserService(embassyId, service.Id)))
                     route.Value, service.Name)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
-                $"You have no services for '%s{embassyId.ValueStr}' in your list."
+                $"You have no services for '%s{serviceId.ValueStr}'."
                 |> NotFound
                 |> Error
                 |> async.Return)

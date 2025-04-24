@@ -21,7 +21,6 @@ type Entity() =
     member val Id = String.Empty with get, set
     member val ServiceId = String.Empty with get, set
     member val ServiceName = String.Empty with get, set
-    member val ServiceInstruction: string option = None with get, set
     member val ServiceDescription: string option = None with get, set
     member val EmbassyId = String.Empty with get, set
     member val EmbassyName = String.Empty with get, set
@@ -50,7 +49,6 @@ type Entity() =
                 Service = {
                     Id = serviceId |> ServiceId
                     Name = this.ServiceName
-                    Instruction = this.ServiceInstruction
                     Description = this.ServiceDescription
                 }
                 Embassy = {
@@ -76,7 +74,6 @@ type private Request<'a> with
                 Id = this.Id.ValueStr,
                 ServiceId = this.Service.Id.ValueStr,
                 ServiceName = this.Service.Name,
-                ServiceInstruction = this.Service.Instruction,
                 ServiceDescription = this.Service.Description,
                 EmbassyId = this.Embassy.Id.ValueStr,
                 EmbassyName = this.Embassy.Name,

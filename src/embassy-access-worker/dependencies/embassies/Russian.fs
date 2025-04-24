@@ -8,6 +8,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Russian.Services
 open EA.Worker.Dependencies
+open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Services.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
@@ -53,11 +54,17 @@ module Kdmid =
                     |> ResultAsync.bindAsync (fun requests ->
                         requestStorage |> Storage.Request.Command.updateSeq requests)
 
+                let sendTranslatedMessagesRes chat messages =
+                    messages
+                    |> telegram.Culture.translateSeq chat.Culture
+                    |> ResultAsync.map Seq.ofList
+                    |> telegram.Web.Telegram.sendMessagesRes
+                    |> fun f -> f chat.Id
+
                 let notificationDeps: Kdmid.Notification.Dependencies = {
                     getRequestChats = getRequestChats
                     setAppointments = setRequestAppointments
-                    sendMessages = telegram.Web.Telegram.sendMessages
-                    translateMessages = telegram.Culture.translateSeq
+                    sendTranslatedMessagesRes = sendTranslatedMessagesRes
                 }
 
                 let notify (requestRes: Result<Request<Payload>, Error'>) =

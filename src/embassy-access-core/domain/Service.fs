@@ -15,7 +15,6 @@ type ServiceId =
 type Service = {
     Id: ServiceId
     Name: string
-    Instruction: string option
     Description: string option
 } with
 

@@ -68,9 +68,7 @@
         <Compile Include="services\embassies\Query.fs" />
         <Compile Include="controllers\Culture.fs" />
         <Compile Include="controllers\Embassies.fs" />
-        <Folder Include="controllers\services\russian\" />
-        <Folder Include="controllers\services\italian\" />
-        <Compile Include="controllers\services\Services.fs" />
+        <Compile Include="controllers\Services.fs" />
         <Compile Include="controllers\Subscriptions.fs" />
         <Compile Include="controllers\Controller.fs" />
         <Compile Include="Client.fs" />

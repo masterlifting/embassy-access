@@ -14,7 +14,7 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 
 type Dependencies = {
-    ct: CancellationToken
+    CT: CancellationToken
     ChatId: ChatId
     MessageId: int
     tryGetChat: unit -> Async<Result<Chat option, Error'>>
@@ -59,7 +59,7 @@ type Dependencies = {
                     |> ResultAsync.bindAsync deps.Web.Telegram.sendMessages
 
                 return {
-                    ct = deps.CT
+                    CT = deps.CT
                     ChatId = payload.ChatId
                     MessageId = payload.MessageId
                     tryGetChat = tryGetChat

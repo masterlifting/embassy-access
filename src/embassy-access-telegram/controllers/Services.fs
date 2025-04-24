@@ -23,7 +23,7 @@ let respond request chat =
                 | Get.Service(embassyId, serviceId) -> deps |> Query.getService embassyId serviceId
                 | Get.UserServices embassyId -> deps |> Query.getUserServices embassyId
                 | Get.UserService(embassyId, serviceId) -> deps |> Query.getUserService embassyId serviceId
-                |> deps.sendMessageRes
+                |> deps.sendTranslatedMessageRes
             | Method.Russian russian ->
                 match russian with
                 | Russian.Method.Kdmid kdmid ->

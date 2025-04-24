@@ -1,26 +1,18 @@
-RussianKdmidInstruction: &RussianKdmidInstruction
-  Instruction: Take the link you received in your email after registering your request on the kdmid.ru website. Put the link instead of <link> in the command above. Send it to the chat (without apostrophes).
-
 RussianKdmidServices: &RussianKdmidServices
   - Id: "0"
     Name: Check slots now
-    <<: *RussianKdmidInstruction
   - Id: "1"
     Name: Slots auto notification
-    <<: *RussianKdmidInstruction
   - Id: "2"
     Name: Slot auto booking
     Description: Auto slot booking
     Children:
       - Id: "0"
         Name: Book first slot
-        <<: *RussianKdmidInstruction
       - Id: "1"
         Name: Book last slot
-        <<: *RussianKdmidInstruction
       - Id: "2"
         Name: Book first slot in period
-        Instruction: Take the link you received in your email after registering your request on the kdmid.ru website. Put the link instead of <link> in the command above. Change the start and end of the time periods in the command. Send it to the chat (without apostrophes).
 
 RussianServices: &RussianServices
   Id: RUS
@@ -38,7 +30,6 @@ RussianServices: &RussianServices
             <<: *RussianKdmidServices
         - Id: "1"
           Name: Passport status
-          <<: *RussianKdmidInstruction
     - Id: "1"
       Name: Notary
       Description: Notary services
@@ -58,16 +49,11 @@ RussianServices: &RussianServices
           Children:
             <<: *RussianKdmidServices
 
-ItalianPrenotamiInstruction: &ItalianPrenotamiInstruction
-  Instruction: To do this I need your login and password from the prenotami website. You can get them by registering on the prenotami website. After that, you will receive a letter with a link to the prenotami website. Open this link and log in to your account. After that, put your login and password instead of <login;password> in the command above. Send it to the chat (without apostrophes).
-
 ItalianPrenotamiServices: &ItalianPrenotamiServices
   - Id: "0"
     Name: Check slots now
-    <<: *ItalianPrenotamiInstruction
   - Id: "1"
     Name: Slots auto notification
-    <<: *ItalianPrenotamiInstruction
 
 ItalianServices: &ItalianServices
   Id: ITA

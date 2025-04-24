@@ -5,10 +5,8 @@ open System
 open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Persistence.Storages
 open Persistence.Storages.Domain
 open AIProvider.Services.DataAccess
-open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
@@ -48,7 +46,7 @@ module Russian =
             let initKdmidRequestStorage () =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "Requests.Rus.Kdmid.json"
+                    FileSystem.Connection.FileName = "requests-rus-kdmid.json"
                 }
                 |> Storage.Request.FileSystem
                 |> Storage.Request.init (Kdmid.Payload.serialize, Kdmid.Payload.deserialize)
@@ -56,7 +54,7 @@ module Russian =
             let initMidpassRequestStorage () =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "Requests.Rus.Midpass.json"
+                    FileSystem.Connection.FileName = "requests-rus-midpass.json"
                 }
                 |> Storage.Request.FileSystem
                 |> Storage.Request.init (Midpass.Payload.serialize, Midpass.Payload.deserialize)
@@ -91,7 +89,7 @@ module Italian =
             let initPrenotamiRequestStorage () =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "Requests.Ita.Prenotami.json"
+                    FileSystem.Connection.FileName = "requests-ita-prenotami.json"
                 }
                 |> Storage.Request.FileSystem
                 |> Storage.Request.init (
@@ -123,51 +121,53 @@ type Dependencies = {
 
     static member create cfg =
 
-        let inline getEnv name =
+        let getEnv name =
             Some cfg
             |> Configuration.Client.tryGetEnv name
             |> Result.bind (function
                 | Some value -> Ok value
                 | None -> $"Environment configuration '{name}' not found." |> NotFound |> Error)
 
+        let initCultureStorage fileStoragePath =
+            {
+                FileSystem.Connection.FilePath = fileStoragePath
+                FileSystem.Connection.FileName = "culture.json"
+            }
+            |> Culture.Response.FileSystem
+            |> Culture.Response.init
+
+        let initChatStorage fileStoragePath =
+            {
+                FileSystem.Connection.FilePath = fileStoragePath
+                FileSystem.Connection.FileName = "chats.json"
+            }
+            |> Storage.Chat.FileSystem
+            |> Storage.Chat.init
+
+        let initEmbassyStorage () =
+            {
+                Configuration.Connection.Provider = cfg
+                Configuration.Connection.Section = "Embassies"
+            }
+            |> EmbassyGraph.Configuration
+            |> EmbassyGraph.init
+
+        let initServiceStorage () =
+            {
+                Configuration.Connection.Provider = cfg
+                Configuration.Connection.Section = "Services"
+            }
+            |> ServiceGraph.Configuration
+            |> ServiceGraph.init
+
         result {
 
             let! fileStoragePath = getEnv "Persistence:FileSystem"
             let! fileStorageKey = getEnv "Persistence:Key"
 
-            let initCultureStorage () =
-                {
-                    FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "Culture.json"
-                }
-                |> Culture.Response.FileSystem
-                |> Culture.Response.init
+            let initCultureStorage () = initCultureStorage fileStoragePath
 
-            let initChatStorage () =
-                {
-                    FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "Chats.json"
-                }
-                |> Storage.Chat.FileSystem
-                |> Storage.Chat.init
-
-            let initEmbassyStorage () =
-                {
-                    Configuration.Connection.Provider = cfg
-                    Configuration.Connection.Section = "Embassies"
-                }
-                |> EmbassyGraph.Configuration
-                |> EmbassyGraph.init
-
-            let initServiceStorage () =
-                {
-                    Configuration.Connection.Provider = cfg
-                    Configuration.Connection.Section = "Services"
-                }
-                |> ServiceGraph.Configuration
-                |> ServiceGraph.init
-
-            let! chatStorage = initChatStorage ()
+            let! chatStorage = initChatStorage fileStoragePath
             let! russianStorage = Russian.Dependencies.create fileStoragePath
             let! italianStorage = Italian.Dependencies.create fileStoragePath fileStorageKey
 

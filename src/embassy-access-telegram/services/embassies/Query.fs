@@ -17,7 +17,7 @@ let private createButtonsGroup chatId messageId name buttons =
     | true -> "No available embassies for you here." |> Text.create
     | false ->
         ButtonsGroup.create {
-            Name = name |> Option.defaultValue "Choose what you need to visit"
+            Name = name |> Option.defaultValue "Choose the embassy you what to visit"
             Columns = 3
             Buttons =
                 buttons
@@ -74,13 +74,13 @@ let private getUserEmbassy' embassyId firstCall =
 
                 node.Children
                 |> Seq.map _.Value
-                |> Seq.filter (fun embassy -> embassy.Id.Value.In userEmbassyIds)
+                |> Seq.filter (fun embassy -> embassy.Id.Value.IsInSeq userEmbassyIds)
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.UserEmbassy embassy.Id))
                     route.Value, embassy.Name)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
-                $"You have no embassies of '%s{embassyId.ValueStr}' in your list."
+                $"You have no embassies for '%s{embassyId.ValueStr}'."
                 |> NotFound
                 |> Error
                 |> async.Return)

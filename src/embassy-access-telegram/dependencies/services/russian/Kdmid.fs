@@ -1,26 +1,24 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Services.Russian.Kdmid
 
-open System
 open System.Threading
 open Infrastructure.Domain
+open Web.Clients.Domain
 open EA.Core.Domain
-open Web.Clients.Domain.Telegram
-open Web.Clients.Domain.Telegram.Producer
 open EA.Russian.Services.Domain.Kdmid
 open EA.Telegram.Dependencies.Services.Russian
 
 type Dependencies = {
-    ChatId: ChatId
+    CT: CancellationToken
+    ChatId: Telegram.ChatId
     MessageId: int
-    CancellationToken: CancellationToken
-    translateMessageRes: Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
-    sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-    Service: EA.Russian.Services.Domain.Kdmid.Dependencies
 } with
 
-    static member create(deps: Russian.Dependencies) =
-        "Not implemented" |> NotImplemented |> Error
+    static member create(deps: Russian.Dependencies) = {
+        CT = deps.CT
+        ChatId = deps.Chat.Id
+        MessageId = deps.MessageId
+    }
 
 module Notification =
     open EA.Telegram.Domain
@@ -28,6 +26,5 @@ module Notification =
     type Dependencies = {
         getRequestChats: Request<Payload> -> Async<Result<Chat list, Error'>>
         setAppointments: ServiceId -> Appointment Set -> Async<Result<Request<Payload> list, Error'>>
-        translateMessages: Culture -> Message seq -> Async<Result<Message list, Error'>>
-        sendMessages: Message seq -> Async<Result<unit, Error'>>
+        sendTranslatedMessagesRes: Chat -> Telegram.Producer.Message seq -> Async<Result<unit, Error'>>
     }
