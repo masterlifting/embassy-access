@@ -31,8 +31,6 @@
         <Content Include="..\..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
-        <Content Include="data\Chats.json" />
-        <Content Include="data\Culture.json" />
         <Content Include="settings\appsettings.yaml">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
           <Link>appsettings.yaml</Link>

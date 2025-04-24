@@ -6,7 +6,7 @@ open EA.Telegram.Domain
 open EA.Telegram.Router.Services.Italian
 
 type Route =
-    | Prenotami of Prenotami.Get.Route
+    | Prenotami of Prenotami.Method.Route
 
     member this.Value =
         match this with
@@ -18,7 +18,7 @@ type Route =
         let remaining = parts[1..] |> String.concat Router.DELIMITER
 
         match parts[0] with
-        | "0" -> remaining |> Prenotami.Get.Route.parse |> Result.map Prenotami
+        | "0" -> remaining |> Prenotami.Method.Route.parse |> Result.map Prenotami
         | _ ->
             $"'{parts}' of 'Services.Italian' endpoint is not supported."
             |> NotSupported
