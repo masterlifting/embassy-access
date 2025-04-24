@@ -27,13 +27,30 @@ let respond request chat =
             | Method.Russian russian ->
                 match russian with
                 | Russian.Method.Kdmid kdmid ->
-                    "Russian.Kdmid is not implemented." |> NotImplemented |> Error |> async.Return
+                    match kdmid with
+                    | Russian.Kdmid.Method.Post post ->
+                        match post with
+                        | Russian.Kdmid.Post.CheckSlotsNow(serviceId, embassyId, link)
+                        | Russian.Kdmid.Post.SlotsAutoNotification(serviceId, embassyId, link)
+                        | Russian.Kdmid.Post.BookFirstSlot(serviceId, embassyId, link)
+                        | Russian.Kdmid.Post.BookLastSlot(serviceId, embassyId, link)
+                        | Russian.Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, link) ->
+                            "Russian.Kdmid is not implemented." |> NotImplemented |> Error |> async.Return
                 | Russian.Method.Midpass midpass ->
-                    "Russian.Midpass is not implemented." |> NotImplemented |> Error |> async.Return
+                    match midpass with
+                    | Russian.Midpass.Method.Post post ->
+                        match post with
+                        | Russian.Midpass.Post.CheckStatus(serviceId, embassyId, number) ->
+                            "Russian.Midpass is not implemented." |> NotImplemented |> Error |> async.Return
             | Method.Italian italian ->
                 match italian with
                 | Italian.Method.Prenotami prenotami ->
-                    "Italian.Prenotami is not implemented."
-                    |> NotImplemented
-                    |> Error
-                    |> async.Return)
+                    match prenotami with
+                    | Italian.Prenotami.Method.Post post ->
+                        match post with
+                        | Italian.Prenotami.Post.CheckSlotsNow(serviceId, embassyId, login, password)
+                        | Italian.Prenotami.Post.SlotsAutoNotification(serviceId, embassyId, login, password) ->
+                            "Italian.Prenotami is not implemented."
+                            |> NotImplemented
+                            |> Error
+                            |> async.Return)
