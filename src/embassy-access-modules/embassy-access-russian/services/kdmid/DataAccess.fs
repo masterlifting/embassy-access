@@ -11,6 +11,10 @@ open EA.Russian.Services.Domain.Kdmid
 
 let private result = ResultBuilder()
 
+// Use UTF-8 encoding for proper Cyrillic support
+let private JsonOptions =
+    Text.Json.JsonSerializerOptions(Encoder = Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping)
+
 [<RequireQualifiedAccess>]
 module Credentials =
 
@@ -144,7 +148,7 @@ type Payload with
 
         result
 
-    static member serialize(payload: Payload) = payload.ToEntity() |> Json.serialize
+    static member serialize(payload: Payload) = payload.ToEntity() |> Json.serialize' JsonOptions
 
     static member deserialize(payload: string) =
-        payload |> Json.deserialize<Payload.Entity> |> Result.bind _.ToDomain()
+        payload |> Json.deserialize'<Payload.Entity> JsonOptions |> Result.bind _.ToDomain()

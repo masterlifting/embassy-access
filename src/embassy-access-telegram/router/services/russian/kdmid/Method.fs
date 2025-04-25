@@ -18,7 +18,7 @@ type Route =
         let remaining = parts[1..] |> String.concat Router.DELIMITER
 
         match parts[0] with
-        | "2" -> remaining |> Post.Route.parse |> Result.map Post
+        | "0" -> remaining |> Post.Route.parse |> Result.map Post
         | _ ->
             $"'{input}' of 'Services.Russian.Kdmid' endpoint is not supported."
             |> NotSupported

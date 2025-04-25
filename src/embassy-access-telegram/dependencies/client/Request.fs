@@ -6,7 +6,6 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain.Telegram
 open Web.Clients.Domain.Telegram.Producer
-open AIProvider.Services.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
@@ -14,9 +13,10 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 
 type Dependencies = {
-    CT: CancellationToken
+    ct: CancellationToken
     ChatId: ChatId
     MessageId: int
+    Persistence: Persistence.Dependencies
     tryGetChat: unit -> Async<Result<Chat option, Error'>>
     getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
     getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
@@ -59,9 +59,10 @@ type Dependencies = {
                     |> ResultAsync.bindAsync deps.Web.Telegram.sendMessages
 
                 return {
-                    CT = deps.CT
+                    ct = deps.ct
                     ChatId = payload.ChatId
                     MessageId = payload.MessageId
+                    Persistence = deps.Persistence
                     tryGetChat = tryGetChat
                     getEmbassyGraph = getEmbassyGraph
                     getServiceGraph = getServiceGraph

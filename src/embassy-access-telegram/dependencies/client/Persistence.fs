@@ -1,10 +1,10 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Persistence
 
-open EA.Core.Domain
-open EA.Telegram.Domain
 open Infrastructure.Domain
+open EA.Core.Domain
 open EA.Core.DataAccess
+open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 
 module Russian =

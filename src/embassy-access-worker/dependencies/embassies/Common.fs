@@ -25,7 +25,7 @@ let inline private equalCountry (taskId: ActiveTaskId) (embassyId: EmbassyId) =
 let getRequests (serviceId: ServiceId) (task: ActiveTask) =
     fun requestStorage ->
         requestStorage
-        |> Storage.Request.Query.findManyWithServiceId serviceId
+        |> Storage.Request.Query.findMany (Storage.Request.Query.WithServiceId serviceId)
         |> ResultAsync.map (
             List.filter (fun request ->
                 task.Id |> equalCountry <| request.Embassy.Id

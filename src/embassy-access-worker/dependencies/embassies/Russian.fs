@@ -34,14 +34,14 @@ module Kdmid =
 
                 let getRequestChats request =
                     requestStorage
-                    |> Storage.Request.Query.findManyByServiceId request.Service.Id
+                    |> Storage.Request.Query.findMany (Storage.Request.Query.ByServiceId request.Service.Id)
                     |> ResultAsync.map (Seq.map _.Id)
                     |> ResultAsync.bindAsync (fun subscriptionIds ->
                         chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptionIds)
 
                 let setRequestAppointments serviceId appointments =
                     requestStorage
-                    |> Storage.Request.Query.findManyByServiceId serviceId
+                    |> Storage.Request.Query.findMany (Storage.Request.Query.ByServiceId serviceId)
                     |> ResultAsync.map (fun requests ->
                         requests
                         |> Seq.map (fun request -> {
@@ -78,7 +78,7 @@ module Kdmid =
 
                 let tryProcessFirst requests =
                     {
-                        CancellationToken = ct
+                        ct = ct
                         RequestStorage = requestStorage
                     }
                     |> Kdmid.Client.init

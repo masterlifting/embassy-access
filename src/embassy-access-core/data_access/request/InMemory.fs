@@ -52,6 +52,13 @@ module Query =
         |> Result.bind (Seq.map (fun e -> e.ToDomain deserializePayload) >> Result.choose)
         |> Result.map List.ofSeq
         |> async.Return
+        
+    let findManyByEmbassyIdAndServiceId (embassyId: EmbassyId) (serviceId: ServiceId) deserializePayload client =
+        client
+        |> loadData
+        |> Result.map (Seq.filter (fun e -> e.EmbassyId = embassyId.ValueStr && e.ServiceId = serviceId.ValueStr))
+        |> Result.bind (Seq.map (fun e -> e.ToDomain deserializePayload) >> Result.choose)
+        |> async.Return
 
 module Command =
     let create request serializePayload client =

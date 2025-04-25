@@ -1,5 +1,6 @@
 ﻿module EA.Telegram.Services.Services.Russian.Kdmid.Query
 
+open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
@@ -56,7 +57,7 @@ let private bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) =
 
 let private bookFirstSlotInPeriod (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, INPUT_LINK)
+        Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, DateTime.UtcNow, DateTime.UtcNow, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
 let getService (serviceId: ServiceId) (embassyId: EmbassyId) =

@@ -147,5 +147,5 @@ type Client = {
 
 type Dependencies = {
     RequestStorage: Request.Storage<Payload>
-    CancellationToken: CancellationToken
+    ct: CancellationToken
 }

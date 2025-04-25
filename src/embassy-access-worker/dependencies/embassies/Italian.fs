@@ -34,7 +34,7 @@ module Prenotami =
 
                 let getRequestChats request =
                     requestStorage
-                    |> Storage.Request.Query.findManyByServiceId request.Service.Id
+                    |> Storage.Request.Query.findMany (Storage.Request.Query.ByServiceId request.Service.Id)
                     |> ResultAsync.map (Seq.map _.Id)
                     |> ResultAsync.bindAsync (fun subscriptionIds ->
                         chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptionIds)

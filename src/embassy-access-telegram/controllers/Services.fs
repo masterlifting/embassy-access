@@ -1,21 +1,78 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Controllers.Services
 
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Telegram.Router.Services
+open EA.Telegram.Services.Services
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Services
 open EA.Telegram.Dependencies.Services.Russian
 open EA.Telegram.Dependencies.Services.Italian
-open EA.Telegram.Services.Services
+
+module Russian =
+    open EA.Telegram.Router.Services.Russian
+    open EA.Telegram.Services.Services.Russian
+
+    let respond method =
+        fun (deps: Russian.Dependencies) ->
+            match method with
+            | Method.Kdmid kdmid ->
+                deps
+                |> Kdmid.Dependencies.create
+                |> fun deps ->
+                    match kdmid with
+                    | Kdmid.Method.Post post ->
+                        match post with
+                        | Kdmid.Post.CheckSlotsNow(serviceId, embassyId, link) ->
+                            deps |> Kdmid.Command.checkSlotsNow serviceId embassyId link
+                        | Kdmid.Post.SlotsAutoNotification(serviceId, embassyId, link) ->
+                            deps |> Kdmid.Command.slotsAutoNotification serviceId embassyId link
+                        | Kdmid.Post.BookFirstSlot(serviceId, embassyId, link) ->
+                            deps |> Kdmid.Command.bookFirstSlot serviceId embassyId link
+                        | Kdmid.Post.BookLastSlot(serviceId, embassyId, link) ->
+                            deps |> Kdmid.Command.bookLastSlot serviceId embassyId link
+                        | Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, start, finish, link) ->
+                            deps |> Kdmid.Command.bookFirstSlotInPeriod serviceId embassyId start finish link
+                        | Kdmid.Post.ConfirmAppointment(requestId, appointmentId) -> 
+                            deps |> Kdmid.Command.confirmAppointment requestId appointmentId
+                        |> deps.sendTranslatedMessageRes
+            | Method.Midpass midpass ->
+                deps
+                |> Midpass.Dependencies.create
+                |> fun deps ->
+                    match midpass with
+                    | Midpass.Method.Post post ->
+                        match post with
+                        | Midpass.Post.CheckStatus(serviceId, embassyId, number) ->
+                            deps |> Midpass.Command.checkStatus serviceId embassyId number
+                        |> deps.sendTranslatedMessageRes
+
+module Italian =
+    open EA.Telegram.Router.Services.Italian
+    open EA.Telegram.Services.Services.Italian
+
+    let respond method =
+        fun (deps: Italian.Dependencies) ->
+            match method with
+            | Method.Prenotami prenotami ->
+                deps
+                |> Prenotami.Dependencies.create
+                |> fun deps ->
+                    match prenotami with
+                    | Prenotami.Method.Post post ->
+                        match post with
+                        | Prenotami.Post.CheckSlotsNow(serviceId, embassyId, login, password) ->
+                            deps |> Prenotami.Command.checkSlotsNow serviceId embassyId login password
+                        | Prenotami.Post.SlotsAutoNotification(serviceId, embassyId, login, password) ->
+                            deps
+                            |> Prenotami.Command.slotsAutoNotification serviceId embassyId login password
+                        |> deps.sendTranslatedMessageRes
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->
         deps
         |> Services.Dependencies.create chat
         |> ResultAsync.wrap (fun deps ->
-
             match request with
             | Method.Get get ->
                 match get with
@@ -24,33 +81,5 @@ let respond request chat =
                 | Get.UserServices embassyId -> deps |> Query.getUserServices embassyId
                 | Get.UserService(embassyId, serviceId) -> deps |> Query.getUserService embassyId serviceId
                 |> deps.sendTranslatedMessageRes
-            | Method.Russian russian ->
-                match russian with
-                | Russian.Method.Kdmid kdmid ->
-                    match kdmid with
-                    | Russian.Kdmid.Method.Post post ->
-                        match post with
-                        | Russian.Kdmid.Post.CheckSlotsNow(serviceId, embassyId, link)
-                        | Russian.Kdmid.Post.SlotsAutoNotification(serviceId, embassyId, link)
-                        | Russian.Kdmid.Post.BookFirstSlot(serviceId, embassyId, link)
-                        | Russian.Kdmid.Post.BookLastSlot(serviceId, embassyId, link)
-                        | Russian.Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, link) ->
-                            "Russian.Kdmid is not implemented." |> NotImplemented |> Error |> async.Return
-                | Russian.Method.Midpass midpass ->
-                    match midpass with
-                    | Russian.Midpass.Method.Post post ->
-                        match post with
-                        | Russian.Midpass.Post.CheckStatus(serviceId, embassyId, number) ->
-                            "Russian.Midpass is not implemented." |> NotImplemented |> Error |> async.Return
-            | Method.Italian italian ->
-                match italian with
-                | Italian.Method.Prenotami prenotami ->
-                    match prenotami with
-                    | Italian.Prenotami.Method.Post post ->
-                        match post with
-                        | Italian.Prenotami.Post.CheckSlotsNow(serviceId, embassyId, login, password)
-                        | Italian.Prenotami.Post.SlotsAutoNotification(serviceId, embassyId, login, password) ->
-                            "Italian.Prenotami is not implemented."
-                            |> NotImplemented
-                            |> Error
-                            |> async.Return)
+            | Method.Russian russian -> deps |> Russian.Dependencies.create |> Russian.respond russian
+            | Method.Italian italian -> deps |> Italian.Dependencies.create |> Italian.respond italian)

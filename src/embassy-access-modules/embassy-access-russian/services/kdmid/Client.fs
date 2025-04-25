@@ -40,32 +40,32 @@ let init (deps: Dependencies) =
 
     {
         initHttpClient = initHttpClient
-        updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.update request
+        updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
         getInitialPage =
             fun request httpClient ->
                 httpClient
-                |> Http.Request.get request deps.CancellationToken
-                |> Http.Response.String.read deps.CancellationToken
+                |> Http.Request.get request deps.ct
+                |> Http.Response.String.read deps.ct
         getCaptcha =
             fun request httpClient ->
                 httpClient
-                |> Http.Request.get request deps.CancellationToken
-                |> Http.Response.Bytes.read deps.CancellationToken
-        solveIntCaptcha = Web.Captcha.solveToInt deps.CancellationToken
+                |> Http.Request.get request deps.ct
+                |> Http.Response.Bytes.read deps.ct
+        solveIntCaptcha = Web.Captcha.solveToInt deps.ct
         postValidationPage =
             fun request content httpClient ->
                 httpClient
-                |> Http.Request.post request content deps.CancellationToken
-                |> Http.Response.String.readContent deps.CancellationToken
+                |> Http.Request.post request content deps.ct
+                |> Http.Response.String.readContent deps.ct
         postAppointmentsPage =
             fun request content httpClient ->
                 httpClient
-                |> Http.Request.post request content deps.CancellationToken
-                |> Http.Response.String.readContent deps.CancellationToken
+                |> Http.Request.post request content deps.ct
+                |> Http.Response.String.readContent deps.ct
         postConfirmationPage =
             fun request content httpClient ->
                 httpClient
-                |> Http.Request.post request content deps.CancellationToken
-                |> Http.Response.String.readContent deps.CancellationToken
+                |> Http.Request.post request content deps.ct
+                |> Http.Response.String.readContent deps.ct
     }
     |> Ok

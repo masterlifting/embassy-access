@@ -16,7 +16,7 @@ let create cfg ct =
         let! cultureStorage = persistence.initCultureStorage ()
 
         let client: EA.Telegram.Dependencies.Client.Dependencies = {
-            CT = ct
+            ct = ct
             Culture =
                 EA.Telegram.Dependencies.Culture.Dependencies.create ct {
                     Provider = aiProvider

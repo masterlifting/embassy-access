@@ -1,6 +1,7 @@
 ﻿module EA.Russian.Services.Kdmid.Service
 
 open System
+open EA.Russian.Services.DataAccess.Kdmid
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
@@ -20,7 +21,7 @@ let private setFinalProcessState (request: Request<Payload>) requestPipe =
                 |> fun r -> {
                     r with
                         Modified = DateTime.UtcNow
-                        ProcessState = r.Payload |> Payload.print |> Completed
+                        ProcessState = r.Payload.State |> PayloadState.print |> Completed
                 }
                 |> updateRequest
             | Error error ->

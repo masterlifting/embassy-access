@@ -6,7 +6,7 @@ open AIProvider.Services.Dependencies
 open EA.Telegram.Dependencies
 
 type Dependencies = {
-    CT: CancellationToken
+    ct: CancellationToken
     Web: Web.Dependencies
     Culture: Culture.Dependencies
     Persistence: Persistence.Dependencies

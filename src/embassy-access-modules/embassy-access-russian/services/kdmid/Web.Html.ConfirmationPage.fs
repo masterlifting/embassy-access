@@ -11,8 +11,8 @@ open EA.Russian.Services.Kdmid.Web
 
 let private handleRequestConfirmation (request: Request<Payload>) =
     match request.Payload.State with
-    | NoAppointments -> Error <| NotFound "No appointments found to confirm."
-    | HasConfirmation _ -> Error <| NotFound "Request already has confirmation."
+    | NoAppointments -> Ok <| None
+    | HasConfirmation _ -> Ok <| None
     | HasAppointments appointments ->
         match request.Payload.Confirmation with
         | Confirmation.Disabled -> Ok <| None

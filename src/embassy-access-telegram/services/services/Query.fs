@@ -69,7 +69,7 @@ let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) =
 
 let getService embassyId serviceId =
     fun (deps: Services.Dependencies) ->
-        deps.getServiceNode serviceId
+        deps.tryFindServiceNode serviceId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId
             | Some(AP.Node node) ->
@@ -93,7 +93,7 @@ let getServices embassyId =
 
 let getUserService embassyId serviceId =
     fun (deps: Services.Dependencies) ->
-        deps.getServiceNode serviceId
+        deps.tryFindServiceNode serviceId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId
             | Some(AP.Node node) ->

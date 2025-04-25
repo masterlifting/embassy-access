@@ -30,6 +30,15 @@ let init (serializePayload, deserializePayload) =
 
 module Query =
 
+    type Filter = Id of RequestId
+
+    type FilterSeq =
+        | Ids of RequestId seq
+        | ByEmbassyId of EmbassyId
+        | ByServiceId of ServiceId
+        | WithServiceId of ServiceId
+        | ByEmbassyAndServiceId of EmbassyId * ServiceId
+
     let getIdentifiers storage =
         let provider = storage |> toProvider
         match provider.Type with
@@ -37,51 +46,51 @@ module Query =
         | Storage.FileSystem client -> client |> FileSystem.Request.Query.getIdentifiers
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
-    let tryFindById id storage =
+    let tryFind filter storage =
         let provider = storage |> toProvider
+        let deserialize = provider.deserializePayload
+
+        let inMemoryQuery client =
+            match filter with
+            | Id id -> InMemory.Request.Query.tryFindById id
+            |> fun find -> client |> find deserialize
+
+        let fileSystemQuery client =
+            match filter with
+            | Id id -> FileSystem.Request.Query.tryFindById id
+            |> fun find -> client |> find deserialize
+
         match provider.Type with
-        | Storage.InMemory client -> client |> InMemory.Request.Query.tryFindById id provider.deserializePayload
-        | Storage.FileSystem client -> client |> FileSystem.Request.Query.tryFindById id provider.deserializePayload
+        | Storage.InMemory client -> client |> inMemoryQuery
+        | Storage.FileSystem client -> client |> fileSystemQuery
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
-    let findManyByEmbassyId embassyId storage =
+    let findMany filter storage =
         let provider = storage |> toProvider
-        match provider.Type with
-        | Storage.InMemory client ->
-            client
-            |> InMemory.Request.Query.findManyByEmbassyId embassyId provider.deserializePayload
-        | Storage.FileSystem client ->
-            client
-            |> FileSystem.Request.Query.findManyByEmbassyId embassyId provider.deserializePayload
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
-    let findManyByServiceId id storage =
-        let provider = storage |> toProvider
-        match provider.Type with
-        | Storage.InMemory client ->
-            client
-            |> InMemory.Request.Query.findManyByServiceId id provider.deserializePayload
-        | Storage.FileSystem client ->
-            client
-            |> FileSystem.Request.Query.findManyByServiceId id provider.deserializePayload
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
+        let inMemoryQuery client =
+            match filter with
+            | Ids ids -> InMemory.Request.Query.findManyByIds ids
+            | ByEmbassyId embassyId -> InMemory.Request.Query.findManyByEmbassyId embassyId
+            | ByServiceId serviceId -> InMemory.Request.Query.findManyByServiceId serviceId
+            | WithServiceId serviceId -> InMemory.Request.Query.findManyWithServiceId serviceId
+            | ByEmbassyAndServiceId(embassyId, serviceId) ->
+                InMemory.Request.Query.findManyByEmbassyIdAndServiceId embassyId serviceId
+            |> fun find -> client |> find provider.deserializePayload
 
-    let findManyWithServiceId id storage =
-        let provider = storage |> toProvider
-        match provider.Type with
-        | Storage.InMemory client ->
-            client
-            |> InMemory.Request.Query.findManyWithServiceId id provider.deserializePayload
-        | Storage.FileSystem client ->
-            client
-            |> FileSystem.Request.Query.findManyWithServiceId id provider.deserializePayload
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
+        let fileSystemQuery client =
+            match filter with
+            | Ids ids -> FileSystem.Request.Query.findManyByIds ids
+            | ByEmbassyId embassyId -> FileSystem.Request.Query.findManyByEmbassyId embassyId
+            | ByServiceId serviceId -> FileSystem.Request.Query.findManyByServiceId serviceId
+            | WithServiceId serviceId -> FileSystem.Request.Query.findManyWithServiceId serviceId
+            | ByEmbassyAndServiceId(embassyId, serviceId) ->
+                FileSystem.Request.Query.findManyByEmbassyIdAndServiceId embassyId serviceId
+            |> fun find -> client |> find provider.deserializePayload
 
-    let findManyByIds ids storage =
-        let provider = storage |> toProvider
         match provider.Type with
-        | Storage.InMemory client -> client |> InMemory.Request.Query.findManyByIds ids provider.deserializePayload
-        | Storage.FileSystem client -> client |> FileSystem.Request.Query.findManyByIds ids provider.deserializePayload
+        | Storage.InMemory client -> client |> inMemoryQuery
+        | Storage.FileSystem client -> client |> fileSystemQuery
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
 module Command =
