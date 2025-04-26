@@ -46,7 +46,7 @@ module Query =
         |> ResultAsync.map (Seq.filter (fun e -> idSet.Contains e.Id))
         |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain deserializePayload) >> Result.choose)
         |> ResultAsync.map List.ofSeq
-        
+
     let findManyByEmbassyIdAndServiceId (embassyId: EmbassyId) (serviceId: ServiceId) deserializePayload client =
         client
         |> loadData

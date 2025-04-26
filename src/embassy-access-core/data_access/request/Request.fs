@@ -27,8 +27,8 @@ type Entity() =
     member val EmbassyDescription: string option = None with get, set
     member val EmbassyTimeZone: float = 0. with get, set
     member val Payload = String.Empty with get, set
+    member val AutoProcessing = false with get, set
     member val ProcessState = ProcessStateEntity() with get, set
-    member val UseBackground = false with get, set
     member val Limits = Array.empty<LimitEntity> with get, set
     member val Modified = DateTime.UtcNow with get, set
 
@@ -58,8 +58,8 @@ type Entity() =
                     TimeZone = this.EmbassyTimeZone
                 }
                 Payload = payload
+                AutoProcessing = this.AutoProcessing
                 ProcessState = processState
-                UseBackground = this.UseBackground
                 Limits = limitations |> Set.ofSeq
                 Modified = this.Modified
             }
@@ -80,8 +80,8 @@ type private Request<'a> with
                 EmbassyDescription = this.Embassy.Description,
                 EmbassyTimeZone = this.Embassy.TimeZone,
                 Payload = payload,
+                AutoProcessing = this.AutoProcessing,
                 ProcessState = this.ProcessState.ToEntity(),
-                UseBackground = this.UseBackground,
                 Limits = (this.Limits |> Seq.map _.ToEntity() |> Seq.toArray),
                 Modified = this.Modified
             ))

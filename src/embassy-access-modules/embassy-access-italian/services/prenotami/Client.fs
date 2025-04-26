@@ -39,7 +39,7 @@ let init (deps: Dependencies) =
         getInitialPage =
             fun request httpClient ->
                 httpClient
-                |> Http.Request.get request deps.CancellationToken
-                |> Http.Response.String.read deps.CancellationToken
+                |> Http.Request.get request deps.ct
+                |> Http.Response.String.read deps.ct
     }
     |> Ok

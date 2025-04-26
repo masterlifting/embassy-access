@@ -24,18 +24,18 @@ module Russian =
                     | Kdmid.Method.Post post ->
                         match post with
                         | Kdmid.Post.CheckSlotsNow(serviceId, embassyId, link) ->
-                            deps |> Kdmid.Command.checkSlotsNow serviceId embassyId link
+                            Kdmid.Command.checkSlotsNow serviceId embassyId link
                         | Kdmid.Post.SlotsAutoNotification(serviceId, embassyId, link) ->
-                            deps |> Kdmid.Command.slotsAutoNotification serviceId embassyId link
+                            Kdmid.Command.slotsAutoNotification serviceId embassyId link
                         | Kdmid.Post.BookFirstSlot(serviceId, embassyId, link) ->
-                            deps |> Kdmid.Command.bookFirstSlot serviceId embassyId link
+                            Kdmid.Command.bookFirstSlot serviceId embassyId link
                         | Kdmid.Post.BookLastSlot(serviceId, embassyId, link) ->
-                            deps |> Kdmid.Command.bookLastSlot serviceId embassyId link
+                            Kdmid.Command.bookLastSlot serviceId embassyId link
                         | Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, start, finish, link) ->
-                            deps |> Kdmid.Command.bookFirstSlotInPeriod serviceId embassyId start finish link
-                        | Kdmid.Post.ConfirmAppointment(requestId, appointmentId) -> 
-                            deps |> Kdmid.Command.confirmAppointment requestId appointmentId
-                        |> deps.sendTranslatedMessageRes
+                            Kdmid.Command.bookFirstSlotInPeriod serviceId embassyId start finish link
+                        | Kdmid.Post.ConfirmAppointment(requestId, appointmentId) ->
+                            Kdmid.Command.confirmAppointment requestId appointmentId
+                        |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
             | Method.Midpass midpass ->
                 deps
                 |> Midpass.Dependencies.create
@@ -44,8 +44,8 @@ module Russian =
                     | Midpass.Method.Post post ->
                         match post with
                         | Midpass.Post.CheckStatus(serviceId, embassyId, number) ->
-                            deps |> Midpass.Command.checkStatus serviceId embassyId number
-                        |> deps.sendTranslatedMessageRes
+                            Midpass.Command.checkStatus serviceId embassyId number
+                        |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 module Italian =
     open EA.Telegram.Router.Services.Italian
@@ -62,11 +62,12 @@ module Italian =
                     | Prenotami.Method.Post post ->
                         match post with
                         | Prenotami.Post.CheckSlotsNow(serviceId, embassyId, login, password) ->
-                            deps |> Prenotami.Command.checkSlotsNow serviceId embassyId login password
+                            Prenotami.Command.checkSlotsNow serviceId embassyId login password
                         | Prenotami.Post.SlotsAutoNotification(serviceId, embassyId, login, password) ->
-                            deps
-                            |> Prenotami.Command.slotsAutoNotification serviceId embassyId login password
-                        |> deps.sendTranslatedMessageRes
+                            Prenotami.Command.slotsAutoNotification serviceId embassyId login password
+                        | Prenotami.Post.ConfirmAppointment(requestId, appointmentId) ->
+                            Prenotami.Command.confirmAppointment requestId appointmentId
+                        |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->
@@ -76,10 +77,10 @@ let respond request chat =
             match request with
             | Method.Get get ->
                 match get with
-                | Get.Services embassyId -> deps |> Query.getServices embassyId
-                | Get.Service(embassyId, serviceId) -> deps |> Query.getService embassyId serviceId
-                | Get.UserServices embassyId -> deps |> Query.getUserServices embassyId
-                | Get.UserService(embassyId, serviceId) -> deps |> Query.getUserService embassyId serviceId
-                |> deps.sendTranslatedMessageRes
+                | Get.Services embassyId -> Query.getServices embassyId
+                | Get.Service(embassyId, serviceId) -> Query.getService embassyId serviceId
+                | Get.UserServices embassyId -> Query.getUserServices embassyId
+                | Get.UserService(embassyId, serviceId) -> Query.getUserService embassyId serviceId
+                |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
             | Method.Russian russian -> deps |> Russian.Dependencies.create |> Russian.respond russian
             | Method.Italian italian -> deps |> Italian.Dependencies.create |> Italian.respond italian)

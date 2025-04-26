@@ -4,8 +4,7 @@ module EA.Telegram.Dependencies.Request
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Clients.Domain.Telegram
-open Web.Clients.Domain.Telegram.Producer
+open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
@@ -14,20 +13,21 @@ open EA.Telegram.Dependencies
 
 type Dependencies = {
     ct: CancellationToken
-    ChatId: ChatId
+    ChatId: Telegram.ChatId
     MessageId: int
     Persistence: Persistence.Dependencies
     tryGetChat: unit -> Async<Result<Chat option, Error'>>
     getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
     getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
-    sendMessage: Message -> Async<Result<unit, Error'>>
-    sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-    translateMessageRes: Culture -> Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
+    sendMessage: Telegram.Producer.Message -> Async<Result<unit, Error'>>
+    sendMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
+    translateMessageRes:
+        Culture -> Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<Telegram.Producer.Message, Error'>>
     getAvailableCultures: unit -> Map<Culture, string>
     setCulture: Culture -> Async<Result<unit, Error'>>
 } with
 
-    static member create(payload: Consumer.Payload<_>) =
+    static member create(payload: Telegram.Consumer.Payload<_>) =
         fun (deps: Client.Dependencies) ->
             let result = ResultBuilder()
 
@@ -48,15 +48,6 @@ type Dependencies = {
                 let setCulture culture =
                     deps.Persistence.initChatStorage ()
                     |> ResultAsync.wrap (Storage.Chat.Command.setCulture payload.ChatId culture)
-
-                let spreadMessages data =
-                    data
-                    |> ResultAsync.map (Seq.groupBy fst)
-                    |> ResultAsync.map (Seq.map (fun (culture, group) -> culture, group |> Seq.map snd |> List.ofSeq))
-                    |> ResultAsync.map (Seq.map (fun (culture, group) -> deps.Culture.translateSeq culture group))
-                    |> ResultAsync.bindAsync (Async.Parallel >> Async.map Result.choose)
-                    |> ResultAsync.map (Seq.collect id)
-                    |> ResultAsync.bindAsync deps.Web.Telegram.sendMessages
 
                 return {
                     ct = deps.ct

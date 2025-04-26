@@ -6,12 +6,11 @@ open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Russian.Services
-open EA.Worker.Dependencies
-open EA.Telegram.Domain
-open EA.Telegram.DataAccess
 open EA.Telegram.Services.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
+open EA.Russian.Services
+open EA.Worker.Dependencies
+open EA.Worker.Dependencies.Embassies
 
 module Kdmid =
     open EA.Russian.Services.Domain.Kdmid
@@ -33,38 +32,34 @@ module Kdmid =
                 let! requestStorage = persistence.RussianStorage.initKdmidRequestStorage ()
 
                 let getRequestChats request =
-                    requestStorage
-                    |> Storage.Request.Query.findMany (Storage.Request.Query.ByServiceId request.Service.Id)
-                    |> ResultAsync.map (Seq.map _.Id)
-                    |> ResultAsync.bindAsync (fun subscriptionIds ->
-                        chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptionIds)
+                    (requestStorage, chatStorage) |> Common.getRequestChats request
 
-                let setRequestAppointments serviceId appointments =
+                let setRequestsAppointments embassyId serviceId appointments =
                     requestStorage
-                    |> Storage.Request.Query.findMany (Storage.Request.Query.ByServiceId serviceId)
-                    |> ResultAsync.map (fun requests ->
-                        requests
-                        |> Seq.map (fun request -> {
-                            request with
-                                Payload = {
-                                    request.Payload with
-                                        State = HasAppointments appointments
-                                }
-                        }))
+                    |> Storage.Request.Query.findMany (
+                        Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId)
+                    )
                     |> ResultAsync.bindAsync (fun requests ->
-                        requestStorage |> Storage.Request.Command.updateSeq requests)
+                        requestStorage
+                        |> Storage.Request.Command.updateSeq (
+                            requests
+                            |> Seq.map (fun request -> {
+                                request with
+                                    Payload = {
+                                        request.Payload with
+                                            State = HasAppointments appointments
+                                    }
+                            })
+                        ))
 
-                let sendTranslatedMessagesRes chat messages =
-                    messages
-                    |> telegram.Culture.translateSeq chat.Culture
-                    |> ResultAsync.map Seq.ofList
-                    |> telegram.Web.Telegram.sendMessagesRes
-                    |> fun f -> f chat.Id
+                let spreadTranslatedMessages data =
+                    (telegram.Culture.translateSeq, telegram.Web.Telegram.sendMessages)
+                    |> Common.spreadTranslatedMessages data
 
                 let notificationDeps: Kdmid.Notification.Dependencies = {
                     getRequestChats = getRequestChats
-                    setAppointments = setRequestAppointments
-                    sendTranslatedMessagesRes = sendTranslatedMessagesRes
+                    setRequestsAppointments = setRequestsAppointments
+                    spreadTranslatedMessages = spreadTranslatedMessages
                 }
 
                 let notify (requestRes: Result<Request<Payload>, Error'>) =

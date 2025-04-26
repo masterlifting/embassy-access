@@ -21,17 +21,13 @@ type Credentials = {
     Password: string
 } with
 
-    static member parse(payload: string) =
-        match payload with
-        | AP.IsString v ->
-            let parts = v.Split ';'
-            match parts.Length = 2 with
-            | true ->
-                let login = parts[0]
-                let password = parts[1]
-                { Login = login; Password = password } |> Ok
-            | false -> $"Prenotami payload: '%s{payload}' is not supported." |> NotSupported |> Error
-        | _ -> $"Prenotami payload: '%s{payload}' is not supported." |> NotSupported |> Error
+    static member parse (login: string) (password: string) =
+        match login, password with
+        | AP.IsString l, AP.IsString p -> { Login = l; Password = p } |> Ok
+        | _ ->
+            $"Prenotami payload: '%s{login},{password}' is not supported."
+            |> NotSupported
+            |> Error
 
     static member print(payload: Credentials) = $"Login: '%s{payload.Login}'"
 
@@ -73,6 +69,6 @@ type Client = {
 }
 
 type Dependencies = {
+    ct: CancellationToken
     RequestStorage: Request.Storage<Payload>
-    CancellationToken: CancellationToken
 }

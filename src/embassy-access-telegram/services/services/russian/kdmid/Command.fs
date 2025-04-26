@@ -32,10 +32,7 @@ let private createMessage chatId (request: Request<Payload>) =
         |> Message.createNew chatId
     | Completed _ ->
         match request.Payload.State with
-        | NoAppointments ->
-            "No appointments found."
-            |> Text.create
-            |> Message.createNew chatId
+        | NoAppointments -> "No appointments found for now." |> Text.create |> Message.createNew chatId
         | HasConfirmation(msg, _) -> msg |> Text.create |> Message.createNew chatId
         | HasAppointments appointments ->
             appointments
@@ -53,7 +50,7 @@ let private createMessage chatId (request: Request<Payload>) =
                 route.Value, a.Value)
             |> fun buttons ->
                 ButtonsGroup.create {
-                    Name = "Choose the appointment"
+                    Name = "Appointments available. Please select one."
                     Columns = 1
                     Buttons =
                         buttons
@@ -83,13 +80,13 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                     Id = RequestId.createNew ()
                     Service = service
                     Embassy = embassy
+                    AutoProcessing = false
                     ProcessState = Ready
                     Limits = Limits
-                    UseBackground = false
                     Modified = DateTime.UtcNow
                     Payload = {
-                        Credentials = payloadCredentials
                         State = NoAppointments
+                        Credentials = payloadCredentials
                         Confirmation = Disabled
                     }
                 }
@@ -105,33 +102,124 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
             | Ready
             | Failed _
             | Completed _ ->
+                do! deps.tryUpdateChatSubscriptions request
                 let! processedRequest = requestStorage |> deps.processRequest request
                 return processedRequest |> createMessage deps.ChatId
         }
 
 let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
     fun (deps: Kdmid.Dependencies) ->
-        $"Auto notification for slots enabled for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link}."
-        |> Text.create
-        |> Message.createNew deps.ChatId
-        |> Ok
-        |> async.Return
+        resultAsync {
+            let! payloadCredentials = Credentials.parse link |> async.Return
+            let! service = deps.findService serviceId
+            let! embassy = deps.findEmbassy embassyId
+            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requests = requestStorage |> deps.findRequests embassyId serviceId
+
+            let request =
+                requests
+                |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.defaultValue {
+                    Id = RequestId.createNew ()
+                    Service = service
+                    Embassy = embassy
+                    AutoProcessing = true
+                    ProcessState = Ready
+                    Limits = Limits
+                    Modified = DateTime.UtcNow
+                    Payload = {
+                        State = NoAppointments
+                        Credentials = payloadCredentials
+                        Confirmation = Disabled
+                    }
+                }
+
+            do! requestStorage |> deps.createOrUpdateRequest request
+            do! deps.tryUpdateChatSubscriptions request
+
+            return
+                $"Auto notification for slots enabled for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link} started..."
+                |> Text.create
+                |> Message.createNew deps.ChatId
+                |> Ok
+                |> async.Return
+        }
 
 let bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
     fun (deps: Kdmid.Dependencies) ->
-        $"Attempting to book first available slot for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link}..."
-        |> Text.create
-        |> Message.createNew deps.ChatId
-        |> Ok
-        |> async.Return
+        resultAsync {
+            let! payloadCredentials = Credentials.parse link |> async.Return
+            let! service = deps.findService serviceId
+            let! embassy = deps.findEmbassy embassyId
+            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requests = requestStorage |> deps.findRequests embassyId serviceId
+
+            let request =
+                requests
+                |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.defaultValue {
+                    Id = RequestId.createNew ()
+                    Service = service
+                    Embassy = embassy
+                    AutoProcessing = true
+                    ProcessState = Ready
+                    Limits = Limits
+                    Modified = DateTime.UtcNow
+                    Payload = {
+                        State = NoAppointments
+                        Credentials = payloadCredentials
+                        Confirmation = FirstAvailable
+                    }
+                }
+
+            do! requestStorage |> deps.createOrUpdateRequest request
+            do! deps.tryUpdateChatSubscriptions request
+
+            return
+                $"The booking first available slot for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link} started..."
+                |> Text.create
+                |> Message.createNew deps.ChatId
+                |> Ok
+                |> async.Return
+        }
 
 let bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
     fun (deps: Kdmid.Dependencies) ->
-        $"Attempting to book last available slot for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link}..."
-        |> Text.create
-        |> Message.createNew deps.ChatId
-        |> Ok
-        |> async.Return
+        resultAsync {
+            let! payloadCredentials = Credentials.parse link |> async.Return
+            let! service = deps.findService serviceId
+            let! embassy = deps.findEmbassy embassyId
+            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requests = requestStorage |> deps.findRequests embassyId serviceId
+
+            let request =
+                requests
+                |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.defaultValue {
+                    Id = RequestId.createNew ()
+                    Service = service
+                    Embassy = embassy
+                    AutoProcessing = true
+                    ProcessState = Ready
+                    Limits = Limits
+                    Modified = DateTime.UtcNow
+                    Payload = {
+                        State = NoAppointments
+                        Credentials = payloadCredentials
+                        Confirmation = LastAvailable
+                    }
+                }
+
+            do! requestStorage |> deps.createOrUpdateRequest request
+            do! deps.tryUpdateChatSubscriptions request
+
+            return
+                $"The booking last available slot for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link} started..."
+                |> Text.create
+                |> Message.createNew deps.ChatId
+                |> Ok
+                |> async.Return
+        }
 
 let bookFirstSlotInPeriod
     (serviceId: ServiceId)
@@ -141,15 +229,54 @@ let bookFirstSlotInPeriod
     (link: string)
     =
     fun (deps: Kdmid.Dependencies) ->
-        $"Attempting to book first available slot in period for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link}..."
-        |> Text.create
-        |> Message.createNew deps.ChatId
-        |> Ok
-        |> async.Return
+        resultAsync {
+            let! payloadCredentials = Credentials.parse link |> async.Return
+            let! service = deps.findService serviceId
+            let! embassy = deps.findEmbassy embassyId
+            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requests = requestStorage |> deps.findRequests embassyId serviceId
+
+            let request =
+                requests
+                |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.defaultValue {
+                    Id = RequestId.createNew ()
+                    Service = service
+                    Embassy = embassy
+                    AutoProcessing = true
+                    ProcessState = Ready
+                    Limits = Limits
+                    Modified = DateTime.UtcNow
+                    Payload = {
+                        State = NoAppointments
+                        Credentials = payloadCredentials
+                        Confirmation = DateTimeRange(start, finish)
+                    }
+                }
+
+            do! requestStorage |> deps.createOrUpdateRequest request
+            do! deps.tryUpdateChatSubscriptions request
+
+            return
+                $"The booking first available slot in period for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link} started..."
+                |> Text.create
+                |> Message.createNew deps.ChatId
+                |> Ok
+                |> async.Return
+        }
 
 let confirmAppointment (requestId: RequestId) (appointmentId: AppointmentId) =
     fun (deps: Kdmid.Dependencies) ->
-        $"This operation is not supported yet. Please try again later."
-        |> NotSupported
-        |> Error
-        |> async.Return
+        resultAsync {
+            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! request = requestStorage |> deps.findRequest requestId
+            let! processedRequest =
+                requestStorage
+                |> deps.processRequest {
+                    request with
+                        ProcessState = Ready
+                        Request.Payload.Confirmation = ForAppointment appointmentId
+                }
+
+            return processedRequest |> createMessage deps.ChatId
+        }

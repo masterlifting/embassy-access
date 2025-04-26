@@ -26,9 +26,9 @@ type Request<'payload> = {
     Service: Service
     Embassy: Embassy
     Payload: 'payload
+    AutoProcessing: bool
     ProcessState: ProcessState
     Limits: Set<Limit>
-    UseBackground: bool
     Modified: DateTime
 } with
 

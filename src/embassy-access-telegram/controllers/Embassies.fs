@@ -15,8 +15,8 @@ let respond request chat =
             match request with
             | Method.Get get ->
                 match get with
-                | Get.Embassy embassyId -> deps |> Query.getEmbassy embassyId
-                | Get.Embassies -> deps |> Query.getEmbassies ()
-                | Get.UserEmbassy embassyId -> deps |> Query.getUserEmbassy embassyId
-                | Get.UserEmbassies -> deps |> Query.getUserEmbassies ()
-                |> deps.sendMessageRes)
+                | Get.Embassy embassyId -> Query.getEmbassy embassyId
+                | Get.Embassies -> Query.getEmbassies ()
+                | Get.UserEmbassy embassyId -> Query.getUserEmbassy embassyId
+                | Get.UserEmbassies -> Query.getUserEmbassies ()
+                |> fun f -> deps |> f |> deps.sendMessageRes)

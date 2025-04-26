@@ -6,12 +6,11 @@ open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Italian.Services
-open EA.Worker.Dependencies
-open EA.Telegram.Domain
-open EA.Telegram.DataAccess
 open EA.Telegram.Services.Services.Italian
 open EA.Telegram.Dependencies.Services.Italian
+open EA.Italian.Services
+open EA.Worker.Dependencies
+open EA.Worker.Dependencies.Embassies
 
 module Prenotami =
     open EA.Italian.Services.Domain.Prenotami
@@ -33,22 +32,34 @@ module Prenotami =
                 let! requestStorage = persistence.ItalianStorage.initPrenotamiRequestStorage ()
 
                 let getRequestChats request =
-                    requestStorage
-                    |> Storage.Request.Query.findMany (Storage.Request.Query.ByServiceId request.Service.Id)
-                    |> ResultAsync.map (Seq.map _.Id)
-                    |> ResultAsync.bindAsync (fun subscriptionIds ->
-                        chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptionIds)
+                    (requestStorage, chatStorage) |> Common.getRequestChats request
 
-                let sendTranslatedMessagesRes chat messages =
-                    messages
-                    |> telegram.Culture.translateSeq chat.Culture
-                    |> ResultAsync.map Seq.ofList
-                    |> telegram.Web.Telegram.sendMessagesRes
-                    |> fun f -> f chat.Id
+                let setRequestsAppointments embassyId serviceId appointments =
+                    requestStorage
+                    |> Storage.Request.Query.findMany (
+                        Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId)
+                    )
+                    |> ResultAsync.bindAsync (fun requests ->
+                        requestStorage
+                        |> Storage.Request.Command.updateSeq (
+                            requests
+                            |> Seq.map (fun request -> {
+                                request with
+                                    Payload = {
+                                        request.Payload with
+                                            State = HasAppointments appointments
+                                    }
+                            })
+                        ))
+
+                let spreadTranslatedMessages data =
+                    (telegram.Culture.translateSeq, telegram.Web.Telegram.sendMessages)
+                    |> Common.spreadTranslatedMessages data
 
                 let notificationDeps: Prenotami.Notification.Dependencies = {
                     getRequestChats = getRequestChats
-                    sendTranslatedMessagesRes = sendTranslatedMessagesRes
+                    setRequestsAppointments = setRequestsAppointments
+                    spreadTranslatedMessages = spreadTranslatedMessages
                 }
 
                 let notify (requestRes: Result<Request<Payload>, Error'>) =
@@ -62,7 +73,7 @@ module Prenotami =
 
                 let tryProcessFirst requests =
                     {
-                        CancellationToken = ct
+                        ct = ct
                         RequestStorage = requestStorage
                     }
                     |> Prenotami.Client.init

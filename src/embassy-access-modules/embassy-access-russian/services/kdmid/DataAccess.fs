@@ -148,7 +148,10 @@ type Payload with
 
         result
 
-    static member serialize(payload: Payload) = payload.ToEntity() |> Json.serialize' JsonOptions
+    static member serialize(payload: Payload) =
+        payload.ToEntity() |> Json.serialize' JsonOptions
 
     static member deserialize(payload: string) =
-        payload |> Json.deserialize'<Payload.Entity> JsonOptions |> Result.bind _.ToDomain()
+        payload
+        |> Json.deserialize'<Payload.Entity> JsonOptions
+        |> Result.bind _.ToDomain()
