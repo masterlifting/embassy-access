@@ -30,7 +30,7 @@ type Route =
         | [| "2"; embassyId; serviceId |] ->
             let embassyId = embassyId |> Graph.NodeIdValue |> EmbassyId
             let serviceId = serviceId |> Graph.NodeIdValue |> ServiceId
-            (embassyId, serviceId) |> Service |> Ok
+            (embassyId, serviceId) |> UserService |> Ok
         | [| "3"; embassyId |] -> embassyId |> Graph.NodeIdValue |> EmbassyId |> UserServices |> Ok
         | _ ->
             $"'{parts}' of 'Services.Get' endpoint is not supported."
