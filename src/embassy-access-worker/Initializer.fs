@@ -13,11 +13,5 @@ let run (task, cfg, ct) =
         |> Async.Ignore
         |> Async.Start
 
-        Persistence.Dependencies.create cfg
-        |> ResultAsync.wrap _.cleanData()
-        |> ResultAsync.mapError (_.Message >> Log.crt)
-        |> Async.Ignore
-        |> Async.Start
-
         return $"%s{ActiveTask.print task} Services have been initialized." |> Log.scs |> Ok
     }
