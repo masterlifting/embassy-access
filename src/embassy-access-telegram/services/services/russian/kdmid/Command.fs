@@ -138,7 +138,7 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (link: s
             do! deps.tryUpdateChatSubscriptions request
 
             return
-                $"Auto notification for slots enabled for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link} started..."
+                $"Auto notification for slots enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -176,7 +176,7 @@ let bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
             do! deps.tryUpdateChatSubscriptions request
 
             return
-                $"The booking first available slot for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link} started..."
+                $"The booking first available slot enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -214,7 +214,7 @@ let bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
             do! deps.tryUpdateChatSubscriptions request
 
             return
-                $"The booking last available slot for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link} started..."
+                $"The booking last available slot enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -258,7 +258,7 @@ let bookFirstSlotInPeriod
             do! deps.tryUpdateChatSubscriptions request
 
             return
-                $"The booking first available slot in period for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {link} started..."
+                $"The booking first available slot in period enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok

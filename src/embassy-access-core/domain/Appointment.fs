@@ -17,7 +17,7 @@ type AppointmentId =
     static member parse value =
         match value with
         | AP.IsUUID16 id -> AppointmentId id |> Ok
-        | _ -> $"AppointmentId '{value}' is not supported." |> NotSupported |> Error
+        | _ -> $"AppointmentId '%s{value}' is not supported." |> NotSupported |> Error
 
     static member createNew() = AppointmentId <| UUID16.createNew ()
 

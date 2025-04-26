@@ -135,7 +135,7 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
             do! deps.tryUpdateChatSubscriptions request
 
             return
-                $"Auto notification for slots enabled for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with link {login} started..."
+                $"Auto notification for slots enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with login '%s{login}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -143,7 +143,7 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
         }
 let confirmAppointment (requestId: RequestId) (appointmentId: AppointmentId) =
     fun (deps: Prenotami.Dependencies) ->
-        $"The confirmation of appointment {appointmentId.ValueStr} for request {requestId.ValueStr} is not implemented yet. "
+        $"The confirmation of appointments '%s{appointmentId.ValueStr}' for request '%s{requestId.ValueStr}' is not implemented yet. "
         + NOT_IMPLEMENTED
         |> NotImplemented
         |> Error

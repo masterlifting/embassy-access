@@ -1,13 +1,10 @@
 ﻿module EA.Telegram.Services.Services.Italian.Prenotami.Notification
 
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Telegram.Router
-open EA.Telegram.Router.Services.Italian.Prenotami
-open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services.Domain.Prenotami
 

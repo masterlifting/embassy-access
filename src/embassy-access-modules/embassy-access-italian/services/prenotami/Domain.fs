@@ -25,7 +25,7 @@ type Credentials = {
         match login, password with
         | AP.IsString l, AP.IsString p -> { Login = l; Password = p } |> Ok
         | _ ->
-            $"Prenotami payload: '%s{login},{password}' is not supported."
+            $"Prenotami credentials: '%s{login},{password}' is not supported."
             |> NotSupported
             |> Error
 
