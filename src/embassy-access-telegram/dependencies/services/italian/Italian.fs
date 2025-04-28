@@ -10,6 +10,7 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Services
 open EA.Italian.Services.Domain
+open EA.Italian.Services.DataAccess
 
 type Dependencies = {
     ct: CancellationToken
@@ -18,7 +19,7 @@ type Dependencies = {
     tryFindServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
     tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
     initChatStorage: unit -> Result<Chat.Storage, Error'>
-    initPrenotamiRequestStorage: unit -> Result<Request.Storage<Prenotami.Payload>, Error'>
+    initPrenotamiRequestStorage: unit -> Result<Request.Storage<Prenotami.Payload, Prenotami.Payload.Entity>, Error'>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
 } with
 

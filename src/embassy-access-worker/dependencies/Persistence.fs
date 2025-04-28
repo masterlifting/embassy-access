@@ -17,11 +17,13 @@ let private result = ResultBuilder()
 let private resultAsync = ResultAsyncBuilder()
 
 module Russian =
+    open EA.Russian.Services.DataAccess
     open EA.Russian.Services.DataAccess.Kdmid
+    open EA.Russian.Services.DataAccess.Midpass
 
     type Dependencies = {
-        initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload>, Error'>
-        initMidpassRequestStorage: unit -> Result<Request.Storage<Midpass.Payload>, Error'>
+        initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload, Kdmid.Payload.Entity>, Error'>
+        initMidpassRequestStorage: unit -> Result<Request.Storage<Midpass.Payload, Midpass.Payload.Entity>, Error'>
     } with
 
         static member create fileStoragePath =
@@ -31,7 +33,10 @@ module Russian =
                     FileSystem.Connection.FileName = "requests-rus-kdmid.json"
                 }
                 |> Storage.Request.FileSystem
-                |> Storage.Request.init (Kdmid.Payload.serialize, Kdmid.Payload.deserialize)
+                |> Storage.Request.init {
+                    toDomain = Kdmid.Payload.toDomain
+                    toEntity = Kdmid.Payload.toEntity
+                }
 
             let initMidpassRequestStorage () =
                 {
@@ -39,7 +44,10 @@ module Russian =
                     FileSystem.Connection.FileName = "requests-rus-midpass.json"
                 }
                 |> Storage.Request.FileSystem
-                |> Storage.Request.init (Midpass.Payload.serialize, Midpass.Payload.deserialize)
+                |> Storage.Request.init {
+                    toDomain = Midpass.Payload.toDomain
+                    toEntity = Midpass.Payload.toEntity
+                }
 
             {
                 initKdmidRequestStorage = initKdmidRequestStorage
@@ -47,10 +55,12 @@ module Russian =
             }
 
 module Italian =
+    open EA.Italian.Services.DataAccess
     open EA.Italian.Services.DataAccess.Prenotami
 
     type Dependencies = {
-        initPrenotamiRequestStorage: unit -> Result<Request.Storage<Prenotami.Payload>, Error'>
+        initPrenotamiRequestStorage:
+            unit -> Result<Request.Storage<Prenotami.Payload, Prenotami.Payload.Entity>, Error'>
     } with
 
         static member create fileStoragePath fileStorageKey =
@@ -60,10 +70,10 @@ module Italian =
                     FileSystem.Connection.FileName = "requests-ita-prenotami.json"
                 }
                 |> Storage.Request.FileSystem
-                |> Storage.Request.init (
-                    Prenotami.Payload.serialize fileStorageKey,
-                    Prenotami.Payload.deserialize fileStorageKey
-                )
+                |> Storage.Request.init {
+                    toDomain = Prenotami.Payload.toDomain fileStorageKey
+                    toEntity = Prenotami.Payload.toEntity fileStorageKey
+                }
 
             {
                 initPrenotamiRequestStorage = initPrenotamiRequestStorage

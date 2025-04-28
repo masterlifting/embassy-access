@@ -11,6 +11,7 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Services
 open EA.Russian.Services.Domain
+open EA.Russian.Services.DataAccess
 
 type Dependencies = {
     ct: CancellationToken
@@ -19,7 +20,7 @@ type Dependencies = {
     tryFindServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
     tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
     initChatStorage: unit -> Result<Chat.Storage, Error'>
-    initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload>, Error'>
+    initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload, Kdmid.Payload.Entity>, Error'>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
 } with
 

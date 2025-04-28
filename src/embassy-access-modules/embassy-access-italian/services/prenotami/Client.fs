@@ -1,9 +1,16 @@
 ﻿module EA.Italian.Services.Prenotami.Client
 
+open System.Threading
 open Web.Clients
 open Web.Clients.Domain
 open EA.Core.DataAccess
 open EA.Italian.Services.Domain.Prenotami
+open EA.Italian.Services.DataAccess.Prenotami
+
+type Dependencies = {
+    ct: CancellationToken
+    RequestStorage: Request.Storage<Payload, Payload.Entity>
+}
 
 let init (deps: Dependencies) =
     let initHttpClient (credentials: Credentials) =

@@ -3,7 +3,6 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Infrastructure.SerDe
 open EA.Core.DataAccess.Appointment
 open EA.Italian.Services.Domain.Prenotami
 
@@ -16,18 +15,18 @@ module Credentials =
         member val Login = String.Empty with get, set
         member val Password = String.Empty with get, set
 
-        member this.ToDomain() =
+        member this.ToDomain key =
             result {
 
                 let! login =
                     match this.Login with
                     | "" -> $"Login '{this.Login}' is not supported." |> NotSupported |> Error
-                    | v -> v |> Ok
+                    | l -> l |> Ok
 
                 let! password =
                     match this.Password with
                     | "" -> $"Password '{this.Password}' is not supported." |> NotSupported |> Error
-                    | v -> v |> Ok
+                    | p -> p |> String.decrypt key
 
                 return { Login = login; Password = password }
             }
@@ -67,20 +66,11 @@ module Payload =
         member val State = PayloadState.Entity() with get, set
         member val Credentials = Credentials.Entity() with get, set
 
-        member this.ToDomain() =
-            result {
-                let! credentials = this.Credentials.ToDomain()
-                let! state = this.State.ToDomain()
-
-                return {
-                    Credentials = credentials
-                    State = state
-                }
-            }
-
 type Credentials with
-    member internal this.ToEntity() =
-        Credentials.Entity(Login = this.Login, Password = this.Password)
+    member internal this.ToEntity key =
+        this.Password
+        |> String.encrypt key
+        |> Result.map (fun password -> Credentials.Entity(Login = this.Login, Password = password))
 
 type PayloadState with
     member internal this.ToEntity() =
@@ -95,32 +85,20 @@ type PayloadState with
         result
 
 type Payload with
-    member internal this.ToEntity() =
-        let result = Payload.Entity()
 
-        result.Credentials <- this.Credentials.ToEntity()
-        result.State <- this.State.ToEntity()
+    static member toEntity key (payload: Payload) =
+        payload.Credentials.ToEntity key
+        |> Result.map (fun credentials ->
+            let state = payload.State.ToEntity()
+            Payload.Entity(Credentials = credentials, State = state))
 
-        result
+    static member toDomain key (payload: Payload.Entity) =
+        result {
+            let! credentials = payload.Credentials.ToDomain key
+            let! state = payload.State.ToDomain()
 
-    static member serialize key (payload: Payload) =
-        payload.Credentials.Password
-        |> String.encrypt key
-        |> Result.map (fun password -> {
-            payload with
-                Payload.Credentials.Password = password
-        })
-        |> Result.map _.ToEntity()
-        |> Result.bind Json.serialize
-
-    static member deserialize key (payload: string) =
-        payload
-        |> Json.deserialize<Payload.Entity>
-        |> Result.bind _.ToDomain()
-        |> Result.bind (fun payload ->
-            payload.Credentials.Password
-            |> String.decrypt key
-            |> Result.map (fun password -> {
-                payload with
-                    Payload.Credentials.Password = password
-            }))
+            return {
+                Credentials = credentials
+                State = state
+            }
+        }

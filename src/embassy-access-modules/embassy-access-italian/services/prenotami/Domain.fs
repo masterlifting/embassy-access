@@ -1,12 +1,10 @@
 ﻿module EA.Italian.Services.Domain.Prenotami
 
 open System
-open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain
 open EA.Core.Domain
-open EA.Core.DataAccess
 
 module Constants =
     module ErrorCode =
@@ -66,9 +64,4 @@ type Client = {
     initHttpClient: Credentials -> Result<Http.Client, Error'>
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
     getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
-}
-
-type Dependencies = {
-    ct: CancellationToken
-    RequestStorage: Request.Storage<Payload>
 }

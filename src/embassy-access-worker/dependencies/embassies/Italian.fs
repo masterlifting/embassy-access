@@ -72,11 +72,10 @@ module Prenotami =
                     requestStorage |> Common.getRequests serviceId task
 
                 let tryProcessFirst requests =
-                    {
+                    Prenotami.Client.init {
                         ct = ct
                         RequestStorage = requestStorage
                     }
-                    |> Prenotami.Client.init
                     |> Result.map (fun client -> client, notify)
                     |> ResultAsync.wrap (Prenotami.Service.tryProcessFirst requests)
 

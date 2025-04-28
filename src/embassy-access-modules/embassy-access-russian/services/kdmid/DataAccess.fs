@@ -3,17 +3,12 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Infrastructure.SerDe
 open EA.Core.Domain
 open EA.Core.DataAccess.Appointment
 open EA.Core.DataAccess.Confirmation
 open EA.Russian.Services.Domain.Kdmid
 
 let private result = ResultBuilder()
-
-// Use UTF-8 encoding for proper Cyrillic support
-let private JsonOptions =
-    Text.Json.JsonSerializerOptions(Encoder = Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping)
 
 [<RequireQualifiedAccess>]
 module Credentials =
@@ -105,19 +100,6 @@ module Payload =
         member val Credentials = Credentials.Entity() with get, set
         member val Confirmation = Disabled.ToEntity() with get, set
 
-        member this.ToDomain() =
-            result {
-                let! credentials = this.Credentials.ToDomain()
-                let! confirmation = this.Confirmation.ToDomain()
-                let! state = this.State.ToDomain()
-
-                return {
-                    Credentials = credentials
-                    Confirmation = confirmation
-                    State = state
-                }
-            }
-
 type Credentials with
     member internal this.ToEntity() =
         Credentials.Entity(Id = this.Id, Cd = this.Cd, Ems = this.Ems, Subdomain = this.Subdomain)
@@ -139,19 +121,25 @@ type PayloadState with
         result
 
 type Payload with
-    member internal this.ToEntity() =
+
+    static member toEntity(payload: Payload) =
         let result = Payload.Entity()
 
-        result.Credentials <- this.Credentials.ToEntity()
-        result.Confirmation <- this.Confirmation.ToEntity()
-        result.State <- this.State.ToEntity()
+        result.Credentials <- payload.Credentials.ToEntity()
+        result.Confirmation <- payload.Confirmation.ToEntity()
+        result.State <- payload.State.ToEntity()
 
-        result
+        result |> Ok
 
-    static member serialize(payload: Payload) =
-        payload.ToEntity() |> Json.serialize' JsonOptions
+    static member toDomain(payload: Payload.Entity) =
+        result {
+            let! credentials = payload.Credentials.ToDomain()
+            let! confirmation = payload.Confirmation.ToDomain()
+            let! state = payload.State.ToDomain()
 
-    static member deserialize(payload: string) =
-        payload
-        |> Json.deserialize'<Payload.Entity> JsonOptions
-        |> Result.bind _.ToDomain()
+            return {
+                Credentials = credentials
+                Confirmation = confirmation
+                State = state
+            }
+        }

@@ -12,6 +12,7 @@ open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services
 open EA.Italian.Services.Domain.Prenotami
+open EA.Italian.Services.DataAccess.Prenotami
 
 type Dependencies = {
     ct: CancellationToken
@@ -19,13 +20,18 @@ type Dependencies = {
     MessageId: int
     findService: ServiceId -> Async<Result<Service, Error'>>
     findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
-    processRequest: Request<Payload> -> Request.Storage<Payload> -> Async<Result<Request<Payload>, Error'>>
-    findRequest: RequestId -> Request.Storage<Payload> -> Async<Result<Request<Payload>, Error'>>
-    findRequests: EmbassyId -> ServiceId -> Request.Storage<Payload> -> Async<Result<Request<Payload> list, Error'>>
-    createOrUpdateRequest: Request<Payload> -> Request.Storage<Payload> -> Async<Result<unit, Error'>>
+    processRequest:
+        Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<Request<Payload>, Error'>>
+    findRequest: RequestId -> Request.Storage<Payload, Payload.Entity> -> Async<Result<Request<Payload>, Error'>>
+    findRequests:
+        EmbassyId
+            -> ServiceId
+            -> Request.Storage<Payload, Payload.Entity>
+            -> Async<Result<Request<Payload> list, Error'>>
+    createOrUpdateRequest: Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
     tryUpdateChatSubscriptions: Request<Payload> -> Async<Result<unit, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-    initPrenotamiRequestStorage: unit -> Result<Request.Storage<Payload>, Error'>
+    initPrenotamiRequestStorage: unit -> Result<Request.Storage<Payload, Payload.Entity>, Error'>
 } with
 
     static member create(deps: Italian.Dependencies) =

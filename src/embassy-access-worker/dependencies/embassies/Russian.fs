@@ -72,11 +72,11 @@ module Kdmid =
                     requestStorage |> Common.getRequests serviceId task
 
                 let tryProcessFirst requests =
-                    {
+
+                    Kdmid.Client.init {
                         ct = ct
                         RequestStorage = requestStorage
                     }
-                    |> Kdmid.Client.init
                     |> Result.map (fun client -> client, notify)
                     |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
 

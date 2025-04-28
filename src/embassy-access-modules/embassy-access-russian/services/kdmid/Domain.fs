@@ -144,8 +144,3 @@ type Client = {
     postAppointmentsPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
     postConfirmationPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
 }
-
-type Dependencies = {
-    RequestStorage: Request.Storage<Payload>
-    ct: CancellationToken
-}

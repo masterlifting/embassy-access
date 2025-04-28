@@ -5,7 +5,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open Persistence.Storages.InMemory
 
-let private loadData = Query.Json.get<Request.Entity>
+let private loadData = Query.Json.get<Request.Entity<_>>
 
 module Query =
 
@@ -15,83 +15,83 @@ module Query =
         |> Result.bind (Seq.map (fun e -> e.Id |> RequestId.parse) >> Result.choose)
         |> async.Return
 
-    let tryFindById (id: RequestId) deserializePayload client =
+    let tryFindById (id: RequestId) payloadConverter client =
         client
         |> loadData
         |> Result.map (Seq.tryFind (fun e -> e.Id = id.ValueStr))
-        |> Result.bind (Option.toResult (fun e -> e.ToDomain deserializePayload))
+        |> Result.bind (Option.toResult (fun e -> e.ToDomain payloadConverter))
         |> async.Return
 
-    let findManyByEmbassyId (embassyId: EmbassyId) deserializePayload client =
+    let findManyByEmbassyId (embassyId: EmbassyId) payloadConverter client =
         client
         |> loadData
         |> Result.map (Seq.filter (fun e -> e.EmbassyId = embassyId.ValueStr))
-        |> Result.bind (Seq.map (fun e -> e.ToDomain deserializePayload) >> Result.choose)
+        |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 
-    let findManyByServiceId (serviceId: ServiceId) deserializePayload client =
+    let findManyByServiceId (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
         |> Result.map (Seq.filter (fun e -> e.ServiceId = serviceId.ValueStr))
-        |> Result.bind (Seq.map (fun e -> e.ToDomain deserializePayload) >> Result.choose)
+        |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 
-    let findManyWithServiceId (serviceId: ServiceId) deserializePayload client =
+    let findManyWithServiceId (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
         |> Result.map (Seq.filter (fun e -> e.ServiceId.Contains serviceId.ValueStr))
-        |> Result.bind (Seq.map (fun e -> e.ToDomain deserializePayload) >> Result.choose)
+        |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 
-    let findManyByIds (ids: RequestId seq) deserializePayload client =
+    let findManyByIds (ids: RequestId seq) payloadConverter client =
         let idSet = ids |> Seq.map _.ValueStr |> Set.ofSeq
 
         client
         |> loadData
         |> Result.map (Seq.filter (fun e -> idSet.Contains e.Id))
-        |> Result.bind (Seq.map (fun e -> e.ToDomain deserializePayload) >> Result.choose)
+        |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> Result.map List.ofSeq
         |> async.Return
 
-    let findManyByEmbassyIdAndServiceId (embassyId: EmbassyId) (serviceId: ServiceId) deserializePayload client =
+    let findManyByEmbassyIdAndServiceId (embassyId: EmbassyId) (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
         |> Result.map (Seq.filter (fun e -> e.EmbassyId = embassyId.ValueStr && e.ServiceId = serviceId.ValueStr))
-        |> Result.bind (Seq.map (fun e -> e.ToDomain deserializePayload) >> Result.choose)
+        |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 
 module Command =
-    let create request serializePayload client =
+    let create request payloadConverter client =
         client
         |> loadData
-        |> Result.bind (Request.Common.create request serializePayload)
+        |> Result.bind (Request.Common.create request payloadConverter)
         |> Result.bind (fun data -> client |> Command.Json.save data)
         |> Result.map (fun _ -> request)
         |> async.Return
 
-    let update request serializePayload client =
+    let update request payloadConverter client =
         client
         |> loadData
-        |> Result.bind (Request.Common.update request serializePayload)
+        |> Result.bind (Request.Common.update request payloadConverter)
         |> Result.bind (fun data -> client |> Command.Json.save data)
         |> Result.map (fun _ -> request)
         |> async.Return
 
-    let updateSeq requests serializePayload client =
+    let updateSeq requests payloadConverter client =
         client
         |> loadData
-        |> Result.bind (Request.Common.updateSeq requests serializePayload)
+        |> Result.bind (Request.Common.updateSeq requests payloadConverter)
         |> Result.bind (fun data -> client |> Command.Json.save data)
         |> Result.map (fun _ -> requests |> Seq.toList)
         |> async.Return
 
-    let createOrUpdate request serializePayload client =
+    let createOrUpdate request payloadConverter client =
         client
         |> loadData
         |> Result.bind (fun data ->
             match data |> Seq.exists (fun e -> e.Id = request.Id.ValueStr) with
-            | true -> data |> Request.Common.update request serializePayload
-            | false -> data |> Request.Common.create request serializePayload)
+            | true -> data |> Request.Common.update request payloadConverter
+            | false -> data |> Request.Common.create request payloadConverter)
         |> Result.bind (fun data -> client |> Command.Json.save data)
         |> Result.map (fun _ -> request)
         |> async.Return

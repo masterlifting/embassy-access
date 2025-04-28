@@ -1,10 +1,17 @@
 ﻿module EA.Russian.Services.Kdmid.Client
 
 open System
+open System.Threading
 open Web.Clients
 open Web.Clients.Domain
 open EA.Core.DataAccess
 open EA.Russian.Services.Domain.Kdmid
+open EA.Russian.Services.DataAccess.Kdmid
+
+type Dependencies = {
+    ct: CancellationToken
+    RequestStorage: Request.Storage<Payload, Payload.Entity>
+}
 
 let init (deps: Dependencies) =
     let initHttpClient subdomain =
