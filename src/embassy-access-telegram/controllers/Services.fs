@@ -24,6 +24,7 @@ module Russian =
                     | Kdmid.Method.Get get ->
                         match get with
                         | Kdmid.Get.Print requestId -> Kdmid.Query.print requestId
+                        | Kdmid.Get.Menu requestId -> Kdmid.Query.menu requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Kdmid.Method.Post post ->
                         match post with
@@ -40,6 +41,10 @@ module Russian =
                         | Kdmid.Post.ConfirmAppointment(requestId, appointmentId) ->
                             Kdmid.Command.confirmAppointment requestId appointmentId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
+                    | Kdmid.Method.Delete delete ->
+                        match delete with
+                        | Kdmid.Delete.Subscription requestId -> Kdmid.Command.delete requestId
+                        |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
             | Method.Midpass midpass ->
                 deps
                 |> Midpass.Dependencies.create
@@ -48,11 +53,16 @@ module Russian =
                     | Midpass.Method.Get get ->
                         match get with
                         | Midpass.Get.Print requestId -> Midpass.Query.print requestId
+                        | Midpass.Get.Menu requestId -> Midpass.Query.menu requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Midpass.Method.Post post ->
                         match post with
                         | Midpass.Post.CheckStatus(serviceId, embassyId, number) ->
                             Midpass.Command.checkStatus serviceId embassyId number
+                        |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
+                    | Midpass.Method.Delete delete ->
+                        match delete with
+                        | Midpass.Delete.Subscription requestId -> Midpass.Command.delete requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 module Italian =
@@ -70,6 +80,7 @@ module Italian =
                     | Prenotami.Method.Get get ->
                         match get with
                         | Prenotami.Get.Print requestId -> Prenotami.Query.print requestId
+                        | Prenotami.Get.Menu requestId -> Prenotami.Query.menu requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Prenotami.Method.Post post ->
                         match post with
@@ -79,6 +90,10 @@ module Italian =
                             Prenotami.Command.slotsAutoNotification serviceId embassyId login password
                         | Prenotami.Post.ConfirmAppointment(requestId, appointmentId) ->
                             Prenotami.Command.confirmAppointment requestId appointmentId
+                        |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
+                    | Prenotami.Method.Delete delete ->
+                        match delete with
+                        | Prenotami.Delete.Subscription requestId -> Prenotami.Command.delete requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 let respond request chat =

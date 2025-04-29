@@ -11,13 +11,13 @@ let private (|Prenotami|ServiceNotFound|) (serviceId: ServiceId) =
     | [ _; _; _; _; "1" ] -> Prenotami
     | _ -> ServiceNotFound
 
-let getService embassyId serviceId =
+let getService embassyId serviceId forUser =
     fun (deps: Italian.Dependencies) ->
         match serviceId with
         | Prenotami ->
             deps
             |> Prenotami.Dependencies.create
-            |> Prenotami.Query.getService serviceId embassyId
+            |> Prenotami.Query.getService serviceId embassyId forUser
         | ServiceNotFound ->
             $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented

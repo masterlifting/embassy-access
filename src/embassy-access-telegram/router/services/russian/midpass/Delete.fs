@@ -1,8 +1,8 @@
-﻿module EA.Telegram.Router.Subscriptions.Delete
+﻿module EA.Telegram.Router.Services.Russian.Midpass.Delete
 
 open Infrastructure.Domain
-open EA.Telegram.Domain
 open EA.Core.Domain
+open EA.Telegram.Domain
 
 type Route =
     | Subscription of RequestId
@@ -16,8 +16,8 @@ type Route =
         let parts = input.Split Router.DELIMITER
 
         match parts with
-        | [| "0"; requestId |] -> RequestId.parse requestId |> Result.map Subscription
+        | [| "0"; requestId |] -> Subscription(requestId |> UUID16 |> RequestId) |> Ok
         | _ ->
-            $"'{parts}' of 'Subscriptions.Delete' endpoint is not supported."
+            $"'{parts}' of 'Services.Russian.Midpass.Delete' endpoint is not supported."
             |> NotSupported
             |> Error

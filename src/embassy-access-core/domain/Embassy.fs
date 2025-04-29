@@ -23,8 +23,8 @@ type Embassy = {
     interface Graph.INode with
         member this.Id = this.Id.Value
         member this.set id = { this with Id = id |> EmbassyId }
-        
-    static member print (embassy: Embassy) =
+
+    static member print(embassy: Embassy) =
         let id = embassy.Id.ValueStr
         let name = embassy.Name
         let description = embassy.Description |> Option.defaultValue ""

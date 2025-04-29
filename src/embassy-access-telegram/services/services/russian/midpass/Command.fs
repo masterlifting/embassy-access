@@ -1,6 +1,6 @@
 ﻿module EA.Telegram.Services.Services.Russian.Midpass.Command
 
-open Infrastructure.Domain
+open EA.Telegram.Dependencies.Services.Italian
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
@@ -15,3 +15,12 @@ let checkStatus (serviceId: ServiceId) (embassyId: EmbassyId) (number: string) =
         |> Message.createNew deps.ChatId
         |> Ok
         |> async.Return
+
+let delete requestId =
+    fun (deps: Midpass.Dependencies) ->
+        deps.initRequestStorage ()
+        |> ResultAsync.wrap (deps.deleteRequest requestId)
+        |> ResultAsync.map (fun _ ->
+            $"Request with id '%s{requestId.ValueStr}' deleted successfully."
+            |> Text.create
+            |> Message.tryReplace (Some deps.MessageId) deps.ChatId)

@@ -50,17 +50,17 @@ let private tryCreateServiceRootId (embassyId: EmbassyId) =
         Graph.NodeId.combine [ Graph.NodeIdValue Services.ROOT_ID; Graph.NodeIdValue embassyIdValue ]
         |> ServiceId)
 
-let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) =
+let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser =
     fun (deps: Services.Dependencies) ->
         match embassyId with
         | RUS ->
             deps
             |> Russian.Dependencies.create
-            |> Russian.Query.getService embassyId serviceId
+            |> Russian.Query.getService embassyId serviceId forUser
         | ITA ->
             deps
             |> Italian.Dependencies.create
-            |> Italian.Query.getService embassyId serviceId
+            |> Italian.Query.getService embassyId serviceId forUser
         | EmbassyNotFound ->
             $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
@@ -71,7 +71,7 @@ let getService embassyId serviceId =
     fun (deps: Services.Dependencies) ->
         deps.tryFindServiceNode serviceId
         |> ResultAsync.bindAsync (function
-            | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId
+            | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId false
             | Some(AP.Node node) ->
                 node.Children
                 |> Seq.map _.Value
@@ -95,7 +95,7 @@ let getUserService embassyId serviceId =
     fun (deps: Services.Dependencies) ->
         deps.tryFindServiceNode serviceId
         |> ResultAsync.bindAsync (function
-            | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId
+            | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId true
             | Some(AP.Node node) ->
 
                 let userServiceIds = deps.Chat.Subscriptions |> Seq.map _.ServiceId.Value

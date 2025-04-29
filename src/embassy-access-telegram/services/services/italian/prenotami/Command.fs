@@ -75,14 +75,14 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) 
             let request =
                 requests
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
-                |> Option.map(fun x ->
-                    { x with
+                |> Option.map (fun x -> {
+                    x with
                         ProcessState = Ready
                         Payload = {
                             x.Payload with
                                 State = NoAppointments
                         }
-                    })
+                })
                 |> Option.defaultValue {
                     Id = RequestId.createNew ()
                     Service = service
@@ -125,15 +125,15 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
             let request =
                 requests
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
-                |> Option.map(fun x ->
-                    { x with
+                |> Option.map (fun x -> {
+                    x with
                         ProcessState = Ready
                         AutoProcessing = true
                         Payload = {
                             x.Payload with
                                 State = NoAppointments
                         }
-                    })
+                })
                 |> Option.defaultValue {
                     Id = RequestId.createNew ()
                     Service = service
@@ -165,3 +165,12 @@ let confirmAppointment (requestId: RequestId) (appointmentId: AppointmentId) =
         |> NotImplemented
         |> Error
         |> async.Return
+
+let delete requestId =
+    fun (deps: Prenotami.Dependencies) ->
+        deps.initRequestStorage ()
+        |> ResultAsync.wrap (deps.deleteRequest requestId)
+        |> ResultAsync.map (fun _ ->
+            $"Request with id '%s{requestId.ValueStr}' deleted successfully."
+            |> Text.create
+            |> Message.tryReplace (Some deps.MessageId) deps.ChatId)

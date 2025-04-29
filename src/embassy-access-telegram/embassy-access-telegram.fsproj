@@ -21,20 +21,20 @@
         <Compile Include="router\embassies\Method.fs" />
         <Compile Include="router\services\russian\kdmid\Get.fs" />
         <Compile Include="router\services\russian\kdmid\Post.fs" />
+        <Compile Include="router\services\russian\kdmid\Delete.fs" />
         <Compile Include="router\services\russian\kdmid\Method.fs" />
         <Compile Include="router\services\russian\midpass\Get.fs" />
         <Compile Include="router\services\russian\midpass\Post.fs" />
+        <Compile Include="router\services\russian\midpass\Delete.fs" />
         <Compile Include="router\services\russian\midpass\Method.fs" />
         <Compile Include="router\services\russian\Method.fs" />
         <Compile Include="router\services\italian\prenotami\Get.fs" />
         <Compile Include="router\services\italian\prenotami\Post.fs" />
+        <Compile Include="router\services\italian\prenotami\Delete.fs" />
         <Compile Include="router\services\italian\prenotami\Method.fs" />
         <Compile Include="router\services\italian\Method.fs" />
         <Compile Include="router\services\Get.fs" />
         <Compile Include="router\services\Method.fs" />
-        <Compile Include="router\subscriptions\Get.fs" />
-        <Compile Include="router\subscriptions\Delete.fs" />
-        <Compile Include="router\subscriptions\Method.fs" />
         <Compile Include="router\Router.fs" />
         <Compile Include="dependencies\client\Web.fs" />
         <Compile Include="dependencies\client\Persistence.fs" />
@@ -48,11 +48,8 @@
         <Compile Include="dependencies\services\italian\Italian.fs" />
         <Compile Include="dependencies\services\italian\Prenotami.fs" />
         <Compile Include="dependencies\Embassies.fs" />
-        <Compile Include="dependencies\Subscriptions.fs" />
         <Compile Include="services\culture\Query.fs" />
         <Compile Include="services\culture\Command.fs" />
-        <Compile Include="services\subscriptions\Query.fs" />
-        <Compile Include="services\subscriptions\Command.fs" />
         <Compile Include="services\services\russian\kdmid\Query.fs" />
         <Compile Include="services\services\russian\kdmid\Command.fs" />
         <Compile Include="services\services\russian\kdmid\Notification.fs" />
@@ -69,7 +66,6 @@
         <Compile Include="controllers\Culture.fs" />
         <Compile Include="controllers\Embassies.fs" />
         <Compile Include="controllers\Services.fs" />
-        <Compile Include="controllers\Subscriptions.fs" />
         <Compile Include="controllers\Controller.fs" />
         <Compile Include="Client.fs" />
     </ItemGroup>

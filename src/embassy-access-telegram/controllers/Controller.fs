@@ -12,4 +12,3 @@ let rec respond request =
     | Router.Culture value -> Culture.respond value respond
     | Router.Embassies value -> value |> Embassies.respond |> useCulture
     | Router.Services value -> value |> Services.respond |> useCulture
-    | Router.Subscriptions value -> value |> Subscriptions.respond |> useCulture

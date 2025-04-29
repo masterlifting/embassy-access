@@ -27,6 +27,7 @@ type Dependencies = {
             -> ServiceId
             -> Request.Storage<Payload, Payload.Entity>
             -> Async<Result<Request<Payload> list, Error'>>
+    deleteRequest: RequestId -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
     createOrUpdateRequest: Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
     tryUpdateChatSubscriptions: Request<Payload> -> Async<Result<unit, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
@@ -63,6 +64,9 @@ type Dependencies = {
             |> Storage.Request.Command.createOrUpdate request
             |> ResultAsync.map ignore
 
+        let deleteRequest requestId storage =
+            storage |> Storage.Request.Command.delete requestId |> ResultAsync.map ignore
+
         let processRequest request storage =
             Kdmid.Client.init {
                 ct = deps.ct
@@ -97,6 +101,7 @@ type Dependencies = {
             findEmbassy = findEmbassy
             findRequest = findRequest
             findRequests = findRequests
+            deleteRequest = deleteRequest
             tryUpdateChatSubscriptions = tryUpdateChatSubscriptions
             processRequest = processRequest
             createOrUpdateRequest = createOrUpdateRequest

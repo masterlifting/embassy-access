@@ -16,14 +16,17 @@ let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
     | [ _; _; "0"; "1" ] -> Midpass
     | _ -> ServiceNotFound
 
-let getService embassyId serviceId =
+let getService embassyId serviceId forUser =
     fun (deps: Russian.Dependencies) ->
         match serviceId with
-        | Kdmid -> deps |> Kdmid.Dependencies.create |> Kdmid.Query.getService serviceId embassyId
+        | Kdmid ->
+            deps
+            |> Kdmid.Dependencies.create
+            |> Kdmid.Query.getService serviceId embassyId forUser
         | Midpass ->
             deps
             |> Midpass.Dependencies.create
-            |> Midpass.Query.getService serviceId embassyId
+            |> Midpass.Query.getService serviceId embassyId forUser
         | ServiceNotFound ->
             $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
