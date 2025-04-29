@@ -1,13 +1,11 @@
 ﻿module EA.Russian.Services.Domain.Kdmid
 
 open System
-open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients
 open Web.Clients.Domain
 open EA.Core.Domain
-open EA.Core.DataAccess
 
 module Constants =
     module ErrorCode =

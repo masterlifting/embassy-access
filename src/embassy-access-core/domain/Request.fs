@@ -44,13 +44,13 @@ type Request<'payload> = {
         let processState = request.ProcessState |> ProcessState.print
         let limits = request.Limits |> Seq.map Limit.print |> String.concat ", "
 
-        $"Request: {request.Id.ValueStr}"
-        + $"\nService: {service}"
-        + $"\nEmbassy: {embassy}"
-        + $"\nPayload: {payload}"
-        + $"\nAutoProcessing: {autoProcessing}"
-        + $"\nProcessState: {processState}"
-        + $"\nLimits: {limits}"
+        $"RequestId: '%s{request.Id.ValueStr}'"
+        + $"{String.addLines 2 + service}"
+        + $"{String.addLines 2 + embassy}"
+        + $"{String.addLines 2 + payload}"
+        + $"{String.addLines 2}Auto processing enabled: '{autoProcessing}'"
+        + $"{String.addLines 2 + processState}"
+        + $"{String.addLines 2 + limits}"
 
     member this.UpdateLimits() =
         this.Limits
