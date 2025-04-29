@@ -15,3 +15,4 @@ type ProcessState =
         | InProcess -> "In process"
         | Completed message -> $"Completed: {message}"
         | Failed error -> $"Failed: {error}"
+        |> sprintf "[Last state of the subscription] %s"

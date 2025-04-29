@@ -26,5 +26,5 @@ type Service = {
         let id = service.Id.ValueStr
         let name = service.Name
         match service.Description with
-        | Some description -> $"Service -> Id: '%s{id}' Name: '%s{name}', Description: '%s{description}'"
-        | None -> $"Service -> Id: '%s{id}' Name: '%s{name}'"
+        | Some description -> $"[Service] Id: '%s{id}' Name: %s{name} Description: %s{description}"
+        | None -> $"[Service] Id: '%s{id}' Name: %s{name}"

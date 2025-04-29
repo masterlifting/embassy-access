@@ -49,10 +49,10 @@ type Limit = {
 
     static member print limit =
         match limit.State with
-        | Valid(attempts, period, date) ->
-            $"Limit: {limit.Attempts}, Remaining attempts: {attempts}, Remaining period: {period |> String.fromTimeSpan}, Modified: {date}"
-        | Invalid(period, date) ->
-            $"Limit: {limit.Attempts}, Remaining period: {period |> String.fromTimeSpan}, Modified: {date}"
+        | Valid(attempts, period, _) ->
+            $"Remaining attempts '%i{attempts}' of total '%i{limit.Attempts}' expired after '%s{period |> String.fromTimeSpan}'"
+        | Invalid(period, _) ->
+            $"No attempts left. Reactivate '%i{limit.Attempts}' attempts after '%s{period |> String.fromTimeSpan}'"
 
     static member create(attempts, period) = {
         Attempts = attempts

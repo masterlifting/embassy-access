@@ -41,16 +41,14 @@ type Request<'payload> = {
         let service = request.Service |> Service.print
         let embassy = request.Embassy |> Embassy.print
         let autoProcessing = request.AutoProcessing |> string
-        let processState = request.ProcessState |> ProcessState.print
-        let limits = request.Limits |> Seq.map Limit.print |> String.concat ", "
+        let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n - "
 
-        $"RequestId: '%s{request.Id.ValueStr}'"
-        + $"{String.addLines 2 + service}"
-        + $"{String.addLines 2 + embassy}"
-        + $"{String.addLines 2 + payload}"
-        + $"{String.addLines 2}Auto processing enabled: '{autoProcessing}'"
-        + $"{String.addLines 2 + processState}"
-        + $"{String.addLines 2 + limits}"
+        $"[Subscription] Id: '%s{request.Id.ValueStr}'"
+        + $"\n%s{service}"
+        + $"\n%s{embassy}"
+        + $"\n%s{payload}"
+        + $"\n[Auto processing enabled] '%s{autoProcessing}'"
+        + $"\n[Limits of the subscription] \n - %s{limits}"
 
     member this.UpdateLimits() =
         this.Limits
