@@ -21,6 +21,7 @@ type Dependencies = {
     tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
     initChatStorage: unit -> Result<Chat.Storage, Error'>
     initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload, Kdmid.Payload.Entity>, Error'>
+    initMidpassRequestStorage: unit -> Result<Request.Storage<Midpass.Payload, Midpass.Payload.Entity>, Error'>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
 } with
 
@@ -33,4 +34,5 @@ type Dependencies = {
         sendTranslatedMessageRes = deps.sendTranslatedMessageRes
         initChatStorage = deps.Request.Persistence.initChatStorage
         initKdmidRequestStorage = deps.Request.Persistence.RussianStorage.initKdmidRequestStorage
+        initMidpassRequestStorage = deps.Request.Persistence.RussianStorage.initMidpassRequestStorage
     }

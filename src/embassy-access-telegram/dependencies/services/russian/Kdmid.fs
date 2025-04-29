@@ -15,7 +15,6 @@ open EA.Russian.Services.Domain.Kdmid
 open EA.Russian.Services.DataAccess.Kdmid
 
 type Dependencies = {
-    ct: CancellationToken
     ChatId: Telegram.ChatId
     MessageId: int
     findService: ServiceId -> Async<Result<Service, Error'>>
@@ -31,7 +30,7 @@ type Dependencies = {
     createOrUpdateRequest: Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
     tryUpdateChatSubscriptions: Request<Payload> -> Async<Result<unit, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-    initKdmidRequestStorage: unit -> Result<Request.Storage<Payload, Payload.Entity>, Error'>
+    initRequestStorage: unit -> Result<Request.Storage<Payload, Payload.Entity>, Error'>
 } with
 
     static member create(deps: Russian.Dependencies) =
@@ -91,10 +90,9 @@ type Dependencies = {
                 |> ResultAsync.map ignore
 
         {
-            ct = deps.ct
             ChatId = deps.Chat.Id
             MessageId = deps.MessageId
-            initKdmidRequestStorage = deps.initKdmidRequestStorage
+            initRequestStorage = deps.initKdmidRequestStorage
             findService = findService
             findEmbassy = findEmbassy
             findRequest = findRequest

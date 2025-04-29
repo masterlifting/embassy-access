@@ -32,6 +32,26 @@ type Request<'payload> = {
     Modified: DateTime
 } with
 
+    static member inline print(request: Request<_>) =
+
+        let inline printPayload (payload: 'p) =
+            (^p: (static member print: 'p -> string) payload)
+
+        let payload = request.Payload |> printPayload
+        let service = request.Service |> Service.print
+        let embassy = request.Embassy |> Embassy.print
+        let autoProcessing = request.AutoProcessing |> string
+        let processState = request.ProcessState |> ProcessState.print
+        let limits = request.Limits |> Seq.map Limit.print |> String.concat ", "
+
+        $"Request: {request.Id.ValueStr}"
+        + $"\nService: {service}"
+        + $"\nEmbassy: {embassy}"
+        + $"\nPayload: {payload}"
+        + $"\nAutoProcessing: {autoProcessing}"
+        + $"\nProcessState: {processState}"
+        + $"\nLimits: {limits}"
+
     member this.UpdateLimits() =
         this.Limits
         |> Seq.map Limit.update

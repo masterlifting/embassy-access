@@ -9,6 +9,14 @@ open EA.Core.Domain
 open EA.Telegram.Router
 open EA.Telegram.Router.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
+open EA.Russian.Services.Domain.Kdmid
+
+let print (requestId: RequestId) =
+    fun (deps: Kdmid.Dependencies) ->
+        deps.initRequestStorage ()
+        |> ResultAsync.wrap (deps.findRequest requestId)
+        |> ResultAsync.map Request.print<Payload>
+        |> ResultAsync.map (Text.create >> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
 [<Literal>]
 let private INPUT_LINK = "<link>"

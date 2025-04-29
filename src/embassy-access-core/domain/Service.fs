@@ -21,3 +21,9 @@ type Service = {
     interface Graph.INode with
         member this.Id = this.Id.Value
         member this.set id = { this with Id = id |> ServiceId }
+        
+    static member print (service: Service) =
+        let id = service.Id.ValueStr
+        let name = service.Name
+        let description = service.Description |> Option.defaultValue ""
+        $"Service: {id}, Name: {name}, Description: {description}"

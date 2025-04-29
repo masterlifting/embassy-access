@@ -70,12 +70,20 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
             let! payloadCredentials = Credentials.parse link |> async.Return
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
-            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requestStorage = deps.initRequestStorage () |> async.Return
             let! requests = requestStorage |> deps.findRequests embassyId serviceId
 
             let request =
                 requests
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.map(fun x ->
+                    { x with
+                        ProcessState = Ready
+                        Payload = {
+                            x.Payload with
+                                State = NoAppointments
+                        }
+                    })
                 |> Option.defaultValue {
                     Id = RequestId.createNew ()
                     Service = service
@@ -113,12 +121,22 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (link: s
             let! payloadCredentials = Credentials.parse link |> async.Return
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
-            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requestStorage = deps.initRequestStorage () |> async.Return
             let! requests = requestStorage |> deps.findRequests embassyId serviceId
 
             let request =
                 requests
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.map(fun x ->
+                    { x with
+                        ProcessState = Ready
+                        AutoProcessing = true
+                        Payload = {
+                            x.Payload with
+                                State = NoAppointments
+                                Confirmation = Disabled
+                        }
+                    })
                 |> Option.defaultValue {
                     Id = RequestId.createNew ()
                     Service = service
@@ -151,12 +169,22 @@ let bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
             let! payloadCredentials = Credentials.parse link |> async.Return
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
-            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requestStorage = deps.initRequestStorage () |> async.Return
             let! requests = requestStorage |> deps.findRequests embassyId serviceId
 
             let request =
                 requests
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.map(fun x ->
+                    { x with
+                        ProcessState = Ready
+                        AutoProcessing = true
+                        Payload = {
+                            x.Payload with
+                                State = NoAppointments
+                                Confirmation = FirstAvailable
+                        }
+                    })
                 |> Option.defaultValue {
                     Id = RequestId.createNew ()
                     Service = service
@@ -189,12 +217,22 @@ let bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
             let! payloadCredentials = Credentials.parse link |> async.Return
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
-            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requestStorage = deps.initRequestStorage () |> async.Return
             let! requests = requestStorage |> deps.findRequests embassyId serviceId
 
             let request =
                 requests
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.map(fun x ->
+                    { x with
+                        ProcessState = Ready
+                        AutoProcessing = true
+                        Payload = {
+                            x.Payload with
+                                State = NoAppointments
+                                Confirmation = LastAvailable
+                        }
+                    })
                 |> Option.defaultValue {
                     Id = RequestId.createNew ()
                     Service = service
@@ -233,12 +271,22 @@ let bookFirstSlotInPeriod
             let! payloadCredentials = Credentials.parse link |> async.Return
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
-            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requestStorage = deps.initRequestStorage () |> async.Return
             let! requests = requestStorage |> deps.findRequests embassyId serviceId
 
             let request =
                 requests
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.map(fun x ->
+                    { x with
+                        ProcessState = Ready
+                        AutoProcessing = true
+                        Payload = {
+                            x.Payload with
+                                State = NoAppointments
+                                Confirmation = DateTimeRange(start, finish)
+                        }
+                    })
                 |> Option.defaultValue {
                     Id = RequestId.createNew ()
                     Service = service
@@ -268,13 +316,12 @@ let bookFirstSlotInPeriod
 let confirmAppointment (requestId: RequestId) (appointmentId: AppointmentId) =
     fun (deps: Kdmid.Dependencies) ->
         resultAsync {
-            let! requestStorage = deps.initKdmidRequestStorage () |> async.Return
+            let! requestStorage = deps.initRequestStorage () |> async.Return
             let! request = requestStorage |> deps.findRequest requestId
             let! processedRequest =
                 requestStorage
                 |> deps.processRequest {
                     request with
-                        ProcessState = Ready
                         Request.Payload.Confirmation = ForAppointment appointmentId
                 }
 

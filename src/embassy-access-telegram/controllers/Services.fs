@@ -21,6 +21,10 @@ module Russian =
                 |> Kdmid.Dependencies.create
                 |> fun deps ->
                     match kdmid with
+                    | Kdmid.Method.Get get ->
+                        match get with
+                        | Kdmid.Get.Print requestId -> Kdmid.Query.print requestId
+                        |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Kdmid.Method.Post post ->
                         match post with
                         | Kdmid.Post.CheckSlotsNow(serviceId, embassyId, link) ->
@@ -41,6 +45,10 @@ module Russian =
                 |> Midpass.Dependencies.create
                 |> fun deps ->
                     match midpass with
+                    | Midpass.Method.Get get ->
+                        match get with
+                        | Midpass.Get.Print requestId -> Midpass.Query.print requestId
+                        |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Midpass.Method.Post post ->
                         match post with
                         | Midpass.Post.CheckStatus(serviceId, embassyId, number) ->
@@ -59,6 +67,10 @@ module Italian =
                 |> Prenotami.Dependencies.create
                 |> fun deps ->
                     match prenotami with
+                    | Prenotami.Method.Get get ->
+                        match get with
+                        | Prenotami.Get.Print requestId -> Prenotami.Query.print requestId
+                        |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Prenotami.Method.Post post ->
                         match post with
                         | Prenotami.Post.CheckSlotsNow(serviceId, embassyId, login, password) ->

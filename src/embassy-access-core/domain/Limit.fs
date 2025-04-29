@@ -47,6 +47,13 @@ type Limit = {
     State: LimitState
 } with
 
+    static member print limit =
+        match limit.State with
+        | Valid(attempts, period, date) ->
+            $"Limit: {limit.Attempts}, Remaining attempts: {attempts}, Remaining period: {period |> String.fromTimeSpan}, Modified: {date}"
+        | Invalid(period, date) ->
+            $"Limit: {limit.Attempts}, Remaining period: {period |> String.fromTimeSpan}, Modified: {date}"
+
     static member create(attempts, period) = {
         Attempts = attempts
         Period = period

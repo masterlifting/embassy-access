@@ -63,18 +63,26 @@ let private createMessage chatId (request: Request<Payload>) =
 let private Limits =
     Limit.create (20u<attempts>, TimeSpan.FromDays 1) |> Set.singleton
 
-let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (passwors: string) =
+let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (password: string) =
     fun (deps: Prenotami.Dependencies) ->
         resultAsync {
-            let! payloadCredentials = Credentials.parse login passwors |> async.Return
+            let! payloadCredentials = Credentials.parse login password |> async.Return
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
-            let! requestStorage = deps.initPrenotamiRequestStorage () |> async.Return
+            let! requestStorage = deps.initRequestStorage () |> async.Return
             let! requests = requestStorage |> deps.findRequests embassyId serviceId
 
             let request =
                 requests
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.map(fun x ->
+                    { x with
+                        ProcessState = Ready
+                        Payload = {
+                            x.Payload with
+                                State = NoAppointments
+                        }
+                    })
                 |> Option.defaultValue {
                     Id = RequestId.createNew ()
                     Service = service
@@ -111,12 +119,21 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
             let! payloadCredentials = Credentials.parse login passwors |> async.Return
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
-            let! requestStorage = deps.initPrenotamiRequestStorage () |> async.Return
+            let! requestStorage = deps.initRequestStorage () |> async.Return
             let! requests = requestStorage |> deps.findRequests embassyId serviceId
 
             let request =
                 requests
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                |> Option.map(fun x ->
+                    { x with
+                        ProcessState = Ready
+                        AutoProcessing = true
+                        Payload = {
+                            x.Payload with
+                                State = NoAppointments
+                        }
+                    })
                 |> Option.defaultValue {
                     Id = RequestId.createNew ()
                     Service = service

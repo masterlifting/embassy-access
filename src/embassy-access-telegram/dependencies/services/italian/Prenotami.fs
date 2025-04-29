@@ -31,7 +31,7 @@ type Dependencies = {
     createOrUpdateRequest: Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
     tryUpdateChatSubscriptions: Request<Payload> -> Async<Result<unit, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-    initPrenotamiRequestStorage: unit -> Result<Request.Storage<Payload, Payload.Entity>, Error'>
+    initRequestStorage: unit -> Result<Request.Storage<Payload, Payload.Entity>, Error'>
 } with
 
     static member create(deps: Italian.Dependencies) =
@@ -94,7 +94,7 @@ type Dependencies = {
             ct = deps.ct
             ChatId = deps.Chat.Id
             MessageId = deps.MessageId
-            initPrenotamiRequestStorage = deps.initPrenotamiRequestStorage
+            initRequestStorage = deps.initPrenotamiRequestStorage
             findService = findService
             findEmbassy = findEmbassy
             findRequest = findRequest
