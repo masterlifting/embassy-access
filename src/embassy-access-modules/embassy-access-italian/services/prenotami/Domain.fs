@@ -20,12 +20,12 @@ type Credentials = {
 } with
 
     static member parse (login: string) (password: string) =
-        match login, password with
-        | AP.IsString l, AP.IsString p -> { Login = l; Password = p } |> Ok
-        | _ ->
-            $"Prenotami credentials: '%s{login},{password}' is not supported."
-            |> NotSupported
-            |> Error
+        match login with
+        | AP.IsEmail l ->
+            match password with
+            | AP.IsString p -> { Login = l; Password = p } |> Ok
+            | _ -> $"Prenotami password: '%s{password}' is not valid." |> NotSupported |> Error
+        | _ -> $"Prenotami login: '%s{login}' is not valid." |> NotSupported |> Error
 
     static member print(payload: Credentials) = $"Login: '%s{payload.Login}'"
 
