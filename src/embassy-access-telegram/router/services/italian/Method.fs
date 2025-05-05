@@ -20,6 +20,6 @@ type Route =
         match parts[0] with
         | "0" -> remaining |> Prenotami.Method.Route.parse |> Result.map Prenotami
         | _ ->
-            $"'{parts}' of 'Services.Italian' endpoint is not supported."
+            $"'{input}' of 'Services.Italian' endpoint is not supported."
             |> NotSupported
             |> Error

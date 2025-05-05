@@ -21,6 +21,6 @@ type Route =
         | [| "0"; requestId |] -> Print(requestId |> UUID16 |> RequestId) |> Ok
         | [| "1"; requestId |] -> Menu(requestId |> UUID16 |> RequestId) |> Ok
         | _ ->
-            $"'{parts}' of 'Services.Russian.Kdmid.Get' endpoint is not supported."
+            $"'{input}' of 'Services.Russian.Kdmid.Get' endpoint is not supported."
             |> NotSupported
             |> Error

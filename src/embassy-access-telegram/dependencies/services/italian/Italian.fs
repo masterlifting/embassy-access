@@ -18,6 +18,10 @@ type Dependencies = {
     MessageId: int
     tryFindServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
     tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
+    findService: ServiceId -> Async<Result<Service, Error'>>
+    findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
+    tryAddSubscription: RequestId -> ServiceId -> EmbassyId -> Async<Result<unit, Error'>>
+    deleteSubscription: RequestId -> Async<Result<unit, Error'>>
     initChatStorage: unit -> Result<Chat.Storage, Error'>
     initPrenotamiRequestStorage: unit -> Result<Request.Storage<Prenotami.Payload, Prenotami.Payload.Entity>, Error'>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
@@ -29,6 +33,10 @@ type Dependencies = {
         MessageId = deps.MessageId
         tryFindServiceNode = deps.tryFindServiceNode
         tryFindEmbassyNode = deps.tryFindEmbassyNode
+        findService = deps.findService
+        findEmbassy = deps.findEmbassy
+        tryAddSubscription = deps.tryAddSubscription
+        deleteSubscription = deps.deleteSubscription
         sendTranslatedMessageRes = deps.sendTranslatedMessageRes
         initChatStorage = deps.Request.Persistence.initChatStorage
         initPrenotamiRequestStorage = deps.Request.Persistence.ItalianStorage.initPrenotamiRequestStorage

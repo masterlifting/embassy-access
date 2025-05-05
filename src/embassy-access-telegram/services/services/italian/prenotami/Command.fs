@@ -108,7 +108,7 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) 
             | Ready
             | Failed _
             | Completed _ ->
-                do! deps.tryUpdateChatSubscriptions request
+                do! deps.tryAddSubscription request
                 let! processedRequest = requestStorage |> deps.processRequest request
                 return processedRequest |> createMessage deps.ChatId
         }
@@ -149,7 +149,7 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
                 }
 
             do! requestStorage |> deps.createOrUpdateRequest request
-            do! deps.tryUpdateChatSubscriptions request
+            do! deps.tryAddSubscription request
 
             return
                 $"Auto notification for slots enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with login '%s{login}'"

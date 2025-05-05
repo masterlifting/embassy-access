@@ -104,6 +104,7 @@ type PayloadState =
             |> String.concat "\n - "
             |> sprintf "Available appointments \n - %s"
         | HasConfirmation(message, appointment) -> $"The appointment '%s{appointment.Value}' is confirmed: %s{message}"
+        |> sprintf "[Last state] %s"
 
 type Payload = {
     Credentials: Credentials
@@ -114,8 +115,7 @@ type Payload = {
     static member print(payload: Payload) =
         payload.Credentials
         |> Credentials.print
-        |> fun credentials ->
-            $"[Kdmid subscription] %s{credentials} with the last request state: %s{PayloadState.print payload.State}"
+        |> fun credentials -> $"[Credentials] %s{credentials}\n{PayloadState.print payload.State}"
 
     static member printError (error: Error') (payload: Payload) =
         match error with

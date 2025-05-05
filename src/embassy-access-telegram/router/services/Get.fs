@@ -33,6 +33,6 @@ type Route =
             (embassyId, serviceId) |> UserService |> Ok
         | [| "3"; embassyId |] -> embassyId |> Graph.NodeIdValue |> EmbassyId |> UserServices |> Ok
         | _ ->
-            $"'{parts}' of 'Services.Get' endpoint is not supported."
+            $"'{input}' of 'Services.Get' endpoint is not supported."
             |> NotSupported
             |> Error

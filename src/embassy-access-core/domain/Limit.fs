@@ -50,7 +50,7 @@ type Limit = {
     static member print limit =
         match limit.State with
         | Valid(attempts, period, _) ->
-            $"Remaining attempts '%i{attempts}' of total '%i{limit.Attempts}' expired after '%s{period |> String.fromTimeSpan}'"
+            $"Remaining attempts '%i{attempts}' of '%i{limit.Attempts}' expired after '%s{period |> String.fromTimeSpan}'"
         | Invalid(period, _) ->
             $"No attempts left. Reactivate '%i{limit.Attempts}' attempts after '%s{period |> String.fromTimeSpan}'"
 

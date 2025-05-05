@@ -87,6 +87,6 @@ type Route =
             ConfirmAppointment(requestId |> UUID16 |> RequestId, appointmentId |> UUID16 |> AppointmentId)
             |> Ok
         | _ ->
-            $"'{parts}' of 'Services.Russian.Kdmid.Post' endpoint is not supported."
+            $"'{input}' of 'Services.Russian.Kdmid.Post' endpoint is not supported."
             |> NotSupported
             |> Error

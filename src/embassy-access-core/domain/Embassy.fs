@@ -31,5 +31,5 @@ type Embassy = {
 
         match embassy.Description with
         | Some description ->
-            $"[Embassy] Id '%s{id}' Name: %s{name} Description: %s{description} TimeZone: '%s{timeZone}'"
-        | None -> $"[Embassy] Id '%s{id}' Name: %s{name} TimeZone: '%s{timeZone}'"
+            $"[Embassy] Id: '%s{id}' Name: %s{name} Description: %s{description} TimeZone: '%s{timeZone}'"
+        | None -> $"[Embassy] Id: '%s{id}' Name: %s{name} TimeZone: '%s{timeZone}'"

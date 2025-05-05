@@ -27,6 +27,7 @@ type Dependencies = {
 } with
 
     static member create(deps: Russian.Dependencies) =
+
         let findRequest requestId storage =
             storage
             |> Storage.Request.Query.tryFind (Storage.Request.Query.Id requestId)
@@ -39,7 +40,9 @@ type Dependencies = {
             |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId))
 
         let deleteRequest requestId storage =
-            storage |> Storage.Request.Command.delete requestId |> ResultAsync.map ignore
+            storage
+            |> Storage.Request.Command.delete requestId
+            |> ResultAsync.bindAsync (fun _ -> deps.deleteSubscription requestId)
 
         {
             ChatId = deps.Chat.Id

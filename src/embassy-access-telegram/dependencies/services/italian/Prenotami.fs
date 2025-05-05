@@ -8,7 +8,6 @@ open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
-open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services
 open EA.Italian.Services.Domain.Prenotami
@@ -30,24 +29,12 @@ type Dependencies = {
             -> Async<Result<Request<Payload> list, Error'>>
     deleteRequest: RequestId -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
     createOrUpdateRequest: Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
-    tryUpdateChatSubscriptions: Request<Payload> -> Async<Result<unit, Error'>>
+    tryAddSubscription: Request<Payload> -> Async<Result<unit, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
     initRequestStorage: unit -> Result<Request.Storage<Payload, Payload.Entity>, Error'>
 } with
 
     static member create(deps: Italian.Dependencies) =
-
-        let findService serviceId =
-            deps.tryFindServiceNode serviceId
-            |> ResultAsync.bind (function
-                | Some node -> node.Value |> Ok
-                | None -> $"Service '{serviceId.ValueStr}' not found." |> NotFound |> Error)
-
-        let findEmbassy embassyId =
-            deps.tryFindEmbassyNode embassyId
-            |> ResultAsync.bind (function
-                | Some node -> node.Value |> Ok
-                | None -> $"Embassy '{embassyId.ValueStr}' not found." |> NotFound |> Error)
 
         let findRequest requestId storage =
             storage
@@ -61,7 +48,9 @@ type Dependencies = {
             |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId))
 
         let deleteRequest requestId storage =
-            storage |> Storage.Request.Command.delete requestId |> ResultAsync.map ignore
+            storage
+            |> Storage.Request.Command.delete requestId
+            |> ResultAsync.bindAsync (fun _ -> deps.deleteSubscription requestId)
 
         let createOrUpdateRequest request storage =
             storage
@@ -75,36 +64,20 @@ type Dependencies = {
             }
             |> ResultAsync.wrap (Prenotami.Service.tryProcess request)
 
-        let tryUpdateChatSubscriptions (request: Request<Payload>) =
-            match deps.Chat.Subscriptions |> Set.exists (fun s -> s.Id = request.Id) with
-            | true -> Ok() |> async.Return
-            | false ->
-                deps.initChatStorage ()
-                |> ResultAsync.wrap (
-                    Storage.Chat.Command.update {
-                        deps.Chat with
-                            Subscriptions =
-                                deps.Chat.Subscriptions
-                                |> Set.add {
-                                    Id = request.Id
-                                    ServiceId = request.Service.Id
-                                    EmbassyId = request.Embassy.Id
-                                }
-                    }
-                )
-                |> ResultAsync.map ignore
+        let tryAddSubscription (request: Request<Payload>) =
+            deps.tryAddSubscription request.Id request.Service.Id request.Embassy.Id
 
         {
             ct = deps.ct
             ChatId = deps.Chat.Id
             MessageId = deps.MessageId
             initRequestStorage = deps.initPrenotamiRequestStorage
-            findService = findService
-            findEmbassy = findEmbassy
+            findService = deps.findService
+            findEmbassy = deps.findEmbassy
             findRequest = findRequest
             findRequests = findRequests
             deleteRequest = deleteRequest
-            tryUpdateChatSubscriptions = tryUpdateChatSubscriptions
+            tryAddSubscription = tryAddSubscription
             processRequest = processRequest
             createOrUpdateRequest = createOrUpdateRequest
             sendTranslatedMessageRes = deps.sendTranslatedMessageRes

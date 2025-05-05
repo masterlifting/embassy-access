@@ -20,7 +20,7 @@ let menu (requestId: RequestId) =
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
             let print = Kdmid.Method.Get(Kdmid.Get.Print r.Id) |> createBaseRoute
-            let delete = Kdmid.Method.Delete(Kdmid.Delete.Subscription(r.Id))
+            let delete = Kdmid.Method.Delete(Kdmid.Delete.Subscription(r.Id)) |> createBaseRoute
 
             ButtonsGroup.create {
                 Name = "Manage your subscription"
@@ -37,7 +37,7 @@ let print (requestId: RequestId) =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map Request.print<Payload>
-        |> ResultAsync.map (Text.create >> Message.createNew  deps.ChatId)
+        |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
 
 [<Literal>]
 let private INPUT_LINK = "<link>"

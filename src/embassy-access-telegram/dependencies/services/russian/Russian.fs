@@ -19,6 +19,10 @@ type Dependencies = {
     MessageId: int
     tryFindServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
     tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
+    findService: ServiceId -> Async<Result<Service, Error'>>
+    findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
+    tryAddSubscription: RequestId -> ServiceId -> EmbassyId -> Async<Result<unit, Error'>>
+    deleteSubscription: RequestId -> Async<Result<unit, Error'>>
     initChatStorage: unit -> Result<Chat.Storage, Error'>
     initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload, Kdmid.Payload.Entity>, Error'>
     initMidpassRequestStorage: unit -> Result<Request.Storage<Midpass.Payload, Midpass.Payload.Entity>, Error'>
@@ -31,6 +35,10 @@ type Dependencies = {
         MessageId = deps.MessageId
         tryFindServiceNode = deps.tryFindServiceNode
         tryFindEmbassyNode = deps.tryFindEmbassyNode
+        findService = deps.findService
+        findEmbassy = deps.findEmbassy
+        tryAddSubscription = deps.tryAddSubscription
+        deleteSubscription = deps.deleteSubscription
         sendTranslatedMessageRes = deps.sendTranslatedMessageRes
         initChatStorage = deps.Request.Persistence.initChatStorage
         initKdmidRequestStorage = deps.Request.Persistence.RussianStorage.initKdmidRequestStorage

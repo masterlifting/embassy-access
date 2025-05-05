@@ -23,6 +23,6 @@ type Route =
         | "0" -> remaining |> Kdmid.Method.Route.parse |> Result.map Kdmid
         | "1" -> remaining |> Midpass.Method.Route.parse |> Result.map Midpass
         | _ ->
-            $"'{parts}' of 'Services.Russian' endpoint is not supported."
+            $"'{input}' of 'Services.Russian' endpoint is not supported."
             |> NotSupported
             |> Error

@@ -110,7 +110,7 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
             | Ready
             | Failed _
             | Completed _ ->
-                do! deps.tryUpdateChatSubscriptions request
+                do! deps.tryAddSubscription request
                 let! processedRequest = requestStorage |> deps.processRequest request
                 return processedRequest |> createMessage deps.ChatId
         }
@@ -153,7 +153,7 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (link: s
                 }
 
             do! requestStorage |> deps.createOrUpdateRequest request
-            do! deps.tryUpdateChatSubscriptions request
+            do! deps.tryAddSubscription request
 
             return
                 $"Auto notification for slots enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
@@ -201,7 +201,7 @@ let bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                 }
 
             do! requestStorage |> deps.createOrUpdateRequest request
-            do! deps.tryUpdateChatSubscriptions request
+            do! deps.tryAddSubscription request
 
             return
                 $"The booking first available slot enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
@@ -249,7 +249,7 @@ let bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                 }
 
             do! requestStorage |> deps.createOrUpdateRequest request
-            do! deps.tryUpdateChatSubscriptions request
+            do! deps.tryAddSubscription request
 
             return
                 $"The booking last available slot enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
@@ -303,7 +303,7 @@ let bookFirstSlotInPeriod
                 }
 
             do! requestStorage |> deps.createOrUpdateRequest request
-            do! deps.tryUpdateChatSubscriptions request
+            do! deps.tryAddSubscription request
 
             return
                 $"The booking first available slot in period enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"

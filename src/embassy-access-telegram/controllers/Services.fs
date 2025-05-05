@@ -62,7 +62,9 @@ module Russian =
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Midpass.Method.Delete delete ->
                         match delete with
-                        | Midpass.Delete.Subscription requestId -> Midpass.Command.delete requestId
+                        | Midpass.Delete.Subscription requestId ->
+
+                            Midpass.Command.delete requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 module Italian =

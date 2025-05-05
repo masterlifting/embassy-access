@@ -27,6 +27,6 @@ type Route =
         | [| "2"; id |] -> id |> Graph.NodeIdValue |> EmbassyId |> UserEmbassy |> Ok
         | [| "3" |] -> UserEmbassies |> Ok
         | _ ->
-            $"'{parts}' of 'Embassies.Get' endpoint is not supported."
+            $"'{input}' of 'Embassies.Get' endpoint is not supported."
             |> NotSupported
             |> Error

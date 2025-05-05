@@ -18,6 +18,6 @@ type Route =
         match parts with
         | [| "0"; requestId |] -> Subscription(requestId |> UUID16 |> RequestId) |> Ok
         | _ ->
-            $"'{parts}' of 'Services.Russian.Kdmid.Delete' endpoint is not supported."
+            $"'{input}' of 'Services.Russian.Kdmid.Delete' endpoint is not supported."
             |> NotSupported
             |> Error
