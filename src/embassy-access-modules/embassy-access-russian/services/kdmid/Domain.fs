@@ -87,8 +87,8 @@ type Credentials = {
 
     static member print(payload: Credentials) =
         let ems =
-            payload.Ems |> Option.map (fun ems -> $"$ems=%s{ems}") |> Option.defaultValue ""
-        $"'id=%i{payload.Id}$cd=%s{payload.Cd}{ems}'"
+            payload.Ems |> Option.map (fun ems -> $"&ems=%s{ems}") |> Option.defaultValue ""
+        $"'id=%i{payload.Id}&cd=%s{payload.Cd}{ems}'"
 
 type PayloadState =
     | NoAppointments

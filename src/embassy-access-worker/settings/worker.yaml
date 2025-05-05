@@ -70,6 +70,7 @@ Worker:
           Tasks:
             - Id: SA
               Enabled: false
+              Recursively: 00:01:00
               Duration: 00:03:00
               Description: Search appointments for Russian embassy in Serbia
               Schedule:
@@ -197,7 +198,7 @@ Worker:
           Tasks:
             - Id: SA
               Enabled: false
-              Recursively: 00:05:00
+              Recursively: 00:01:00
               Duration: 00:03:00
               Description: Search appointments for Italian embassy in Serbia
               Schedule:

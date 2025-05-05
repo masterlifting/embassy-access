@@ -5,8 +5,8 @@ open EA.Core.Domain
 open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services.Domain.Midpass
 
-let spread (request: Request<Payload>) =
-    fun (deps: Kdmid.Notification.Dependencies) ->
+let spread (_: Request<Payload>) =
+    fun (_: Kdmid.Notification.Dependencies) ->
         $"The spread messages is not implemented yet."
         |> NotImplemented
         |> Error

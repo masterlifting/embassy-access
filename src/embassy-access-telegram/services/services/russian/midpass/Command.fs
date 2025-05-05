@@ -1,6 +1,6 @@
 ﻿module EA.Telegram.Services.Services.Russian.Midpass.Command
 
-open EA.Telegram.Dependencies.Services.Italian
+open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
@@ -9,13 +9,12 @@ open EA.Telegram.Router.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
 
 let checkStatus (serviceId: ServiceId) (embassyId: EmbassyId) (number: string) =
-    fun (deps: Midpass.Dependencies) ->
-        $"Checking status for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with number {number}..."
-        |> Text.create
-        |> Message.createNew deps.ChatId
-        |> Ok
+    fun (_: Midpass.Dependencies) ->
+        $"Checking status for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with number {number} is not implemented."
+        + NOT_IMPLEMENTED
+        |> NotImplemented
+        |> Error
         |> async.Return
-
 let delete requestId =
     fun (deps: Midpass.Dependencies) ->
         deps.initRequestStorage ()
