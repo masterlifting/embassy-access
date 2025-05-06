@@ -15,7 +15,10 @@ type Dependencies = {
 let init (deps: Dependencies) =
     let initHttpClient (credentials: Credentials) =
         let host = "https://prenotami.esteri.it"
-        {
+        
+        credentials
+        |> Credentials.createBasicAuth
+        |> Result.map (fun basicAuth -> {
             Http.Host = host
             Http.Headers =
                 Map [
@@ -35,25 +38,19 @@ let init (deps: Dependencies) =
                     [
                         "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0"
                     ]
+                    "Authorization", [ basicAuth ]
                 ]
                 |> Some
-        }
-        |> Http.Provider.init
+        })
+        |> Result.bind Http.Provider.init
 
     {
         initHttpClient = initHttpClient
         updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
         getInitialPage =
             fun request httpClient ->
-                // httpClient
-                // |> Http.Request.get request deps.ct
-                // |> Http.Response.String.read deps.ct
-                {
-                    Http.Response.Content = "Test response from Prenotami service"
-                    Http.Response.StatusCode = 200
-                    Http.Response.Headers = None
-                }
-                |> Ok
-                |> async.Return
+                httpClient
+                |> Http.Request.get request deps.ct
+                |> Http.Response.String.read deps.ct
     }
     |> Ok

@@ -27,7 +27,20 @@ type Credentials = {
             | _ -> $"Prenotami password: '%s{password}' is not valid." |> NotSupported |> Error
         | _ -> $"Prenotami login: '%s{login}' is not valid." |> NotSupported |> Error
 
-    static member print(payload: Credentials) = $"Login: '%s{payload.Login}' Password: '%s{payload.Password}'"
+    static member createBasicAuth(credentials: Credentials) =
+        try
+            let auth =
+                Convert.ToBase64String(Text.Encoding.UTF8.GetBytes(credentials.Login + ":" + credentials.Password))
+            $"Basic {auth}" |> Ok
+        with ex ->
+            Operation {
+                Message = "Error creating Basic Auth. " + (ex |> Exception.toMessage)
+                Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
+            }
+            |> Error
+
+    static member print(credentials: Credentials) =
+        $"Login: '%s{credentials.Login}' Password: '%s{credentials.Password}'"
 
 type PayloadState =
     | NoAppointments
