@@ -52,7 +52,7 @@ type Request<'payload> = {
         + $"\n%s{payload}"
         + $"\n[Last modified] '%s{request.Modified |> String.fromDateTime}'"
         + $"\n[Auto processing is {autoProcessingState}]"
-        + $"\n[Available limits]\n - %s{limits}"
+        + $"\n[Limits]\n - %s{limits}"
 
     member this.UpdateLimits() =
         this.Limits

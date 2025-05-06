@@ -63,7 +63,7 @@ let tryProcess (request: Request<Payload>) =
                 |> ResultAsync.mapError (fun error ->
                     Operation {
                         Message = error.Message
-                        Code = Constants.ErrorCode.INITIAL_PAGE_ERROR |> Custom |> Some
+                        Code = Constants.ErrorCode.PAGE_HAS_ERROR |> Custom |> Some
                     }))
 
         let setFinalProcessState requestRes =

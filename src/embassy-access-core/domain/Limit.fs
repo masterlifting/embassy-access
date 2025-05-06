@@ -9,7 +9,7 @@ type private Refresh =
     | Ready
     | Waiting of TimeSpan
 
-    static member validate remainingPeriod modifiedDate =
+    static member calculate remainingPeriod modifiedDate =
         match max (remainingPeriod - (DateTime.UtcNow - modifiedDate)) TimeSpan.Zero with
         | p when p = TimeSpan.Zero -> Ready
         | period -> Waiting period
@@ -20,22 +20,18 @@ type LimitState =
 
     static member internal create attempts period =
         match attempts > 0u<attempts> && period > TimeSpan.Zero with
-        | true -> Valid(attempts, period, DateTime.UtcNow)
+        | true ->
+            let attempts = attempts - 1u<attempts>
+            match attempts = 0u<attempts> with
+            | true -> Invalid(period, DateTime.UtcNow)
+            | false -> Valid(attempts, period, DateTime.UtcNow)
         | false -> Invalid(period, DateTime.UtcNow)
-
-    static member internal calculate attempts period =
-        let attempts =
-            match attempts > 0u<attempts> with
-            | true -> attempts - 1u<attempts>
-            | false -> 0u<attempts>
-
-        LimitState.create attempts period
 
     static member internal validate attempts period date =
         match attempts > 0u<attempts> with
         | true -> Ok()
         | false ->
-            match Refresh.validate period date with
+            match Refresh.calculate period date with
             | Ready -> Ok()
             | Waiting period ->
                 $"Limit of attempts reached. Remaining period: '%s{period |> String.fromTimeSpan}'."
@@ -47,13 +43,6 @@ type Limit = {
     State: LimitState
 } with
 
-    static member print limit =
-        match limit.State with
-        | Valid(attempts, period, _) ->
-            $"Remaining attempts '%i{attempts}' of '%i{limit.Attempts}' expired after '%s{period |> String.fromTimeSpan}'"
-        | Invalid(period, _) ->
-            $"No attempts left. Reactivate '%i{limit.Attempts}' attempts after '%s{period |> String.fromTimeSpan}'"
-
     static member create(attempts, period) = {
         Attempts = attempts
         Period = period
@@ -62,22 +51,28 @@ type Limit = {
 
     static member update limit =
         match limit.State with
-        | Valid(attempts, period, date) ->
-            match Refresh.validate period date with
-            | Ready -> Limit.create (limit.Attempts - 1u<attempts>, limit.Period)
-            | Waiting period -> {
-                limit with
-                    State = LimitState.calculate attempts period
-              }
+        | Valid(attempts, period, _) -> {
+            limit with
+                State = LimitState.create attempts period
+          }
         | Invalid(period, date) ->
-            match Refresh.validate period date with
-            | Ready -> Limit.create (limit.Attempts - 1u<attempts>, limit.Period)
+            match Refresh.calculate period date with
+            | Ready -> Limit.create (limit.Attempts, limit.Period)
             | Waiting period -> {
                 limit with
-                    State = LimitState.calculate 0u<attempts> period
+                    State = LimitState.create 0u<attempts> period
               }
 
     static member validate limit =
         match limit.State with
         | Valid(attempts, period, date) -> LimitState.validate attempts period date
         | Invalid(period, date) -> LimitState.validate 0u<attempts> period date
+
+    static member print limit =
+        match limit.State with
+        | Valid(attempts, period, _) -> $"Remaining attempts '%i{attempts}' for '%s{period |> String.fromTimeSpan}'"
+        | Invalid(period, date) ->
+            match Refresh.calculate period date with
+            | Ready -> $"Remaining attempts '%i{limit.Attempts}' for '%s{limit.Period |> String.fromTimeSpan}'"
+            | Waiting period ->
+                $"Unavailable now. '%i{limit.Attempts}' attempts will be available in '%s{period |> String.fromTimeSpan}'"

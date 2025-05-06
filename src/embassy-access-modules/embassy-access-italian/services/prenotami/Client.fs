@@ -45,8 +45,15 @@ let init (deps: Dependencies) =
         updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
         getInitialPage =
             fun request httpClient ->
-                httpClient
-                |> Http.Request.get request deps.ct
-                |> Http.Response.String.read deps.ct
+                // httpClient
+                // |> Http.Request.get request deps.ct
+                // |> Http.Response.String.read deps.ct
+                {
+                    Http.Response.Content = "Test response from Prenotami service"
+                    Http.Response.StatusCode = 200
+                    Http.Response.Headers = None
+                }
+                |> Ok
+                |> async.Return
     }
     |> Ok

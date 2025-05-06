@@ -104,7 +104,7 @@ type PayloadState =
             |> String.concat "\n - "
             |> sprintf "Available appointments \n - %s"
         | HasConfirmation(message, appointment) -> $"The appointment '%s{appointment.Value}' is confirmed: %s{message}"
-        |> sprintf "[Last state] %s"
+        |> sprintf "[Last request state] %s"
 
 type Payload = {
     Credentials: Credentials

@@ -61,7 +61,10 @@ let private createMessage chatId (request: Request<Payload>) =
     |> async.Return
 
 let private Limits =
-    Limit.create (20u<attempts>, TimeSpan.FromDays 1) |> Set.singleton
+    Set [
+        Limit.create (20u<attempts>, TimeSpan.FromDays 1)
+        Limit.create (1u<attempts>, TimeSpan.FromMinutes 1.0)
+    ]
 
 let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (password: string) =
     fun (deps: Prenotami.Dependencies) ->

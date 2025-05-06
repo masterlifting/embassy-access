@@ -27,7 +27,7 @@ type Credentials = {
             | _ -> $"Prenotami password: '%s{password}' is not valid." |> NotSupported |> Error
         | _ -> $"Prenotami login: '%s{login}' is not valid." |> NotSupported |> Error
 
-    static member print(payload: Credentials) = $"Login: '%s{payload.Login}'"
+    static member print(payload: Credentials) = $"Login: '%s{payload.Login}' Password: '%s{payload.Password}'"
 
 type PayloadState =
     | NoAppointments
@@ -41,7 +41,7 @@ type PayloadState =
             |> Seq.map Appointment.print
             |> String.concat "\n - "
             |> sprintf "Available appointments \n - %s"
-        |> sprintf "[Last state] %s"
+        |> sprintf "[Last request state] %s"
 
 type Payload = {
     Credentials: Credentials
@@ -58,8 +58,8 @@ type Payload = {
         | Operation reason ->
             match reason.Code with
             | Some(Custom Constants.ErrorCode.INITIAL_PAGE_ERROR) -> error.Message |> Some
-            | _ -> None
-        | _ -> None
+            | _ -> error.Message |> Some
+        | _ -> error.Message |> Some
         |> Option.map (fun error ->
             payload.Credentials
             |> Credentials.print
