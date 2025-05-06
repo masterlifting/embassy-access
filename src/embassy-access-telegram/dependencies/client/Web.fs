@@ -11,7 +11,7 @@ module Telegram =
     open Web.Clients.Domain.Telegram.Producer
 
     type Dependencies = {
-        initConsumer: (Consumer.Data -> Async<Result<unit, Error'>>) -> Web.Client.Consumer
+        initConsumer: (Consumer.Data -> Async<Result<unit, Error'>>) -> Telegram.Consumer.Handler
         sendMessage: Message -> Async<Result<unit, Error'>>
         sendMessageRes: Async<Result<Message, Error'>> -> ChatId -> Async<Result<unit, Error'>>
         sendMessages: Message seq -> Async<Result<unit, Error'>>
@@ -35,7 +35,7 @@ module Telegram =
                     |> ResultAsync.map ignore
 
                 let initTelegramConsumer handler =
-                    Web.Client.Consumer.Telegram(client, handler)
+                    Telegram.Consumer.Handler(client, handler)
 
                 {
                     initConsumer = initTelegramConsumer

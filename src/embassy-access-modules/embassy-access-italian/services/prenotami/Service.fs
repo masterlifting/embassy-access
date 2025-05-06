@@ -39,6 +39,7 @@ let private setFinalProcessState (request: Request<Payload>) requestPipe =
 
 let tryProcess (request: Request<Payload>) =
     fun (client: Client) ->
+        
         // define
         let setInitialProcessState =
             ResultAsync.wrap (fun r ->
@@ -51,8 +52,7 @@ let tryProcess (request: Request<Payload>) =
 
         let createHttpClient =
             ResultAsync.bind (fun r ->
-                r.Payload.Credentials
-                |> client.initHttpClient
+                client.initHttpClient()
                 |> Result.map (fun httpClient -> httpClient, r))
 
         let parseInitialPage =

@@ -7,8 +7,8 @@ open Infrastructure.Parser
 open Web.Clients.Domain.Http
 open EA.Italian.Services.Prenotami.Web
 
-let private createHttpRequest queryParams = {
-    Path = "/queue/orderinfo.aspx?" + queryParams
+let private createHttpRequest () = {
+    Path = "/"
     Headers = None
 }
 
@@ -70,7 +70,7 @@ let private prepareHttpFormData pageData =
 let parse () =
     fun (httpClient, getInitialPage) ->
         // define
-        let getRequest = "" |> createHttpRequest |> getInitialPage
+        let getRequest = () |> createHttpRequest |> getInitialPage
         let setCookie = ResultAsync.bind (httpClient |> Http.setRequiredCookie)
         let parseResponse = ResultAsync.bind parseHttpResponse
 

@@ -13,21 +13,20 @@ type Dependencies = {
 }
 
 let init (deps: Dependencies) =
-    let initHttpClient (credentials: Credentials) =
+    let initHttpClient () =
         let host = "https://prenotami.esteri.it"
         
-        credentials
-        |> Credentials.createBasicAuth
-        |> Result.map (fun basicAuth -> {
+        {
             Http.Host = host
             Http.Headers =
                 Map [
-                    "Origin", [ host ]
+                    "Host", [ "prenotami.esteri.it" ]
                     "Accept",
                     [
-                        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8"
+                        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
                     ]
-                    "Accept-Language", [ "en-US,en;q=0.8" ]
+                    "Accept-Encoding", [ "gzip"; "deflate"; "br"; "zstd" ]
+                    "Accept-Language", [ "en,ru;q=0.9,en-US;q=0.8" ]
                     "Connection", [ "keep-alive" ]
                     "Sec-Fetch-Dest", [ "document" ]
                     "Sec-Fetch-Mode", [ "navigate" ]
@@ -38,11 +37,10 @@ let init (deps: Dependencies) =
                     [
                         "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0"
                     ]
-                    "Authorization", [ basicAuth ]
                 ]
                 |> Some
-        })
-        |> Result.bind Http.Provider.init
+        }
+        |>Http.Provider.init
 
     {
         initHttpClient = initHttpClient

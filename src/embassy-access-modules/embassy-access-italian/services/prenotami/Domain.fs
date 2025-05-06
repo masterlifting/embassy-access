@@ -79,7 +79,7 @@ type Payload = {
             |> fun credentials -> credentials + Environment.NewLine + error)
 
 type Client = {
-    initHttpClient: Credentials -> Result<Http.Client, Error'>
+    initHttpClient: unit -> Result<Http.Client, Error'>
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
     getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
 }

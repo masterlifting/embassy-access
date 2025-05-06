@@ -10,7 +10,7 @@ let private setCookie cookie httpClient =
 
 let setRequiredCookie httpClient (response: Response<string>) =
     response.Headers
-    |> Http.Headers.tryFind "Set-Cookie" [ "AlteonP"; "__ddg1_" ]
+    |> Http.Headers.tryFind "Set-Cookie" []
     |> Option.map (fun cookie -> httpClient |> setCookie cookie |> Result.map (fun _ -> response.Content))
     |> Option.defaultValue (Ok response.Content)
 
