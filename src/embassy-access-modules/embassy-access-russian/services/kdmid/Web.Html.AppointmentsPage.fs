@@ -3,8 +3,8 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Infrastructure.Parser
 open Web.Clients.Domain.Http
+open Web.Clients.Browser
 open EA.Core.Domain
 open EA.Russian.Services.Kdmid.Web
 open EA.Russian.Services.Domain.Kdmid

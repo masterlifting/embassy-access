@@ -4,7 +4,7 @@ open System
 open SkiaSharp
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Infrastructure.Parser
+open Web.Clients.Browser
 open Web.Clients.Domain.Http
 open EA.Russian.Services.Kdmid.Web
 

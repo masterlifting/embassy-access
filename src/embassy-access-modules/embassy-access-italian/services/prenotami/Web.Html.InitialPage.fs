@@ -3,14 +3,11 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Infrastructure.Parser
+open Web.Clients.Browser
 open Web.Clients.Domain.Http
 open EA.Italian.Services.Prenotami.Web
 
-let private createHttpRequest () = {
-    Path = "/"
-    Headers = None
-}
+let private createHttpRequest () = { Path = "/"; Headers = None }
 
 let private parseHttpResponse page =
     Html.load page

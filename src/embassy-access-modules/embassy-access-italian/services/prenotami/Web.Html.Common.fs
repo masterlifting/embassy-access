@@ -4,7 +4,7 @@ open System
 open System.Text.RegularExpressions
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Infrastructure.Parser
+open Web.Clients.Browser
 open EA.Italian.Services.Domain.Prenotami
 
 let pageHasError page =

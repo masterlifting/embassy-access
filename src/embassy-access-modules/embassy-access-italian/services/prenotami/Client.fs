@@ -15,7 +15,7 @@ type Dependencies = {
 let init (deps: Dependencies) =
     let initHttpClient () =
         let host = "https://prenotami.esteri.it"
-        
+
         {
             Http.Host = host
             Http.Headers =
@@ -40,7 +40,7 @@ let init (deps: Dependencies) =
                 ]
                 |> Some
         }
-        |>Http.Provider.init
+        |> Http.Provider.init
 
     {
         initHttpClient = initHttpClient
