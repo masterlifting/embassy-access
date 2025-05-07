@@ -50,14 +50,19 @@ let tryProcess (request: Request<Payload>) =
                 }
                 |> client.updateRequest)
 
-        let createHttpClient =
-            ResultAsync.bind (fun r -> client.initHttpClient () |> Result.map (fun httpClient -> httpClient, r))
+        let initBrowserProvider =
+            ResultAsync.bindAsync (fun r ->
+                client.initBrowserProvider ()
+                |> ResultAsync.map (fun browserProvider -> browserProvider, r))
 
         let parseInitialPage =
-            ResultAsync.bindAsync (fun (httpClient, r) ->
-                (httpClient, client.getInitialPage)
-                |> Html.InitialPage.parse ()
-                |> ResultAsync.map (fun formData -> r)
+            ResultAsync.bindAsync (fun (browserProvider, r) ->
+                let loadBrowserPage uri =
+                    browserProvider |> client.loadBrowserPage uri
+
+                (loadBrowserPage, client.fillBrowserForm, client.clickBrowserButton)
+                |> Html.InitialPage.parse r.Payload.Credentials
+                |> ResultAsync.map (fun _ -> r)
                 |> ResultAsync.mapError (fun error ->
                     Operation {
                         Message = error.Message
@@ -71,7 +76,7 @@ let tryProcess (request: Request<Payload>) =
         request
         |> validateLimits
         |> setInitialProcessState
-        |> createHttpClient
+        |> initBrowserProvider
         |> parseInitialPage
         |> setFinalProcessState
 

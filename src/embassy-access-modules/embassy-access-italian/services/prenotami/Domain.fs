@@ -79,7 +79,9 @@ type Payload = {
             |> fun credentials -> credentials + Environment.NewLine + error)
 
 type Client = {
-    initHttpClient: unit -> Result<Http.Client, Error'>
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
-    getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
+    initBrowserProvider: unit -> Async<Result<Browser.Provider, Error'>>
+    loadBrowserPage: Uri -> Browser.Provider -> Async<Result<Browser.Page, Error'>>
+    fillBrowserForm: Browser.Selector -> string -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+    clickBrowserButton: Browser.Selector -> Browser.Page -> Async<Result<Browser.Page, Error'>>
 }
