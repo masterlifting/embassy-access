@@ -14,9 +14,12 @@ type Dependencies = {
 let init (deps: Dependencies) =
     {
         updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
-        initBrowserProvider = fun () -> Browser.Provider.init { Host = "https://prenotami.esteri.it" }
-        loadBrowserPage = fun pageUri provider -> provider |> Browser.Page.load pageUri
-        fillBrowserForm = fun selector value page -> page |> Browser.Page.Form.fill selector value
-        clickBrowserButton = fun selector page -> page |> Browser.Page.Button.click selector
+        Browser = {|
+            initProvider = fun () -> Browser.Provider.init { Host = "https://prenotami.esteri.it" }
+            loadPage = fun pageUri provider -> provider |> Browser.Page.load pageUri
+            waitPage = fun path page -> page |> Browser.Page.waitFor path
+            fillInput = fun selector value page -> page |> Browser.Page.Input.fill selector value
+            clickButton = fun selector page -> page |> Browser.Page.Button.click selector
+        |}
     }
     |> Ok

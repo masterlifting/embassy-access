@@ -52,15 +52,18 @@ let tryProcess (request: Request<Payload>) =
 
         let initBrowserProvider =
             ResultAsync.bindAsync (fun r ->
-                client.initBrowserProvider ()
+                client.Browser.initProvider ()
                 |> ResultAsync.map (fun browserProvider -> browserProvider, r))
 
         let parseInitialPage =
             ResultAsync.bindAsync (fun (browserProvider, r) ->
-                let loadBrowserPage uri =
-                    browserProvider |> client.loadBrowserPage uri
+                let loadPage uri =
+                    browserProvider |> client.Browser.loadPage uri
+                let waitPage = client.Browser.waitPage
+                let fillInput = client.Browser.fillInput
+                let clickButton = client.Browser.clickButton
 
-                (loadBrowserPage, client.fillBrowserForm, client.clickBrowserButton)
+                (loadPage, waitPage, fillInput, clickButton)
                 |> Html.InitialPage.parse r.Payload.Credentials
                 |> ResultAsync.map (fun _ -> r)
                 |> ResultAsync.mapError (fun error ->

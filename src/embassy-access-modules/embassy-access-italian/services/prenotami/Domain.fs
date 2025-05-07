@@ -1,6 +1,7 @@
 ﻿module EA.Italian.Services.Domain.Prenotami
 
 open System
+open System.Text.RegularExpressions
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain
@@ -80,8 +81,11 @@ type Payload = {
 
 type Client = {
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
-    initBrowserProvider: unit -> Async<Result<Browser.Provider, Error'>>
-    loadBrowserPage: Uri -> Browser.Provider -> Async<Result<Browser.Page, Error'>>
-    fillBrowserForm: Browser.Selector -> string -> Browser.Page -> Async<Result<Browser.Page, Error'>>
-    clickBrowserButton: Browser.Selector -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+    Browser: {|
+        initProvider: unit -> Async<Result<Browser.Provider, Error'>>
+        loadPage: Uri -> Browser.Provider -> Async<Result<Browser.Page, Error'>>
+        waitPage: Regex -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+        fillInput: Browser.Selector -> string -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+        clickButton: Browser.Selector -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+    |}
 }
