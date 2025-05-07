@@ -20,22 +20,8 @@ type LimitState =
 
     static member internal create attempts period =
         match attempts > 0u<attempts> && period > TimeSpan.Zero with
-        | true ->
-            let attempts = attempts - 1u<attempts>
-            match attempts = 0u<attempts> with
-            | true -> Invalid(period, DateTime.UtcNow)
-            | false -> Valid(attempts, period, DateTime.UtcNow)
+        | true -> Valid(attempts, period, DateTime.UtcNow)
         | false -> Invalid(period, DateTime.UtcNow)
-
-    static member internal validate attempts period date =
-        match attempts > 0u<attempts> with
-        | true -> Ok()
-        | false ->
-            match Refresh.calculate period date with
-            | Ready -> Ok()
-            | Waiting period ->
-                $"Limit of attempts reached. Remaining period: '%s{period |> String.fromTimeSpan}'."
-                |> Error
 
 type Limit = {
     Attempts: uint<attempts>
@@ -53,7 +39,7 @@ type Limit = {
         match limit.State with
         | Valid(attempts, period, _) -> {
             limit with
-                State = LimitState.create attempts period
+                State = LimitState.create (attempts - 1u<attempts>) period
           }
         | Invalid(period, date) ->
             match Refresh.calculate period date with
@@ -65,8 +51,13 @@ type Limit = {
 
     static member validate limit =
         match limit.State with
-        | Valid(attempts, period, date) -> LimitState.validate attempts period date
-        | Invalid(period, date) -> LimitState.validate 0u<attempts> period date
+        | Valid _ -> Ok()
+        | Invalid(period, date) ->
+            match Refresh.calculate period date with
+            | Ready -> Ok()
+            | Waiting period ->
+                $"Limit of attempts reached. Remaining period: '%s{period |> String.fromTimeSpan}'."
+                |> Error
 
     static member print limit =
         match limit.State with

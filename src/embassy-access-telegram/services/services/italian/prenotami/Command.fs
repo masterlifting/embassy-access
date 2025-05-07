@@ -161,6 +161,7 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
                 |> Ok
                 |> async.Return
         }
+
 let confirmAppointment (requestId: RequestId) (appointmentId: AppointmentId) =
     fun (deps: Prenotami.Dependencies) ->
         $"The confirmation of appointments '%s{appointmentId.ValueStr}' for request '%s{requestId.ValueStr}' is not implemented yet. "
