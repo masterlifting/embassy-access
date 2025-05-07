@@ -9,6 +9,6 @@ let parse (credentials: Credentials) =
     fun (loadBrowserPage, fillBrowserForm, clickBrowserButton) ->
         // pipe
         loadBrowserPage ("https://prenotami.esteri.it" |> Uri)
-        |> ResultAsync.bindAsync (fillBrowserForm (Selector "#login") credentials.Login)
-        |> ResultAsync.bindAsync (fillBrowserForm (Selector "#password") credentials.Password)
+        |> ResultAsync.bindAsync (fillBrowserForm (Selector "//input[@id='login-email']") credentials.Login)
+        |> ResultAsync.bindAsync (fillBrowserForm (Selector "#login-password") credentials.Password)
         |> ResultAsync.bindAsync (clickBrowserButton (Selector "#btnLogin"))

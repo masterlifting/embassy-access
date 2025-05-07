@@ -14,7 +14,18 @@ if [[ -f "$PID_FILE" ]]; then
 fi
 
 echo "Starting dotnet application in Release mode"
-nohup dotnet run -c Release > nohup.out 2>&1 &
+
+nohup dotnet build -c Release > build.out 2>&1 &
+BUILD_PID=$!
+wait $BUILD_PID
+
+chmod +x ./bin/Release/net9.0/playwright.ps1
+pwsh ./bin/Release/net9.0/playwright.ps1 install > playwright_install.out 2>&1 &
+PLAYWRIGHT_PID=$!
+wait $PLAYWRIGHT_PID
+
+nohup dotnet run > app.out 2>&1 &
+
 echo $! > "$PID_FILE"
 echo "New process started with PID $!"
 
