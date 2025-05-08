@@ -87,5 +87,6 @@ type Client = {
         waitPage: Regex -> Browser.Page -> Async<Result<Browser.Page, Error'>>
         fillInput: Browser.Selector -> string -> Browser.Page -> Async<Result<Browser.Page, Error'>>
         clickButton: Browser.Selector -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+        mouseShuffle: Browser.Page -> Async<Result<Browser.Page, Error'>>
     |}
 }

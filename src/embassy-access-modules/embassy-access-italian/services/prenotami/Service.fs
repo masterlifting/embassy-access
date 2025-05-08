@@ -62,8 +62,9 @@ let tryProcess (request: Request<Payload>) =
                 let waitPage = client.Browser.waitPage
                 let fillInput = client.Browser.fillInput
                 let clickButton = client.Browser.clickButton
+                let mouseShuffle = client.Browser.mouseShuffle
 
-                (loadPage, waitPage, fillInput, clickButton)
+                (loadPage, waitPage, fillInput, clickButton, mouseShuffle)
                 |> Html.InitialPage.parse r.Payload.Credentials
                 |> ResultAsync.map (fun _ -> r)
                 |> ResultAsync.mapError (fun error ->

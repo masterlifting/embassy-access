@@ -1,5 +1,6 @@
 ﻿module EA.Italian.Services.Prenotami.Client
 
+open System
 open System.Threading
 open Web.Clients
 open EA.Core.DataAccess
@@ -20,6 +21,7 @@ let init (deps: Dependencies) =
             waitPage = fun path page -> page |> Browser.Page.waitFor path
             fillInput = fun selector value page -> page |> Browser.Page.Input.fill selector value
             clickButton = fun selector page -> page |> Browser.Page.Button.click selector
+            mouseShuffle = fun page -> page |> Browser.Page.Mouse.shuffle (TimeSpan.FromSeconds 20.0)
         |}
     }
     |> Ok
