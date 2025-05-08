@@ -18,10 +18,10 @@ let init (deps: Dependencies) =
         Browser = {|
             initProvider = fun () -> Browser.Provider.init { Host = "https://prenotami.esteri.it" }
             loadPage = fun pageUri provider -> provider |> Browser.Page.load pageUri
-            waitPage = fun path page -> page |> Browser.Page.waitFor path
             fillInput = fun selector value page -> page |> Browser.Page.Input.fill selector value
             clickButton = fun selector page -> page |> Browser.Page.Button.click selector
             mouseShuffle = fun page -> page |> Browser.Page.Mouse.shuffle (TimeSpan.FromSeconds 20.0)
+            executeCommand = fun selector command page -> page |> Browser.Page.Html.execute selector command
         |}
     }
     |> Ok

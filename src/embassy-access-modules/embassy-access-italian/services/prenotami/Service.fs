@@ -59,12 +59,11 @@ let tryProcess (request: Request<Payload>) =
             ResultAsync.bindAsync (fun (browserProvider, r) ->
                 let loadPage uri =
                     browserProvider |> client.Browser.loadPage uri
-                let waitPage = client.Browser.waitPage
                 let fillInput = client.Browser.fillInput
-                let clickButton = client.Browser.clickButton
                 let mouseShuffle = client.Browser.mouseShuffle
+                let executeCommand = client.Browser.executeCommand
 
-                (loadPage, waitPage, fillInput, clickButton, mouseShuffle)
+                (loadPage, fillInput, mouseShuffle, executeCommand)
                 |> Html.InitialPage.parse r.Payload.Credentials
                 |> ResultAsync.map (fun _ -> r)
                 |> ResultAsync.mapError (fun error ->
