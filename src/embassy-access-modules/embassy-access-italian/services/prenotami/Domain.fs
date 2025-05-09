@@ -8,11 +8,9 @@ open EA.Core.Domain
 
 module Constants =
     module ErrorCode =
-        [<Literal>]
-        let PAGE_HAS_ERROR = "PageHasError"
 
         [<Literal>]
-        let INITIAL_PAGE_ERROR = "InitialPageError"
+        let TECHNICAL_ERROR = "Technical error"
 
 type Credentials = {
     Login: string
@@ -42,6 +40,18 @@ type Credentials = {
     static member print(credentials: Credentials) =
         $"Login: '%s{credentials.Login}' Password: '%s{credentials.Password}'"
 
+type internal Appointment with
+    static member parse(text: string) =
+        {
+            Id = AppointmentId.createNew ()
+            Value = text
+            Date = DateOnly.MinValue
+            Time = TimeOnly.MinValue
+            Description = text
+        }
+        |> Set.singleton
+        |> Ok
+
 type PayloadState =
     | NoAppointments
     | HasAppointments of Set<Appointment>
@@ -70,7 +80,7 @@ type Payload = {
         match error with
         | Operation reason ->
             match reason.Code with
-            | Some(Custom Constants.ErrorCode.INITIAL_PAGE_ERROR) -> error.Message |> Some
+            | Some(Custom Constants.ErrorCode.TECHNICAL_ERROR) -> error.Message |> Some
             | _ -> error.Message |> Some
         | _ -> error.Message |> Some
         |> Option.map (fun error ->
@@ -81,11 +91,10 @@ type Payload = {
 type Client = {
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
     Browser: {|
-        initProvider: unit -> Async<Result<Browser.Provider, Error'>>
-        loadPage: Uri -> Browser.Provider -> Async<Result<Browser.Page, Error'>>
-        fillInput: Browser.Selector -> string -> Browser.Page -> Async<Result<Browser.Page, Error'>>
-        clickButton: Browser.Selector -> Browser.Page -> Async<Result<Browser.Page, Error'>>
-        mouseShuffle: Browser.Page -> Async<Result<Browser.Page, Error'>>
-        executeCommand: Browser.Selector -> string -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+        fillInput: Browser.Selector -> string -> Async<Result<unit, Error'>>
+        clickButton: Browser.Selector -> Async<Result<unit, Error'>>
+        mouseShuffle: unit -> Async<Result<unit, Error'>>
+        executeCommand: Browser.Selector -> string -> Async<Result<unit, Error'>>
+        tryFindText: Browser.Selector -> Async<Result<string option, Error'>>
     |}
 }

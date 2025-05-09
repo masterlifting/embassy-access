@@ -43,7 +43,7 @@ let init (deps: Dependencies) =
             Http.Host = host
             Http.Headers = headers
         }
-        |> Http.Provider.init
+        |> Http.Client.init
 
     {
         initHttpClient = initHttpClient

@@ -42,7 +42,7 @@ let tryProcess (request: Request<Payload>) =
     fun (client: Client) ->
 
         // define
-        let setInitialProcessState =
+        let setInitialState =
             ResultAsync.wrap (fun r ->
                 {
                     r with
@@ -86,19 +86,19 @@ let tryProcess (request: Request<Payload>) =
                 (httpClient, client.postConfirmationPage)
                 |> Html.ConfirmationPage.parse qp fdm r)
 
-        let setFinalProcessState requestRes =
+        let setFinalState requestRes =
             client.updateRequest |> setFinalProcessState request requestRes
 
         // pipe
         request
         |> validateLimits
-        |> setInitialProcessState
+        |> setInitialState
         |> createHttpClient
         |> parseInitialPage
         |> parseValidationPage
         |> parseAppointmentsPage
         |> parseConfirmationPage
-        |> setFinalProcessState
+        |> setFinalState
 
 let tryProcessFirst requests =
     fun (client: Client, notify) ->

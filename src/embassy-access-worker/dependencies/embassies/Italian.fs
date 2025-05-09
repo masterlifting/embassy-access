@@ -76,8 +76,8 @@ module Prenotami =
                         ct = ct
                         RequestStorage = requestStorage
                     }
-                    |> Result.map (fun client -> client, notify)
-                    |> ResultAsync.wrap (Prenotami.Service.tryProcessFirst requests)
+                    |> ResultAsync.map (fun client -> client, notify)
+                    |> ResultAsync.bindAsync (Prenotami.Service.tryProcessFirst requests)
 
                 return {
                     TaskName = ActiveTask.print task

@@ -5,60 +5,93 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain
 open EA.Core.Domain
-open EA.Italian.Services.Prenotami.Client
 open EA.Italian.Services.Domain.Prenotami
 
 let private validateLimits (request: Request<Payload>) =
     request.ValidateLimits()
     |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
 
-let private processWebSite credentials (client: Client) =
+let private processWebSite (request: Request<Payload>) (client: Client) =
     //define
-    let loadInitialPage () =
-        client.Browser.initProvider ()
-        |> ResultAsync.bindAsync (client.Browser.loadPage ("https://prenotami.esteri.it" |> Uri))
 
-    let setLogin page =
-        page
-        |> client.Browser.fillInput (Browser.Selector "//input[@id='login-email']") credentials.Login
+    let setLogin () =
+        client.Browser.fillInput (Browser.Selector "//input[@id='login-email']") request.Payload.Credentials.Login
 
-    let setPassword page =
-        page
-        |> client.Browser.fillInput (Browser.Selector "//input[@id='login-password']") credentials.Password
+    let setPassword =
+        ResultAsync.bindAsync (fun _ ->
+            client.Browser.fillInput
+                (Browser.Selector "//input[@id='login-password']")
+                request.Payload.Credentials.Password)
 
-    let submitForm page =
-        page
-        |> client.Browser.executeCommand (Browser.Selector "form#login-form") "form => form.submit()"
-        
-    let clickBook page =
-        page
-        |> client.Browser.clickButton (Browser.Selector "//a[@id='advanced']")
+    let mouseShuffle = ResultAsync.bindAsync client.Browser.mouseShuffle
+
+    let submitForm =
+        ResultAsync.bindAsync (fun _ ->
+            client.Browser.executeCommand (Browser.Selector "form#login-form") "form => form.submit()")
+
+    let clickBookTab =
+        ResultAsync.bindAsync (fun _ -> client.Browser.clickButton (Browser.Selector "//a[@id='advanced']"))
+
+    let chooseBookService =
+        ResultAsync.bindAsync (fun _ ->
+            match request.Service.Id.Value |> Graph.NodeId.splitValues with
+            | [ _; _; _; "0"; _ ] -> "//a[@href='/Services/Booking/1151']" |> Ok //Tourism 1
+            | [ _; _; _; "1"; _ ] -> "//a[@href='/Services/Booking/1558']" |> Ok //Tourism 2
+            | _ ->
+                $"The service Id '{request.Service.Id}' is not recognized to process prenotami."
+                |> NotFound
+                |> Error
+            |> Result.map Browser.Selector
+            |> ResultAsync.wrap client.Browser.clickButton)
+
+    let setResult =
+        ResultAsync.bindAsync (fun _ ->
+            client.Browser.tryFindText (Browser.Selector "//div[starts-with(@id, 'jconfirm-box')]//div"))
+        >> ResultAsync.bind (function
+            | Some text ->
+                Ok {
+                    request with
+                        Payload = {
+                            request.Payload with
+                                State =
+                                    match text.Contains "Please check again" with
+                                    | true -> NoAppointments
+                                    | false ->
+                                        text
+                                        |> Appointment.parse
+                                        |> Result.map HasAppointments
+                                        |> Result.defaultValue NoAppointments
+                        }
+                }
+            | None ->
+                "The service is not available at the moment. Please try again later."
+                |> NotFound
+                |> Error)
 
     // pipe
-    loadInitialPage ()
-    |> ResultAsync.bindAsync setLogin
-    |> ResultAsync.bindAsync setPassword
-    |> ResultAsync.bindAsync client.Browser.mouseShuffle
-    |> ResultAsync.bindAsync submitForm
+    setLogin ()
+    |> setPassword
+    |> mouseShuffle
+    |> submitForm
+    |> clickBookTab
+    |> chooseBookService
+    |> setResult
 
 let private setFinalProcessState (request: Request<Payload>) requestPipe =
-    
     fun updateRequest ->
         requestPipe
         |> Async.bind (function
             | Ok(r: Request<Payload>) ->
-                r.UpdateLimits()
-                |> fun r -> {
-                    r with
+                updateRequest {
+                    r.UpdateLimits() with
                         Modified = DateTime.UtcNow
                         ProcessState = r.Payload |> Payload.print |> Completed
                 }
-                |> updateRequest
             | Error error ->
                 match error with
                 | Operation reason ->
                     match reason.Code with
-                    | Some(Custom Constants.ErrorCode.INITIAL_PAGE_ERROR) -> request
+                    | Some(Custom Constants.ErrorCode.TECHNICAL_ERROR) -> request
                     | _ -> request.UpdateLimits()
                 | _ -> request.UpdateLimits()
                 |> fun r ->
@@ -72,7 +105,7 @@ let tryProcess (request: Request<Payload>) =
     fun (client: Client) ->
 
         // define
-        let setInitialProcessState =
+        let setInitialState =
             ResultAsync.wrap (fun r ->
                 {
                     r with
@@ -82,25 +115,13 @@ let tryProcess (request: Request<Payload>) =
                 |> client.updateRequest)
 
         let processWebSite =
-            ResultAsync.bindAsync (fun r ->
-                client
-                |> processWebSite r.Payload.Credentials
-                |> ResultAsync.map (fun _ -> r)
-                |> ResultAsync.mapError (fun error ->
-                    Operation {
-                        Message = error.Message
-                        Code = Constants.ErrorCode.PAGE_HAS_ERROR |> Custom |> Some
-                    }))
+            ResultAsync.bindAsync (fun r -> client |> processWebSite r |> ResultAsync.map (fun _ -> r))
 
-        let setFinalProcessState requestRes =
+        let setFinalState requestRes =
             client.updateRequest |> setFinalProcessState request requestRes
 
         // pipe
-        request
-        |> validateLimits
-        |> setInitialProcessState
-        |> processWebSite
-        |> setFinalProcessState
+        request |> validateLimits |> setInitialState |> processWebSite |> setFinalState
 
 let tryProcessFirst requests =
     fun (client: Client, notify) ->

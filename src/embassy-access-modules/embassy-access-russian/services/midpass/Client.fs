@@ -19,7 +19,7 @@ let init (deps: Dependencies) =
             Http.Host = "midpass.ru"
             Http.Headers = None
         }
-        |> Http.Provider.init
+        |> Http.Client.init
 
     {
         initHttpClient = initHttpClient
