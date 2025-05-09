@@ -3,15 +3,46 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Web.Clients.Domain
 open EA.Core.Domain
-open EA.Italian.Services.Prenotami.Web
+open EA.Italian.Services.Prenotami.Client
 open EA.Italian.Services.Domain.Prenotami
 
 let private validateLimits (request: Request<Payload>) =
     request.ValidateLimits()
     |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
 
+let private processWebSite credentials (client: Client) =
+    //define
+    let loadInitialPage () =
+        client.Browser.initProvider ()
+        |> ResultAsync.bindAsync (client.Browser.loadPage ("https://prenotami.esteri.it" |> Uri))
+
+    let setLogin page =
+        page
+        |> client.Browser.fillInput (Browser.Selector "//input[@id='login-email']") credentials.Login
+
+    let setPassword page =
+        page
+        |> client.Browser.fillInput (Browser.Selector "//input[@id='login-password']") credentials.Password
+
+    let submitForm page =
+        page
+        |> client.Browser.executeCommand (Browser.Selector "form#login-form") "form => form.submit()"
+        
+    let clickBook page =
+        page
+        |> client.Browser.clickButton (Browser.Selector "//a[@id='advanced']")
+
+    // pipe
+    loadInitialPage ()
+    |> ResultAsync.bindAsync setLogin
+    |> ResultAsync.bindAsync setPassword
+    |> ResultAsync.bindAsync client.Browser.mouseShuffle
+    |> ResultAsync.bindAsync submitForm
+
 let private setFinalProcessState (request: Request<Payload>) requestPipe =
+    
     fun updateRequest ->
         requestPipe
         |> Async.bind (function
@@ -50,21 +81,10 @@ let tryProcess (request: Request<Payload>) =
                 }
                 |> client.updateRequest)
 
-        let initBrowserProvider =
+        let processWebSite =
             ResultAsync.bindAsync (fun r ->
-                client.Browser.initProvider ()
-                |> ResultAsync.map (fun browserProvider -> browserProvider, r))
-
-        let parseInitialPage =
-            ResultAsync.bindAsync (fun (browserProvider, r) ->
-                let loadPage uri =
-                    browserProvider |> client.Browser.loadPage uri
-                let fillInput = client.Browser.fillInput
-                let mouseShuffle = client.Browser.mouseShuffle
-                let executeCommand = client.Browser.executeCommand
-
-                (loadPage, fillInput, mouseShuffle, executeCommand)
-                |> Html.InitialPage.parse r.Payload.Credentials
+                client
+                |> processWebSite r.Payload.Credentials
                 |> ResultAsync.map (fun _ -> r)
                 |> ResultAsync.mapError (fun error ->
                     Operation {
@@ -79,8 +99,7 @@ let tryProcess (request: Request<Payload>) =
         request
         |> validateLimits
         |> setInitialProcessState
-        |> initBrowserProvider
-        |> parseInitialPage
+        |> processWebSite
         |> setFinalProcessState
 
 let tryProcessFirst requests =
