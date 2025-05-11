@@ -3,9 +3,7 @@ module EA.Telegram.Dependencies.Culture
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open AIProvider.Services
 open AIProvider.Services.Domain
-open AIProvider.Services.DataAccess
 open AIProvider.Services.Dependencies
 open Web.Clients.Domain.Telegram.Producer
 
@@ -93,6 +91,7 @@ module private Payload =
                 |> ResultAsync.map (fun value -> { payload with Value = value } |> ButtonsGroup)
 
 type Dependencies = {
+    getAvailable: unit -> Map<Culture, string>
     translate: Culture -> Message -> Async<Result<Message, Error'>>
     translateSeq: Culture -> Message seq -> Async<Result<Message list, Error'>>
     translateRes: Culture -> Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
@@ -101,9 +100,28 @@ type Dependencies = {
 
     static member create ct =
         fun (deps: Culture.Dependencies) ->
+
+            let getAvailable () =
+                [
+                    English, "English"
+                    Russian, "Русский"
+                    Chinese, "中文"
+                    Spanish, "Español"
+                    Hindi, "हिन्दी"
+                    Arabic, "العربية"
+                    Serbian, "Српски"
+                    Portuguese, "Português"
+                    French, "Français"
+                    German, "Deutsch"
+                    Japanese, "日本語"
+                    Korean, "한국어"
+                ]
+                |> Map
+
             let shield = Shield.create ''' '''
 
-            let translate request = deps |> Culture.translate request ct
+            let translate request =
+                deps |> AIProvider.Services.Culture.translate request ct
 
             let translateError culture error =
                 (translate, shield)
@@ -134,6 +152,7 @@ type Dependencies = {
                 |> ResultAsync.mapErrorAsync (translateError culture)
 
             {
+                getAvailable = getAvailable
                 translate = translate
                 translateSeq = translateSeq
                 translateRes = translateRes

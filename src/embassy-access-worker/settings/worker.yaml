@@ -194,12 +194,17 @@ Worker:
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
-          Description: Serbia
+          Parallel: true
           Tasks:
             - Id: SA
+              Enabled: true
+              Recursively: 00:30:00
+              Duration: 00:02:00
               Description: Search appointments for Italian embassy in Serbia
-          Schedule:
-            TimeZone: 2
+              Schedule:
+                StartTime: 08:30:00
+                StopTime: 17:00:00
+                TimeZone: 2
     - Id: ESP
       Parallel: true
       Description: Spanish embassy

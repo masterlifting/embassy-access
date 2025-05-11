@@ -9,8 +9,7 @@ open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.Domain
 
-type EmbassyGraphStorage = EmbassyGraphStorage of Storage.Provider
-
+type Storage = Provider of Storage.Provider
 type StorageType = Configuration of Configuration.Connection
 
 type EmbassyGraphEntity() =
@@ -22,7 +21,7 @@ type EmbassyGraphEntity() =
 
     member this.ToDomain() =
         this.Id
-        |> Graph.NodeId.create
+        |> Graph.NodeId.parse
         |> Result.bind (fun nodeId ->
             match this.Children with
             | null -> List.empty |> Ok
@@ -30,7 +29,7 @@ type EmbassyGraphEntity() =
             |> Result.map (fun children ->
                 Graph.Node(
                     {
-                        Id = nodeId
+                        Id = nodeId |> EmbassyId
                         Name = this.Name
                         Description = this.Description
                         TimeZone = this.TimeZone |> Option.defaultValue 0.
@@ -46,10 +45,9 @@ module private Configuration =
     let get client =
         client |> loadData |> Result.bind _.ToDomain() |> async.Return
 
-let private toPersistenceStorage storage =
-    storage
-    |> function
-        | EmbassyGraphStorage storage -> storage
+let private toProvider =
+    function
+    | Provider provider -> provider
 
 let init storageType =
     match storageType with
@@ -57,9 +55,10 @@ let init storageType =
         connection
         |> Storage.Connection.Configuration
         |> Storage.init
-        |> Result.map EmbassyGraphStorage
+        |> Result.map Provider
 
 let get storage =
-    match storage |> toPersistenceStorage with
+    let provider = storage |> toProvider
+    match provider with
     | Storage.Configuration client -> client |> Configuration.get
-    | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
+    | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return

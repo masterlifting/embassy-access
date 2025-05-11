@@ -1,4 +1,5 @@
-﻿module EA.Core.DataAccess.ServiceGraph
+﻿[<RequireQualifiedAccess>]
+module EA.Core.DataAccess.ServiceGraph
 
 open System
 open Infrastructure.Domain
@@ -8,20 +9,18 @@ open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.Domain
 
-type ServiceGraphStorage = ServiceGraphStorage of Storage.Provider
-
+type Storage = Provider of Storage.Provider
 type StorageType = Configuration of Configuration.Connection
 
 type ServiceGraphEntity() =
     member val Id: string = String.Empty with get, set
     member val Name: string = String.Empty with get, set
-    member val Instruction: string option = None with get, set
     member val Description: string option = None with get, set
     member val Children: ServiceGraphEntity[] | null = [||] with get, set
 
     member this.ToDomain() =
         this.Id
-        |> Graph.NodeId.create
+        |> Graph.NodeId.parse
         |> Result.bind (fun nodeId ->
             match this.Children with
             | null -> List.empty |> Ok
@@ -29,9 +28,8 @@ type ServiceGraphEntity() =
             |> Result.map (fun children ->
                 Graph.Node(
                     {
-                        Id = nodeId
+                        Id = nodeId |> ServiceId
                         Name = this.Name
-                        Instruction = this.Instruction
                         Description = this.Description
                     },
                     children
@@ -45,10 +43,9 @@ module private Configuration =
     let get client =
         client |> loadData |> Result.bind _.ToDomain() |> async.Return
 
-let private toPersistenceStorage storage =
-    storage
-    |> function
-        | ServiceGraphStorage storage -> storage
+let private toProvider =
+    function
+    | Provider provider -> provider
 
 let init storageType =
     match storageType with
@@ -56,9 +53,10 @@ let init storageType =
         connection
         |> Storage.Connection.Configuration
         |> Storage.init
-        |> Result.map ServiceGraphStorage
+        |> Result.map Provider
 
 let get storage =
-    match storage |> toPersistenceStorage with
+    let provider = storage |> toProvider
+    match provider with
     | Storage.Configuration client -> client |> Configuration.get
-    | _ -> $"The '{storage}' is not supported." |> NotSupported |> Error |> async.Return
+    | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return

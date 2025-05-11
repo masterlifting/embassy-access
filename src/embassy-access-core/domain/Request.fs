@@ -21,27 +21,49 @@ type RequestId =
 
     static member createNew() = RequestId <| UUID16.createNew ()
 
-type Request = {
+type Request<'payload> = {
     Id: RequestId
-    Service: RequestService
+    Service: Service
+    Embassy: Embassy
+    Payload: 'payload
+    AutoProcessing: bool
     ProcessState: ProcessState
-    ConfirmationState: ConfirmationState
-    Appointments: Set<Appointment>
     Limits: Set<Limit>
-    IsBackground: bool
     Modified: DateTime
 } with
 
-    static member updateLimits request =
-        request.Limits
+    static member inline print(request: Request<_>) =
+
+        let inline printPayload (payload: 'p) =
+            (^p: (static member print: 'p -> string) payload)
+
+        let payload = request.Payload |> printPayload
+        let service = request.Service |> Service.print
+        let embassy = request.Embassy |> Embassy.print
+        let autoProcessingState =
+            match request.AutoProcessing with
+            | true -> "enabled"
+            | false -> "disabled"
+        let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n - "
+
+        $"[Subscription] Id: '%s{request.Id.ValueStr}'"
+        + $"\n%s{service}"
+        + $"\n%s{embassy}"
+        + $"\n%s{payload}"
+        + $"\n[Last modified] '%s{request.Modified |> String.fromDateTime}'"
+        + $"\n[Auto processing is {autoProcessingState}]"
+        + $"\n[Limits]\n - %s{limits}"
+
+    member this.UpdateLimits() =
+        this.Limits
         |> Seq.map Limit.update
         |> fun limits -> {
-            request with
+            this with
                 Limits = limits |> Set.ofSeq
         }
 
-    static member validateLimits request =
-        request.Limits
+    member this.ValidateLimits() =
+        this.Limits
         |> Seq.map Limit.validate
         |> Result.choose
-        |> Result.map (fun _ -> request)
+        |> Result.map (fun _ -> this)

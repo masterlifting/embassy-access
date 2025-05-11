@@ -1,107 +1,148 @@
 ﻿[<RequireQualifiedAccess>]
 module internal EA.Worker.Dependencies.Persistence
 
+open System
 open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Persistence.Storages
 open Persistence.Storages.Domain
 open AIProvider.Services.DataAccess
-open EA.Core.Domain
 open EA.Core.DataAccess
+open EA.Telegram.Domain
 open EA.Telegram.DataAccess
+open EA.Russian.Services.Domain
+open EA.Italian.Services.Domain
+
+let private result = ResultBuilder()
+let private resultAsync = ResultAsyncBuilder()
+
+module Russian =
+    open EA.Russian.Services.DataAccess
+    open EA.Russian.Services.DataAccess.Kdmid
+    open EA.Russian.Services.DataAccess.Midpass
+
+    type Dependencies = {
+        initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload, Kdmid.Payload.Entity>, Error'>
+        initMidpassRequestStorage: unit -> Result<Request.Storage<Midpass.Payload, Midpass.Payload.Entity>, Error'>
+    } with
+
+        static member create fileStoragePath =
+            let initKdmidRequestStorage () =
+                {
+                    FileSystem.Connection.FilePath = fileStoragePath
+                    FileSystem.Connection.FileName = "requests-rus-kdmid.json"
+                }
+                |> Storage.Request.FileSystem
+                |> Storage.Request.init {
+                    toDomain = Kdmid.Payload.toDomain
+                    toEntity = Kdmid.Payload.toEntity
+                }
+
+            let initMidpassRequestStorage () =
+                {
+                    FileSystem.Connection.FilePath = fileStoragePath
+                    FileSystem.Connection.FileName = "requests-rus-midpass.json"
+                }
+                |> Storage.Request.FileSystem
+                |> Storage.Request.init {
+                    toDomain = Midpass.Payload.toDomain
+                    toEntity = Midpass.Payload.toEntity
+                }
+
+            {
+                initKdmidRequestStorage = initKdmidRequestStorage
+                initMidpassRequestStorage = initMidpassRequestStorage
+            }
+
+module Italian =
+    open EA.Italian.Services.DataAccess
+    open EA.Italian.Services.DataAccess.Prenotami
+
+    type Dependencies = {
+        initPrenotamiRequestStorage:
+            unit -> Result<Request.Storage<Prenotami.Payload, Prenotami.Payload.Entity>, Error'>
+    } with
+
+        static member create fileStoragePath fileStorageKey =
+            let initPrenotamiRequestStorage () =
+                {
+                    FileSystem.Connection.FilePath = fileStoragePath
+                    FileSystem.Connection.FileName = "requests-ita-prenotami.json"
+                }
+                |> Storage.Request.FileSystem
+                |> Storage.Request.init {
+                    toDomain = Prenotami.Payload.toDomain fileStorageKey
+                    toEntity = Prenotami.Payload.toEntity fileStorageKey
+                }
+
+            {
+                initPrenotamiRequestStorage = initPrenotamiRequestStorage
+            }
 
 type Dependencies = {
-    ChatStorage: Chat.ChatStorage
-    RequestStorage: Request.RequestStorage
+    initChatStorage: unit -> Result<Chat.Storage, Error'>
+    initServiceStorage: unit -> Result<ServiceGraph.Storage, Error'>
+    initEmbassyStorage: unit -> Result<EmbassyGraph.Storage, Error'>
     initCultureStorage: unit -> Result<Culture.Response.Storage, Error'>
-    initServiceGraphStorage: unit -> Result<ServiceGraph.ServiceGraphStorage, Error'>
-    initEmbassyGraphStorage: unit -> Result<EmbassyGraph.EmbassyGraphStorage, Error'>
-    resetData: unit -> Async<Result<unit, Error'>>
+    RussianStorage: Russian.Dependencies
+    ItalianStorage: Italian.Dependencies
 } with
 
     static member create cfg =
-        let result = ResultBuilder()
+
+        let getEnv name =
+            Some cfg
+            |> Configuration.Client.tryGetEnv name
+            |> Result.bind (function
+                | Some value -> Ok value
+                | None -> $"Environment configuration '{name}' not found." |> NotFound |> Error)
+
+        let initCultureStorage fileStoragePath =
+            {
+                FileSystem.Connection.FilePath = fileStoragePath
+                FileSystem.Connection.FileName = "culture.json"
+            }
+            |> Culture.Response.FileSystem
+            |> Culture.Response.init
+
+        let initChatStorage fileStoragePath =
+            {
+                FileSystem.Connection.FilePath = fileStoragePath
+                FileSystem.Connection.FileName = "chats.json"
+            }
+            |> Storage.Chat.FileSystem
+            |> Storage.Chat.init
+
+        let initEmbassyStorage () =
+            {
+                Configuration.Connection.Provider = cfg
+                Configuration.Connection.Section = "Embassies"
+            }
+            |> EmbassyGraph.Configuration
+            |> EmbassyGraph.init
+
+        let initServiceStorage () =
+            {
+                Configuration.Connection.Provider = cfg
+                Configuration.Connection.Section = "Services"
+            }
+            |> ServiceGraph.Configuration
+            |> ServiceGraph.init
 
         result {
 
-            let! fileStoragePath =
-                cfg
-                |> Configuration.Client.tryGetSection<string> "Persistence:FileSystem"
-                |> Option.map Ok
-                |> Option.defaultValue (
-                    "The configuration section 'Persistence:FileSystem' not found."
-                    |> NotFound
-                    |> Error
-                )
+            let! fileStoragePath = getEnv "Persistence:FileSystem"
+            let! fileStorageKey = getEnv "Persistence:Key"
 
-            let initCultureStorage () =
-                {
-                    FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "Culture.json"
-                }
-                |> Culture.Response.FileSystem
-                |> Culture.Response.init
-
-            let initChatStorage () =
-                {
-                    FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "Chats.json"
-                }
-                |> Chat.FileSystem
-                |> Chat.init
-
-            let initRequestStorage () =
-                {
-                    FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "Requests.json"
-                }
-                |> Request.FileSystem
-                |> Request.init
-
-            let initEmbassyGraphStorage () =
-                {
-                    Configuration.Connection.Section = "Embassies"
-                    Configuration.Connection.Provider = cfg
-                }
-                |> EmbassyGraph.Configuration
-                |> EmbassyGraph.init
-
-            let initServiceGraphStorage () =
-                {
-                    Configuration.Connection.Section = "Services"
-                    Configuration.Connection.Provider = cfg
-                }
-                |> ServiceGraph.Configuration
-                |> ServiceGraph.init
-
-            let! chatStorage = initChatStorage ()
-            let! requestStorage = initRequestStorage ()
-
-            let resetData () =
-                let resultAsync = ResultAsyncBuilder()
-
-                resultAsync {
-
-                    let! subscriptions = chatStorage |> Chat.Query.getSubscriptions |> ResultAsync.map Set.ofSeq
-
-                    let! requestIdentifiers =
-                        requestStorage |> Request.Query.getIdentifiers |> ResultAsync.map Set.ofSeq
-
-                    let existingData = subscriptions |> Set.intersect <| requestIdentifiers
-                    let subscriptionsToRemove = existingData |> Set.difference subscriptions
-                    let requestIdsToRemove = existingData |> Set.difference requestIdentifiers
-
-                    do! chatStorage |> Chat.Command.deleteSubscriptions subscriptionsToRemove
-                    return requestStorage |> Request.Command.deleteMany requestIdsToRemove
-                }
+            let initCultureStorage () = initCultureStorage fileStoragePath
+            let initChatStorage () = initChatStorage fileStoragePath
 
             return {
-                ChatStorage = chatStorage
-                RequestStorage = requestStorage
+                initServiceStorage = initServiceStorage
+                initEmbassyStorage = initEmbassyStorage
                 initCultureStorage = initCultureStorage
-                initEmbassyGraphStorage = initEmbassyGraphStorage
-                initServiceGraphStorage = initServiceGraphStorage
-                resetData = resetData
+                initChatStorage = initChatStorage
+                RussianStorage = Russian.Dependencies.create fileStoragePath
+                ItalianStorage = Italian.Dependencies.create fileStoragePath fileStorageKey
             }
         }

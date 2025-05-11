@@ -14,11 +14,11 @@ type Dependencies = {
     static member create() =
         let result = ResultBuilder()
 
-        let inline getEnv name =
+        let getEnv name =
             Configuration.Client.tryGetEnv name None
             |> Result.bind (function
                 | Some value -> Ok value
-                | None -> $"Environment configuration '{name}'" |> NotFound |> Error)
+                | None -> $"Environment configuration '{name}' not found." |> NotFound |> Error)
 
         result {
 

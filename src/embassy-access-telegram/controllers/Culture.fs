@@ -12,7 +12,7 @@ let respond request entrypoint =
         match request with
         | Method.Get get ->
             match get with
-            | Get.Cultures -> deps |> Query.getCultures () |> deps.sendMessageRes
+            | Get.Cultures -> deps |> Query.getCultures () |> deps.sendMessage
         | Method.Post post ->
             match post with
             | Post.SetCulture culture -> deps |> Command.setCulture culture |> deps.sendMessageRes
@@ -31,9 +31,6 @@ let apply (request: Router.Route) callback =
             | None ->
                 deps
                 |> Query.getCulturesCallback request.Value
-                |> deps.sendMessageRes
+                |> deps.sendMessage
                 |> ResultAsync.mapErrorAsync (fun error ->
-                    deps
-                    |> Query.getCultures ()
-                    |> deps.sendMessageRes
-                    |> Async.map (fun _ -> error)))
+                    deps |> Query.getCultures () |> deps.sendMessage |> Async.map (fun _ -> error)))

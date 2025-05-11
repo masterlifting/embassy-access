@@ -8,3 +8,11 @@ type ProcessState =
     | InProcess
     | Completed of string
     | Failed of Error'
+
+    static member print(state: ProcessState) =
+        match state with
+        | Ready -> "Ready to process"
+        | InProcess -> "In process"
+        | Completed message -> $"Completed: {message}"
+        | Failed error -> $"Failed: {error}"
+        |> sprintf "[Last state of the subscription] %s"

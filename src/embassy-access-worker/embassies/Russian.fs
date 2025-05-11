@@ -7,35 +7,32 @@ open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Dependencies.Embassies.Russian
 
-let private ServiceId = "RUS" |> Graph.NodeIdValue
+let private ServiceId = Embassies.RUS |> Graph.NodeIdValue
 
 module private Kdmid =
+    open EA.Russian.Services.Domain.Kdmid
 
     let private processGroup requests =
         fun (deps: Kdmid.Dependencies) ->
             deps.tryProcessFirst requests
             |> ResultAsync.map (fun request ->
-                let errorFilter _ = true
-
-                match request |> Notification.tryCreate errorFilter with
-                | Some notification ->
-                    match notification with
-                    | Empty(_, message) -> $"{deps.TaskName} {message}." |> Log.dbg
-                    | Unsuccessfully(_, error) -> error.Message |> Log.crt
-                    | HasAppointments(_, appointments) ->
-                        $"{deps.TaskName} Appointments found: {appointments.Count}." |> Log.scs
-                    | HasConfirmations(_, confirmations) ->
-                        $"{deps.TaskName} Confirmations found: {confirmations.Count}." |> Log.scs
-                | None -> $"{deps.TaskName} No notifications created." |> Log.wrn)
+                match request.Payload.State with
+                | NoAppointments -> deps.TaskName + " No appointments found." |> Log.dbg
+                | HasAppointments appointments ->
+                    deps.TaskName + $" Appointments found: %i{appointments.Count}" |> Log.scs
+                | HasConfirmation(msg, appointment) ->
+                    deps.TaskName
+                    + $" Confirmation found: %s{msg}. %s{Appointment.print appointment}"
+                    |> Log.scs)
 
     let start =
         fun (deps: Kdmid.Dependencies) ->
             let inline processGroup requests = deps |> processGroup requests
 
-            deps.getRequests ServiceId
+            deps.getRequests (ServiceId |> Service.ServiceId)
             |> ResultAsync.map (fun requests ->
                 requests
-                |> Seq.groupBy (fun r -> r.Service.Id, r.Service.Payload)
+                |> Seq.groupBy _.Service.Id
                 |> Seq.map (fun (_, requests) ->
                     requests
                     |> Seq.sortByDescending _.Modified
@@ -49,7 +46,6 @@ module private Kdmid =
                     results
                     |> Async.map (fun (_, errors) ->
                         errors
-                        |> Seq.concat
                         |> Seq.iter (fun error -> deps.TaskName + " Error: " + error.Message |> Log.crt)
                         |> Ok))
 

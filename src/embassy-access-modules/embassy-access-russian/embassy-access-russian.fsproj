@@ -6,18 +6,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="clients\kdmid\Domain.fs" />
-        <Compile Include="clients\kdmid\Client.fs" />
-        <Compile Include="clients\kdmid\Web.Http.fs" />
-        <Compile Include="clients\kdmid\Web.Html.Common.fs" />
-        <Compile Include="clients\kdmid\Web.Html.InitialPage.fs" />
-        <Compile Include="clients\kdmid\Web.Html.ValidationPage.fs" />
-        <Compile Include="clients\kdmid\Web.Html.AppointmentsPage.fs" />
-        <Compile Include="clients\kdmid\Web.Html.ConfirmationPage.fs" />
-        <Compile Include="clients\kdmid\Service.fs" />
-        <Compile Include="clients\midpass\Domain.fs" />
-        <Compile Include="clients\midpass\Client.fs" />
-        <Compile Include="Client.fs" />
+        <Compile Include="services\kdmid\Domain.fs" />
+        <Compile Include="services\kdmid\DataAccess.fs" />
+        <Compile Include="services\kdmid\Client.fs" />
+        <Compile Include="services\kdmid\Web.Http.fs" />
+        <Compile Include="services\kdmid\Web.Html.Common.fs" />
+        <Compile Include="services\kdmid\Web.Html.InitialPage.fs" />
+        <Compile Include="services\kdmid\Web.Html.ValidationPage.fs" />
+        <Compile Include="services\kdmid\Web.Html.AppointmentsPage.fs" />
+        <Compile Include="services\kdmid\Web.Html.ConfirmationPage.fs" />
+        <Compile Include="services\kdmid\Service.fs" />
+        <Compile Include="services\midpass\Domain.fs" />
+        <Compile Include="services\midpass\DataAccess.fs" />
+        <Compile Include="services\midpass\Client.fs" />
+        <Compile Include="services\midpass\Service.fs" />
     </ItemGroup>
 
     <ItemGroup>

@@ -17,7 +17,7 @@ type AppointmentId =
     static member parse value =
         match value with
         | AP.IsUUID16 id -> AppointmentId id |> Ok
-        | _ -> $"AppointmentId '{value}' is not supported." |> NotSupported |> Error
+        | _ -> $"AppointmentId '%s{value}' is not supported." |> NotSupported |> Error
 
     static member createNew() = AppointmentId <| UUID16.createNew ()
 
@@ -26,6 +26,10 @@ type Appointment = {
     Value: string
     Date: DateOnly
     Time: TimeOnly
-    Confirmation: Confirmation option
     Description: string
-}
+} with
+
+    static member print(appointment: Appointment) =
+        let date = appointment.Date.ToString("yyyy-MM-dd")
+        let time = appointment.Time.ToString("HH:mm")
+        $"[Available appointment] '%s{appointment.Value}' on '%s{date} %s{time}'"

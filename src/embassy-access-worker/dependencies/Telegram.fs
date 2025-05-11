@@ -15,29 +15,27 @@ let create cfg ct =
         let! aiProvider = aiProvider.initProvider ()
         let! cultureStorage = persistence.initCultureStorage ()
 
-        let aiCulture: AIProvider.Services.Dependencies.Culture.Dependencies = {
-            Provider = aiProvider
-            Storage = cultureStorage
+        let client: EA.Telegram.Dependencies.Client.Dependencies = {
+            ct = ct
+            Culture =
+                EA.Telegram.Dependencies.Culture.Dependencies.create ct {
+                    Provider = aiProvider
+                    Storage = cultureStorage
+                }
+            Web = EA.Telegram.Dependencies.Web.Dependencies.create ct web.TelegramClient
+            Persistence = {
+                initChatStorage = persistence.initChatStorage
+                initServiceStorage = persistence.initServiceStorage
+                initEmbassyStorage = persistence.initEmbassyStorage
+                RussianStorage = {
+                    initKdmidRequestStorage = persistence.RussianStorage.initKdmidRequestStorage
+                    initMidpassRequestStorage = persistence.RussianStorage.initMidpassRequestStorage
+                }
+                ItalianStorage = {
+                    initPrenotamiRequestStorage = persistence.ItalianStorage.initPrenotamiRequestStorage
+                }
+            }
         }
 
-        let tgCulture = EA.Telegram.Dependencies.Culture.Dependencies.create ct aiCulture
-
-        let! tgWeb = EA.Telegram.Dependencies.Web.Dependencies.create ct web.TelegramClient
-
-        let! tgPersistence =
-            EA.Telegram.Dependencies.Persistence.Dependencies.create
-                ct
-                (fun () -> persistence.ChatStorage |> Ok)
-                (fun () -> persistence.RequestStorage |> Ok)
-                persistence.initServiceGraphStorage
-                persistence.initEmbassyGraphStorage
-
-        let result: EA.Telegram.Dependencies.Client.Dependencies = {
-            CancellationToken = ct
-            Culture = tgCulture
-            Web = tgWeb
-            Persistence = tgPersistence
-        }
-
-        return result
+        return client
     }

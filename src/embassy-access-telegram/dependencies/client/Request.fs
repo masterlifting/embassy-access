@@ -2,90 +2,65 @@
 module EA.Telegram.Dependencies.Request
 
 open System.Threading
-open EA.Telegram.Domain
-open Infrastructure.Prelude
 open Infrastructure.Domain
-open Web.Clients.Domain.Telegram
-open Web.Clients.Domain.Telegram.Producer
+open Infrastructure.Prelude
+open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
+open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
 
 type Dependencies = {
-    ChatId: ChatId
+    ct: CancellationToken
+    ChatId: Telegram.ChatId
     MessageId: int
-    CancellationToken: CancellationToken
-    Culture: Culture.Dependencies
-    ChatStorage: Chat.ChatStorage
-    RequestStorage: Request.RequestStorage
-    getRequestChats: Request -> Async<Result<Chat list, Error'>>
-    setRequestAppointments: Graph.NodeId -> Appointment Set -> Async<Result<Request list, Error'>>
-    getEmbassyGraph: unit -> Async<Result<Graph.Node<EmbassyNode>, Error'>>
-    getServiceGraph: unit -> Async<Result<Graph.Node<ServiceNode>, Error'>>
+    Persistence: Persistence.Dependencies
     tryGetChat: unit -> Async<Result<Chat option, Error'>>
-    getAvailableCultures: unit -> Async<Result<Map<Culture, string>, Error'>>
-    setCurrentCulture: Culture -> Async<Result<unit, Error'>>
-    sendMessage: Message -> Async<Result<unit, Error'>>
-    sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
-    sendMessages: Message seq -> Async<Result<unit, Error'>>
-    sendMessagesRes: Async<Result<Message seq, Error'>> -> Async<Result<unit, Error'>>
+    getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
+    getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
+    sendMessage: Telegram.Producer.Message -> Async<Result<unit, Error'>>
+    sendMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
+    translateMessageRes:
+        Culture -> Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<Telegram.Producer.Message, Error'>>
+    getAvailableCultures: unit -> Map<Culture, string>
+    setCulture: Culture -> Async<Result<unit, Error'>>
 } with
 
-    static member create(payload: Consumer.Payload<_>) =
+    static member create(payload: Telegram.Consumer.Payload<_>) =
         fun (deps: Client.Dependencies) ->
             let result = ResultBuilder()
 
             result {
-
                 let tryGetChat () =
-                    deps.Persistence.ChatStorage |> Chat.Query.tryFindById payload.ChatId
+                    deps.Persistence.initChatStorage ()
+                    |> ResultAsync.wrap (Storage.Chat.Query.tryFindById payload.ChatId)
 
-                let getAvailableCultures () =
-                    [
-                        English, "English"
-                        Russian, "Русский"
-                        Chinese, "中文"
-                        Spanish, "Español"
-                        Hindi, "हिन्दी"
-                        Arabic, "العربية"
-                        Serbian, "Српски"
-                        Portuguese, "Português"
-                        French, "Français"
-                        German, "Deutsch"
-                        Japanese, "日本語"
-                        Korean, "한국어"
-                    ]
-                    |> Map
-                    |> Ok
-                    |> async.Return
+                let getEmbassyGraph () =
+                    deps.Persistence.initEmbassyStorage () |> ResultAsync.wrap EmbassyGraph.get
 
-                let setCurrentCulture culture =
-                    deps.Persistence.ChatStorage |> Chat.Command.setCulture payload.ChatId culture
+                let getServiceGraph () =
+                    deps.Persistence.initServiceStorage () |> ResultAsync.wrap ServiceGraph.get
 
                 let sendMessageRes data =
                     deps.Web.Telegram.sendMessageRes data payload.ChatId
 
-                let sendMessagesRes data =
-                    deps.Web.Telegram.sendMessagesRes data payload.ChatId
+                let setCulture culture =
+                    deps.Persistence.initChatStorage ()
+                    |> ResultAsync.wrap (Storage.Chat.Command.setCulture payload.ChatId culture)
 
                 return {
+                    ct = deps.ct
                     ChatId = payload.ChatId
                     MessageId = payload.MessageId
-                    CancellationToken = deps.CancellationToken
-                    Culture = deps.Culture
-                    ChatStorage = deps.Persistence.ChatStorage
-                    RequestStorage = deps.Persistence.RequestStorage
-                    getRequestChats = deps.Persistence.getRequestChats
-                    setRequestAppointments = deps.Persistence.setRequestAppointments
-                    getServiceGraph = deps.Persistence.getServiceGraph
-                    getEmbassyGraph = deps.Persistence.getEmbassyGraph
+                    Persistence = deps.Persistence
                     tryGetChat = tryGetChat
-                    getAvailableCultures = getAvailableCultures
-                    setCurrentCulture = setCurrentCulture
+                    getEmbassyGraph = getEmbassyGraph
+                    getServiceGraph = getServiceGraph
                     sendMessage = deps.Web.Telegram.sendMessage
                     sendMessageRes = sendMessageRes
-                    sendMessages = deps.Web.Telegram.sendMessages
-                    sendMessagesRes = sendMessagesRes
+                    translateMessageRes = deps.Culture.translateRes
+                    getAvailableCultures = deps.Culture.getAvailable
+                    setCulture = setCulture
                 }
             }

@@ -1,0 +1,84 @@
+RussianKdmidServices: &RussianKdmidServices
+  - Id: "0"
+    Name: Check slots now
+  - Id: "1"
+    Name: Slots auto notification
+  - Id: "2"
+    Name: Slot auto booking
+    Description: Auto slot booking
+    Children:
+      - Id: "0"
+        Name: Book first slot
+      - Id: "1"
+        Name: Book last slot
+      - Id: "2"
+        Name: Book first slot in period
+
+RussianServices: &RussianServices
+  Id: RUS
+  Name: Russian embassy
+  Description: Choose the service of the Russian embassy
+  Children:
+    - Id: "0"
+      Name: Passport
+      Description: Passport services
+      Children:
+        - Id: "0"
+          Name: International passport
+          Description: International passport options
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "1"
+          Name: Passport status
+    - Id: "1"
+      Name: Notary
+      Description: Notary services
+      Children:
+        - Id: "0"
+          Name: Power of attorney
+          Description: Power of attorney options
+          Children:
+            <<: *RussianKdmidServices
+    - Id: "2"
+      Name: Citizenship
+      Description: Citizenship services
+      Children:
+        - Id: "0"
+          Name: Citizenship renunciation
+          Description: Renunciation options
+          Children:
+            <<: *RussianKdmidServices
+
+ItalianPrenotamiServices: &ItalianPrenotamiServices
+  - Id: "0"
+    Name: Check slots now
+  - Id: "1"
+    Name: Slots auto notification
+
+ItalianServices: &ItalianServices
+  Id: ITA
+  Name: Italian embassy
+  Description: Choose the service of the Italian embassy
+  Children:
+    - Id: "0"
+      Name: Visa
+      Description: Visa services
+      Children:
+        - Id: "0"
+          Name: Tourism 1
+          Description: Appointments visas for TOURISM (counter_1)
+          Children:
+            <<: *ItalianPrenotamiServices
+        - Id: "1"
+          Name: Tourism 2
+          Description: Appointments visas for TOURISM (counter_2)
+          Children:
+            <<: *ItalianPrenotamiServices
+
+Services:
+  Id: SRV
+  Name: Services
+  Description: Choose the service you need
+  Children:
+    - <<: *RussianServices
+    - <<: *ItalianServices

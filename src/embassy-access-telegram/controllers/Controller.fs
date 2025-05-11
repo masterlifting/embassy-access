@@ -2,8 +2,7 @@
 module EA.Telegram.Controllers.Controller
 
 open EA.Telegram.Router
-open EA.Telegram.Controllers.Embassies
-open EA.Telegram.Controllers.Embassies.Russian
+open EA.Telegram.Controllers
 
 let rec respond request =
 
@@ -11,6 +10,5 @@ let rec respond request =
 
     match request with
     | Router.Culture value -> Culture.respond value respond
-    | Router.Users value -> value |> Users.respond |> useCulture
     | Router.Embassies value -> value |> Embassies.respond |> useCulture
-    | Router.RussianEmbassy value -> value |> Russian.respond |> useCulture
+    | Router.Services value -> value |> Services.respond |> useCulture
