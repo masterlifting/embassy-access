@@ -3,7 +3,6 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Italian.Services.Domain.Prenotami
 
@@ -11,71 +10,15 @@ let private validateLimits (request: Request<Payload>) =
     request.ValidateLimits()
     |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
 
-let private processWebSite (request: Request<Payload>) (client: Client) =
-    //define
-
-    let setLogin () =
-        client.Browser.fillInput (Browser.Selector "//input[@id='login-email']") request.Payload.Credentials.Login
-
-    let setPassword =
-        ResultAsync.bindAsync (fun _ ->
-            client.Browser.fillInput
-                (Browser.Selector "//input[@id='login-password']")
-                request.Payload.Credentials.Password)
-
-    let mouseShuffle = ResultAsync.bindAsync client.Browser.mouseShuffle
-
-    let submitForm =
-        ResultAsync.bindAsync (fun _ ->
-            client.Browser.executeCommand (Browser.Selector "form#login-form") "form => form.submit()")
-
-    let clickBookTab =
-        ResultAsync.bindAsync (fun _ -> client.Browser.clickButton (Browser.Selector "//a[@id='advanced']"))
-
-    let chooseBookService =
-        ResultAsync.bindAsync (fun _ ->
-            match request.Service.Id.Value |> Graph.NodeId.splitValues with
-            | [ _; _; _; "0"; _ ] -> "//a[@href='/Services/Booking/1151']" |> Ok //Tourism 1
-            | [ _; _; _; "1"; _ ] -> "//a[@href='/Services/Booking/1558']" |> Ok //Tourism 2
-            | _ ->
-                $"The service Id '{request.Service.Id}' is not recognized to process prenotami."
-                |> NotFound
-                |> Error
-            |> Result.map Browser.Selector
-            |> ResultAsync.wrap client.Browser.clickButton)
-
-    let setResult =
-        ResultAsync.bindAsync (fun _ ->
-            client.Browser.tryFindText (Browser.Selector "//div[starts-with(@id, 'jconfirm-box')]//div"))
-        >> ResultAsync.bind (function
-            | Some text ->
-                Ok {
-                    request with
-                        Payload = {
-                            request.Payload with
-                                State =
-                                    match text.Contains "Please check again" with
-                                    | true -> NoAppointments
-                                    | false ->
-                                        text
-                                        |> Appointment.parse
-                                        |> Result.map HasAppointments
-                                        |> Result.defaultValue NoAppointments
-                        }
-                }
-            | None ->
-                "The service is not available at the moment. Please try again later."
-                |> NotFound
-                |> Error)
-
-    // pipe
-    setLogin ()
-    |> setPassword
-    |> mouseShuffle
-    |> submitForm
-    |> clickBookTab
-    |> chooseBookService
-    |> setResult
+let private processWebSite request client =
+    Html.loadPage client
+    |> Html.setLogin request client
+    |> Html.setPassword request client
+    |> Html.mouseShuffle client
+    |> Html.submitForm client
+    |> Html.clickBookTab client
+    |> Html.chooseBookService request client
+    |> Html.setResult request client
 
 let private setFinalProcessState (request: Request<Payload>) requestPipe =
     fun updateRequest ->
@@ -114,8 +57,7 @@ let tryProcess (request: Request<Payload>) =
                 }
                 |> client.updateRequest)
 
-        let processWebSite =
-            ResultAsync.bindAsync (fun r -> client |> processWebSite r |> ResultAsync.map (fun _ -> r))
+        let processWebSite = ResultAsync.bindAsync (fun r -> client |> processWebSite r)
 
         let setFinalState requestRes =
             client.updateRequest |> setFinalProcessState request requestRes

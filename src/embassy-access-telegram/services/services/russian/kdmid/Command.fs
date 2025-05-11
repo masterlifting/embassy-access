@@ -78,7 +78,6 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                 |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
                 |> Option.map (fun x -> {
                     x with
-                        ProcessState = Ready
                         Payload = {
                             x.Payload with
                                 State = NoAppointments

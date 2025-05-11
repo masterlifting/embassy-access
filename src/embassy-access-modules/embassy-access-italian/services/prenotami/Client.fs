@@ -20,10 +20,11 @@ let init (deps: Dependencies) =
     |> ResultAsync.map (fun browserClient -> {
         updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
         Browser = {|
+            loadPage = fun uri -> browserClient |> Browser.Page.load uri
             fillInput = fun selector value -> browserClient |> Browser.Page.Input.fill selector value
-            clickButton = fun selector -> browserClient |> Browser.Page.Button.click selector
+            mouseClick = fun selector pattern -> browserClient |> Browser.Page.Mouse.click selector pattern
             mouseShuffle = fun () -> browserClient |> Browser.Page.Mouse.shuffle (TimeSpan.FromSeconds 20.0)
-            executeCommand = fun selector command -> browserClient |> Browser.Page.Html.execute selector command
-            tryFindText = fun selector -> browserClient |> Browser.Page.Html.tryFindText selector
+            tryFindText = fun selector -> browserClient |> Browser.Page.Text.tryFind selector
+            submitForm = fun selector urlPattern -> browserClient |> Browser.Page.Form.submit selector urlPattern
         |}
     })

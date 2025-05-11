@@ -1,6 +1,7 @@
 ﻿module EA.Italian.Services.Domain.Prenotami
 
 open System
+open System.Text.RegularExpressions
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain
@@ -91,10 +92,11 @@ type Payload = {
 type Client = {
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
     Browser: {|
+        loadPage: Uri -> Async<Result<unit, Error'>>
         fillInput: Browser.Selector -> string -> Async<Result<unit, Error'>>
-        clickButton: Browser.Selector -> Async<Result<unit, Error'>>
+        mouseClick: Browser.Selector -> Regex option -> Async<Result<unit, Error'>>
         mouseShuffle: unit -> Async<Result<unit, Error'>>
-        executeCommand: Browser.Selector -> string -> Async<Result<unit, Error'>>
+        submitForm: Browser.Selector -> Regex -> Async<Result<unit, Error'>>
         tryFindText: Browser.Selector -> Async<Result<string option, Error'>>
     |}
 }
