@@ -80,8 +80,8 @@ type Route =
     member this.Value =
         match this with
         | Passport r -> "0" :: r.Value
-        | Notary r -> "0" :: r.Value
-        | Citizenship r -> "0" :: r.Value
+        | Notary r -> "1" :: r.Value
+        | Citizenship r -> "2" :: r.Value
 
 let parse (serviceId: ServiceId) =
     // Maybe I should make sure that the serviceId is an Russian serviceId
