@@ -20,6 +20,11 @@ type Dependencies = {
     processRequest:
         Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<Request<Payload>, Error'>>
     findRequest: RequestId -> Request.Storage<Payload, Payload.Entity> -> Async<Result<Request<Payload>, Error'>>
+    tryFindRequest:
+        EmbassyId
+            -> Credentials
+            -> Request.Storage<Payload, Payload.Entity>
+            -> Async<Result<Request<Payload> option, Error'>>
     findRequests:
         EmbassyId
             -> ServiceId
@@ -40,6 +45,11 @@ type Dependencies = {
             |> ResultAsync.bind (function
                 | Some request -> Ok request
                 | None -> $"Request '{requestId.ValueStr}' not found." |> NotFound |> Error)
+
+        let tryFindRequest embassyId credentials storage =
+            storage
+            |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyId embassyId)
+            |> ResultAsync.map (Seq.tryFind (fun request -> request.Payload.Credentials = credentials))
 
         let findRequests embassyId serviceId storage =
             storage
@@ -72,6 +82,7 @@ type Dependencies = {
             findService = deps.findService
             findEmbassy = deps.findEmbassy
             findRequest = findRequest
+            tryFindRequest = tryFindRequest
             findRequests = findRequests
             deleteRequest = deleteRequest
             tryAddSubscription = tryAddSubscription

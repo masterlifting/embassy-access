@@ -4,30 +4,36 @@ open Infrastructure.Domain
 open EA.Core.Domain
 open EA.Telegram.Router.Services
 open EA.Telegram.Dependencies.Services.Russian
+open EA.Russian.Services.Router
 
 let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
-    match serviceId.Value |> Graph.NodeId.splitValues with
-    | [ _; _; _; _; "0" ]
-    | [ _; _; _; _; "1" ]
-    | [ _; _; _; _; "2" ]
-    | [ _; _; _; _; "2"; "0" ]
-    | [ _; _; _; _; "2"; "1" ]
-    | [ _; _; _; _; "2"; "2" ] -> Kdmid
-    | [ _; _; "0"; "1" ] -> Midpass
-    | _ -> ServiceNotFound
+    match serviceId |> parse with
+    | Ok route ->
+        match route with
+        | Passport route ->
+            match route with
+            | Passport.Status -> Midpass
+            | Passport.International ops -> Kdmid ops
+        | Notary route ->
+            match route with
+            | Notary.PowerOfAttorney ops -> Kdmid ops
+        | Citizenship route ->
+            match route with
+            | Citizenship.Renunciation ops -> Kdmid ops
+    | Error error -> ServiceNotFound error
 
 let getService embassyId serviceId forUser =
     fun (deps: Russian.Dependencies) ->
         match serviceId with
-        | Kdmid ->
+        | Kdmid ops ->
             deps
             |> Kdmid.Dependencies.create
-            |> Kdmid.Query.getService serviceId embassyId forUser
+            |> Kdmid.Query.getService ops serviceId embassyId forUser
         | Midpass ->
             deps
             |> Midpass.Dependencies.create
             |> Midpass.Query.getService serviceId embassyId forUser
-        | ServiceNotFound ->
+        | ServiceNotFound _ ->
             $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
             |> Error

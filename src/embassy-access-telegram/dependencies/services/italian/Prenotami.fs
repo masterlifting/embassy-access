@@ -43,6 +43,11 @@ type Dependencies = {
                 | Some request -> Ok request
                 | None -> $"Request '{requestId.ValueStr}' not found." |> NotFound |> Error)
 
+        let tryFindRequest embassyId serviceId credentials storage =
+            storage
+            |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyId embassyId)
+            |> ResultAsync.map (Seq.tryFind (fun request -> request.Payload.Credentials.Login = credentials.Login))
+
         let findRequests embassyId serviceId storage =
             storage
             |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId))
