@@ -10,6 +10,7 @@ open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services
+open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
 open EA.Italian.Services.DataAccess.Prenotami
 
@@ -43,10 +44,25 @@ type Dependencies = {
                 | Some request -> Ok request
                 | None -> $"Request '{requestId.ValueStr}' not found." |> NotFound |> Error)
 
-        let tryFindRequest embassyId serviceId credentials storage =
+        let tryFindRequest embassyId serviceRoute credentials storage =
+
+            let compare route =
+                match route, serviceRoute with
+                | Visa route1, Visa route2 ->
+                    match route1, route2 with
+                    | Visa.Tourism1 _, Visa.Tourism1 _ -> true
+                    | Visa.Tourism2 _, Visa.Tourism2 _ -> true
+                    | _ -> false
+
             storage
             |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyId embassyId)
-            |> ResultAsync.map (Seq.tryFind (fun request -> request.Payload.Credentials.Login = credentials.Login))
+            |> ResultAsync.map (Seq.filter (fun request -> request.Payload.Credentials.Login = credentials.Login))
+            |> ResultAsync.map (
+                Seq.tryFind (fun request ->
+                    match request.Service.Id |> Router.parse with
+                    | Ok route -> compare route
+                    | _ -> false)
+            )
 
         let findRequests embassyId serviceId storage =
             storage
