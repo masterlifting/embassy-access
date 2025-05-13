@@ -62,7 +62,7 @@ type Dependencies = {
 
             serviceId
             |> Router.parse
-            |> ResultAsync.wrap(fun route1 ->
+            |> ResultAsync.wrap (fun route1 ->
                 storage
                 |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyId embassyId)
                 |> ResultAsync.map (Seq.filter (fun request -> request.Payload.Credentials.Login = credentials.Login))
