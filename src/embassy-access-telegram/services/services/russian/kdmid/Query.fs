@@ -109,19 +109,20 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
                 }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
-let getService operations (serviceId: ServiceId) (embassyId: EmbassyId) forUser =
+open EA.Russian.Services.Router.Operation
+
+let getService operation (serviceId: ServiceId) (embassyId: EmbassyId) forUser =
     fun (deps: Kdmid.Dependencies) ->
         match forUser with
         | true -> deps |> getUserSubscriptions serviceId embassyId
         | false ->
-            match operations with
-            | CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
-            | SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
-            | BookFirstSlot -> deps |> bookFirstSlot serviceId embassyId
-            | BookLastSlot -> deps |> bookLastSlot serviceId embassyId
-            | BookFirstSlotInPeriod -> deps |> bookFirstSlotInPeriod serviceId embassyId
-            | OperationNotSupported ->
-                $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
-                |> NotImplemented
-                |> Error
-                |> async.Return
+            match operation with
+            | Immediate op ->
+                match op with
+                | Immediate.CheckSlots -> deps |> checkSlotsNow serviceId embassyId
+            | Background op ->
+                match op with
+                | Background.SlotsNotification -> deps |> slotsAutoNotification serviceId embassyId
+                | Background.BookFirstSlot -> deps |> bookFirstSlot serviceId embassyId
+                | Background.BookFirstSlotInPeriod -> deps |> bookFirstSlotInPeriod serviceId embassyId
+                | Background.BookLastSlot -> deps |> bookLastSlot serviceId embassyId

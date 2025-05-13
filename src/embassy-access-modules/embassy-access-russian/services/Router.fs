@@ -3,15 +3,76 @@
 open EA.Core.Domain
 open Infrastructure.Domain
 
+module Operation =
+    module Immediate =
+        type Route =
+            | CheckSlots
+
+            member this.Value =
+                match this with
+                | CheckSlots -> "0"
+
+        let parse (input: string) =
+            match input with
+            | "0" -> CheckSlots |> Ok
+            | _ ->
+                "Immediate operation route for the Russian router is not supported."
+                |> NotSupported
+                |> Error
+
+    module Background =
+
+        type Route =
+            | SlotsNotification
+            | BookFirstSlot
+            | BookFirstSlotInPeriod
+            | BookLastSlot
+
+            member this.Value =
+                match this with
+                | SlotsNotification -> "0"
+                | BookFirstSlot -> "1"
+                | BookLastSlot -> "2"
+                | BookFirstSlotInPeriod -> "3"
+
+        let parse (input: string) =
+            match input with
+            | "0" -> SlotsNotification |> Ok
+            | "1" -> BookFirstSlot |> Ok
+            | "2" -> BookLastSlot |> Ok
+            | "3" -> BookFirstSlotInPeriod |> Ok
+            | _ ->
+                "Background operation route for the Russian router is not supported."
+                |> NotSupported
+                |> Error
+
+    type Route =
+        | Immediate of Immediate.Route
+        | Background of Background.Route
+
+        member this.Value =
+            match this with
+            | Immediate r -> [ "0"; r.Value ]
+            | Background r -> [ "1"; r.Value ]
+
+    let parse (input: string list) =
+        match input[0] with
+        | "0" -> input[1] |> Immediate.parse |> Result.map Immediate
+        | "1" -> input[1] |> Background.parse |> Result.map Background
+        | _ ->
+            "Operation route for the Russian router is not supported."
+            |> NotSupported
+            |> Error
+
 module Passport =
 
     type Route =
-        | International of string list
+        | International of Operation.Route
         | Status
 
         member this.Value =
             match this with
-            | International ops -> "0" :: ops
+            | International op -> "0" :: op.Value
             | Status -> [ "1" ]
 
     let parse (input: string list) =
@@ -22,7 +83,7 @@ module Passport =
                 "Passport route for the Russian router is not supported."
                 |> NotSupported
                 |> Error
-            | operations -> operations |> International |> Ok
+            | v -> v |> Operation.parse |> Result.map International
         | "1" -> Status |> Ok
         | _ ->
             $"Passport route for the Russian router is not supported."
@@ -32,18 +93,18 @@ module Passport =
 module Notary =
 
     type Route =
-        | PowerOfAttorney of string list
+        | PowerOfAttorney of Operation.Route
 
         member this.Value =
             match this with
-            | PowerOfAttorney ops -> "0" :: ops
+            | PowerOfAttorney op -> "0" :: op.Value
 
     let parse (input: string list) =
         match input[0] with
         | "0" ->
             match input[1..] with
             | [] -> "Notary route for the Russian router is not supported." |> NotSupported |> Error
-            | operations -> operations |> PowerOfAttorney |> Ok
+            | v -> v |> Operation.parse |> Result.map PowerOfAttorney
         | _ ->
             $"Notary route for the Russian router is not supported."
             |> NotSupported
@@ -52,11 +113,11 @@ module Notary =
 module Citizenship =
 
     type Route =
-        | Renunciation of string list
+        | Renunciation of Operation.Route
 
         member this.Value =
             match this with
-            | Renunciation ops -> "0" :: ops
+            | Renunciation op -> "0" :: op.Value
 
     let parse (input: string list) =
         match input[0] with
@@ -66,7 +127,7 @@ module Citizenship =
                 "Citizenship route for the Russian router is not supported."
                 |> NotSupported
                 |> Error
-            | operations -> operations |> Renunciation |> Ok
+            | v -> v |> Operation.parse |> Result.map Renunciation
         | _ ->
             "Citizenship route for the Russian router is not supported."
             |> NotSupported
