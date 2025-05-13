@@ -63,7 +63,8 @@ let chooseBookService (request: Request<Payload>) client =
             |> NotFound
             |> Error
         |> Result.map Browser.Selector
-        |> ResultAsync.wrap (fun selector -> client.Browser.mouseClick selector None))
+        |> ResultAsync.wrap (fun selector ->
+            client.Browser.mouseClick selector (Some(Regex("https?://prenotami\\.esteri\\.it/Services(\\?.*)?$")))))
 
 let setResult (request: Request<Payload>) client =
     ResultAsync.bindAsync (fun _ ->
