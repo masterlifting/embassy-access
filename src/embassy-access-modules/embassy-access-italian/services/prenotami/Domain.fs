@@ -46,8 +46,8 @@ type internal Appointment with
         {
             Id = AppointmentId.createNew ()
             Value = text
-            Date = DateOnly.MinValue
-            Time = TimeOnly.MinValue
+            Date = DateOnly.FromDateTime DateTime.UtcNow
+            Time = TimeOnly.FromDateTime DateTime.UtcNow
             Description = text
         }
         |> Set.singleton
