@@ -4,15 +4,11 @@ RussianKdmidServices: &RussianKdmidServices
   - Id: "1"
     Name: Slots auto notification
   - Id: "2"
-    Name: Slot auto booking
-    Description: Auto slot booking
-    Children:
-      - Id: "0"
-        Name: Book first slot
-      - Id: "1"
-        Name: Book last slot
-      - Id: "2"
-        Name: Book first slot in period
+    Name: Auto booking first slot
+  - Id: "3"
+    Name: Auto booking first slot in period
+  - Id: "4"
+    Name: Auto booking last slot
 
 RussianServices: &RussianServices
   Id: RUS

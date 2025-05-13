@@ -4,63 +4,30 @@ open EA.Core.Domain
 open Infrastructure.Domain
 
 module Operation =
-    module Immediate =
-        type Route =
-            | CheckSlots
-
-            member this.Value =
-                match this with
-                | CheckSlots -> "0"
-
-        let parse (input: string) =
-            match input with
-            | "0" -> CheckSlots |> Ok
-            | _ ->
-                "Immediate operation route for the Russian router is not supported."
-                |> NotSupported
-                |> Error
-
-    module Background =
-
-        type Route =
-            | SlotsNotification
-            | BookFirstSlot
-            | BookFirstSlotInPeriod
-            | BookLastSlot
-
-            member this.Value =
-                match this with
-                | SlotsNotification -> "0"
-                | BookFirstSlot -> "1"
-                | BookLastSlot -> "2"
-                | BookFirstSlotInPeriod -> "3"
-
-        let parse (input: string) =
-            match input with
-            | "0" -> SlotsNotification |> Ok
-            | "1" -> BookFirstSlot |> Ok
-            | "2" -> BookLastSlot |> Ok
-            | "3" -> BookFirstSlotInPeriod |> Ok
-            | _ ->
-                "Background operation route for the Russian router is not supported."
-                |> NotSupported
-                |> Error
-
     type Route =
-        | Immediate of Immediate.Route
-        | Background of Background.Route
+        | CheckSlotsNow
+        | SlotsAutoNotification
+        | AutoBookingFirstSlot
+        | AutoBookingFirstSlotInPeriod
+        | AutoBookingLastSlot
 
         member this.Value =
             match this with
-            | Immediate r -> [ "0"; r.Value ]
-            | Background r -> [ "1"; r.Value ]
+            | CheckSlotsNow -> "0"
+            | SlotsAutoNotification -> "1"
+            | AutoBookingFirstSlot -> "2"
+            | AutoBookingFirstSlotInPeriod -> "3"
+            | AutoBookingLastSlot -> "4"
 
-    let parse (input: string list) =
-        match input[0] with
-        | "0" -> input[1] |> Immediate.parse |> Result.map Immediate
-        | "1" -> input[1] |> Background.parse |> Result.map Background
+    let parse (input: string) =
+        match input with
+        | "0" -> CheckSlotsNow |> Ok
+        | "1" -> SlotsAutoNotification |> Ok
+        | "2" -> AutoBookingFirstSlot |> Ok
+        | "3" -> AutoBookingFirstSlotInPeriod |> Ok
+        | "4" -> AutoBookingLastSlot |> Ok
         | _ ->
-            "Operation route for the Russian router is not supported."
+            "Service operation for the Russian router is not supported."
             |> NotSupported
             |> Error
 
@@ -72,21 +39,15 @@ module Passport =
 
         member this.Value =
             match this with
-            | International op -> "0" :: op.Value
+            | International op -> [ "0"; op.Value ]
             | Status -> [ "1" ]
 
     let parse (input: string list) =
-        match input[0] with
-        | "0" ->
-            match input[1..] with
-            | [] ->
-                "Passport route for the Russian router is not supported."
-                |> NotSupported
-                |> Error
-            | v -> v |> Operation.parse |> Result.map International
-        | "1" -> Status |> Ok
+        match input with
+        | [ "0"; op ] -> op |> Operation.parse |> Result.map International
+        | [ "1" ] -> Status |> Ok
         | _ ->
-            $"Passport route for the Russian router is not supported."
+            "Passport service for the Russian router is not supported."
             |> NotSupported
             |> Error
 
@@ -97,16 +58,13 @@ module Notary =
 
         member this.Value =
             match this with
-            | PowerOfAttorney op -> "0" :: op.Value
+            | PowerOfAttorney op -> [ "0"; op.Value ]
 
     let parse (input: string list) =
-        match input[0] with
-        | "0" ->
-            match input[1..] with
-            | [] -> "Notary route for the Russian router is not supported." |> NotSupported |> Error
-            | v -> v |> Operation.parse |> Result.map PowerOfAttorney
+        match input with
+        | [ "0"; op ] -> op |> Operation.parse |> Result.map PowerOfAttorney
         | _ ->
-            $"Notary route for the Russian router is not supported."
+            "Notary service for the Russian router is not supported."
             |> NotSupported
             |> Error
 
@@ -117,19 +75,13 @@ module Citizenship =
 
         member this.Value =
             match this with
-            | Renunciation op -> "0" :: op.Value
+            | Renunciation op -> [ "0"; op.Value ]
 
     let parse (input: string list) =
-        match input[0] with
-        | "0" ->
-            match input[1..] with
-            | [] ->
-                "Citizenship route for the Russian router is not supported."
-                |> NotSupported
-                |> Error
-            | v -> v |> Operation.parse |> Result.map Renunciation
+        match input with
+        | [ "0"; op ] -> op |> Operation.parse |> Result.map Renunciation
         | _ ->
-            "Citizenship route for the Russian router is not supported."
+            "Citizenship service for the Russian router is not supported."
             |> NotSupported
             |> Error
 
@@ -154,6 +106,6 @@ let parse (serviceId: ServiceId) =
     | "1" -> remaining |> Notary.parse |> Result.map Notary
     | "2" -> remaining |> Citizenship.parse |> Result.map Citizenship
     | _ ->
-        $"'%s{input |> string}' for the Russian router is not supported."
+        $"'%s{serviceId.ValueStr}' for the Russian router is not supported."
         |> NotSupported
         |> Error

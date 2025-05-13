@@ -1,7 +1,6 @@
 ﻿module EA.Telegram.Services.Services.Russian.Kdmid.Query
 
 open System
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
@@ -10,6 +9,7 @@ open EA.Telegram.Router
 open EA.Telegram.Router.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services.Domain.Kdmid
+open EA.Russian.Services.Router
 
 let private createBaseRoute method =
     Router.Services(Services.Method.Russian(Method.Kdmid(method)))
@@ -79,14 +79,14 @@ let private bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) =
         Kdmid.Post.BookFirstSlot(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
-let private bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) =
-    fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.BookLastSlot(serviceId, embassyId, INPUT_LINK)
-        |> createKdmidInstruction deps.ChatId
-
 let private bookFirstSlotInPeriod (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
         Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, DateTime.UtcNow, DateTime.UtcNow, INPUT_LINK)
+        |> createKdmidInstruction deps.ChatId
+
+let private bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) =
+    fun (deps: Kdmid.Dependencies) ->
+        Kdmid.Post.BookLastSlot(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
 let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
@@ -109,20 +109,14 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
                 }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
-open EA.Russian.Services.Router.Operation
-
 let getService operation (serviceId: ServiceId) (embassyId: EmbassyId) forUser =
     fun (deps: Kdmid.Dependencies) ->
         match forUser with
         | true -> deps |> getUserSubscriptions serviceId embassyId
         | false ->
             match operation with
-            | Immediate op ->
-                match op with
-                | Immediate.CheckSlots -> deps |> checkSlotsNow serviceId embassyId
-            | Background op ->
-                match op with
-                | Background.SlotsNotification -> deps |> slotsAutoNotification serviceId embassyId
-                | Background.BookFirstSlot -> deps |> bookFirstSlot serviceId embassyId
-                | Background.BookFirstSlotInPeriod -> deps |> bookFirstSlotInPeriod serviceId embassyId
-                | Background.BookLastSlot -> deps |> bookLastSlot serviceId embassyId
+            | Operation.CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
+            | Operation.SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
+            | Operation.AutoBookingFirstSlot -> deps |> bookFirstSlot serviceId embassyId
+            | Operation.AutoBookingFirstSlotInPeriod -> deps |> bookFirstSlotInPeriod serviceId embassyId
+            | Operation.AutoBookingLastSlot -> deps |> bookLastSlot serviceId embassyId
