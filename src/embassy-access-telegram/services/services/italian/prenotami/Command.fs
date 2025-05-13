@@ -73,11 +73,10 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) 
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
             let! requestStorage = deps.initRequestStorage () |> async.Return
-            let! requests = requestStorage |> deps.findRequests embassyId serviceId
+            let! request = requestStorage |> deps.tryFindRequest embassyId serviceId payloadCredentials
 
             let request =
-                requests
-                |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                request
                 |> Option.map (fun x -> {
                     x with
                         Payload = {
@@ -122,13 +121,13 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
             let! requestStorage = deps.initRequestStorage () |> async.Return
-            let! requests = requestStorage |> deps.findRequests embassyId serviceId
+            let! request = requestStorage |> deps.tryFindRequest embassyId serviceId payloadCredentials
 
             let request =
-                requests
-                |> Seq.tryFind (fun x -> x.Payload.Credentials = payloadCredentials)
+                request
                 |> Option.map (fun x -> {
                     x with
+                        Service = service
                         ProcessState = Ready
                         AutoProcessing = true
                         Payload = {

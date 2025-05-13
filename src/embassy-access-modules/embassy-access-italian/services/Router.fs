@@ -18,7 +18,7 @@ module Visa =
         match input with
         | [ "0"; operation ] -> operation |> Tourism1 |> Ok
         | [ "1"; operation ] -> operation |> Tourism2 |> Ok
-        | _ -> $"Visa route for the Italian router is not supported." |> NotSupported |> Error
+        | _ -> "Visa route for the Italian router is not supported." |> NotSupported |> Error
 
 type Route =
     | Visa of Visa.Route
