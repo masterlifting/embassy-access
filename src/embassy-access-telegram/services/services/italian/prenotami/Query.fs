@@ -45,11 +45,11 @@ let private INPUT_LOGIN = "<login>"
 [<Literal>]
 let private INPUT_PASSWORD = "<password>"
 
-let private (|CheckSlotsNow|SlotsAutoNotification|ServiceNotFound|) (serviceId: ServiceId) =
-    match serviceId.Value |> Graph.NodeId.splitValues with
-    | [ _; _; _; _; "0" ] -> CheckSlotsNow
-    | [ _; _; _; _; "1" ] -> SlotsAutoNotification
-    | _ -> ServiceNotFound
+let private (|CheckSlotsNow|SlotsAutoNotification|OperationNotSupported|) (operation: string) =
+    match operation with
+    | "0" -> CheckSlotsNow
+    | "1" -> SlotsAutoNotification
+    | _ -> OperationNotSupported
 
 let private createPrenotamiInstruction chatId method =
     let route = Prenotami.Method.Post(method) |> createBaseRoute
@@ -92,15 +92,15 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
                 }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
-let getService (serviceId: ServiceId) (embassyId: EmbassyId) forUser =
+let getService operation serviceId embassyId forUser =
     fun (deps: Prenotami.Dependencies) ->
         match forUser with
         | true -> deps |> getUserSubscriptions serviceId embassyId
         | false ->
-            match serviceId with
+            match operation with
             | CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
             | SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
-            | ServiceNotFound ->
+            | OperationNotSupported ->
                 $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
                 |> NotImplemented
                 |> Error

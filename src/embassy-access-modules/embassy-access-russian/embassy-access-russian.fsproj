@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="services\Router.fs" />
         <Compile Include="services\kdmid\Domain.fs" />
         <Compile Include="services\kdmid\DataAccess.fs" />
         <Compile Include="services\kdmid\Client.fs" />

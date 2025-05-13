@@ -10,6 +10,7 @@ open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services
+open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
 open EA.Italian.Services.DataAccess.Prenotami
 
@@ -22,6 +23,12 @@ type Dependencies = {
     processRequest:
         Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<Request<Payload>, Error'>>
     findRequest: RequestId -> Request.Storage<Payload, Payload.Entity> -> Async<Result<Request<Payload>, Error'>>
+    tryFindRequest:
+        EmbassyId
+            -> ServiceId
+            -> Credentials
+            -> Request.Storage<Payload, Payload.Entity>
+            -> Async<Result<Request<Payload> option, Error'>>
     findRequests:
         EmbassyId
             -> ServiceId
@@ -42,6 +49,29 @@ type Dependencies = {
             |> ResultAsync.bind (function
                 | Some request -> Ok request
                 | None -> $"Request '{requestId.ValueStr}' not found." |> NotFound |> Error)
+
+        let tryFindRequest embassyId serviceId credentials storage =
+
+            let compareServices route1 route2 =
+                match route1, route2 with
+                | Visa route1, Visa route2 ->
+                    match route1, route2 with
+                    | Visa.Tourism1 _, Visa.Tourism1 _ -> true
+                    | Visa.Tourism2 _, Visa.Tourism2 _ -> true
+                    | _ -> false
+
+            serviceId
+            |> Router.parse
+            |> ResultAsync.wrap(fun route1 ->
+                storage
+                |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyId embassyId)
+                |> ResultAsync.map (Seq.filter (fun request -> request.Payload.Credentials.Login = credentials.Login))
+                |> ResultAsync.map (
+                    Seq.tryFind (fun request ->
+                        match request.Service.Id |> Router.parse with
+                        | Ok route2 -> compareServices route1 route2
+                        | _ -> false)
+                ))
 
         let findRequests embassyId serviceId storage =
             storage
@@ -75,6 +105,7 @@ type Dependencies = {
             findService = deps.findService
             findEmbassy = deps.findEmbassy
             findRequest = findRequest
+            tryFindRequest = tryFindRequest
             findRequests = findRequests
             deleteRequest = deleteRequest
             tryAddSubscription = tryAddSubscription

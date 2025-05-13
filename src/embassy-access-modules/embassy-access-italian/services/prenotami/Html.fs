@@ -7,6 +7,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain
 open EA.Core.Domain
+open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
 
 let loadPage client =
@@ -52,10 +53,12 @@ let clickBookTab client =
 
 let chooseBookService (request: Request<Payload>) client =
     ResultAsync.bindAsync (fun _ ->
-        match request.Service.Id.Value |> Graph.NodeId.splitValues with
-        | [ _; _; _; "0"; _ ] -> "//a[@href='/Services/Booking/1151']" |> Ok //Tourism 1
-        | [ _; _; _; "1"; _ ] -> "//a[@href='/Services/Booking/1558']" |> Ok //Tourism 2
-        | _ ->
+        match request.Service.Id |> parse with
+        | Ok(Visa service) ->
+            match service with
+            | Visa.Tourism1 _ -> "//a[@href='/Services/Booking/1151']" |> Ok
+            | Visa.Tourism2 _ -> "//a[@href='/Services/Booking/1558']" |> Ok
+        | Error _ ->
             $"The service Id '{request.Service.Id}' is not recognized to process prenotami."
             |> NotFound
             |> Error

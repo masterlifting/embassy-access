@@ -42,16 +42,16 @@ let print (requestId: RequestId) =
 [<Literal>]
 let private INPUT_LINK = "<link>"
 
-let private (|CheckSlotsNow|SlotsAutoNotification|BookFirstSlot|BookLastSlot|BookFirstSlotInPeriod|ServiceNotFound|)
-    (serviceId: ServiceId)
+let private (|CheckSlotsNow|SlotsAutoNotification|BookFirstSlot|BookLastSlot|BookFirstSlotInPeriod|OperationNotSupported|)
+    (operations: string list)
     =
-    match serviceId.Value |> Graph.NodeId.splitValues with
-    | [ _; _; _; _; "0" ] -> CheckSlotsNow
-    | [ _; _; _; _; "1" ] -> SlotsAutoNotification
-    | [ _; _; _; _; "2"; "0" ] -> BookFirstSlot
-    | [ _; _; _; _; "2"; "1" ] -> BookLastSlot
-    | [ _; _; _; _; "2"; "2" ] -> BookFirstSlotInPeriod
-    | _ -> ServiceNotFound
+    match operations with
+    | [ "0" ] -> CheckSlotsNow
+    | [ "1" ] -> SlotsAutoNotification
+    | [ "2"; "0" ] -> BookFirstSlot
+    | [ "2"; "1" ] -> BookLastSlot
+    | [ "2"; "2" ] -> BookFirstSlotInPeriod
+    | _ -> OperationNotSupported
 
 let private createKdmidInstruction chatId method =
     let route = Kdmid.Method.Post(method) |> createBaseRoute
@@ -109,18 +109,18 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
                 }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
-let getService (serviceId: ServiceId) (embassyId: EmbassyId) forUser =
+let getService operations (serviceId: ServiceId) (embassyId: EmbassyId) forUser =
     fun (deps: Kdmid.Dependencies) ->
         match forUser with
         | true -> deps |> getUserSubscriptions serviceId embassyId
         | false ->
-            match serviceId with
+            match operations with
             | CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
             | SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
             | BookFirstSlot -> deps |> bookFirstSlot serviceId embassyId
             | BookLastSlot -> deps |> bookLastSlot serviceId embassyId
             | BookFirstSlotInPeriod -> deps |> bookFirstSlotInPeriod serviceId embassyId
-            | ServiceNotFound ->
+            | OperationNotSupported ->
                 $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
                 |> NotImplemented
                 |> Error

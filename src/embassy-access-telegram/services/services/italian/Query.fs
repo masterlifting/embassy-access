@@ -4,21 +4,26 @@ open Infrastructure.Domain
 open EA.Core.Domain
 open EA.Telegram.Router.Services
 open EA.Telegram.Dependencies.Services.Italian
+open EA.Italian.Services.Router
 
 let private (|Prenotami|ServiceNotFound|) (serviceId: ServiceId) =
-    match serviceId.Value |> Graph.NodeId.splitValues with
-    | [ _; _; _; _; "0" ]
-    | [ _; _; _; _; "1" ] -> Prenotami
-    | _ -> ServiceNotFound
+    match serviceId |> parse with
+    | Ok route ->
+        match route with
+        | Visa route ->
+            match route with
+            | Visa.Tourism1 op -> Prenotami op
+            | Visa.Tourism2 op -> Prenotami op
+    | Error error -> ServiceNotFound error
 
 let getService embassyId serviceId forUser =
     fun (deps: Italian.Dependencies) ->
         match serviceId with
-        | Prenotami ->
+        | Prenotami op ->
             deps
             |> Prenotami.Dependencies.create
-            |> Prenotami.Query.getService serviceId embassyId forUser
-        | ServiceNotFound ->
+            |> Prenotami.Query.getService op serviceId embassyId forUser
+        | ServiceNotFound _ ->
             $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
             |> Error

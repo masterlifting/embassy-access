@@ -29,18 +29,15 @@ let private createButtonsGroup chatId messageId name buttons =
     |> async.Return
 
 let private (|RUS|ITA|EmbassyNotFound|) (embassyId: EmbassyId) =
-    match embassyId.Value |> Graph.NodeId.splitValues |> Seq.skip 1 |> Seq.tryHead with
-    | Some id ->
-        match id with
-        | Embassies.RUS -> RUS
-        | Embassies.ITA -> ITA
-        | _ -> EmbassyNotFound
+    match embassyId.Value |> Graph.NodeId.splitValues |> List.truncate 2 with
+    | [ _; Embassies.RUS ] -> RUS Embassies.RUS
+    | [ _; Embassies.ITA ] -> ITA Embassies.ITA
     | _ -> EmbassyNotFound
 
 let private tryCreateServiceRootId (embassyId: EmbassyId) =
     match embassyId with
-    | RUS -> Embassies.RUS |> Ok
-    | ITA -> Embassies.ITA |> Ok
+    | RUS value -> value |> Ok
+    | ITA value -> value |> Ok
     | EmbassyNotFound ->
         $"Services for embassy '%s{embassyId.ValueStr}' is not implemented. "
         + NOT_IMPLEMENTED
@@ -53,11 +50,11 @@ let private tryCreateServiceRootId (embassyId: EmbassyId) =
 let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser =
     fun (deps: Services.Dependencies) ->
         match embassyId with
-        | RUS ->
+        | RUS _ ->
             deps
             |> Russian.Dependencies.create
             |> Russian.Query.getService embassyId serviceId forUser
-        | ITA ->
+        | ITA _ ->
             deps
             |> Italian.Dependencies.create
             |> Italian.Query.getService embassyId serviceId forUser
