@@ -3,22 +3,41 @@
 open EA.Core.Domain
 open Infrastructure.Domain
 
-module Visa =
-
+module Operation =
     type Route =
-        | Tourism1 of string
-        | Tourism2 of string
+        | CheckSlotsNow
+        | SlotsAutoNotification
 
         member this.Value =
             match this with
-            | Tourism1 op -> [ "0"; op ]
-            | Tourism2 op -> [ "1"; op ]
+            | CheckSlotsNow -> "0"
+            | SlotsAutoNotification -> "1"
+
+    let parse (input: string) =
+        match input with
+        | "0" -> CheckSlotsNow |> Ok
+        | "1" -> SlotsAutoNotification |> Ok
+        | _ ->
+            "Service operation for the Italian router is not supported."
+            |> NotSupported
+            |> Error
+
+module Visa =
+
+    type Route =
+        | Tourism1 of Operation.Route
+        | Tourism2 of Operation.Route
+
+        member this.Value =
+            match this with
+            | Tourism1 op -> [ "0"; op.Value ]
+            | Tourism2 op -> [ "1"; op.Value ]
 
     let parse (input: string list) =
         match input with
-        | [ "0"; operation ] -> operation |> Tourism1 |> Ok
-        | [ "1"; operation ] -> operation |> Tourism2 |> Ok
-        | _ -> "Visa route for the Italian router is not supported." |> NotSupported |> Error
+        | [ "0"; op ] -> op |> Operation.parse |> Result.map Tourism1
+        | [ "1"; op ] -> op |> Operation.parse |> Result.map Tourism2
+        | _ -> "Visa service for the Italian router is not supported." |> NotSupported |> Error
 
 type Route =
     | Visa of Visa.Route

@@ -3,72 +3,85 @@
 open EA.Core.Domain
 open Infrastructure.Domain
 
+module Operation =
+    type Route =
+        | CheckSlotsNow
+        | SlotsAutoNotification
+        | AutoBookingFirstSlot
+        | AutoBookingFirstSlotInPeriod
+        | AutoBookingLastSlot
+
+        member this.Value =
+            match this with
+            | CheckSlotsNow -> "0"
+            | SlotsAutoNotification -> "1"
+            | AutoBookingFirstSlot -> "2"
+            | AutoBookingFirstSlotInPeriod -> "3"
+            | AutoBookingLastSlot -> "4"
+
+    let parse (input: string) =
+        match input with
+        | "0" -> CheckSlotsNow |> Ok
+        | "1" -> SlotsAutoNotification |> Ok
+        | "2" -> AutoBookingFirstSlot |> Ok
+        | "3" -> AutoBookingFirstSlotInPeriod |> Ok
+        | "4" -> AutoBookingLastSlot |> Ok
+        | _ ->
+            "Service operation for the Russian router is not supported."
+            |> NotSupported
+            |> Error
+
 module Passport =
 
     type Route =
-        | International of string list
+        | International of Operation.Route
         | Status
 
         member this.Value =
             match this with
-            | International ops -> "0" :: ops
+            | International op -> [ "0"; op.Value ]
             | Status -> [ "1" ]
 
     let parse (input: string list) =
-        match input[0] with
-        | "0" ->
-            match input[1..] with
-            | [] ->
-                "Passport route for the Russian router is not supported."
-                |> NotSupported
-                |> Error
-            | operations -> operations |> International |> Ok
-        | "1" -> Status |> Ok
+        match input with
+        | [ "0"; op ] -> op |> Operation.parse |> Result.map International
+        | [ "1" ] -> Status |> Ok
         | _ ->
-            $"Passport route for the Russian router is not supported."
+            "Passport service for the Russian router is not supported."
             |> NotSupported
             |> Error
 
 module Notary =
 
     type Route =
-        | PowerOfAttorney of string list
+        | PowerOfAttorney of Operation.Route
 
         member this.Value =
             match this with
-            | PowerOfAttorney ops -> "0" :: ops
+            | PowerOfAttorney op -> [ "0"; op.Value ]
 
     let parse (input: string list) =
-        match input[0] with
-        | "0" ->
-            match input[1..] with
-            | [] -> "Notary route for the Russian router is not supported." |> NotSupported |> Error
-            | operations -> operations |> PowerOfAttorney |> Ok
+        match input with
+        | [ "0"; op ] -> op |> Operation.parse |> Result.map PowerOfAttorney
         | _ ->
-            $"Notary route for the Russian router is not supported."
+            "Notary service for the Russian router is not supported."
             |> NotSupported
             |> Error
 
 module Citizenship =
 
     type Route =
-        | Renunciation of string list
+        | Renunciation of Operation.Route
 
         member this.Value =
             match this with
-            | Renunciation ops -> "0" :: ops
+            | Renunciation op -> [ "0"; op.Value ]
 
     let parse (input: string list) =
-        match input[0] with
-        | "0" ->
-            match input[1..] with
-            | [] ->
-                "Citizenship route for the Russian router is not supported."
-                |> NotSupported
-                |> Error
-            | operations -> operations |> Renunciation |> Ok
+        match input with
+        | [ "0"; op ] -> op |> Operation.parse |> Result.map Renunciation
         | _ ->
-            "Citizenship route for the Russian router is not supported."
+            "Citizenship service for the Russian router is not supported."
             |> NotSupported
             |> Error
 
@@ -93,6 +106,6 @@ let parse (serviceId: ServiceId) =
     | "1" -> remaining |> Notary.parse |> Result.map Notary
     | "2" -> remaining |> Citizenship.parse |> Result.map Citizenship
     | _ ->
-        $"'%s{input |> string}' for the Russian router is not supported."
+        $"'%s{serviceId.ValueStr}' for the Russian router is not supported."
         |> NotSupported
         |> Error

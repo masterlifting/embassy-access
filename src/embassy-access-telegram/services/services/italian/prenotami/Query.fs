@@ -1,6 +1,5 @@
 ﻿module EA.Telegram.Services.Services.Italian.Prenotami.Query
 
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
@@ -9,6 +8,7 @@ open EA.Telegram.Router
 open EA.Telegram.Router.Services.Italian
 open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services.Domain.Prenotami
+open EA.Italian.Services.Router
 
 let private createBaseRoute method =
     Router.Services(Services.Method.Italian(Method.Prenotami(method)))
@@ -44,12 +44,6 @@ let private INPUT_LOGIN = "<login>"
 
 [<Literal>]
 let private INPUT_PASSWORD = "<password>"
-
-let private (|CheckSlotsNow|SlotsAutoNotification|OperationNotSupported|) (operation: string) =
-    match operation with
-    | "0" -> CheckSlotsNow
-    | "1" -> SlotsAutoNotification
-    | _ -> OperationNotSupported
 
 let private createPrenotamiInstruction chatId method =
     let route = Prenotami.Method.Post(method) |> createBaseRoute
@@ -98,10 +92,5 @@ let getService operation serviceId embassyId forUser =
         | true -> deps |> getUserSubscriptions serviceId embassyId
         | false ->
             match operation with
-            | CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
-            | SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
-            | OperationNotSupported ->
-                $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
-                |> NotImplemented
-                |> Error
-                |> async.Return
+            | Operation.CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
+            | Operation.SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId

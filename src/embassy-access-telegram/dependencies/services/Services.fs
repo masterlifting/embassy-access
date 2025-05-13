@@ -52,23 +52,26 @@ type Dependencies = {
                 msg |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes
 
             let tryAddSubscription requestId serviceId embassyId =
-                match chat.Subscriptions |> Set.exists (fun s -> s.Id = requestId) with
-                | true -> Ok() |> async.Return
-                | false ->
-                    deps.Persistence.initChatStorage ()
-                    |> ResultAsync.wrap (
-                        Storage.Chat.Command.update {
-                            chat with
-                                Subscriptions =
-                                    chat.Subscriptions
-                                    |> Set.add {
-                                        Id = requestId
-                                        ServiceId = serviceId
-                                        EmbassyId = embassyId
-                                    }
-                        }
-                    )
-                    |> ResultAsync.map ignore
+
+                let subscriptions =
+                    match chat.Subscriptions |> Seq.tryFind (fun s -> s.Id = requestId) with
+                    | None -> chat.Subscriptions
+                    | Some subscription -> chat.Subscriptions |> Set.remove subscription
+
+                deps.Persistence.initChatStorage ()
+                |> ResultAsync.wrap (
+                    Storage.Chat.Command.update {
+                        chat with
+                            Subscriptions =
+                                subscriptions
+                                |> Set.add {
+                                    Id = requestId
+                                    ServiceId = serviceId
+                                    EmbassyId = embassyId
+                                }
+                    }
+                )
+                |> ResultAsync.map ignore
 
             let deleteSubscription requestId =
                 deps.Persistence.initChatStorage ()

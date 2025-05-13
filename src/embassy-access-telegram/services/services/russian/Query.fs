@@ -25,10 +25,10 @@ let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
 let getService embassyId serviceId forUser =
     fun (deps: Russian.Dependencies) ->
         match serviceId with
-        | Kdmid ops ->
+        | Kdmid op ->
             deps
             |> Kdmid.Dependencies.create
-            |> Kdmid.Query.getService ops serviceId embassyId forUser
+            |> Kdmid.Query.getService op serviceId embassyId forUser
         | Midpass ->
             deps
             |> Midpass.Dependencies.create
