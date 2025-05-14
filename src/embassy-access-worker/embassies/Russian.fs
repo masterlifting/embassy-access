@@ -46,7 +46,7 @@ module private Kdmid =
                     results
                     |> Async.map (fun (_, errors) ->
                         errors
-                        |> Seq.iter (fun error -> deps.TaskName + " Error: " + error.Message |> Log.crt)
+                        |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt)
                         |> Ok))
 
     module SearchAppointments =

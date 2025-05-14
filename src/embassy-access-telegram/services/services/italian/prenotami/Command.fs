@@ -88,7 +88,6 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) 
                     Id = RequestId.createNew ()
                     Service = service
                     Embassy = embassy
-                    AutoProcessing = false
                     ProcessState = Ready
                     Limits = Limits
                     Modified = DateTime.UtcNow
@@ -129,7 +128,6 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
                     x with
                         Service = service
                         ProcessState = Ready
-                        AutoProcessing = true
                         Payload = {
                             x.Payload with
                                 State = NoAppointments
@@ -139,7 +137,6 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
                     Id = RequestId.createNew ()
                     Service = service
                     Embassy = embassy
-                    AutoProcessing = true
                     ProcessState = Ready
                     Limits = Limits
                     Modified = DateTime.UtcNow

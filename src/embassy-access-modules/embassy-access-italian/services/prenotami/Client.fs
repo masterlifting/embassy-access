@@ -21,6 +21,7 @@ let init (deps: Dependencies) =
         updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
         Browser = {|
             loadPage = fun uri -> browserClient |> Browser.Page.load uri
+            closePage = fun () -> browserClient |> Browser.Page.close
             fillInput = fun selector value -> browserClient |> Browser.Page.Input.fill selector value
             mouseClick = fun selector pattern -> browserClient |> Browser.Page.Mouse.click selector pattern
             mouseShuffle = fun () -> browserClient |> Browser.Page.Mouse.shuffle (TimeSpan.FromSeconds 20.0)

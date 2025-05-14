@@ -86,7 +86,6 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                     Id = RequestId.createNew ()
                     Service = service
                     Embassy = embassy
-                    AutoProcessing = false
                     ProcessState = Ready
                     Limits = Limits
                     Modified = DateTime.UtcNow
@@ -128,7 +127,6 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (link: s
                     x with
                         Service = service
                         ProcessState = Ready
-                        AutoProcessing = true
                         Payload = {
                             x.Payload with
                                 State = NoAppointments
@@ -139,7 +137,6 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (link: s
                     Id = RequestId.createNew ()
                     Service = service
                     Embassy = embassy
-                    AutoProcessing = true
                     ProcessState = Ready
                     Limits = Limits
                     Modified = DateTime.UtcNow
@@ -176,7 +173,6 @@ let bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                     x with
                         Service = service
                         ProcessState = Ready
-                        AutoProcessing = true
                         Payload = {
                             x.Payload with
                                 State = NoAppointments
@@ -187,7 +183,6 @@ let bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                     Id = RequestId.createNew ()
                     Service = service
                     Embassy = embassy
-                    AutoProcessing = true
                     ProcessState = Ready
                     Limits = Limits
                     Modified = DateTime.UtcNow
@@ -224,7 +219,6 @@ let bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                     x with
                         Service = service
                         ProcessState = Ready
-                        AutoProcessing = true
                         Payload = {
                             x.Payload with
                                 State = NoAppointments
@@ -235,7 +229,6 @@ let bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                     Id = RequestId.createNew ()
                     Service = service
                     Embassy = embassy
-                    AutoProcessing = true
                     ProcessState = Ready
                     Limits = Limits
                     Modified = DateTime.UtcNow
@@ -278,7 +271,6 @@ let bookFirstSlotInPeriod
                     x with
                         Service = service
                         ProcessState = Ready
-                        AutoProcessing = true
                         Payload = {
                             x.Payload with
                                 State = NoAppointments
@@ -289,7 +281,6 @@ let bookFirstSlotInPeriod
                     Id = RequestId.createNew ()
                     Service = service
                     Embassy = embassy
-                    AutoProcessing = true
                     ProcessState = Ready
                     Limits = Limits
                     Modified = DateTime.UtcNow

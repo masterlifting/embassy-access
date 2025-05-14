@@ -26,7 +26,6 @@ type Request<'payload> = {
     Service: Service
     Embassy: Embassy
     Payload: 'payload
-    AutoProcessing: bool
     ProcessState: ProcessState
     Limits: Set<Limit>
     Modified: DateTime
@@ -40,10 +39,6 @@ type Request<'payload> = {
         let payload = request.Payload |> printPayload
         let service = request.Service |> Service.print
         let embassy = request.Embassy |> Embassy.print
-        let autoProcessingState =
-            match request.AutoProcessing with
-            | true -> "enabled"
-            | false -> "disabled"
         let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n - "
 
         $"[Subscription] Id: '%s{request.Id.ValueStr}'"
@@ -51,7 +46,6 @@ type Request<'payload> = {
         + $"\n%s{embassy}"
         + $"\n%s{payload}"
         + $"\n[Last modified] '%s{request.Modified |> String.fromDateTime}'"
-        + $"\n[Auto processing is {autoProcessingState}]"
         + $"\n[Limits]\n - %s{limits}"
 
     member this.UpdateLimits() =

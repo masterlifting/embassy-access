@@ -88,3 +88,10 @@ let setResult (request: Request<Payload>) client =
             "The service is not available at the moment. Please try again later."
             |> NotFound
             |> Error)
+
+let closePage client =
+    Async.bind (fun r ->
+        client.Browser.closePage ()
+        |> Async.map (function
+            | Ok _ -> r
+            | Error error -> Error error))

@@ -93,6 +93,7 @@ type Client = {
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
     Browser: {|
         loadPage: Uri -> Async<Result<unit, Error'>>
+        closePage: unit -> Async<Result<unit, Error'>>
         fillInput: Browser.Selector -> string -> Async<Result<unit, Error'>>
         mouseClick: Browser.Selector -> Regex option -> Async<Result<unit, Error'>>
         mouseShuffle: unit -> Async<Result<unit, Error'>>
