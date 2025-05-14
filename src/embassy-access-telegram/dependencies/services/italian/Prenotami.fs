@@ -92,7 +92,7 @@ type Dependencies = {
                 ct = deps.ct
                 RequestStorage = storage
             }
-            |> ResultAsync.bindAsync (Prenotami.Service.tryProcess request)
+            |> Prenotami.Service.tryProcess request
 
         let tryAddSubscription (request: Request<Payload>) =
             deps.tryAddSubscription request.Id request.Service.Id request.Embassy.Id

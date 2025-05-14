@@ -27,7 +27,7 @@ module Prenotami =
             let taskName = ActiveTask.print task + " "
 
             result {
-                
+
                 let! persistence = Persistence.Dependencies.create cfg
                 let! telegram = Telegram.Dependencies.create cfg ct
 
@@ -91,8 +91,8 @@ module Prenotami =
                         ct = ct
                         RequestStorage = requestStorage
                     }
-                    |> ResultAsync.map (fun client -> client, notify)
-                    |> ResultAsync.bindAsync (Prenotami.Service.tryProcessFirst requests)
+                    |> fun client -> client, notify
+                    |> Prenotami.Service.tryProcessFirst requests
 
                 return {
                     TaskName = taskName

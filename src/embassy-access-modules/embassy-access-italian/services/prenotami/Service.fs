@@ -11,7 +11,8 @@ let private validateLimits (request: Request<Payload>) =
     |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
 
 let private processWebSite request client =
-    Html.loadPage client
+    Html.initBrowser client
+    |> Html.loadPage client
     |> Html.setLogin request client
     |> Html.setPassword request client
     |> Html.mouseShuffle client
@@ -19,8 +20,6 @@ let private processWebSite request client =
     |> Html.clickBookTab client
     |> Html.chooseBookService request client
     |> Html.setResult request client
-    |> Html.closePage client
-            
 
 let private setFinalProcessState (request: Request<Payload>) =
     fun updateRequest ->
@@ -63,8 +62,7 @@ let tryProcess (request: Request<Payload>) =
 
         let processWebSite = ResultAsync.bindAsync (fun r -> client |> processWebSite r)
 
-        let setFinalState =
-            client.updateRequest |> setFinalProcessState request
+        let setFinalState = client.updateRequest |> setFinalProcessState request
 
         // pipe
         request |> validateLimits |> setInitialState |> processWebSite |> setFinalState

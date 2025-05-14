@@ -86,8 +86,7 @@ let tryProcess (request: Request<Payload>) =
                 (httpClient, client.postConfirmationPage)
                 |> Html.ConfirmationPage.parse qp fdm r)
 
-        let setFinalState =
-            client.updateRequest |> setFinalProcessState request
+        let setFinalState = client.updateRequest |> setFinalProcessState request
 
         // pipe
         request

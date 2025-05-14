@@ -41,9 +41,7 @@ module private Prenotami =
                 | Ok results ->
                     results
                     |> Async.map (fun (_, errors) ->
-                        errors
-                        |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt)
-                        |> Ok))
+                        errors |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt) |> Ok))
 
     module SearchAppointments =
         let private handle (task, cfg, ct) =
