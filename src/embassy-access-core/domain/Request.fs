@@ -41,7 +41,7 @@ type Request<'payload> = {
         let embassy = request.Embassy |> Embassy.print
         let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n - "
 
-        $"[Subscription] Id: '%s{request.Id.ValueStr}'"
+        $"[Subscription] '%s{request.Id.ValueStr}'"
         + $"\n%s{service}"
         + $"\n%s{embassy}"
         + $"\n%s{payload}"

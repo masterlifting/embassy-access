@@ -104,7 +104,7 @@ type PayloadState =
             |> String.concat "\n - "
             |> sprintf "Available appointments \n - %s"
         | HasConfirmation(message, appointment) -> $"The appointment '%s{appointment.Value}' is confirmed: %s{message}"
-        |> sprintf "[Last request state] %s"
+        |> sprintf "[Last request state]\n - %s"
 
 type Payload = {
     Credentials: Credentials
@@ -115,7 +115,7 @@ type Payload = {
     static member print(payload: Payload) =
         payload.Credentials
         |> Credentials.print
-        |> fun credentials -> $"[Credentials] %s{credentials}\n{PayloadState.print payload.State}"
+        |> fun credentials -> $"[Credentials]\n - %s{credentials}\n{PayloadState.print payload.State}"
 
     static member printError (error: Error') (payload: Payload) =
         match error with
