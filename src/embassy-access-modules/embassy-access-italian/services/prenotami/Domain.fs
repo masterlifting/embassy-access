@@ -60,10 +60,7 @@ type PayloadState =
     static member print(payloadState: PayloadState) =
         match payloadState with
         | NoAppointments -> "No appointments found."
-        | HasAppointments appointments ->
-            appointments
-            |> Seq.map Appointment.print
-            |> String.concat "\n "
+        | HasAppointments appointments -> appointments |> Seq.map Appointment.print |> String.concat "\n "
         |> sprintf "[Last request state]\n %s"
 
 type Payload = {
