@@ -39,14 +39,14 @@ type Request<'payload> = {
         let payload = request.Payload |> printPayload
         let service = request.Service |> Service.print
         let embassy = request.Embassy |> Embassy.print
-        let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n - "
+        let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n "
 
         $"[Subscription] '%s{request.Id.ValueStr}'"
         + $"\n%s{service}"
         + $"\n%s{embassy}"
         + $"\n%s{payload}"
-        + $"\n[Last modified] '%s{request.Modified |> String.fromDateTime}'"
-        + $"\n[Limits]\n - %s{limits}"
+        + $"\n[Last modified] '%s{(request.Modified.AddHours request.Embassy.TimeZone) |> String.fromDateTime}'"
+        + $"\n[Limits]\n %s{limits}"
 
     member this.UpdateLimits() =
         this.Limits
