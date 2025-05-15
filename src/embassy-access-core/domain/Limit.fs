@@ -9,10 +9,13 @@ type private Refresh =
     | Ready
     | Waiting of TimeSpan
 
-    static member calculate remainingPeriod modifiedDate =
-        match max (remainingPeriod - (DateTime.UtcNow - modifiedDate)) TimeSpan.Zero with
-        | p when p = TimeSpan.Zero -> Ready
-        | period -> Waiting period
+    static member calculate remainingPeriod created =
+        let updatedPeriod = remainingPeriod - (DateTime.UtcNow - created)
+        let remainingPeriod = max updatedPeriod TimeSpan.Zero
+        
+        match remainingPeriod = TimeSpan.Zero with
+        | true -> Ready
+        | false -> Waiting remainingPeriod
 
 type LimitState =
     | Valid of uint<attempts> * TimeSpan * DateTime
