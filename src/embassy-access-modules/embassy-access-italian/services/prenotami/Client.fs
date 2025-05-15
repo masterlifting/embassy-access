@@ -2,7 +2,6 @@
 
 open System
 open System.Threading
-open Infrastructure.Prelude
 open Web.Clients
 open EA.Core.DataAccess
 open EA.Italian.Services.Domain.Prenotami
@@ -11,13 +10,13 @@ open EA.Italian.Services.DataAccess.Prenotami
 type Dependencies = {
     ct: CancellationToken
     RequestStorage: Request.Storage<Payload, Payload.Entity>
+    WebBrowser: Web.Clients.Domain.Browser.Client
 }
 
 let init (deps: Dependencies) = {
     updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
     Browser = {|
-        init = Browser.Client.init
-        loadPage = fun uri browser -> browser |> Browser.Page.load uri
+        loadPage = fun uri -> deps.WebBrowser |> Browser.Page.load uri
         closePage = fun page -> page |> Browser.Page.close
         fillInput = fun selector value page -> page |> Browser.Page.Input.fill selector value
         mouseClick = fun selector pattern page -> page |> Browser.Page.Mouse.click selector pattern

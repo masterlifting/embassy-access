@@ -10,11 +10,8 @@ open EA.Core.Domain
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
 
-let initBrowser client =
-    client.Browser.init { Name = "Crominium" }
-
 let loadPage client =
-    ResultAsync.bindAsync (client.Browser.loadPage ("https://prenotami.esteri.it" |> Uri))
+    client.Browser.loadPage ("https://prenotami.esteri.it" |> Uri)
 
 let setLogin (request: Request<Payload>) client =
     ResultAsync.bindAsync (
@@ -95,9 +92,4 @@ let setResult (request: Request<Payload>) client =
                 "The service is not available at the moment. Please try again later."
                 |> NotFound
                 |> Error)
-        |> Async.bind (fun r ->
-            page
-            |> client.Browser.closePage
-            |> Async.map (function
-                | Ok _ -> r
-                | Error error -> Error error)))
+        |> Async.apply (page |> client.Browser.closePage))

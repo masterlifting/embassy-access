@@ -87,12 +87,15 @@ module Prenotami =
                     |> Common.getRequests rootServiceId task.Duration
 
                 let tryProcessFirst requests =
-                    Prenotami.Client.init {
-                        ct = ct
-                        RequestStorage = requestStorage
-                    }
-                    |> fun client -> client, notify
-                    |> Prenotami.Service.tryProcessFirst requests
+                    telegram.Web.initBrowser ()
+                    |> ResultAsync.bindAsync (fun browser ->
+                        Prenotami.Client.init {
+                            ct = ct
+                            RequestStorage = requestStorage
+                            WebBrowser = browser
+                        }
+                        |> fun client -> client, notify
+                        |> Prenotami.Service.tryProcessFirst requests)
 
                 return {
                     TaskName = taskName

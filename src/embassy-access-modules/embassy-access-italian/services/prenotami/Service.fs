@@ -11,8 +11,7 @@ let private validateLimits (request: Request<Payload>) =
     |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
 
 let private processWebSite request client =
-    Html.initBrowser client
-    |> Html.loadPage client
+    Html.loadPage client
     |> Html.setLogin request client
     |> Html.setPassword request client
     |> Html.mouseShuffle client
