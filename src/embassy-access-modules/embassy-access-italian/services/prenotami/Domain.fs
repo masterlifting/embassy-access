@@ -39,7 +39,7 @@ type Credentials = {
             |> Error
 
     static member print(credentials: Credentials) =
-        $"Login: '%s{credentials.Login}' Password: '%s{credentials.Password}'"
+        $"\n Login: '%s{credentials.Login}'\n Password: '%s{credentials.Password}'"
 
 type internal Appointment with
     static member parse(text: string) =
@@ -65,7 +65,7 @@ type PayloadState =
             |> Seq.map Appointment.print
             |> String.concat "\n - "
             |> sprintf "Available appointments \n - %s"
-        |> sprintf "[Last request state] %s"
+        |> sprintf "[Last request state]\n - %s"
 
 type Payload = {
     Credentials: Credentials
@@ -75,7 +75,7 @@ type Payload = {
     static member print(payload: Payload) =
         payload.Credentials
         |> Credentials.print
-        |> fun credentials -> $"[Credentials] %s{credentials}\n{PayloadState.print payload.State}"
+        |> fun credentials -> $"[Credentials]%s{credentials}\n{PayloadState.print payload.State}"
 
     static member printError (error: Error') (payload: Payload) =
         match error with

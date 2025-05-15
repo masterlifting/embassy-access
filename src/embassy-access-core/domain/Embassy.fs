@@ -27,9 +27,9 @@ type Embassy = {
     static member print(embassy: Embassy) =
         let id = embassy.Id.ValueStr
         let name = embassy.Name
-        let timeZone = embassy.TimeZone |> string
+
+        let value = "[Embassy]" + $"\n- '%s{id}'" + $"\n- %s{name}"
 
         match embassy.Description with
-        | Some description ->
-            $"[Embassy] Id: '%s{id}' Name: %s{name} Description: %s{description} TimeZone: '%s{timeZone}'"
-        | None -> $"[Embassy] Id: '%s{id}' Name: %s{name} TimeZone: '%s{timeZone}'"
+        | Some description -> value + $"\n- %s{description}"
+        | None -> value

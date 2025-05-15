@@ -25,6 +25,9 @@ type Service = {
     static member print(service: Service) =
         let id = service.Id.ValueStr
         let name = service.Name
+
+        let value = "[Service]" + $"\n- '%s{id}'" + $"\n- %s{name}"
+
         match service.Description with
-        | Some description -> $"[Service] Id: '%s{id}' Name: %s{name} Description: %s{description}"
-        | None -> $"[Service] Id: '%s{id}' Name: %s{name}"
+        | Some description -> value + $"\n- %s{description}"
+        | None -> value

@@ -12,7 +12,7 @@ type private Refresh =
     static member calculate remainingPeriod created =
         let updatedPeriod = remainingPeriod - (DateTime.UtcNow - created)
         let remainingPeriod = max updatedPeriod TimeSpan.Zero
-        
+
         match remainingPeriod = TimeSpan.Zero with
         | true -> Ready
         | false -> Waiting remainingPeriod
@@ -22,7 +22,7 @@ type LimitState =
     | Invalid of TimeSpan * DateTime
 
     static member internal create attempts period =
-        match attempts > 0u<attempts> && period > TimeSpan.Zero with
+        match period > TimeSpan.Zero && attempts > 0u<attempts> with
         | true -> Valid(attempts, period, DateTime.UtcNow)
         | false -> Invalid(period, DateTime.UtcNow)
 
@@ -35,15 +35,18 @@ type Limit = {
     static member create(attempts, period) = {
         Attempts = attempts
         Period = period
-        State = LimitState.create attempts period
+        State = LimitState.create (attempts - 1u<attempts>) period
     }
 
     static member update limit =
         match limit.State with
-        | Valid(attempts, period, _) -> {
-            limit with
-                State = LimitState.create (attempts - 1u<attempts>) period
-          }
+        | Valid(attempts, period, date) ->
+            match Refresh.calculate period date with
+            | Ready -> Limit.create (limit.Attempts, limit.Period)
+            | Waiting period -> {
+                limit with
+                    State = LimitState.create (attempts - 1u<attempts>) period
+              }
         | Invalid(period, date) ->
             match Refresh.calculate period date with
             | Ready -> Limit.create (limit.Attempts, limit.Period)
@@ -64,7 +67,10 @@ type Limit = {
 
     static member print limit =
         match limit.State with
-        | Valid(attempts, period, _) -> $"Remaining attempts '%i{attempts}' for '%s{period |> String.fromTimeSpan}'"
+        | Valid(attempts, period, date) ->
+            match Refresh.calculate period date with
+            | Ready -> $"Remaining attempts '%i{limit.Attempts}' for '%s{limit.Period |> String.fromTimeSpan}'"
+            | Waiting period -> $"Remaining attempts '%i{attempts}' for '%s{period |> String.fromTimeSpan}'"
         | Invalid(period, date) ->
             match Refresh.calculate period date with
             | Ready -> $"Remaining attempts '%i{limit.Attempts}' for '%s{limit.Period |> String.fromTimeSpan}'"
