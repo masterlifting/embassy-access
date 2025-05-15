@@ -87,8 +87,10 @@ type Credentials = {
 
     static member print(payload: Credentials) =
         let ems =
-            payload.Ems |> Option.map (fun ems -> $"&ems=%s{ems}") |> Option.defaultValue ""
-        $"'id=%i{payload.Id}&cd=%s{payload.Cd}{ems}'"
+            payload.Ems
+            |> Option.map (fun ems -> $"\n ems=%s{ems}")
+            |> Option.defaultValue ""
+        $"' id=%i{payload.Id}\n cd=%s{payload.Cd}{ems}'"
 
 type PayloadState =
     | NoAppointments
@@ -97,14 +99,10 @@ type PayloadState =
 
     static member print(payloadState: PayloadState) =
         match payloadState with
-        | NoAppointments -> "No appointments found"
-        | HasAppointments appointments ->
-            appointments
-            |> Seq.map Appointment.print
-            |> String.concat "\n - "
-            |> sprintf "Available appointments \n - %s"
+        | NoAppointments -> "No appointments found."
+        | HasAppointments appointments -> appointments |> Seq.map Appointment.print |> String.concat "\n "
         | HasConfirmation(message, appointment) -> $"The appointment '%s{appointment.Value}' is confirmed: %s{message}"
-        |> sprintf "[Last request state]\n - %s"
+        |> sprintf "[Last request state]\n %s"
 
 type Payload = {
     Credentials: Credentials
@@ -115,7 +113,7 @@ type Payload = {
     static member print(payload: Payload) =
         payload.Credentials
         |> Credentials.print
-        |> fun credentials -> $"[Credentials]\n - %s{credentials}\n{PayloadState.print payload.State}"
+        |> fun credentials -> $"[Credentials]\n %s{credentials}\n{PayloadState.print payload.State}"
 
     static member printError (error: Error') (payload: Payload) =
         match error with

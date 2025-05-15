@@ -39,7 +39,7 @@ type Credentials = {
             |> Error
 
     static member print(credentials: Credentials) =
-        $"\n Login: '%s{credentials.Login}'\n Password: '%s{credentials.Password}'"
+        $" Login: '%s{credentials.Login}'\n Password: '%s{credentials.Password}'"
 
 type internal Appointment with
     static member parse(text: string) =
@@ -60,12 +60,8 @@ type PayloadState =
     static member print(payloadState: PayloadState) =
         match payloadState with
         | NoAppointments -> "No appointments found."
-        | HasAppointments appointments ->
-            appointments
-            |> Seq.map Appointment.print
-            |> String.concat "\n - "
-            |> sprintf "Available appointments \n - %s"
-        |> sprintf "[Last request state]\n - %s"
+        | HasAppointments appointments -> appointments |> Seq.map Appointment.print |> String.concat "\n "
+        |> sprintf "[Last request state]\n %s"
 
 type Payload = {
     Credentials: Credentials
@@ -75,13 +71,13 @@ type Payload = {
     static member print(payload: Payload) =
         payload.Credentials
         |> Credentials.print
-        |> fun credentials -> $"[Credentials]%s{credentials}\n{PayloadState.print payload.State}"
+        |> fun credentials -> $"[Credentials]\n%s{credentials}\n{PayloadState.print payload.State}"
 
     static member printError (error: Error') (payload: Payload) =
         match error with
         | Operation reason ->
             match reason.Code with
-            | Some(Custom Constants.ErrorCode.TECHNICAL_ERROR) -> error.Message |> Some
+            | Some(Custom Constants.ErrorCode.TECHNICAL_ERROR) -> None
             | _ -> error.Message |> Some
         | _ -> error.Message |> Some
         |> Option.map (fun error ->

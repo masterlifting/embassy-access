@@ -28,8 +28,8 @@ type Embassy = {
         let id = embassy.Id.ValueStr
         let name = embassy.Name
 
-        let value = "[Embassy]" + $"\n- '%s{id}'" + $"\n- %s{name}"
+        let value = "[Embassy]" + $"\n '%s{id}'" + $"\n %s{name}"
 
         match embassy.Description with
-        | Some description -> value + $"\n- %s{description}"
+        | Some description -> value + $"\n %s{description}"
         | None -> value
