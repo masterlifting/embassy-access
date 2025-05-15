@@ -88,11 +88,14 @@ type Dependencies = {
             |> ResultAsync.map ignore
 
         let processRequest request storage =
-            Prenotami.Client.init {
-                ct = deps.ct
-                RequestStorage = storage
-            }
-            |> ResultAsync.bindAsync (Prenotami.Service.tryProcess request)
+            deps.initWebBrowser ()
+            |> ResultAsync.bindAsync (fun browser ->
+                Prenotami.Client.init {
+                    ct = deps.ct
+                    RequestStorage = storage
+                    WebBrowser = browser
+                }
+                |> Prenotami.Service.tryProcess request)
 
         let tryAddSubscription (request: Request<Payload>) =
             deps.tryAddSubscription request.Id request.Service.Id request.Embassy.Id

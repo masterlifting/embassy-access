@@ -9,6 +9,7 @@ open EA.Core.DataAccess
 open EA.Telegram.Services.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services
+open EA.Russian.Services.Router
 open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies
 
@@ -23,6 +24,7 @@ module Kdmid =
 
         static member create (task: ActiveTask) cfg ct =
             let result = ResultBuilder()
+            let taskName = ActiveTask.print task + " "
 
             result {
                 let! persistence = Persistence.Dependencies.create cfg
@@ -65,11 +67,28 @@ module Kdmid =
                 let notify (requestRes: Result<Request<Payload>, Error'>) =
                     requestRes
                     |> ResultAsync.wrap (fun r -> notificationDeps |> Kdmid.Notification.spread r)
-                    |> ResultAsync.mapError (_.Message >> Log.crt)
+                    |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                     |> Async.Ignore
 
-                let getRequests serviceId =
-                    requestStorage |> Common.getRequests serviceId task
+                let hasRequiredService serviceId =
+                    let isRequiredService =
+                        function
+                        | Passport(Passport.International op)
+                        | Notary(Notary.PowerOfAttorney op)
+                        | Citizenship(Citizenship.Renunciation op) ->
+                            match op with
+                            | Operation.SlotsAutoNotification
+                            | Operation.AutoBookingFirstSlot
+                            | Operation.AutoBookingFirstSlotInPeriod
+                            | Operation.AutoBookingLastSlot -> true
+                            | Operation.CheckSlotsNow -> false
+                        | Passport(Passport.Status) -> false
+
+                    serviceId |> Router.parse |> Result.exists isRequiredService
+
+                let getRequests rootServiceId =
+                    (requestStorage, hasRequiredService)
+                    |> Common.getRequests rootServiceId task.Duration
 
                 let tryProcessFirst requests =
 
@@ -81,7 +100,7 @@ module Kdmid =
                     |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
 
                 return {
-                    TaskName = ActiveTask.print task
+                    TaskName = taskName
                     getRequests = getRequests
                     tryProcessFirst = tryProcessFirst
                 }

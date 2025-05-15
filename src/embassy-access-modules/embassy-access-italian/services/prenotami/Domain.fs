@@ -92,11 +92,12 @@ type Payload = {
 type Client = {
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
     Browser: {|
-        loadPage: Uri -> Async<Result<unit, Error'>>
-        fillInput: Browser.Selector -> string -> Async<Result<unit, Error'>>
-        mouseClick: Browser.Selector -> Regex option -> Async<Result<unit, Error'>>
-        mouseShuffle: unit -> Async<Result<unit, Error'>>
-        submitForm: Browser.Selector -> Regex -> Async<Result<unit, Error'>>
-        tryFindText: Browser.Selector -> Async<Result<string option, Error'>>
+        loadPage: Uri -> Async<Result<Browser.Page, Error'>>
+        closePage: Browser.Page -> Async<Result<unit, Error'>>
+        fillInput: Browser.Selector -> string -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+        mouseClick: Browser.Selector -> Regex option -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+        mouseShuffle: Browser.Page -> Async<Result<Browser.Page, Error'>>
+        submitForm: Browser.Selector -> Regex -> Browser.Page -> Async<Result<Browser.Page, Error'>>
+        tryFindText: Browser.Selector -> Browser.Page -> Async<Result<string option, Error'>>
     |}
 }

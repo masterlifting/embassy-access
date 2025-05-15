@@ -9,6 +9,7 @@ open EA.Core.DataAccess
 open EA.Telegram.Services.Services.Italian
 open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services
+open EA.Italian.Services.Router
 open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies
 
@@ -23,8 +24,10 @@ module Prenotami =
 
         static member create (task: ActiveTask) cfg ct =
             let result = ResultBuilder()
+            let taskName = ActiveTask.print task + " "
 
             result {
+
                 let! persistence = Persistence.Dependencies.create cfg
                 let! telegram = Telegram.Dependencies.create cfg ct
 
@@ -65,22 +68,37 @@ module Prenotami =
                 let notify (requestRes: Result<Request<Payload>, Error'>) =
                     requestRes
                     |> ResultAsync.wrap (fun r -> notificationDeps |> Prenotami.Notification.spread r)
-                    |> ResultAsync.mapError (_.Message >> Log.crt)
+                    |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                     |> Async.Ignore
 
-                let getRequests serviceId =
-                    requestStorage |> Common.getRequests serviceId task
+                let hasRequiredService serviceId =
+                    let isRequiredService =
+                        function
+                        | Visa(Visa.Tourism1 op)
+                        | Visa(Visa.Tourism2 op) ->
+                            match op with
+                            | Operation.SlotsAutoNotification -> true
+                            | Operation.CheckSlotsNow -> false
+
+                    serviceId |> Router.parse |> Result.exists isRequiredService
+
+                let getRequests rootServiceId =
+                    (requestStorage, hasRequiredService)
+                    |> Common.getRequests rootServiceId task.Duration
 
                 let tryProcessFirst requests =
-                    Prenotami.Client.init {
-                        ct = ct
-                        RequestStorage = requestStorage
-                    }
-                    |> ResultAsync.map (fun client -> client, notify)
-                    |> ResultAsync.bindAsync (Prenotami.Service.tryProcessFirst requests)
+                    telegram.Web.initBrowser ()
+                    |> ResultAsync.bindAsync (fun browser ->
+                        Prenotami.Client.init {
+                            ct = ct
+                            RequestStorage = requestStorage
+                            WebBrowser = browser
+                        }
+                        |> fun client -> client, notify
+                        |> Prenotami.Service.tryProcessFirst requests)
 
                 return {
-                    TaskName = ActiveTask.print task
+                    TaskName = taskName
                     getRequests = getRequests
                     tryProcessFirst = tryProcessFirst
                 }

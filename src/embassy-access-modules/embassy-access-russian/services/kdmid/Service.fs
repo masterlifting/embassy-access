@@ -12,18 +12,15 @@ let private validateLimits (request: Request<Payload>) =
     request.ValidateLimits()
     |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
 
-let private setFinalProcessState (request: Request<Payload>) requestPipe =
+let private setFinalProcessState (request: Request<Payload>) =
     fun updateRequest ->
-        requestPipe
-        |> Async.bind (function
+        Async.bind (function
             | Ok(r: Request<Payload>) ->
-                r.UpdateLimits()
-                |> fun r -> {
-                    r with
+                updateRequest {
+                    r.UpdateLimits() with
                         Modified = DateTime.UtcNow
                         ProcessState = r.Payload.State |> PayloadState.print |> Completed
                 }
-                |> updateRequest
             | Error error ->
                 match error with
                 | Operation reason ->
@@ -36,7 +33,10 @@ let private setFinalProcessState (request: Request<Payload>) requestPipe =
                         r with
                             ProcessState = Failed error
                             Modified = DateTime.UtcNow
-                    })
+                    }
+                    |> Async.map (function
+                        | Ok _ -> Error error
+                        | Error error -> Error error))
 
 let tryProcess (request: Request<Payload>) =
     fun (client: Client) ->
@@ -86,8 +86,7 @@ let tryProcess (request: Request<Payload>) =
                 (httpClient, client.postConfirmationPage)
                 |> Html.ConfirmationPage.parse qp fdm r)
 
-        let setFinalState requestRes =
-            client.updateRequest |> setFinalProcessState request requestRes
+        let setFinalState = client.updateRequest |> setFinalProcessState request
 
         // pipe
         request

@@ -47,9 +47,11 @@ module Telegram =
 
 type Dependencies = {
     Telegram: Telegram.Dependencies
+    initBrowser: unit -> Async<Result<Browser.Client, Error'>>
 } with
 
     static member create ct =
-        fun (client: Telegram.Client) -> {
+        fun (client: Telegram.Client) initBrowser -> {
             Telegram = Telegram.Dependencies.create ct client
+            initBrowser = initBrowser
         }

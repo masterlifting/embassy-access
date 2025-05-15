@@ -31,7 +31,7 @@ module Query =
         | Ids of RequestId seq
         | ByEmbassyId of EmbassyId
         | ByServiceId of ServiceId
-        | WithServiceId of ServiceId
+        | ContainsServiceId of ServiceId
         | ByEmbassyAndServiceId of EmbassyId * ServiceId
 
     let getIdentifiers storage =
@@ -67,7 +67,7 @@ module Query =
             | Ids ids -> InMemory.Request.Query.findManyByIds ids
             | ByEmbassyId embassyId -> InMemory.Request.Query.findManyByEmbassyId embassyId
             | ByServiceId serviceId -> InMemory.Request.Query.findManyByServiceId serviceId
-            | WithServiceId serviceId -> InMemory.Request.Query.findManyWithServiceId serviceId
+            | ContainsServiceId serviceId -> InMemory.Request.Query.findManyWithServiceId serviceId
             | ByEmbassyAndServiceId(embassyId, serviceId) ->
                 InMemory.Request.Query.findManyByEmbassyIdAndServiceId embassyId serviceId
             |> fun find -> client |> find payloadMapper
@@ -77,7 +77,7 @@ module Query =
             | Ids ids -> FileSystem.Request.Query.findManyByIds ids
             | ByEmbassyId embassyId -> FileSystem.Request.Query.findManyByEmbassyId embassyId
             | ByServiceId serviceId -> FileSystem.Request.Query.findManyByServiceId serviceId
-            | WithServiceId serviceId -> FileSystem.Request.Query.findManyWithServiceId serviceId
+            | ContainsServiceId serviceId -> FileSystem.Request.Query.findManyWithServiceId serviceId
             | ByEmbassyAndServiceId(embassyId, serviceId) ->
                 FileSystem.Request.Query.findManyByEmbassyIdAndServiceId embassyId serviceId
             |> fun find -> client |> find payloadMapper

@@ -7,34 +7,17 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open Web.Clients.Domain
 open EA.Telegram.DataAccess
-open Worker.Domain
 
-let inline private equalCountry (taskId: ActiveTaskId) (embassyId: EmbassyId) =
-    let embassyCountry =
-        embassyId.Value
-        |> Graph.NodeId.split
-        |> Seq.skip 1
-        |> Seq.truncate 2
-        |> Graph.NodeId.combine
-    let taskCountry =
-        taskId.Value
-        |> Graph.NodeId.split
-        |> Seq.skip 1
-        |> Seq.truncate 2
-        |> Graph.NodeId.combine
-    embassyCountry = taskCountry
-
-let getRequests (serviceId: ServiceId) (task: ActiveTask) =
-    fun requestStorage ->
+let getRequests (rootServiceId: ServiceId) (taskDuration: TimeSpan) =
+    fun (requestStorage, hasRequiredService) ->
         requestStorage
-        |> Storage.Request.Query.findMany (Storage.Request.Query.WithServiceId serviceId)
+        |> Storage.Request.Query.findMany (Storage.Request.Query.ContainsServiceId rootServiceId)
         |> ResultAsync.map (
             List.filter (fun request ->
-                task.Id |> equalCountry <| request.Embassy.Id
-                && request.AutoProcessing
+                request.Service.Id |> hasRequiredService
                 && (request.ProcessState <> InProcess
                     || request.ProcessState = InProcess
-                       && request.Modified < DateTime.UtcNow.Subtract task.Duration))
+                       && request.Modified < DateTime.UtcNow.Subtract taskDuration))
         )
 
 let getRequestChats request =
