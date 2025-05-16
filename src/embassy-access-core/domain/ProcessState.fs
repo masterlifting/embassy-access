@@ -13,6 +13,6 @@ type ProcessState =
         match state with
         | Ready -> "Ready to process"
         | InProcess -> "In process"
-        | Completed message -> $"Completed: {message}"
-        | Failed error -> $"Failed: {error}"
+        | Completed message -> $"Completed. {message}"
+        | Failed error -> $"Failed. {error}"
         |> sprintf "[Last process state] %s"

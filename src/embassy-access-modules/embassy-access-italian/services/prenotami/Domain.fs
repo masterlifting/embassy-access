@@ -61,17 +61,11 @@ type PayloadState =
         match payloadState with
         | NoAppointments -> "No appointments found."
         | HasAppointments appointments -> appointments |> Seq.map Appointment.print |> String.concat "\n "
-        |> sprintf "[Last request state]\n %s"
 
 type Payload = {
     Credentials: Credentials
     State: PayloadState
 } with
-
-    static member print(payload: Payload) =
-        payload.Credentials
-        |> Credentials.print
-        |> fun credentials -> $"[Credentials]\n%s{credentials}\n{PayloadState.print payload.State}"
 
     static member printError (error: Error') (payload: Payload) =
         match error with

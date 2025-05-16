@@ -60,7 +60,7 @@ let chooseBookService (request: Request<Payload>) client =
         | Ok(Visa service) ->
             match service with
             | Visa.Tourism1 _ -> "//a[@href='/Services/Booking/1151']" |> Ok
-            | Visa.Tourism2 _ -> "//a[@href='/Services/Booking/1558']" |> Ok
+            | Visa.Tourism2 _ -> "//a[@href='/Services/Booking/1258']" |> Ok
         | Error _ ->
             $"The service Id '{request.Service.Id}' is not recognized to process prenotami."
             |> NotFound

@@ -32,19 +32,15 @@ type Request<'payload> = {
 } with
 
     static member inline print(request: Request<_>) =
-
-        let inline printPayload (payload: 'p) =
-            (^p: (static member print: 'p -> string) payload)
-
-        let payload = request.Payload |> printPayload
         let service = request.Service |> Service.print
         let embassy = request.Embassy |> Embassy.print
         let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n "
+        let state = request.ProcessState |> ProcessState.print
 
         $"[Subscription] '%s{request.Id.ValueStr}'"
         + $"\n%s{service}"
         + $"\n%s{embassy}"
-        + $"\n%s{payload}"
+        + $"\n%s{state}"
         + $"\n[Last modified] '%s{(request.Modified.AddHours request.Embassy.TimeZone) |> String.fromDateTime}'"
         + $"\n[Limits]\n %s{limits}"
 
