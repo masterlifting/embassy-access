@@ -47,7 +47,7 @@ let private getEmbassy' embassyId firstCall =
                 |> Seq.map _.Value
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.Embassy embassy.Id))
-                    route.Value, embassy.Name)
+                    route.Value, embassy.ShortName)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"Embassy '%s{embassyId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
@@ -77,7 +77,7 @@ let private getUserEmbassy' embassyId firstCall =
                 |> Seq.filter (fun embassy -> embassy.Id.Value.IsInSeq userEmbassyIds)
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.UserEmbassy embassy.Id))
-                    route.Value, embassy.Name)
+                    route.Value, embassy.ShortName)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"You have no embassies for '%s{embassyId.ValueStr}'."

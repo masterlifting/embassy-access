@@ -23,7 +23,7 @@ type Entity<'p>() =
     member val ServiceName = String.Empty with get, set
     member val ServiceDescription: string option = None with get, set
     member val EmbassyId = String.Empty with get, set
-    member val EmbassyName = String.Empty with get, set
+    member val EmbassyName = Array.empty with get, set
     member val EmbassyDescription: string option = None with get, set
     member val EmbassyTimeZone: float = 0. with get, set
     member val Payload: 'p = Unchecked.defaultof<'p> with get, set
@@ -52,7 +52,7 @@ type Entity<'p>() =
                 }
                 Embassy = {
                     Id = embassyId |> EmbassyId
-                    Name = this.EmbassyName
+                    Name = this.EmbassyName |> Array.toList
                     Description = this.EmbassyDescription
                     TimeZone = this.EmbassyTimeZone
                 }
@@ -74,7 +74,7 @@ type private Request<'a> with
                 ServiceName = this.Service.Name,
                 ServiceDescription = this.Service.Description,
                 EmbassyId = this.Embassy.Id.ValueStr,
-                EmbassyName = this.Embassy.Name,
+                EmbassyName = (this.Embassy.Name |> Array.ofList),
                 EmbassyDescription = this.Embassy.Description,
                 EmbassyTimeZone = this.Embassy.TimeZone,
                 Payload = payload,
