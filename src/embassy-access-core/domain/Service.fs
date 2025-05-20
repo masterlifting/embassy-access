@@ -14,9 +14,16 @@ type ServiceId =
 
 type Service = {
     Id: ServiceId
-    Name: string
+    Name: string list
     Description: string option
 } with
+
+    member this.FullName =
+        match this.Name.Length > 1 with
+        | true -> this.Name |> List.skip 1 |> String.concat "."
+        | false -> this.Name |> String.concat ""
+
+    member this.ShortName = this.Name |> List.tryLast |> Option.defaultValue "Unknown"
 
     interface Graph.INode with
         member this.Id = this.Id.Value
@@ -24,7 +31,7 @@ type Service = {
 
     static member print(service: Service) =
         let id = service.Id.ValueStr
-        let name = service.Name
+        let name = service.FullName
 
         let value = "[Service]" + $"\n '%s{id}'" + $"\n %s{name}"
 

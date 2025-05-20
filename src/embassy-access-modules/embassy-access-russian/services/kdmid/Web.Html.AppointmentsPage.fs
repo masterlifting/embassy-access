@@ -104,7 +104,7 @@ let private createRequestAppointments (request: Request<Payload>) (formData: Map
         match parts.Length with
         | 4 ->
             let dateTime = parts[1]
-            let window = parts[3]
+            let description = parts[3]
 
             let date = DateOnly.TryParse dateTime
             let time = TimeOnly.TryParse dateTime
@@ -130,7 +130,7 @@ let private createRequestAppointments (request: Request<Payload>) (formData: Map
                     Value = value
                     Date = date
                     Time = time
-                    Description = window
+                    Description = description
                 }
                 |> Ok
             | _ ->

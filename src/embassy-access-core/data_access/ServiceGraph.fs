@@ -19,21 +19,28 @@ type ServiceGraphEntity() =
     member val Children: ServiceGraphEntity[] | null = [||] with get, set
 
     member this.ToDomain() =
-        this.Id
-        |> Graph.NodeId.parse
-        |> Result.bind (fun nodeId ->
-            match this.Children with
-            | null -> List.empty |> Ok
-            | children -> children |> Seq.map _.ToDomain() |> Result.choose
-            |> Result.map (fun children ->
-                Graph.Node(
-                    {
-                        Id = nodeId |> ServiceId
-                        Name = this.Name
-                        Description = this.Description
-                    },
+
+        let rec innerLoop names (entity: ServiceGraphEntity) =
+            entity.Id
+            |> Graph.NodeId.parse
+            |> Result.bind (fun nodeId ->
+                match entity.Children with
+                | null -> [] |> Ok
+                | children ->
                     children
-                )))
+                    |> Seq.map (fun c -> c |> innerLoop (names @ [ c.Name ]))
+                    |> Result.choose
+                |> Result.map (fun children ->
+                    Graph.Node(
+                        {
+                            Id = nodeId |> ServiceId
+                            Name = names
+                            Description = entity.Description
+                        },
+                        children
+                    )))
+
+        this |> innerLoop [ this.Name ]
 
 module private Configuration =
     open Persistence.Storages.Configuration

@@ -28,7 +28,7 @@ let private handleRequestConfirmation (request: Request<Payload>) =
             match appointments |> Seq.tryLast with
             | Some appointment -> Ok <| Some appointment
             | None -> Error <| NotFound "Last available appointment not found."
-        | Confirmation.DateTimeRange(min, max) ->
+        | Confirmation.FirstAvailableInPeriod(min, max) ->
 
             let minDate = DateOnly.FromDateTime min
             let maxDate = DateOnly.FromDateTime max

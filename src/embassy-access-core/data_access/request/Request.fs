@@ -20,7 +20,7 @@ type Storage<'d, 'e> = Provider of Storage.Provider * PayloadConverter<'d, 'e>
 type Entity<'p>() =
     member val Id = String.Empty with get, set
     member val ServiceId = String.Empty with get, set
-    member val ServiceName = String.Empty with get, set
+    member val ServiceName = Array.empty with get, set
     member val ServiceDescription: string option = None with get, set
     member val EmbassyId = String.Empty with get, set
     member val EmbassyName = Array.empty with get, set
@@ -47,7 +47,7 @@ type Entity<'p>() =
                 Id = requestId
                 Service = {
                     Id = serviceId |> ServiceId
-                    Name = this.ServiceName
+                    Name = this.ServiceName |> Array.toList
                     Description = this.ServiceDescription
                 }
                 Embassy = {
@@ -71,7 +71,7 @@ type private Request<'a> with
             Entity(
                 Id = this.Id.ValueStr,
                 ServiceId = this.Service.Id.ValueStr,
-                ServiceName = this.Service.Name,
+                ServiceName = (this.Service.Name |> Array.ofList),
                 ServiceDescription = this.Service.Description,
                 EmbassyId = this.Embassy.Id.ValueStr,
                 EmbassyName = (this.Embassy.Name |> Array.ofList),

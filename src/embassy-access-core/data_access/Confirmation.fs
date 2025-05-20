@@ -14,10 +14,10 @@ let private APPOINTMENT = nameof ForAppointment
 let private FIRST_AVAILABLE = nameof FirstAvailable
 
 [<Literal>]
-let private LAST_AVAILABLE = nameof LastAvailable
+let private FIRS_AVAILABLE_IN_PERIOD = nameof FirstAvailableInPeriod
 
 [<Literal>]
-let private DATE_TIME_RANGE = nameof DateTimeRange
+let private LAST_AVAILABLE = nameof LastAvailable
 
 type ConfirmationEntity() =
 
@@ -35,9 +35,9 @@ type ConfirmationEntity() =
             | None -> $"{nameof AppointmentId} not found." |> NotFound |> Error
         | FIRST_AVAILABLE -> FirstAvailable |> Ok
         | LAST_AVAILABLE -> LastAvailable |> Ok
-        | DATE_TIME_RANGE ->
+        | FIRS_AVAILABLE_IN_PERIOD ->
             match this.DateStart |> Option.ofNullable, this.DateEnd |> Option.ofNullable with
-            | Some min, Some max -> DateTimeRange(min, max) |> Ok
+            | Some min, Some max -> FirstAvailableInPeriod(min, max) |> Ok
             | _ ->
                 $"'{nameof this.DateStart}' or '{nameof this.DateEnd}' of '{nameof ConfirmationEntity}' not found."
                 |> NotFound
@@ -58,8 +58,8 @@ type internal Confirmation with
             result.AppointmentId <- Some appointmentId.ValueStr
         | FirstAvailable -> result.Type <- FIRST_AVAILABLE
         | LastAvailable -> result.Type <- LAST_AVAILABLE
-        | DateTimeRange(min, max) ->
-            result.Type <- DATE_TIME_RANGE
+        | FirstAvailableInPeriod(min, max) ->
+            result.Type <- FIRS_AVAILABLE_IN_PERIOD
             result.DateStart <- Nullable min
             result.DateEnd <- Nullable max
 
