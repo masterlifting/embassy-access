@@ -96,14 +96,7 @@ let private prepareHttpFormData data =
 
     (formData, data)
 
-let private createRequestAppointments (formData: Map<string, string>, data) =
-
-    let appointments =
-        data
-        |> Map.filter (fun key _ -> key = "ctl00$MainContent$RadioButtonList1")
-        |> Map.values
-        |> Seq.concat
-        |> Set.ofSeq
+let private createRequestAppointments (request: Request<Payload>) (formData: Map<string, string>, data) =
 
     let parse (value: string) =
         let parts = value.Split '|'
@@ -118,8 +111,22 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
 
             match date, time with
             | (true, date), (true, time) ->
+
+                let appointmentId =
+                    match request.Payload.State with
+                    | NoAppointments -> AppointmentId.createNew ()
+                    | HasAppointments appointments ->
+                        appointments
+                        |> Seq.tryFind (fun appointment -> appointment.Value = value)
+                        |> Option.map _.Id
+                        |> Option.defaultValue (AppointmentId.createNew ())
+                    | HasConfirmation(_, appointment) ->
+                        match appointment.Value = value with
+                        | true -> appointment.Id
+                        | false -> AppointmentId.createNew ()
+
                 {
-                    Id = AppointmentId.createNew ()
+                    Id = appointmentId
                     Value = value
                     Date = date
                     Time = time
@@ -132,6 +139,13 @@ let private createRequestAppointments (formData: Map<string, string>, data) =
         | _ ->
             Error
             <| NotSupported $"Kdmid 'Appointments page' row '%s{value}' is not supported."
+
+    let appointments =
+        data
+        |> Map.filter (fun key _ -> key = "ctl00$MainContent$RadioButtonList1")
+        |> Map.values
+        |> Seq.concat
+        |> Set.ofSeq
 
     match appointments.IsEmpty with
     | true -> Ok(formData, Set.empty)
@@ -167,7 +181,7 @@ let parse queryParams formDataMap request =
 
         let parseResponse = ResultAsync.bind parseHttpResponse
         let prepareFormData = ResultAsync.mapAsync prepareHttpFormData
-        let parseAppointments = ResultAsync.bind createRequestAppointments
+        let parseAppointments = ResultAsync.bind (createRequestAppointments request)
         let createResult = ResultAsync.map (createResult request)
 
         // pipe
