@@ -82,13 +82,20 @@ module Kdmid =
                             | Operation.AutoBookingFirstSlotInPeriod
                             | Operation.AutoBookingLastSlot -> true
                             | Operation.CheckSlotsNow -> false
-                        | Passport(Passport.Status) -> false
+                        | Passport Passport.Status -> false
 
                     serviceId |> Router.parse |> Result.exists isRequiredService
 
                 let getRequests rootServiceId =
                     (requestStorage, hasRequiredService)
                     |> Common.getRequests rootServiceId task.Duration
+                    |> ResultAsync.map (fun requests ->
+                        requests
+                        |> List.filter (fun request ->
+                            match request.Payload.State with
+                            | NoAppointments
+                            | HasAppointments _ -> true
+                            | HasConfirmation _ -> false))
 
                 let tryProcessFirst requests =
 
