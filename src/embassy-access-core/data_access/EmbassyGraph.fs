@@ -20,22 +20,29 @@ type EmbassyGraphEntity() =
     member val Children: EmbassyGraphEntity[] | null = [||] with get, set
 
     member this.ToDomain() =
-        this.Id
-        |> Graph.NodeId.parse
-        |> Result.bind (fun nodeId ->
-            match this.Children with
-            | null -> List.empty |> Ok
-            | children -> children |> Seq.map _.ToDomain() |> Result.choose
-            |> Result.map (fun children ->
-                Graph.Node(
-                    {
-                        Id = nodeId |> EmbassyId
-                        Name = this.Name
-                        Description = this.Description
-                        TimeZone = this.TimeZone |> Option.defaultValue 0.
-                    },
+
+        let rec innerLoop names (entity: EmbassyGraphEntity) =
+            entity.Id
+            |> Graph.NodeId.parse
+            |> Result.bind (fun nodeId ->
+                match entity.Children with
+                | null -> [] |> Ok
+                | children ->
                     children
-                )))
+                    |> Seq.map (fun c -> c |> innerLoop (names @ [ c.Name ]))
+                    |> Result.choose
+                |> Result.map (fun children ->
+                    Graph.Node(
+                        {
+                            Id = nodeId |> EmbassyId
+                            Name = names
+                            Description = entity.Description
+                            TimeZone = entity.TimeZone |> Option.defaultValue 0.
+                        },
+                        children
+                    )))
+
+        this |> innerLoop [ this.Name ]
 
 module private Configuration =
     open Persistence.Storages.Configuration

@@ -1,7 +1,6 @@
 ﻿module EA.Russian.Services.Kdmid.Service
 
 open System
-open EA.Russian.Services.DataAccess.Kdmid
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
@@ -33,6 +32,16 @@ let private setFinalProcessState (request: Request<Payload>) =
                         r with
                             ProcessState = Failed error
                             Modified = DateTime.UtcNow
+                            Payload = {
+                                r.Payload with
+                                    Confirmation =
+                                        match r.Payload.Confirmation with
+                                        | Disabled
+                                        | ForAppointment _ -> Disabled
+                                        | FirstAvailable -> FirstAvailable
+                                        | FirstAvailableInPeriod(d, t) -> FirstAvailableInPeriod(d, t)
+                                        | LastAvailable -> LastAvailable
+                            }
                     }
                     |> Async.map (function
                         | Ok _ -> Error error

@@ -15,10 +15,17 @@ type EmbassyId =
 
 type Embassy = {
     Id: EmbassyId
-    Name: string
+    Name: string list
     Description: string option
     TimeZone: float
 } with
+
+    member this.FullName =
+        match this.Name.Length > 1 with
+        | true -> this.Name |> List.skip 1 |> String.concat "."
+        | false -> this.Name |> String.concat ""
+
+    member this.ShortName = this.Name |> List.tryLast |> Option.defaultValue "Unknown"
 
     interface Graph.INode with
         member this.Id = this.Id.Value
@@ -26,7 +33,7 @@ type Embassy = {
 
     static member print(embassy: Embassy) =
         let id = embassy.Id.ValueStr
-        let name = embassy.Name
+        let name = embassy.FullName
 
         let value = "[Embassy]" + $"\n '%s{id}'" + $"\n %s{name}"
 

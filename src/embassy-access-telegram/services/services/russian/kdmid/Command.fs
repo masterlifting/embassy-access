@@ -274,7 +274,7 @@ let bookFirstSlotInPeriod
                         Payload = {
                             x.Payload with
                                 State = NoAppointments
-                                Confirmation = DateTimeRange(start, finish)
+                                Confirmation = FirstAvailableInPeriod(start, finish)
                         }
                 })
                 |> Option.defaultValue {
@@ -287,7 +287,7 @@ let bookFirstSlotInPeriod
                     Payload = {
                         State = NoAppointments
                         Credentials = payloadCredentials
-                        Confirmation = DateTimeRange(start, finish)
+                        Confirmation = FirstAvailableInPeriod(start, finish)
                     }
                 }
 

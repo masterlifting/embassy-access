@@ -5,7 +5,7 @@ open System
 
 type Confirmation =
     | Disabled
-    | ForAppointment of AppointmentId
     | FirstAvailable
+    | FirstAvailableInPeriod of DateTime * DateTime
     | LastAvailable
-    | DateTimeRange of DateTime * DateTime
+    | ForAppointment of AppointmentId

@@ -20,10 +20,10 @@ type Storage<'d, 'e> = Provider of Storage.Provider * PayloadConverter<'d, 'e>
 type Entity<'p>() =
     member val Id = String.Empty with get, set
     member val ServiceId = String.Empty with get, set
-    member val ServiceName = String.Empty with get, set
+    member val ServiceName = Array.empty with get, set
     member val ServiceDescription: string option = None with get, set
     member val EmbassyId = String.Empty with get, set
-    member val EmbassyName = String.Empty with get, set
+    member val EmbassyName = Array.empty with get, set
     member val EmbassyDescription: string option = None with get, set
     member val EmbassyTimeZone: float = 0. with get, set
     member val Payload: 'p = Unchecked.defaultof<'p> with get, set
@@ -47,12 +47,12 @@ type Entity<'p>() =
                 Id = requestId
                 Service = {
                     Id = serviceId |> ServiceId
-                    Name = this.ServiceName
+                    Name = this.ServiceName |> Array.toList
                     Description = this.ServiceDescription
                 }
                 Embassy = {
                     Id = embassyId |> EmbassyId
-                    Name = this.EmbassyName
+                    Name = this.EmbassyName |> Array.toList
                     Description = this.EmbassyDescription
                     TimeZone = this.EmbassyTimeZone
                 }
@@ -71,10 +71,10 @@ type private Request<'a> with
             Entity(
                 Id = this.Id.ValueStr,
                 ServiceId = this.Service.Id.ValueStr,
-                ServiceName = this.Service.Name,
+                ServiceName = (this.Service.Name |> Array.ofList),
                 ServiceDescription = this.Service.Description,
                 EmbassyId = this.Embassy.Id.ValueStr,
-                EmbassyName = this.Embassy.Name,
+                EmbassyName = (this.Embassy.Name |> Array.ofList),
                 EmbassyDescription = this.Embassy.Description,
                 EmbassyTimeZone = this.Embassy.TimeZone,
                 Payload = payload,

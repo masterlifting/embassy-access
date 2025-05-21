@@ -74,7 +74,7 @@ let getService embassyId serviceId =
                 |> Seq.map _.Value
                 |> Seq.map (fun service ->
                     let route = Router.Services(Method.Get(Get.Service(embassyId, service.Id)))
-                    route.Value, service.Name)
+                    route.Value, service.ShortName)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
@@ -102,7 +102,7 @@ let getUserService embassyId serviceId =
                 |> Seq.filter (fun service -> service.Id.Value.IsInSeq userServiceIds)
                 |> Seq.map (fun service ->
                     let route = Router.Services(Method.Get(Get.UserService(embassyId, service.Id)))
-                    route.Value, service.Name)
+                    route.Value, service.ShortName)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"You have no services for '%s{serviceId.ValueStr}'."
