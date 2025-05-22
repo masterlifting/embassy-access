@@ -65,7 +65,7 @@ module Prenotami =
                     spreadTranslatedMessages = spreadTranslatedMessages
                 }
 
-                let notify (requestRes: Result<Request<Payload>, Error'>) =
+                let handleProcessResult (requestRes: Result<Request<Payload>, Error'>) =
                     requestRes
                     |> ResultAsync.wrap (fun r -> notificationDeps |> Prenotami.Command.handleProcessResult r)
                     |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
@@ -94,7 +94,7 @@ module Prenotami =
                             RequestStorage = requestStorage
                             WebBrowser = browser
                         }
-                        |> fun client -> client, notify
+                        |> fun client -> client, handleProcessResult
                         |> Prenotami.Service.tryProcessFirst requests)
 
                 return {
