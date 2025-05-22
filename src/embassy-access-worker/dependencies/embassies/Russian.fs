@@ -64,9 +64,9 @@ module Kdmid =
                     spreadTranslatedMessages = spreadTranslatedMessages
                 }
 
-                let notify (requestRes: Result<Request<Payload>, Error'>) =
+                let handleProcessResult (requestRes: Result<Request<Payload>, Error'>) =
                     requestRes
-                    |> ResultAsync.wrap (fun r -> notificationDeps |> Kdmid.Notification.spread r)
+                    |> ResultAsync.wrap (fun r -> notificationDeps |> Kdmid.Command.handleProcessResult r)
                     |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                     |> Async.Ignore
 
@@ -103,7 +103,7 @@ module Kdmid =
                         ct = ct
                         RequestStorage = requestStorage
                     }
-                    |> Result.map (fun client -> client, notify)
+                    |> Result.map (fun client -> client, handleProcessResult)
                     |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
 
                 return {

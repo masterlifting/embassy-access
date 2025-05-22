@@ -67,7 +67,7 @@ module Prenotami =
 
                 let notify (requestRes: Result<Request<Payload>, Error'>) =
                     requestRes
-                    |> ResultAsync.wrap (fun r -> notificationDeps |> Prenotami.Notification.spread r)
+                    |> ResultAsync.wrap (fun r -> notificationDeps |> Prenotami.Command.handleProcessResult r)
                     |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                     |> Async.Ignore
 

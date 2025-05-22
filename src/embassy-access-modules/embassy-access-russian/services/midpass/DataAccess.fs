@@ -35,3 +35,5 @@ type Payload with
     static member toEntity(payload: Payload) =
         let state = payload.State |> Option.defaultValue String.Empty
         Payload.Entity(Number = payload.Number, State = state) |> Ok
+
+type StorageType = EA.Core.DataAccess.Request.Storage<Payload, Payload.Entity>

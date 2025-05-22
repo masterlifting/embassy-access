@@ -67,7 +67,7 @@ let tryProcess (request: Request<Payload>) =
         request |> validate |> setInitialState |> processWebSite |> setFinalState
 
 let tryProcessFirst requests =
-    fun (client: Client, notify) ->
+    fun (client: Client, handleResult) ->
 
         let rec processNextRequest (remainingRequests: Request<Payload> list) =
             async {
@@ -80,10 +80,10 @@ let tryProcessFirst requests =
                 | request :: requestsTail ->
                     match! client |> tryProcess request with
                     | Error error ->
-                        do! error |> Error |> notify
+                        do! error |> Error |> handleResult
                         return! requestsTail |> processNextRequest
                     | Ok result ->
-                        do! result |> Ok |> notify
+                        do! result |> Ok |> handleResult
                         return Ok result
             }
 
