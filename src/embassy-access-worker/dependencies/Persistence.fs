@@ -22,8 +22,8 @@ module Russian =
     open EA.Russian.Services.DataAccess.Midpass
 
     type Dependencies = {
-        initKdmidRequestStorage: unit -> Result<Request.Storage<Kdmid.Payload, Kdmid.Payload.Entity>, Error'>
-        initMidpassRequestStorage: unit -> Result<Request.Storage<Midpass.Payload, Midpass.Payload.Entity>, Error'>
+        initKdmidRequestStorage: unit -> Result<Kdmid.StorageType, Error'>
+        initMidpassRequestStorage: unit -> Result<Midpass.StorageType, Error'>
     } with
 
         static member create fileStoragePath =
@@ -59,8 +59,7 @@ module Italian =
     open EA.Italian.Services.DataAccess.Prenotami
 
     type Dependencies = {
-        initPrenotamiRequestStorage:
-            unit -> Result<Request.Storage<Prenotami.Payload, Prenotami.Payload.Entity>, Error'>
+        initPrenotamiRequestStorage: unit -> Result<Prenotami.StorageType, Error'>
     } with
 
         static member create fileStoragePath fileStorageKey =

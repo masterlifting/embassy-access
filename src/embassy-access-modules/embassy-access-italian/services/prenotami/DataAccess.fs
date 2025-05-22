@@ -102,3 +102,5 @@ type Payload with
                 State = state
             }
         }
+
+type StorageType = EA.Core.DataAccess.Request.Storage<Payload, Payload.Entity>

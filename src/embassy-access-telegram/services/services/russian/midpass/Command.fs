@@ -7,6 +7,7 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Telegram.Router.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
+open EA.Russian.Services.Domain.Midpass
 
 let checkStatus (serviceId: ServiceId) (embassyId: EmbassyId) (number: string) =
     fun (_: Midpass.Dependencies) ->
@@ -15,7 +16,8 @@ let checkStatus (serviceId: ServiceId) (embassyId: EmbassyId) (number: string) =
         |> NotImplemented
         |> Error
         |> async.Return
-let delete requestId =
+
+let deleteRequest requestId =
     fun (deps: Midpass.Dependencies) ->
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.deleteRequest requestId)
@@ -23,3 +25,10 @@ let delete requestId =
             $"Request with id '%s{requestId.ValueStr}' deleted successfully."
             |> Text.create
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
+
+let handleProcessResult (_: Request<Payload>) =
+    fun (_: Midpass.Dependencies) ->
+        $"The spread messages is not implemented yet."
+        |> NotImplemented
+        |> Error
+        |> async.Return

@@ -52,14 +52,11 @@
         <Compile Include="services\culture\Command.fs" />
         <Compile Include="services\services\russian\kdmid\Query.fs" />
         <Compile Include="services\services\russian\kdmid\Command.fs" />
-        <Compile Include="services\services\russian\kdmid\Notification.fs" />
         <Compile Include="services\services\russian\midpass\Query.fs" />
         <Compile Include="services\services\russian\midpass\Command.fs" />
-        <Compile Include="services\services\russian\midpass\Notification.fs" />
         <Compile Include="services\services\russian\Query.fs" />
         <Compile Include="services\services\italian\prenotami\Query.fs" />
         <Compile Include="services\services\italian\prenotami\Command.fs" />
-        <Compile Include="services\services\italian\prenotami\Notification.fs" />
         <Compile Include="services\services\italian\Query.fs" />
         <Compile Include="services\services\Query.fs" />
         <Compile Include="services\embassies\Query.fs" />

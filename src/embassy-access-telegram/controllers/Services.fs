@@ -43,7 +43,7 @@ module Russian =
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Kdmid.Method.Delete delete ->
                         match delete with
-                        | Kdmid.Delete.Subscription requestId -> Kdmid.Command.delete requestId
+                        | Kdmid.Delete.Subscription requestId -> Kdmid.Command.deleteRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
             | Method.Midpass midpass ->
                 deps
@@ -64,7 +64,7 @@ module Russian =
                         match delete with
                         | Midpass.Delete.Subscription requestId ->
 
-                            Midpass.Command.delete requestId
+                            Midpass.Command.deleteRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 module Italian =
@@ -95,7 +95,7 @@ module Italian =
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Prenotami.Method.Delete delete ->
                         match delete with
-                        | Prenotami.Delete.Subscription requestId -> Prenotami.Command.delete requestId
+                        | Prenotami.Delete.Subscription requestId -> Prenotami.Command.deleteRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 let respond request chat =
