@@ -175,7 +175,7 @@ let deleteRequest requestId =
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
 let handleProcessResult (request: Request<Payload>) =
-    fun (deps: Prenotami.Notification.Dependencies) ->
+    fun (deps: Prenotami.ProcessResult.Dependencies) ->
         match request.ProcessState with
         | InProcess -> Ok() |> async.Return
         | Ready -> Ok() |> async.Return

@@ -8,7 +8,14 @@ open EA.Core.DataAccess
 open Web.Clients.Domain
 open EA.Telegram.DataAccess
 
-let getRequests (rootServiceId: ServiceId) (taskDuration: TimeSpan) =
+let getRequests (embassyId: EmbassyId) (serviceId: ServiceId) =
+    fun (requestStorage: Request.Storage<_, _>) ->
+        requestStorage
+        |> Storage.Request.Query.findMany (
+            Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId)
+        )
+
+let getRequestsToProcess (rootServiceId: ServiceId) (taskDuration: TimeSpan) =
     fun (requestStorage, hasRequiredService) ->
         requestStorage
         |> Storage.Request.Query.findMany (Storage.Request.Query.ContainsServiceId rootServiceId)
