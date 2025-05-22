@@ -15,27 +15,25 @@ type EmbassyId =
 
 type Embassy = {
     Id: EmbassyId
-    Name: string list
+    NameParts: string list
     Description: string option
     TimeZone: float
 } with
 
     member this.FullName =
-        match this.Name.Length > 1 with
-        | true -> this.Name |> List.skip 1 |> String.concat "."
-        | false -> this.Name |> String.concat ""
+        match this.NameParts.Length > 1 with
+        | true -> this.NameParts |> List.skip 1
+        | false -> this.NameParts
+        |> String.concat "."
 
-    member this.ShortName = this.Name |> List.tryLast |> Option.defaultValue "Unknown"
+    member this.ShortName = this.NameParts |> List.tryLast |> Option.defaultValue "Unknown"
 
     interface Graph.INode with
         member this.Id = this.Id.Value
         member this.set id = { this with Id = id |> EmbassyId }
 
     static member print(embassy: Embassy) =
-        let id = embassy.Id.ValueStr
-        let name = embassy.FullName
-
-        let value = "[Embassy]" + $"\n '%s{id}'" + $"\n %s{name}"
+        let value = $"[Embassy] %s{embassy.FullName}"
 
         match embassy.Description with
         | Some description -> value + $"\n %s{description}"

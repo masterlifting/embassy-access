@@ -14,26 +14,24 @@ type ServiceId =
 
 type Service = {
     Id: ServiceId
-    Name: string list
+    NameParts: string list
     Description: string option
 } with
 
     member this.FullName =
-        match this.Name.Length > 1 with
-        | true -> this.Name |> List.skip 1 |> String.concat "."
-        | false -> this.Name |> String.concat ""
+        match this.NameParts.Length > 2 with
+        | true -> this.NameParts |> List.skip 2
+        | false -> this.NameParts
+        |> String.concat "."
 
-    member this.ShortName = this.Name |> List.tryLast |> Option.defaultValue "Unknown"
+    member this.ShortName = this.NameParts |> List.tryLast |> Option.defaultValue "Unknown"
 
     interface Graph.INode with
         member this.Id = this.Id.Value
         member this.set id = { this with Id = id |> ServiceId }
 
     static member print(service: Service) =
-        let id = service.Id.ValueStr
-        let name = service.FullName
-
-        let value = "[Service]" + $"\n '%s{id}'" + $"\n %s{name}"
+        let value = $"[Service] %s{service.FullName}"
 
         match service.Description with
         | Some description -> value + $"\n %s{description}"

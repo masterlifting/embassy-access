@@ -34,7 +34,7 @@ type ServiceGraphEntity() =
                     Graph.Node(
                         {
                             Id = nodeId |> ServiceId
-                            Name = names
+                            NameParts = names
                             Description = entity.Description
                         },
                         children

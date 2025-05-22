@@ -6,9 +6,9 @@ open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Italian.Services.Domain.Prenotami
 
-let private validateLimits (request: Request<Payload>) =
+let private validate (request: Request<Payload>) =
     request.ValidateLimits()
-    |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
+    |> Result.mapError (fun error -> $"{error} Operation cancelled." |> Canceled)
 
 let private processWebSite request client =
     Html.loadPage client
@@ -18,7 +18,7 @@ let private processWebSite request client =
     |> Html.submitForm client
     |> Html.clickBookTab client
     |> Html.chooseBookService request client
-    |> Html.setResult request client
+    |> Html.setProcessResult request client
 
 let private setFinalProcessState (request: Request<Payload>) =
     fun updateRequest ->
@@ -64,7 +64,7 @@ let tryProcess (request: Request<Payload>) =
         let setFinalState = client.updateRequest |> setFinalProcessState request
 
         // pipe
-        request |> validateLimits |> setInitialState |> processWebSite |> setFinalState
+        request |> validate |> setInitialState |> processWebSite |> setFinalState
 
 let tryProcessFirst requests =
     fun (client: Client, notify) ->
@@ -74,7 +74,7 @@ let tryProcessFirst requests =
                 match remainingRequests with
                 | [] ->
                     return
-                        "All of the attempts to get the first available result have been reached. The Operation canceled."
+                        "All of the attempts to get the first available result have been reached. Operation canceled."
                         |> Canceled
                         |> Error
                 | request :: requestsTail ->

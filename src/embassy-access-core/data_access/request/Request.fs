@@ -47,12 +47,12 @@ type Entity<'p>() =
                 Id = requestId
                 Service = {
                     Id = serviceId |> ServiceId
-                    Name = this.ServiceName |> Array.toList
+                    NameParts = this.ServiceName |> Array.toList
                     Description = this.ServiceDescription
                 }
                 Embassy = {
                     Id = embassyId |> EmbassyId
-                    Name = this.EmbassyName |> Array.toList
+                    NameParts = this.EmbassyName |> Array.toList
                     Description = this.EmbassyDescription
                     TimeZone = this.EmbassyTimeZone
                 }
@@ -71,10 +71,10 @@ type private Request<'a> with
             Entity(
                 Id = this.Id.ValueStr,
                 ServiceId = this.Service.Id.ValueStr,
-                ServiceName = (this.Service.Name |> Array.ofList),
+                ServiceName = (this.Service.NameParts |> Array.ofList),
                 ServiceDescription = this.Service.Description,
                 EmbassyId = this.Embassy.Id.ValueStr,
-                EmbassyName = (this.Embassy.Name |> Array.ofList),
+                EmbassyName = (this.Embassy.NameParts |> Array.ofList),
                 EmbassyDescription = this.Embassy.Description,
                 EmbassyTimeZone = this.Embassy.TimeZone,
                 Payload = payload,

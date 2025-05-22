@@ -89,13 +89,13 @@ module Kdmid =
                 let getRequests rootServiceId =
                     (requestStorage, hasRequiredService)
                     |> Common.getRequests rootServiceId task.Duration
-                    |> ResultAsync.map (fun requests ->
-                        requests
-                        |> List.filter (fun request ->
+                    |> ResultAsync.map (
+                        List.filter (fun request ->
                             match request.Payload.State with
                             | NoAppointments
                             | HasAppointments _ -> true
-                            | HasConfirmation _ -> false))
+                            | HasConfirmation _ -> false)
+                    )
 
                 let tryProcessFirst requests =
 
