@@ -94,7 +94,7 @@ let private prepareHttpFormData data =
         |> Map.filter (fun key _ -> requiredKeys.Contains key)
         |> Map.map (fun _ value -> value |> Seq.head)
 
-    (formData, data)
+    formData, data
 
 let private createRequestAppointments (request: Request<Payload>) (formData: Map<string, string>, data) =
 
@@ -163,9 +163,13 @@ let private createResult (request: Request<Payload>) (formData, appointments: Se
             Payload = {
                 request.Payload with
                     State =
-                        match appointments.IsEmpty with
-                        | true -> NoAppointments
-                        | false -> HasAppointments appointments
+                        match request.Payload.State with
+                        | NoAppointments
+                        | HasAppointments _ ->
+                            match appointments.IsEmpty with
+                            | true -> NoAppointments
+                            | false -> HasAppointments appointments
+                        | payloadState -> payloadState
             }
     }
 

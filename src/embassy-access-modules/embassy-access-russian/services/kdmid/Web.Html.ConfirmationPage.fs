@@ -47,7 +47,7 @@ let private handleRequestConfirmation (request: Request<Payload>) =
             | None ->
                 Error
                 <| NotFound
-                    $"Appointment in the range '{min.ToShortDateString()}' - '{max.ToShortDateString()}' not found."
+                    $"Appointment in the range '%s{min.ToShortDateString()}' - '%s{max.ToShortDateString()}' not found."
 
 let private createHttpRequest queryParamsId formData =
 

@@ -68,7 +68,7 @@ let chooseBookService (request: Request<Payload>) client =
         |> Result.map Browser.Selector
         |> ResultAsync.wrap (fun selector -> page |> client.Browser.mouseClick selector None))
 
-let setResult (request: Request<Payload>) client =
+let setProcessResult (request: Request<Payload>) client =
     ResultAsync.bindAsync (fun page ->
         page
         |> client.Browser.tryFindText (Browser.Selector "//div[starts-with(@id, 'jconfirm-box')]//div")

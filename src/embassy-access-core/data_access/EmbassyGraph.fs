@@ -35,7 +35,7 @@ type EmbassyGraphEntity() =
                     Graph.Node(
                         {
                             Id = nodeId |> EmbassyId
-                            Name = names
+                            NameParts = names
                             Description = entity.Description
                             TimeZone = entity.TimeZone |> Option.defaultValue 0.
                         },

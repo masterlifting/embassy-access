@@ -7,9 +7,17 @@ open EA.Core.Domain
 open EA.Russian.Services.Kdmid.Web
 open EA.Russian.Services.Domain.Kdmid
 
-let private validateLimits (request: Request<Payload>) =
+let private validate (request: Request<Payload>) =
     request.ValidateLimits()
-    |> Result.mapError (fun error -> $"{error} The operation cancelled." |> Canceled)
+    |> Result.mapError (fun error -> $"%s{error} Operation cancelled." |> Canceled)
+    |> Result.bind (fun r ->
+        match r.Payload.State with
+        | NoAppointments
+        | HasAppointments _ -> r |> Ok
+        | HasConfirmation(d, _) ->
+            $"The request has already been confirmed. %s{d}. Operation cancelled."
+            |> Canceled
+            |> Error)
 
 let private setFinalProcessState (request: Request<Payload>) =
     fun updateRequest ->
@@ -36,11 +44,8 @@ let private setFinalProcessState (request: Request<Payload>) =
                                 r.Payload with
                                     Confirmation =
                                         match r.Payload.Confirmation with
-                                        | Disabled
                                         | ForAppointment _ -> Disabled
-                                        | FirstAvailable -> FirstAvailable
-                                        | FirstAvailableInPeriod(d, t) -> FirstAvailableInPeriod(d, t)
-                                        | LastAvailable -> LastAvailable
+                                        | confirmation -> confirmation
                             }
                     }
                     |> Async.map (function
@@ -99,7 +104,7 @@ let tryProcess (request: Request<Payload>) =
 
         // pipe
         request
-        |> validateLimits
+        |> validate
         |> setInitialState
         |> createHttpClient
         |> parseInitialPage
@@ -116,7 +121,7 @@ let tryProcessFirst requests =
                 match remainingRequests with
                 | [] ->
                     return
-                        "All of the attempts to get the first available result have been reached. The Operation canceled."
+                        "All of the attempts to get the first available result have been reached. Operation canceled."
                         |> Canceled
                         |> Error
                 | request :: requestsTail ->
