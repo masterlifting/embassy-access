@@ -91,10 +91,10 @@ type Dependencies = {
             sendTranslatedMessageRes = deps.sendTranslatedMessageRes
         }
 
-module Notification =
+module ProcessResult =
     type Dependencies = {
         getRequestChats: Request<Payload> -> Async<Result<Chat list, Error'>>
-        setRequestsAppointments:
-            EmbassyId -> ServiceId -> Appointment Set -> Async<Result<Request<Payload> list, Error'>>
+        getRequests: EmbassyId -> ServiceId -> Async<Result<Request<Payload> list, Error'>>
+        updateRequests: Request<Payload> seq -> Async<Result<Request<Payload> list, Error'>>
         spreadTranslatedMessages: (Culture * Telegram.Producer.Message) seq -> Async<Result<unit, Error'>>
     }

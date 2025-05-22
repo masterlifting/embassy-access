@@ -6,10 +6,9 @@ open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Telegram.Services.Services.Russian
-open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services
 open EA.Russian.Services.Router
+open EA.Telegram.Services.Services.Russian
 open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies
 
@@ -35,38 +34,26 @@ module Kdmid =
 
                 let getRequestChats request =
                     (requestStorage, chatStorage) |> Common.getRequestChats request
-
-                let setRequestsAppointments embassyId serviceId appointments =
+                    
+                let getRequests embassyIs serviceId = requestStorage |> Common.getRequests embassyIs serviceId
+                
+                let updateRequests requests =
                     requestStorage
-                    |> Storage.Request.Query.findMany (
-                        Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId)
-                    )
-                    |> ResultAsync.bindAsync (fun requests ->
-                        requestStorage
-                        |> Storage.Request.Command.updateSeq (
-                            requests
-                            |> Seq.map (fun request -> {
-                                request with
-                                    Payload = {
-                                        request.Payload with
-                                            State = HasAppointments appointments
-                                    }
-                            })
-                        ))
+                    |> Storage.Request.Command.updateSeq requests
 
                 let spreadTranslatedMessages data =
                     (telegram.Culture.translateSeq, telegram.Web.Telegram.sendMessages)
                     |> Common.spreadTranslatedMessages data
 
-                let notificationDeps: Kdmid.Notification.Dependencies = {
-                    getRequestChats = getRequestChats
-                    setRequestsAppointments = setRequestsAppointments
-                    spreadTranslatedMessages = spreadTranslatedMessages
-                }
-
-                let handleProcessResult (requestRes: Result<Request<Payload>, Error'>) =
-                    requestRes
-                    |> ResultAsync.wrap (fun r -> notificationDeps |> Kdmid.Command.handleProcessResult r)
+                let handleProcessResult (result: Result<Request<Payload>, Error'>) =
+                    result
+                    |> ResultAsync.wrap (fun r ->
+                        Kdmid.Command.handleProcessResult r {
+                            getRequestChats = getRequestChats
+                            getRequests = getRequests
+                            updateRequests = updateRequests
+                            spreadTranslatedMessages = spreadTranslatedMessages
+                        })
                     |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                     |> Async.Ignore
 
@@ -86,9 +73,9 @@ module Kdmid =
 
                     serviceId |> Router.parse |> Result.exists isRequiredService
 
-                let getRequests rootServiceId =
+                let getRequestsToProcess rootServiceId =
                     (requestStorage, hasRequiredService)
-                    |> Common.getRequests rootServiceId task.Duration
+                    |> Common.getRequestsToProcess rootServiceId task.Duration
                     |> ResultAsync.map (
                         List.filter (fun request ->
                             match request.Payload.State with
@@ -108,7 +95,7 @@ module Kdmid =
 
                 return {
                     TaskName = taskName
-                    getRequests = getRequests
+                    getRequests = getRequestsToProcess
                     tryProcessFirst = tryProcessFirst
                 }
             }
