@@ -39,7 +39,7 @@ type Credentials = {
             |> Error
 
     static member print(credentials: Credentials) =
-        $" Login: '%s{credentials.Login}'\n Password: '%s{credentials.Password}'"
+        $"Login: '%s{credentials.Login}'\n Password: '%s{credentials.Password}'"
 
 type internal Appointment with
     static member parse(text: string) =

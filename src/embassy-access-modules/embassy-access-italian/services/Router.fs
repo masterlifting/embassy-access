@@ -3,30 +3,31 @@
 open EA.Core.Domain
 open Infrastructure.Domain
 
-module Operation =
-    type Route =
-        | CheckSlotsNow
-        | SlotsAutoNotification
+module Prenotami =
+    module Operation =
+        type Route =
+            | CheckSlotsNow
+            | SlotsAutoNotification
 
-        member this.Value =
-            match this with
-            | CheckSlotsNow -> "0"
-            | SlotsAutoNotification -> "1"
+            member this.Value =
+                match this with
+                | CheckSlotsNow -> "0"
+                | SlotsAutoNotification -> "1"
 
-    let parse (input: string) =
-        match input with
-        | "0" -> CheckSlotsNow |> Ok
-        | "1" -> SlotsAutoNotification |> Ok
-        | _ ->
-            "Service operation for the Italian router is not supported."
-            |> NotSupported
-            |> Error
+        let parse (input: string) =
+            match input with
+            | "0" -> CheckSlotsNow |> Ok
+            | "1" -> SlotsAutoNotification |> Ok
+            | _ ->
+                "Service operation for the Italian embassy is not supported."
+                |> NotSupported
+                |> Error
 
 module Visa =
 
     type Route =
-        | Tourism1 of Operation.Route
-        | Tourism2 of Operation.Route
+        | Tourism1 of Prenotami.Operation.Route
+        | Tourism2 of Prenotami.Operation.Route
 
         member this.Value =
             match this with
@@ -35,9 +36,12 @@ module Visa =
 
     let parse (input: string list) =
         match input with
-        | [ "0"; op ] -> op |> Operation.parse |> Result.map Tourism1
-        | [ "1"; op ] -> op |> Operation.parse |> Result.map Tourism2
-        | _ -> "Visa service for the Italian router is not supported." |> NotSupported |> Error
+        | [ "0"; op ] -> op |> Prenotami.Operation.parse |> Result.map Tourism1
+        | [ "1"; op ] -> op |> Prenotami.Operation.parse |> Result.map Tourism2
+        | _ ->
+            "Visa service for the Italian embassy is not supported."
+            |> NotSupported
+            |> Error
 
 type Route =
     | Visa of Visa.Route
@@ -54,6 +58,6 @@ let parse (serviceId: ServiceId) =
     match input[0] with
     | "0" -> remaining |> Visa.parse |> Result.map Visa
     | _ ->
-        $"'%s{serviceId.ValueStr}' for the Italian router is not supported."
+        $"'%s{serviceId.ValueStr}' for the Italian embassy is not supported."
         |> NotSupported
         |> Error

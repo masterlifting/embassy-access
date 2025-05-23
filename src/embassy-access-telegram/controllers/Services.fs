@@ -23,7 +23,7 @@ module Russian =
                     match kdmid with
                     | Kdmid.Method.Get get ->
                         match get with
-                        | Kdmid.Get.Print requestId -> Kdmid.Query.print requestId
+                        | Kdmid.Get.Info requestId -> Kdmid.Query.info requestId
                         | Kdmid.Get.Menu requestId -> Kdmid.Query.menu requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Kdmid.Method.Post post ->
@@ -52,7 +52,7 @@ module Russian =
                     match midpass with
                     | Midpass.Method.Get get ->
                         match get with
-                        | Midpass.Get.Print requestId -> Midpass.Query.print requestId
+                        | Midpass.Get.Info requestId -> Midpass.Query.info requestId
                         | Midpass.Get.Menu requestId -> Midpass.Query.menu requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Midpass.Method.Post post ->
@@ -81,7 +81,7 @@ module Italian =
                     match prenotami with
                     | Prenotami.Method.Get get ->
                         match get with
-                        | Prenotami.Get.Print requestId -> Prenotami.Query.print requestId
+                        | Prenotami.Get.Info requestId -> Prenotami.Query.print requestId
                         | Prenotami.Get.Menu requestId -> Prenotami.Query.menu requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Prenotami.Method.Post post ->

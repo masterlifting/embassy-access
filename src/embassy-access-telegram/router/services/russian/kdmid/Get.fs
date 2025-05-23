@@ -5,12 +5,12 @@ open EA.Core.Domain
 open EA.Telegram.Domain
 
 type Route =
-    | Print of RequestId
+    | Info of RequestId
     | Menu of RequestId
 
     member this.Value =
         match this with
-        | Print requestId -> [ "0"; requestId.ValueStr ]
+        | Info requestId -> [ "0"; requestId.ValueStr ]
         | Menu requestId -> [ "1"; requestId.ValueStr ]
         |> String.concat Router.DELIMITER
 
@@ -18,7 +18,7 @@ type Route =
         let parts = input.Split Router.DELIMITER
 
         match parts with
-        | [| "0"; requestId |] -> Print(requestId |> UUID16 |> RequestId) |> Ok
+        | [| "0"; requestId |] -> Info(requestId |> UUID16 |> RequestId) |> Ok
         | [| "1"; requestId |] -> Menu(requestId |> UUID16 |> RequestId) |> Ok
         | _ ->
             $"'{input}' of 'Services.Russian.Kdmid.Get' endpoint is not supported."

@@ -65,8 +65,8 @@ module Prenotami =
                         | Visa(Visa.Tourism1 op)
                         | Visa(Visa.Tourism2 op) ->
                             match op with
-                            | Operation.SlotsAutoNotification -> true
-                            | Operation.CheckSlotsNow -> false
+                            | Prenotami.Operation.SlotsAutoNotification -> true
+                            | Prenotami.Operation.CheckSlotsNow -> false
 
                     serviceId |> Router.parse |> Result.exists isRequiredService
 
