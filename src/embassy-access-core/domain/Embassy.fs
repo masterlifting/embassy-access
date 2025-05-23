@@ -20,13 +20,13 @@ type Embassy = {
     TimeZone: float
 } with
 
-    member this.FullName =
-        match this.NameParts.Length > 1 with
-        | true -> this.NameParts |> List.skip 1
+    member this.BuildName startWith delimiter =
+        match this.NameParts.Length > startWith with
+        | true -> this.NameParts |> List.skip startWith
         | false -> this.NameParts
-        |> String.concat "."
+        |> String.concat delimiter
 
-    member this.ShortName = this.NameParts |> List.tryLast |> Option.defaultValue "Unknown"
+    member this.LastName = this.NameParts |> List.tryLast |> Option.defaultValue "Unknown"
 
     interface Graph.INode with
         member this.Id = this.Id.Value
