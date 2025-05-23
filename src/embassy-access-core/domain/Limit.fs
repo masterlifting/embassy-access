@@ -62,17 +62,17 @@ type Limit = {
             match Refresh.calculate period date with
             | Ready -> Ok()
             | Waiting period ->
-                $"Limit of attempts reached. Remaining period: '%s{period |> String.fromTimeSpan}'."
+                $"Limit of attempts reached. Remaining period: '%s{period |> TimeSpan.print}'"
                 |> Error
 
     static member print limit =
         match limit.State with
         | Valid(attempts, period, date) ->
             match Refresh.calculate period date with
-            | Ready -> $"Remaining attempts '%i{limit.Attempts}' for '%s{limit.Period |> String.fromTimeSpan}'"
-            | Waiting period -> $"Remaining attempts '%i{attempts}' for '%s{period |> String.fromTimeSpan}'"
+            | Ready -> $"Remaining attempts '%i{limit.Attempts}' for '%s{limit.Period |> TimeSpan.print}'"
+            | Waiting period -> $"Remaining attempts '%i{attempts}' for '%s{period |> TimeSpan.print}'"
         | Invalid(period, date) ->
             match Refresh.calculate period date with
-            | Ready -> $"Remaining attempts '%i{limit.Attempts}' for '%s{limit.Period |> String.fromTimeSpan}'"
+            | Ready -> $"Remaining attempts '%i{limit.Attempts}' for '%s{limit.Period |> TimeSpan.print}'"
             | Waiting period ->
-                $"Unavailable now. '%i{limit.Attempts}' attempts will be available in '%s{period |> String.fromTimeSpan}'"
+                $"Unavailable now. '%i{limit.Attempts}' attempts will be available in '%s{period |> TimeSpan.print}'"
