@@ -18,15 +18,15 @@ let menu (requestId: RequestId) =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
-            let print = Prenotami.Method.Get(Prenotami.Get.Print r.Id) |> createBaseRoute
+            let info = Prenotami.Method.Get(Prenotami.Get.Info r.Id) |> createBaseRoute
             let delete =
                 Prenotami.Method.Delete(Prenotami.Delete.Subscription(r.Id)) |> createBaseRoute
 
             ButtonsGroup.create {
-                Name = "Manage your subscription"
+                Name = r.Service.FullName
                 Columns = 1
                 Buttons =
-                    [ print.Value, "Print"; delete.Value, "Delete" ]
+                    [ info.Value, "Info"; delete.Value, "Delete" ]
                     |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
                     |> Set.ofSeq
             }
@@ -74,7 +74,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
             requests
             |> Seq.map (fun r ->
                 let route = Prenotami.Method.Get(Prenotami.Get.Menu r.Id) |> createBaseRoute
-                route.Value, r.Payload.Credentials |> Credentials.print)
+                route.Value, r.Service.FullName)
             |> fun buttons ->
                 ButtonsGroup.create {
                     Name = "Your subscriptions to manage"
@@ -92,5 +92,5 @@ let getService operation serviceId embassyId forUser =
         | true -> deps |> getUserSubscriptions serviceId embassyId
         | false ->
             match operation with
-            | Operation.CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
-            | Operation.SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
+            | Prenotami.Operation.CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
+            | Prenotami.Operation.SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId

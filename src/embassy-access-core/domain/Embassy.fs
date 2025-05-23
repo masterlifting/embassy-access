@@ -31,10 +31,3 @@ type Embassy = {
     interface Graph.INode with
         member this.Id = this.Id.Value
         member this.set id = { this with Id = id |> EmbassyId }
-
-    static member print(embassy: Embassy) =
-        let value = $"[Embassy] %s{embassy.FullName}"
-
-        match embassy.Description with
-        | Some description -> value + $"\n %s{description}"
-        | None -> value

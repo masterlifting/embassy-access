@@ -86,9 +86,9 @@ type Credentials = {
         }
 
     static member print(payload: Credentials) =
-        let value = $" 'id'=%i{payload.Id}" + $"\n 'cd'=%s{payload.Cd}"
+        let value = $"'id'=%i{payload.Id}" + $" 'cd'=%s{payload.Cd}"
         match payload.Ems with
-        | Some ems -> value + $"\n 'ems'=%s{ems}"
+        | Some ems -> value + $" 'ems'=%s{ems}"
         | None -> value
 
 type PayloadState =
@@ -100,7 +100,7 @@ type PayloadState =
         match payloadState with
         | NoAppointments -> "No appointments found."
         | HasAppointments appointments -> appointments |> Seq.map Appointment.print |> String.concat "\n "
-        | HasConfirmation(message, appointment) -> $"The appointment '%s{appointment.Value}' is confirmed: %s{message}"
+        | HasConfirmation(message, appointment) -> (appointment |> Appointment.print) + $"Confirmed: %s{message}"
 
 type Payload = {
     Credentials: Credentials

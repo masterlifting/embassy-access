@@ -19,20 +19,20 @@ let menu (requestId: RequestId) =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
-            let print = Kdmid.Method.Get(Kdmid.Get.Print r.Id) |> createBaseRoute
+            let info = Kdmid.Method.Get(Kdmid.Get.Info r.Id) |> createBaseRoute
             let delete = Kdmid.Method.Delete(Kdmid.Delete.Subscription(r.Id)) |> createBaseRoute
 
             ButtonsGroup.create {
-                Name = "Manage your subscription"
+                Name = r.Service.FullName
                 Columns = 1
                 Buttons =
-                    [ print.Value, "Print"; delete.Value, "Delete" ]
+                    [ info.Value, "Info"; delete.Value, "Delete" ]
                     |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
                     |> Set.ofSeq
             }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
-let print (requestId: RequestId) =
+let info (requestId: RequestId) =
     fun (deps: Kdmid.Dependencies) ->
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
@@ -41,17 +41,6 @@ let print (requestId: RequestId) =
 
 [<Literal>]
 let private INPUT_LINK = "<link>"
-
-let private (|CheckSlotsNow|SlotsAutoNotification|BookFirstSlot|BookLastSlot|BookFirstSlotInPeriod|OperationNotSupported|)
-    (operations: string list)
-    =
-    match operations with
-    | [ "0" ] -> CheckSlotsNow
-    | [ "1" ] -> SlotsAutoNotification
-    | [ "2"; "0" ] -> BookFirstSlot
-    | [ "2"; "1" ] -> BookLastSlot
-    | [ "2"; "2" ] -> BookFirstSlotInPeriod
-    | _ -> OperationNotSupported
 
 let private createKdmidInstruction chatId method =
     let route = Kdmid.Method.Post(method) |> createBaseRoute
@@ -97,7 +86,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
             requests
             |> Seq.map (fun r ->
                 let route = Kdmid.Method.Get(Kdmid.Get.Menu r.Id) |> createBaseRoute
-                route.Value, r.Payload.Credentials |> Credentials.print)
+                route.Value, r.Service.FullName)
             |> fun buttons ->
                 ButtonsGroup.create {
                     Name = "Your subscriptions to manage"
@@ -115,8 +104,8 @@ let getService operation (serviceId: ServiceId) (embassyId: EmbassyId) forUser =
         | true -> deps |> getUserSubscriptions serviceId embassyId
         | false ->
             match operation with
-            | Operation.CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
-            | Operation.SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
-            | Operation.AutoBookingFirstSlot -> deps |> bookFirstSlot serviceId embassyId
-            | Operation.AutoBookingFirstSlotInPeriod -> deps |> bookFirstSlotInPeriod serviceId embassyId
-            | Operation.AutoBookingLastSlot -> deps |> bookLastSlot serviceId embassyId
+            | Kdmid.Operation.CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
+            | Kdmid.Operation.SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
+            | Kdmid.Operation.AutoBookingFirstSlot -> deps |> bookFirstSlot serviceId embassyId
+            | Kdmid.Operation.AutoBookingFirstSlotInPeriod -> deps |> bookFirstSlotInPeriod serviceId embassyId
+            | Kdmid.Operation.AutoBookingLastSlot -> deps |> bookLastSlot serviceId embassyId

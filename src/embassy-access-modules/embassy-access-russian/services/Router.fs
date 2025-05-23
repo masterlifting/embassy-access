@@ -3,38 +3,39 @@
 open EA.Core.Domain
 open Infrastructure.Domain
 
-module Operation =
-    type Route =
-        | CheckSlotsNow
-        | SlotsAutoNotification
-        | AutoBookingFirstSlot
-        | AutoBookingFirstSlotInPeriod
-        | AutoBookingLastSlot
+module Kdmid =
+    module Operation =
+        type Route =
+            | CheckSlotsNow
+            | SlotsAutoNotification
+            | AutoBookingFirstSlot
+            | AutoBookingFirstSlotInPeriod
+            | AutoBookingLastSlot
 
-        member this.Value =
-            match this with
-            | CheckSlotsNow -> "0"
-            | SlotsAutoNotification -> "1"
-            | AutoBookingFirstSlot -> "2"
-            | AutoBookingFirstSlotInPeriod -> "3"
-            | AutoBookingLastSlot -> "4"
+            member this.Value =
+                match this with
+                | CheckSlotsNow -> "0"
+                | SlotsAutoNotification -> "1"
+                | AutoBookingFirstSlot -> "2"
+                | AutoBookingFirstSlotInPeriod -> "3"
+                | AutoBookingLastSlot -> "4"
 
-    let parse (input: string) =
-        match input with
-        | "0" -> CheckSlotsNow |> Ok
-        | "1" -> SlotsAutoNotification |> Ok
-        | "2" -> AutoBookingFirstSlot |> Ok
-        | "3" -> AutoBookingFirstSlotInPeriod |> Ok
-        | "4" -> AutoBookingLastSlot |> Ok
-        | _ ->
-            "Service operation for the Russian router is not supported."
-            |> NotSupported
-            |> Error
+        let parse (input: string) =
+            match input with
+            | "0" -> CheckSlotsNow |> Ok
+            | "1" -> SlotsAutoNotification |> Ok
+            | "2" -> AutoBookingFirstSlot |> Ok
+            | "3" -> AutoBookingFirstSlotInPeriod |> Ok
+            | "4" -> AutoBookingLastSlot |> Ok
+            | _ ->
+                "Service operation for the Russian embassy is not supported."
+                |> NotSupported
+                |> Error
 
 module Passport =
 
     type Route =
-        | International of Operation.Route
+        | International of Kdmid.Operation.Route
         | Status
 
         member this.Value =
@@ -44,17 +45,17 @@ module Passport =
 
     let parse (input: string list) =
         match input with
-        | [ "0"; op ] -> op |> Operation.parse |> Result.map International
+        | [ "0"; op ] -> op |> Kdmid.Operation.parse |> Result.map International
         | [ "1" ] -> Status |> Ok
         | _ ->
-            "Passport service for the Russian router is not supported."
+            "Passport service for the Russian embassy is not supported."
             |> NotSupported
             |> Error
 
 module Notary =
 
     type Route =
-        | PowerOfAttorney of Operation.Route
+        | PowerOfAttorney of Kdmid.Operation.Route
 
         member this.Value =
             match this with
@@ -62,16 +63,16 @@ module Notary =
 
     let parse (input: string list) =
         match input with
-        | [ "0"; op ] -> op |> Operation.parse |> Result.map PowerOfAttorney
+        | [ "0"; op ] -> op |> Kdmid.Operation.parse |> Result.map PowerOfAttorney
         | _ ->
-            "Notary service for the Russian router is not supported."
+            "Notary service for the Russian embassy is not supported."
             |> NotSupported
             |> Error
 
 module Citizenship =
 
     type Route =
-        | Renunciation of Operation.Route
+        | Renunciation of Kdmid.Operation.Route
 
         member this.Value =
             match this with
@@ -79,9 +80,9 @@ module Citizenship =
 
     let parse (input: string list) =
         match input with
-        | [ "0"; op ] -> op |> Operation.parse |> Result.map Renunciation
+        | [ "0"; op ] -> op |> Kdmid.Operation.parse |> Result.map Renunciation
         | _ ->
-            "Citizenship service for the Russian router is not supported."
+            "Citizenship service for the Russian embassy is not supported."
             |> NotSupported
             |> Error
 
@@ -106,6 +107,6 @@ let parse (serviceId: ServiceId) =
     | "1" -> remaining |> Notary.parse |> Result.map Notary
     | "2" -> remaining |> Citizenship.parse |> Result.map Citizenship
     | _ ->
-        $"'%s{serviceId.ValueStr}' for the Russian router is not supported."
+        $"'%s{serviceId.ValueStr}' for the Russian embassy is not supported."
         |> NotSupported
         |> Error

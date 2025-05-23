@@ -15,4 +15,3 @@ type ProcessState =
         | InProcess -> "In process"
         | Completed message -> $"Completed. {message}"
         | Failed error -> $"Failed. {error}"
-        |> sprintf "[Last process state] %s"

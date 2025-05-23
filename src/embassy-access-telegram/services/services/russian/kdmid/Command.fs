@@ -54,10 +54,10 @@ let handleProcessResult (request: Request<Payload>) =
                                 )
                             )
                         )
-                    route.Value, a.Value)
+                    route.Value, a |> Appointment.print)
                 |> fun buttons ->
                     ButtonsGroup.create {
-                        Name = "Appointments available. Please select one."
+                        Name = $"Available appointments for %s{request.Service.FullName}"
                         Columns = 1
                         Buttons =
                             buttons
@@ -145,10 +145,10 @@ let private handleRequestResult chatId (request: Request<Payload>) =
                             )
                         )
                     )
-                route.Value, a.Value)
+                route.Value, a |> Appointment.print)
             |> fun buttons ->
                 ButtonsGroup.create {
-                    Name = "Appointments available. Please select one."
+                    Name = $"Available appointments for %s{request.Service.FullName}"
                     Columns = 1
                     Buttons =
                         buttons

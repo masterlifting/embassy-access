@@ -19,8 +19,8 @@ type Service = {
 } with
 
     member this.FullName =
-        match this.NameParts.Length > 2 with
-        | true -> this.NameParts |> List.skip 2
+        match this.NameParts.Length > 1 with
+        | true -> this.NameParts |> List.skip 1
         | false -> this.NameParts
         |> String.concat "."
 
@@ -29,10 +29,3 @@ type Service = {
     interface Graph.INode with
         member this.Id = this.Id.Value
         member this.set id = { this with Id = id |> ServiceId }
-
-    static member print(service: Service) =
-        let value = $"[Service] %s{service.FullName}"
-
-        match service.Description with
-        | Some description -> value + $"\n %s{description}"
-        | None -> value
