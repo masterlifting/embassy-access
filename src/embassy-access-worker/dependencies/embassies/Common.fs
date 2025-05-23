@@ -6,14 +6,11 @@ open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Core.DataAccess
 open Web.Clients.Domain
-open EA.Telegram.DataAccess
 
 let getRequests (embassyId: EmbassyId) (serviceId: ServiceId) =
-    fun (requestStorage: Request.Storage<_, _>) ->
+    fun requestStorage ->
         requestStorage
-        |> Storage.Request.Query.findMany (
-            Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId)
-        )
+        |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId))
 
 let getRequestsToProcess (rootServiceId: ServiceId) (taskDuration: TimeSpan) =
     fun (requestStorage, hasRequiredService) ->
@@ -26,16 +23,6 @@ let getRequestsToProcess (rootServiceId: ServiceId) (taskDuration: TimeSpan) =
                     || request.ProcessState = InProcess
                        && request.Modified < DateTime.UtcNow.Subtract taskDuration))
         )
-
-let getRequestChats request =
-    fun (requestStorage, chatStorage) ->
-        requestStorage
-        |> Storage.Request.Query.findMany (
-            Storage.Request.Query.ByEmbassyAndServiceId(request.Embassy.Id, request.Service.Id)
-        )
-        |> ResultAsync.map (Seq.map _.Id)
-        |> ResultAsync.bindAsync (fun subscriptionIds ->
-            chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptionIds)
 
 let spreadTranslatedMessages (data: (Culture * Telegram.Producer.Message) seq) =
     fun

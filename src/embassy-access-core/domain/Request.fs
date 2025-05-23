@@ -28,6 +28,7 @@ type Request<'payload> = {
     Payload: 'payload
     ProcessState: ProcessState
     Limits: Set<Limit>
+    Created: DateTime
     Modified: DateTime
 } with
 
@@ -41,6 +42,7 @@ type Request<'payload> = {
         + $"\n%s{service}"
         + $"\n%s{embassy}"
         + $"\n%s{state}"
+        + $"\n[Created] '%s{(request.Created.AddHours request.Embassy.TimeZone) |> String.fromDateTime}'"
         + $"\n[Last modified] '%s{(request.Modified.AddHours request.Embassy.TimeZone) |> String.fromDateTime}'"
         + $"\n[Limits]\n %s{limits}"
 

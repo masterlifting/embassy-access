@@ -8,6 +8,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Italian.Services
 open EA.Italian.Services.Router
+open EA.Telegram.DataAccess
 open EA.Telegram.Services.Services.Italian
 open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies
@@ -33,8 +34,8 @@ module Prenotami =
                 let! chatStorage = persistence.initChatStorage ()
                 let! requestStorage = persistence.ItalianStorage.initPrenotamiRequestStorage ()
 
-                let getRequestChats request =
-                    (requestStorage, chatStorage) |> Common.getRequestChats request
+                let getChats subscriptions =
+                    chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptions
 
                 let getRequests embassyIs serviceId =
                     requestStorage |> Common.getRequests embassyIs serviceId
@@ -50,7 +51,7 @@ module Prenotami =
                     result
                     |> ResultAsync.wrap (fun r ->
                         Prenotami.Command.handleProcessResult r {
-                            getRequestChats = getRequestChats
+                            getChats = getChats
                             getRequests = getRequests
                             updateRequests = updateRequests
                             spreadTranslatedMessages = spreadTranslatedMessages
