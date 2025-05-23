@@ -35,18 +35,15 @@ type Request<'payload> = {
     static member inline print(request: Request<_>) =
         let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n "
         let state = request.ProcessState |> ProcessState.print
-        let serviceName =
-            match request.Service.NameParts.Length > 2 with
-            | true -> request.Service.NameParts |> Seq.skip 2
-            | false -> request.Service.NameParts
-            |> String.concat "."
+        let embassyName = request.Embassy.BuildName 1 "."
+        let serviceName = request.Service.BuildName 2 "."
 
         $"[Subscription] '%s{request.Id.ValueStr}'"
-        + $"\n[Service] %s{serviceName}"
-        + $"\n[Embassy] %s{request.Embassy.FullName}"
+        + $"\n[Embassy]\n %s{embassyName}"
+        + $"\n[Service]\n %s{serviceName}"
         + $"\n[Created] '%s{(request.Created.AddHours request.Embassy.TimeZone) |> String.fromDateTime}'"
         + $"\n[Modified] '%s{(request.Modified.AddHours request.Embassy.TimeZone) |> String.fromDateTime}'"
-        + $"\n[Last state]%s{state}"
+        + $"\n[Last state] %s{state}"
         + $"\n[Limits]\n %s{limits}"
 
     member this.UpdateLimits() =

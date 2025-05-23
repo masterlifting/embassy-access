@@ -23,7 +23,7 @@ let menu (requestId: RequestId) =
                 Prenotami.Method.Delete(Prenotami.Delete.Subscription(r.Id)) |> createBaseRoute
 
             ButtonsGroup.create {
-                Name = r.Service.FullName
+                Name = r.Service.BuildName 1 "."
                 Columns = 1
                 Buttons =
                     [ info.Value, "Info"; delete.Value, "Delete" ]
@@ -74,7 +74,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
             requests
             |> Seq.map (fun r ->
                 let route = Prenotami.Method.Get(Prenotami.Get.Menu r.Id) |> createBaseRoute
-                route.Value, r.Service.FullName)
+                route.Value, r.Service.BuildName 1 ".")
             |> fun buttons ->
                 ButtonsGroup.create {
                     Name = "Your subscriptions to manage"

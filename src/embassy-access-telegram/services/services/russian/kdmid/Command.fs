@@ -56,8 +56,9 @@ let handleProcessResult (request: Request<Payload>) =
                         )
                     route.Value, a |> Appointment.print)
                 |> fun buttons ->
+                    let serviceName = request.Service.BuildName 1 "."
                     ButtonsGroup.create {
-                        Name = $"Available appointments for %s{request.Service.FullName}"
+                        Name = $"Available appointments for %s{serviceName}"
                         Columns = 1
                         Buttons =
                             buttons
@@ -147,8 +148,9 @@ let private handleRequestResult chatId (request: Request<Payload>) =
                     )
                 route.Value, a |> Appointment.print)
             |> fun buttons ->
+                let serviceName = request.Service.BuildName 1 "."
                 ButtonsGroup.create {
-                    Name = $"Available appointments for %s{request.Service.FullName}"
+                    Name = $"Available appointments for %s{serviceName}"
                     Columns = 1
                     Buttons =
                         buttons
