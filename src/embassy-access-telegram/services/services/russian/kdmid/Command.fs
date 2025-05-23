@@ -3,6 +3,7 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Infrastructure.Logging
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
@@ -14,7 +15,104 @@ open EA.Russian.Services.Domain.Kdmid
 
 let private resultAsync = ResultAsyncBuilder()
 
-let private createMessage chatId (request: Request<Payload>) =
+let handleProcessResult (request: Request<Payload>) =
+    fun (deps: Kdmid.ProcessResult.Dependencies) ->
+
+        let inline spreadFailure error =
+            let inline createMessage chatId =
+                request.Payload
+                |> Payload.printError error
+                |> Option.map (Text.create >> Message.createNew chatId)
+
+            deps.getRequests request.Embassy.Id request.Service.Id
+            |> ResultAsync.bindAsync (Seq.map _.Id >> deps.getChats)
+            |> ResultAsync.map (
+                Seq.choose (fun chat -> createMessage chat.Id |> Option.map (fun message -> chat.Culture, message))
+            )
+            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
+
+        let inline spreadConfirmation confirmation =
+            let inline createMessage chatId =
+                confirmation |> Text.create |> Message.createNew chatId
+
+            deps.getRequests request.Embassy.Id request.Service.Id
+            |> ResultAsync.bindAsync (Seq.map _.Id >> deps.getChats)
+            |> ResultAsync.map (Seq.map (fun chat -> createMessage chat.Id |> fun message -> chat.Culture, message))
+            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
+
+        let inline spreadAppointments (appointments: Set<Appointment>) (requests: Request<Payload> seq) =
+            let inline createMessage chatId =
+                appointments
+                |> Seq.map (fun a ->
+                    let route =
+                        Router.Services(
+                            Services.Method.Russian(
+                                Services.Russian.Method.Kdmid(
+                                    Services.Russian.Kdmid.Method.Post(
+                                        Services.Russian.Kdmid.Post.ConfirmAppointment(request.Id, a.Id)
+                                    )
+                                )
+                            )
+                        )
+                    route.Value, a.Value)
+                |> fun buttons ->
+                    ButtonsGroup.create {
+                        Name = "Appointments available. Please select one."
+                        Columns = 1
+                        Buttons =
+                            buttons
+                            |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
+                            |> Set.ofSeq
+                    }
+                |> Message.createNew chatId
+
+            requests
+            |> Seq.map (fun r -> {
+                r with
+                    Payload = {
+                        r.Payload with
+                            State = HasAppointments appointments
+                    }
+            })
+            |> deps.updateRequests
+            |> ResultAsync.bindAsync (Seq.map _.Id >> deps.getChats)
+            |> ResultAsync.map (Seq.map (fun chat -> createMessage chat.Id |> fun message -> chat.Culture, message))
+            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
+
+        match request.ProcessState with
+        | InProcess -> Ok() |> async.Return
+        | Ready -> Ok() |> async.Return
+        | Failed error -> spreadFailure error
+        | Completed _ ->
+            match request.Payload.State with
+            | NoAppointments -> Ok() |> async.Return
+            | HasConfirmation(msg, _) -> spreadConfirmation msg
+            | HasAppointments appointments ->
+                deps.getRequests request.Embassy.Id request.Service.Id
+                |> ResultAsync.map (List.sortBy _.Created)
+                |> ResultAsync.map (
+                    List.partition (fun r ->
+                        match r.Payload.Confirmation with
+                        | Disabled
+                        | ForAppointment _ -> true
+                        | FirstAvailable
+                        | FirstAvailableInPeriod _
+                        | LastAvailable -> false)
+                )
+                |> ResultAsync.map (fun (requestsToSpread, requestsToProcess) -> [
+
+                    requestsToSpread
+                    |> spreadAppointments appointments
+                    |> ResultAsync.mapError (fun error -> deps.TaskName + error.Message |> Log.crt)
+
+                    requestsToProcess
+                    |> Seq.ofList
+                    |> deps.processAllRequests
+                    |> ResultAsync.mapError (fun error -> deps.TaskName + error.Message |> Log.crt)
+                ])
+                |> ResultAsync.mapAsync (List.iter (Async.Ignore >> Async.Start))
+
+let private handleRequestResult chatId (request: Request<Payload>) =
     match request.ProcessState with
     | InProcess ->
         "The request is still in process. Please wait for the result."
@@ -62,7 +160,10 @@ let private createMessage chatId (request: Request<Payload>) =
     |> async.Return
 
 let private Limits =
-    Limit.create (20u<attempts>, TimeSpan.FromDays 1) |> Set.singleton
+    Set [
+        Limit.create (20u<attempts>, TimeSpan.FromDays 1)
+        Limit.create (1u<attempts>, TimeSpan.FromMinutes 5.0)
+    ]
 
 let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
     fun (deps: Kdmid.Dependencies) ->
@@ -88,6 +189,7 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                     Embassy = embassy
                     ProcessState = Ready
                     Limits = Limits
+                    Created = DateTime.UtcNow
                     Modified = DateTime.UtcNow
                     Payload = {
                         State = NoAppointments
@@ -109,7 +211,7 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
             | Completed _ ->
                 do! deps.tryAddSubscription request
                 let! processedRequest = requestStorage |> deps.processRequest request
-                return processedRequest |> createMessage deps.ChatId
+                return processedRequest |> handleRequestResult deps.ChatId
         }
 
 let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
@@ -139,6 +241,7 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (link: s
                     Embassy = embassy
                     ProcessState = Ready
                     Limits = Limits
+                    Created = DateTime.UtcNow
                     Modified = DateTime.UtcNow
                     Payload = {
                         State = NoAppointments
@@ -185,6 +288,7 @@ let bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                     Embassy = embassy
                     ProcessState = Ready
                     Limits = Limits
+                    Created = DateTime.UtcNow
                     Modified = DateTime.UtcNow
                     Payload = {
                         State = NoAppointments
@@ -231,6 +335,7 @@ let bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) (link: string) =
                     Embassy = embassy
                     ProcessState = Ready
                     Limits = Limits
+                    Created = DateTime.UtcNow
                     Modified = DateTime.UtcNow
                     Payload = {
                         State = NoAppointments
@@ -283,6 +388,7 @@ let bookFirstSlotInPeriod
                     Embassy = embassy
                     ProcessState = Ready
                     Limits = Limits
+                    Created = DateTime.UtcNow
                     Modified = DateTime.UtcNow
                     Payload = {
                         State = NoAppointments
@@ -314,7 +420,7 @@ let confirmAppointment (requestId: RequestId) (appointmentId: AppointmentId) =
                         Request.Payload.Confirmation = ForAppointment appointmentId
                 }
 
-            return processedRequest |> createMessage deps.ChatId
+            return processedRequest |> handleRequestResult deps.ChatId
         }
 
 let deleteRequest requestId =
@@ -325,62 +431,3 @@ let deleteRequest requestId =
             $"Request with id '%s{requestId.ValueStr}' deleted successfully."
             |> Text.create
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
-
-let handleProcessResult (request: Request<Payload>) =
-    fun (deps: Kdmid.ProcessResult.Dependencies) ->
-        
-        match request.ProcessState with
-        | InProcess -> Ok() |> async.Return
-        | Ready -> Ok() |> async.Return
-        | Failed error ->
-            let createMessage chatId =
-                request.Payload
-                |> Payload.printError error
-                |> Option.map (Text.create >> Message.createNew chatId)
-
-            deps.getRequestChats request
-            |> ResultAsync.map (
-                Seq.choose (fun chat -> createMessage chat.Id |> Option.map (fun message -> chat.Culture, message))
-            )
-            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
-        | Completed _ ->
-            match request.Payload.State with
-            | NoAppointments -> Ok() |> async.Return
-            | HasConfirmation(msg, _) ->
-                let createMessage chatId =
-                    msg |> Text.create |> Message.createNew chatId
-
-                deps.getRequestChats request
-                |> ResultAsync.map (Seq.map (fun chat -> createMessage chat.Id |> fun message -> chat.Culture, message))
-                |> ResultAsync.bindAsync deps.spreadTranslatedMessages
-            | HasAppointments appointments ->
-                let createMessage chatId =
-                    appointments
-                    |> Seq.map (fun a ->
-                        let route =
-                            Router.Services(
-                                Services.Method.Russian(
-                                    Services.Russian.Method.Kdmid(
-                                        Services.Russian.Kdmid.Method.Post(
-                                            Services.Russian.Kdmid.Post.ConfirmAppointment(request.Id, a.Id)
-                                        )
-                                    )
-                                )
-                            )
-                        route.Value, a.Value)
-                    |> fun buttons ->
-                        ButtonsGroup.create {
-                            Name = "Appointments available. Please select one."
-                            Columns = 1
-                            Buttons =
-                                buttons
-                                |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                                |> Set.ofSeq
-                        }
-                    |> Message.createNew chatId
-
-                appointments
-                |> deps.setRequestsAppointments request.Embassy.Id request.Service.Id
-                |> ResultAsync.bindAsync (fun _ -> deps.getRequestChats request)
-                |> ResultAsync.map (Seq.map (fun chat -> createMessage chat.Id |> fun message -> chat.Culture, message))
-                |> ResultAsync.bindAsync deps.spreadTranslatedMessages

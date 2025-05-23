@@ -14,7 +14,73 @@ open EA.Italian.Services.Domain.Prenotami
 
 let private resultAsync = ResultAsyncBuilder()
 
-let private createMessage chatId (request: Request<Payload>) =
+let handleProcessResult (request: Request<Payload>) =
+    fun (deps: Prenotami.ProcessResult.Dependencies) ->
+
+        let inline spreadFailure error =
+            let inline createMessage chatId =
+                request.Payload
+                |> Payload.printError error
+                |> Option.map (Text.create >> Message.createNew chatId)
+
+            deps.getRequests request.Embassy.Id request.Service.Id
+            |> ResultAsync.bindAsync (Seq.map _.Id >> deps.getChats)
+            |> ResultAsync.map (
+                Seq.choose (fun chat -> createMessage chat.Id |> Option.map (fun message -> chat.Culture, message))
+            )
+            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
+
+        let inline spreadAppointments (appointments: Set<Appointment>) (requests: Request<Payload> seq) =
+            let inline createMessage chatId =
+                appointments
+                |> Seq.map (fun a ->
+                    let route =
+                        Router.Services(
+                            Services.Method.Italian(
+                                Services.Italian.Method.Prenotami(
+                                    Services.Italian.Prenotami.Method.Post(
+                                        Services.Italian.Prenotami.Post.ConfirmAppointment(request.Id, a.Id)
+                                    )
+                                )
+                            )
+                        )
+                    route.Value, a.Value)
+                |> fun buttons ->
+                    ButtonsGroup.create {
+                        Name = "Appointments available. Please select one."
+                        Columns = 1
+                        Buttons =
+                            buttons
+                            |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
+                            |> Set.ofSeq
+                    }
+                |> Message.createNew chatId
+
+            requests
+            |> Seq.map (fun r -> {
+                r with
+                    Payload = {
+                        r.Payload with
+                            State = HasAppointments appointments
+                    }
+            })
+            |> deps.updateRequests
+            |> ResultAsync.bindAsync (Seq.map _.Id >> deps.getChats)
+            |> ResultAsync.map (Seq.map (fun chat -> createMessage chat.Id |> fun message -> chat.Culture, message))
+            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
+
+        match request.ProcessState with
+        | InProcess -> Ok() |> async.Return
+        | Ready -> Ok() |> async.Return
+        | Failed error -> spreadFailure error
+        | Completed _ ->
+            match request.Payload.State with
+            | NoAppointments -> Ok() |> async.Return
+            | HasAppointments appointments ->
+                deps.getRequests request.Embassy.Id request.Service.Id
+                |> ResultAsync.bindAsync (spreadAppointments appointments)
+
+let private handleRequestResult chatId (request: Request<Payload>) =
     match request.ProcessState with
     | InProcess ->
         "The request is still in process. Please wait for the result."
@@ -63,7 +129,7 @@ let private createMessage chatId (request: Request<Payload>) =
 let private Limits =
     Set [
         Limit.create (20u<attempts>, TimeSpan.FromDays 1)
-        Limit.create (1u<attempts>, TimeSpan.FromMinutes 1.0)
+        Limit.create (1u<attempts>, TimeSpan.FromMinutes 5.0)
     ]
 
 let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (password: string) =
@@ -90,6 +156,7 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) 
                     Embassy = embassy
                     ProcessState = Ready
                     Limits = Limits
+                    Created = DateTime.UtcNow
                     Modified = DateTime.UtcNow
                     Payload = {
                         State = NoAppointments
@@ -110,7 +177,7 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) 
             | Completed _ ->
                 do! deps.tryAddSubscription request
                 let! processedRequest = requestStorage |> deps.processRequest request
-                return processedRequest |> createMessage deps.ChatId
+                return processedRequest |> handleRequestResult deps.ChatId
         }
 
 let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (passwors: string) =
@@ -139,6 +206,7 @@ let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: 
                     Embassy = embassy
                     ProcessState = Ready
                     Limits = Limits
+                    Created = DateTime.UtcNow
                     Modified = DateTime.UtcNow
                     Payload = {
                         State = NoAppointments
@@ -173,54 +241,3 @@ let deleteRequest requestId =
             $"Request with id '%s{requestId.ValueStr}' deleted successfully."
             |> Text.create
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
-
-let handleProcessResult (request: Request<Payload>) =
-    fun (deps: Prenotami.ProcessResult.Dependencies) ->
-        match request.ProcessState with
-        | InProcess -> Ok() |> async.Return
-        | Ready -> Ok() |> async.Return
-        | Failed error ->
-            let createMessage chatId =
-                request.Payload
-                |> Payload.printError error
-                |> Option.map (Text.create >> Message.createNew chatId)
-
-            deps.getRequestChats request
-            |> ResultAsync.map (
-                Seq.choose (fun chat -> createMessage chat.Id |> Option.map (fun message -> chat.Culture, message))
-            )
-            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
-        | Completed _ ->
-            match request.Payload.State with
-            | NoAppointments -> Ok() |> async.Return
-            | HasAppointments appointments ->
-                let createMessage chatId =
-                    appointments
-                    |> Seq.map (fun a ->
-                        let route =
-                            Router.Services(
-                                Services.Method.Italian(
-                                    Services.Italian.Method.Prenotami(
-                                        Services.Italian.Prenotami.Method.Post(
-                                            Services.Italian.Prenotami.Post.ConfirmAppointment(request.Id, a.Id)
-                                        )
-                                    )
-                                )
-                            )
-                        route.Value, a.Value)
-                    |> fun buttons ->
-                        ButtonsGroup.create {
-                            Name = "Appointments available. Please select one."
-                            Columns = 1
-                            Buttons =
-                                buttons
-                                |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                                |> Set.ofSeq
-                        }
-                    |> Message.createNew chatId
-
-                appointments
-                |> deps.setRequestsAppointments request.Embassy.Id request.Service.Id
-                |> ResultAsync.bindAsync (fun _ -> deps.getRequestChats request)
-                |> ResultAsync.map (Seq.map (fun chat -> createMessage chat.Id |> fun message -> chat.Culture, message))
-                |> ResultAsync.bindAsync deps.spreadTranslatedMessages

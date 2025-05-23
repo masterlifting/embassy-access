@@ -93,8 +93,10 @@ type Dependencies = {
 
 module ProcessResult =
     type Dependencies = {
-        getRequestChats: Request<Payload> -> Async<Result<Chat list, Error'>>
+        TaskName: string
+        getChats: RequestId seq -> Async<Result<Chat list, Error'>>
         getRequests: EmbassyId -> ServiceId -> Async<Result<Request<Payload> list, Error'>>
         updateRequests: Request<Payload> seq -> Async<Result<Request<Payload> list, Error'>>
+        processAllRequests: Request<Payload> seq -> Async<Result<unit, Error'>>
         spreadTranslatedMessages: (Culture * Telegram.Producer.Message) seq -> Async<Result<unit, Error'>>
     }

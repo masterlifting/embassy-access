@@ -29,6 +29,7 @@ type Entity<'p>() =
     member val Payload: 'p = Unchecked.defaultof<'p> with get, set
     member val ProcessState = ProcessStateEntity() with get, set
     member val Limits = Array.empty<LimitEntity> with get, set
+    member val Created = DateTime.UtcNow with get, set
     member val Modified = DateTime.UtcNow with get, set
 
     member this.ToDomain(payloadConverter: PayloadConverter<_, _>) =
@@ -59,6 +60,7 @@ type Entity<'p>() =
                 Payload = payload
                 ProcessState = processState
                 Limits = limitations |> Set.ofSeq
+                Created = this.Created
                 Modified = this.Modified
             }
         }
@@ -80,6 +82,7 @@ type private Request<'a> with
                 Payload = payload,
                 ProcessState = this.ProcessState.ToEntity(),
                 Limits = (this.Limits |> Seq.map _.ToEntity() |> Seq.toArray),
+                Created = this.Created,
                 Modified = this.Modified
             ))
 
