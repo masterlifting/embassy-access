@@ -130,8 +130,8 @@ let private handleRequestResult chatId (request: Request<Payload>) =
 
 let private Limits =
     Set [
-        Limit.create (20u<attempts>, TimeSpan.FromDays 1)
-        Limit.create (1u<attempts>, TimeSpan.FromMinutes 5.0)
+        Limit.init (20u<attempts>, TimeSpan.FromDays 1)
+        Limit.init (1u<attempts>, TimeSpan.FromMinutes 5.0)
     ]
 
 let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (password: string) =
