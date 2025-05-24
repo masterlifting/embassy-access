@@ -32,7 +32,13 @@ type Limit = {
     State: LimitState
 } with
 
-    static member create(attempts, period) = {
+    static member init(attempts, period) = {
+        Attempts = attempts
+        Period = period
+        State = LimitState.create attempts period
+    }
+
+    static member private create(attempts, period) = {
         Attempts = attempts
         Period = period
         State = LimitState.create (attempts - 1u<attempts>) period
@@ -67,10 +73,7 @@ type Limit = {
 
     static member print limit =
         match limit.State with
-        | Valid(attempts, period, date) ->
-            match Refresh.calculate period date with
-            | Ready -> $"Remaining attempts '%i{limit.Attempts}' for '%s{limit.Period |> TimeSpan.print}'"
-            | Waiting period -> $"Remaining attempts '%i{attempts}' for '%s{period |> TimeSpan.print}'"
+        | Valid(attempts, period, _) -> $"Remaining attempts '%i{attempts}' for '%s{period |> TimeSpan.print}'"
         | Invalid(period, date) ->
             match Refresh.calculate period date with
             | Ready -> $"Remaining attempts '%i{limit.Attempts}' for '%s{limit.Period |> TimeSpan.print}'"
