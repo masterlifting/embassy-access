@@ -1,6 +1,6 @@
 RussianKdmidServices: &RussianKdmidServices
   - Id: "0"
-    Name: Check slots now
+    Name: Manual check slots
   - Id: "1"
     Name: Slots auto notification
   - Id: "2"
@@ -47,7 +47,7 @@ RussianServices: &RussianServices
 
 ItalianPrenotamiServices: &ItalianPrenotamiServices
   - Id: "0"
-    Name: Check slots now
+    Name: Manual check slots
   - Id: "1"
     Name: Slots auto notification
 

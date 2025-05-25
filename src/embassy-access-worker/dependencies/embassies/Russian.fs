@@ -77,11 +77,11 @@ module Kdmid =
                         | Notary(Notary.PowerOfAttorney op)
                         | Citizenship(Citizenship.Renunciation op) ->
                             match op with
-                            | Kdmid.Operation.SlotsAutoNotification
-                            | Kdmid.Operation.AutoBookingFirstSlot
-                            | Kdmid.Operation.AutoBookingFirstSlotInPeriod
-                            | Kdmid.Operation.AutoBookingLastSlot -> true
-                            | Kdmid.Operation.CheckSlotsNow -> false
+                            | Kdmid.Operation.AutoNotifications
+                            | Kdmid.Operation.AutoBookingFirst
+                            | Kdmid.Operation.AutoBookingFirstInPeriod
+                            | Kdmid.Operation.AutoBookingLast -> true
+                            | Kdmid.Operation.ManualRequest -> false
                         | Passport Passport.Status -> false
 
                     serviceId |> Router.parse |> Result.exists isRequiredService

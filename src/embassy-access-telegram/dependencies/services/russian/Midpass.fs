@@ -16,14 +16,10 @@ type Dependencies = {
     tryFindServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
     tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-    findRequest: RequestId -> Request.Storage<Payload, Payload.Entity> -> Async<Result<Request<Payload>, Error'>>
-    findRequests:
-        EmbassyId
-            -> ServiceId
-            -> Request.Storage<Payload, Payload.Entity>
-            -> Async<Result<Request<Payload> list, Error'>>
-    deleteRequest: RequestId -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
-    initRequestStorage: unit -> Result<Request.Storage<Payload, Payload.Entity>, Error'>
+    findRequest: RequestId -> StorageType -> Async<Result<Request<Payload>, Error'>>
+    findRequests: EmbassyId -> ServiceId -> StorageType -> Async<Result<Request<Payload> list, Error'>>
+    deleteRequest: RequestId -> StorageType -> Async<Result<unit, Error'>>
+    initRequestStorage: unit -> Result<StorageType, Error'>
 } with
 
     static member create(deps: Russian.Dependencies) =

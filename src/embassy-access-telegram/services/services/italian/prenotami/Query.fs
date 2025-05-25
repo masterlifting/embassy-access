@@ -10,6 +10,12 @@ open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services.Domain.Prenotami
 open EA.Italian.Services.Router
 
+[<Literal>]
+let private INPUT_LOGIN = "<login>"
+
+[<Literal>]
+let private INPUT_PASSWORD = "<password>"
+
 let private createBaseRoute method =
     Router.Services(Services.Method.Italian(Method.Prenotami(method)))
 
@@ -18,6 +24,8 @@ let menu (requestId: RequestId) =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
+            let startRequest =
+                Prenotami.Method.Post(Prenotami.Post.StartManualRequest r.Id) |> createBaseRoute
             let info = Prenotami.Method.Get(Prenotami.Get.Info r.Id) |> createBaseRoute
             let delete =
                 Prenotami.Method.Delete(Prenotami.Delete.Subscription(r.Id)) |> createBaseRoute
@@ -26,9 +34,8 @@ let menu (requestId: RequestId) =
                 Name = r.Service.BuildName 1 "."
                 Columns = 1
                 Buttons =
-                    [ info.Value, "Info"; delete.Value, "Delete" ]
-                    |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                    |> Set.ofSeq
+                    [ "Info", info.Value; "Check now", startRequest.Value; "Delete", delete.Value ]
+                    |> ButtonsGroup.createButtons
             }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
@@ -38,12 +45,6 @@ let print (requestId: RequestId) =
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map Request.print<Payload>
         |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
-
-[<Literal>]
-let private INPUT_LOGIN = "<login>"
-
-[<Literal>]
-let private INPUT_PASSWORD = "<password>"
 
 let private createPrenotamiInstruction chatId method =
     let route = Prenotami.Method.Post(method) |> createBaseRoute
@@ -56,14 +57,14 @@ let private createPrenotamiInstruction chatId method =
     |> Ok
     |> async.Return
 
-let private checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) =
+let private setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Prenotami.Dependencies) ->
-        Prenotami.Post.CheckSlotsNow(serviceId, embassyId, INPUT_LOGIN, INPUT_PASSWORD)
+        Prenotami.Post.SetManualRequest(serviceId, embassyId, INPUT_LOGIN, INPUT_PASSWORD)
         |> createPrenotamiInstruction deps.ChatId
 
-let private slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) =
+let private setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Prenotami.Dependencies) ->
-        Prenotami.Post.SlotsAutoNotification(serviceId, embassyId, INPUT_LOGIN, INPUT_PASSWORD)
+        Prenotami.Post.SetAutoNotifications(serviceId, embassyId, INPUT_LOGIN, INPUT_PASSWORD)
         |> createPrenotamiInstruction deps.ChatId
 
 let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
@@ -74,15 +75,12 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
             requests
             |> Seq.map (fun r ->
                 let route = Prenotami.Method.Get(Prenotami.Get.Menu r.Id) |> createBaseRoute
-                route.Value, r.Service.BuildName 1 ".")
+                r.Service.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {
                     Name = "Your subscriptions to manage"
                     Columns = 1
-                    Buttons =
-                        buttons
-                        |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                        |> Set.ofSeq
+                    Buttons = buttons |> ButtonsGroup.createButtons
                 }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
@@ -92,5 +90,5 @@ let getService operation serviceId embassyId forUser =
         | true -> deps |> getUserSubscriptions serviceId embassyId
         | false ->
             match operation with
-            | Prenotami.Operation.CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
-            | Prenotami.Operation.SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
+            | Prenotami.Operation.ManualRequest -> deps |> setManualRequest serviceId embassyId
+            | Prenotami.Operation.AutoNotifications -> deps |> setAutoNotifications serviceId embassyId

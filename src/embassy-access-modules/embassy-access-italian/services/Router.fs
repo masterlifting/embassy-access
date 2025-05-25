@@ -6,18 +6,18 @@ open Infrastructure.Domain
 module Prenotami =
     module Operation =
         type Route =
-            | CheckSlotsNow
-            | SlotsAutoNotification
+            | ManualRequest
+            | AutoNotifications
 
             member this.Value =
                 match this with
-                | CheckSlotsNow -> "0"
-                | SlotsAutoNotification -> "1"
+                | ManualRequest -> "0"
+                | AutoNotifications -> "1"
 
         let parse (input: string) =
             match input with
-            | "0" -> CheckSlotsNow |> Ok
-            | "1" -> SlotsAutoNotification |> Ok
+            | "0" -> ManualRequest |> Ok
+            | "1" -> AutoNotifications |> Ok
             | _ ->
                 "Service operation for the Italian embassy is not supported."
                 |> NotSupported

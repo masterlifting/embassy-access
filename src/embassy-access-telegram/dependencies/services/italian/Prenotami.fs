@@ -20,25 +20,16 @@ type Dependencies = {
     MessageId: int
     findService: ServiceId -> Async<Result<Service, Error'>>
     findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
-    processRequest:
-        Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<Request<Payload>, Error'>>
-    findRequest: RequestId -> Request.Storage<Payload, Payload.Entity> -> Async<Result<Request<Payload>, Error'>>
+    processRequest: Request<Payload> -> StorageType -> Async<Result<Request<Payload>, Error'>>
+    findRequest: RequestId -> StorageType -> Async<Result<Request<Payload>, Error'>>
     tryFindRequest:
-        EmbassyId
-            -> ServiceId
-            -> Credentials
-            -> Request.Storage<Payload, Payload.Entity>
-            -> Async<Result<Request<Payload> option, Error'>>
-    findRequests:
-        EmbassyId
-            -> ServiceId
-            -> Request.Storage<Payload, Payload.Entity>
-            -> Async<Result<Request<Payload> list, Error'>>
-    deleteRequest: RequestId -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
-    createOrUpdateRequest: Request<Payload> -> Request.Storage<Payload, Payload.Entity> -> Async<Result<unit, Error'>>
+        EmbassyId -> ServiceId -> Credentials -> StorageType -> Async<Result<Request<Payload> option, Error'>>
+    findRequests: EmbassyId -> ServiceId -> StorageType -> Async<Result<Request<Payload> list, Error'>>
+    deleteRequest: RequestId -> StorageType -> Async<Result<unit, Error'>>
+    createOrUpdateRequest: Request<Payload> -> StorageType -> Async<Result<unit, Error'>>
     tryAddSubscription: Request<Payload> -> Async<Result<unit, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-    initRequestStorage: unit -> Result<Request.Storage<Payload, Payload.Entity>, Error'>
+    initRequestStorage: unit -> Result<StorageType, Error'>
 } with
 
     static member create(deps: Italian.Dependencies) =

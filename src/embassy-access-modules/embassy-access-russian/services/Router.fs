@@ -6,27 +6,27 @@ open Infrastructure.Domain
 module Kdmid =
     module Operation =
         type Route =
-            | CheckSlotsNow
-            | SlotsAutoNotification
-            | AutoBookingFirstSlot
-            | AutoBookingFirstSlotInPeriod
-            | AutoBookingLastSlot
+            | ManualRequest
+            | AutoNotifications
+            | AutoBookingFirst
+            | AutoBookingFirstInPeriod
+            | AutoBookingLast
 
             member this.Value =
                 match this with
-                | CheckSlotsNow -> "0"
-                | SlotsAutoNotification -> "1"
-                | AutoBookingFirstSlot -> "2"
-                | AutoBookingFirstSlotInPeriod -> "3"
-                | AutoBookingLastSlot -> "4"
+                | ManualRequest -> "0"
+                | AutoNotifications -> "1"
+                | AutoBookingFirst -> "2"
+                | AutoBookingFirstInPeriod -> "3"
+                | AutoBookingLast -> "4"
 
         let parse (input: string) =
             match input with
-            | "0" -> CheckSlotsNow |> Ok
-            | "1" -> SlotsAutoNotification |> Ok
-            | "2" -> AutoBookingFirstSlot |> Ok
-            | "3" -> AutoBookingFirstSlotInPeriod |> Ok
-            | "4" -> AutoBookingLastSlot |> Ok
+            | "0" -> ManualRequest |> Ok
+            | "1" -> AutoNotifications |> Ok
+            | "2" -> AutoBookingFirst |> Ok
+            | "3" -> AutoBookingFirstInPeriod |> Ok
+            | "4" -> AutoBookingLast |> Ok
             | _ ->
                 "Service operation for the Russian embassy is not supported."
                 |> NotSupported

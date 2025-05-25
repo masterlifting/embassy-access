@@ -44,16 +44,13 @@ let handleProcessResult (request: Request<Payload>) =
                                 )
                             )
                         )
-                    route.Value, a |> Appointment.print)
+                    a |> Appointment.print, route.Value)
                 |> fun buttons ->
                     let serviceName = request.Service.BuildName 1 "."
                     ButtonsGroup.create {
                         Name = $"Available appointments for %s{serviceName}"
                         Columns = 1
-                        Buttons =
-                            buttons
-                            |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                            |> Set.ofSeq
+                        Buttons = buttons |> ButtonsGroup.createButtons
                     }
                 |> Message.createNew chatId
 
@@ -113,16 +110,13 @@ let private handleRequestResult chatId (request: Request<Payload>) =
                             )
                         )
                     )
-                route.Value, a |> Appointment.print)
+                a |> Appointment.print, route.Value)
             |> fun buttons ->
                 let serviceName = request.Service.BuildName 1 "."
                 ButtonsGroup.create {
                     Name = $"Available appointments for %s{serviceName}"
                     Columns = 1
-                    Buttons =
-                        buttons
-                        |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                        |> Set.ofSeq
+                    Buttons = buttons |> ButtonsGroup.createButtons
                 }
             |> Message.createNew chatId
     |> Ok
@@ -134,7 +128,7 @@ let private Limits =
         Limit.init (1u<attempts>, TimeSpan.FromMinutes 5.0)
     ]
 
-let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (password: string) =
+let setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (password: string) =
     fun (deps: Prenotami.Dependencies) ->
         resultAsync {
             let! payloadCredentials = Credentials.parse login password |> async.Return
@@ -166,6 +160,30 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) 
                     }
                 }
 
+            do! requestStorage |> deps.createOrUpdateRequest request
+            do! deps.tryAddSubscription request
+
+            return
+                $"Manual request for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}'  with login '%s{login}' saved and can be started from your services list."
+                |> Text.create
+                |> Message.createNew deps.ChatId
+                |> Ok
+                |> async.Return
+        }
+
+let startManualRequest (requestId: RequestId) =
+    fun (deps: Prenotami.Dependencies) ->
+        resultAsync {
+            let! requestStorage = deps.initRequestStorage () |> async.Return
+            let! request = requestStorage |> deps.findRequest requestId
+
+            let request = {
+                request with
+                    Payload = {
+                        request.Payload with
+                            State = NoAppointments
+                    }
+            }
             match request.ProcessState with
             | InProcess ->
                 return
@@ -182,10 +200,10 @@ let checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) 
                 return processedRequest |> handleRequestResult deps.ChatId
         }
 
-let slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (passwors: string) =
+let setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) (login: string) (password: string) =
     fun (deps: Prenotami.Dependencies) ->
         resultAsync {
-            let! payloadCredentials = Credentials.parse login passwors |> async.Return
+            let! payloadCredentials = Credentials.parse login password |> async.Return
             let! service = deps.findService serviceId
             let! embassy = deps.findEmbassy embassyId
             let! requestStorage = deps.initRequestStorage () |> async.Return

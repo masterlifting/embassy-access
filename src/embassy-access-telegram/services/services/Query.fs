@@ -19,10 +19,7 @@ let private createButtonsGroup chatId messageId name buttons =
         ButtonsGroup.create {
             Name = name |> Option.defaultValue "Choose the service you want to get"
             Columns = 1
-            Buttons =
-                buttons
-                |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                |> Set.ofSeq
+            Buttons = buttons |> ButtonsGroup.createButtons
         }
     |> Message.tryReplace (Some messageId) chatId
     |> Ok
@@ -74,7 +71,7 @@ let getService embassyId serviceId =
                 |> Seq.map _.Value
                 |> Seq.map (fun service ->
                     let route = Router.Services(Method.Get(Get.Service(embassyId, service.Id)))
-                    route.Value, service.LastName)
+                    service.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
@@ -102,7 +99,7 @@ let getUserService embassyId serviceId =
                 |> Seq.filter (fun service -> service.Id.Value.IsInSeq userServiceIds)
                 |> Seq.map (fun service ->
                     let route = Router.Services(Method.Get(Get.UserService(embassyId, service.Id)))
-                    route.Value, service.LastName)
+                    service.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"You have no services for '%s{serviceId.ValueStr}'."
