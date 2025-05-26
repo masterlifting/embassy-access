@@ -33,18 +33,18 @@ type Request<'payload> = {
 } with
 
     static member inline print(request: Request<_>) =
-        let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n "
+        let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n - "
         let state = request.ProcessState |> ProcessState.print
-        let embassyName = request.Embassy.BuildName 1 "."
-        let serviceName = request.Service.BuildName 2 "."
+        let embassyName = request.Embassy.BuildName 1 "->"
+        let serviceName = request.Service.BuildName 2 "->"
 
         $"[Subscription] '%s{request.Id.ValueStr}'"
-        + $"\n[Embassy]\n %s{embassyName}"
-        + $"\n[Service]\n %s{serviceName}"
-        + $"\n[Created] '%s{(request.Created.AddHours request.Embassy.TimeZone) |> String.fromDateTime}'"
-        + $"\n[Modified] '%s{(request.Modified.AddHours request.Embassy.TimeZone) |> String.fromDateTime}'"
+        + $"\n[Embassy] %s{embassyName}"
+        + $"\n[Service] %s{serviceName}"
+        + $"\n[Created] '%s{request.Created.AddHours request.Embassy.TimeZone |> String.fromDateTime}'"
+        + $"\n[Modified] '%s{request.Modified.AddHours request.Embassy.TimeZone |> String.fromDateTime}'"
         + $"\n[Last state] %s{state}"
-        + $"\n[Limits]\n %s{limits}"
+        + $"\n[Limits]\n - %s{limits}"
 
     member this.UpdateLimits() =
         this.Limits
