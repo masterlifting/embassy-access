@@ -6,19 +6,16 @@ open EA.Telegram.Router
 open EA.Telegram.Router.Culture
 open EA.Telegram.Dependencies
 
-let private createMessage chatId msgIdOpt nameOpt data =
+let private createMessage chatId msgIdOpt nameOpt buttons =
     let name = nameOpt |> Option.defaultValue "Choose from the list"
 
-    match data |> Seq.length with
+    match buttons |> Seq.length with
     | 0 -> Text.create $"No data for the '{name}'"
     | _ ->
         ButtonsGroup.create {
             Name = name
             Columns = 1
-            Buttons =
-                data
-                |> Seq.map (fun (callback, name) -> callback |> CallbackData |> Button.create name)
-                |> Set.ofSeq
+            Buttons = buttons |> ButtonsGroup.createButtons
         }
     |> Message.tryReplace msgIdOpt chatId
 
@@ -29,7 +26,7 @@ let getCultures () =
             let route = Router.Culture(Method.Post(Post.SetCulture(culture.Key)))
             let name = culture.Value
 
-            route.Value, name)
+            name, route.Value)
         |> createMessage deps.ChatId None (Some "Choose your language")
 
 let getCulturesCallback callback =
@@ -40,5 +37,5 @@ let getCulturesCallback callback =
                 Router.Culture(Method.Post(Post.SetCultureCallback(callback, culture.Key)))
             let name = culture.Value
 
-            (route.Value, name))
+            name, route.Value)
         |> createMessage deps.ChatId None (Some "Choose your language")

@@ -5,20 +5,21 @@ open EA.Core.Domain
 open EA.Telegram.Domain
 
 type Route =
-    | CheckSlotsNow of ServiceId * EmbassyId * login: string * password: string
-    | SlotsAutoNotification of ServiceId * EmbassyId * login: string * password: string
+    | SetManualRequest of ServiceId * EmbassyId * login: string * password: string
+    | SetAutoNotifications of ServiceId * EmbassyId * login: string * password: string
     | ConfirmAppointment of RequestId * AppointmentId
+    | StartManualRequest of RequestId
 
     member this.Value =
         match this with
-        | CheckSlotsNow(serviceId, embassyId, login, password) -> [
+        | SetManualRequest(serviceId, embassyId, login, password) -> [
             "0"
             serviceId.ValueStr
             embassyId.ValueStr
             login
             password
           ]
-        | SlotsAutoNotification(serviceId, embassyId, login, password) -> [
+        | SetAutoNotifications(serviceId, embassyId, login, password) -> [
             "1"
             serviceId.ValueStr
             embassyId.ValueStr
@@ -26,6 +27,7 @@ type Route =
             password
           ]
         | ConfirmAppointment(requestId, appointmentId) -> [ "2"; requestId.ValueStr; appointmentId.ValueStr ]
+        | StartManualRequest(requestId) -> [ "3"; requestId.ValueStr ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
@@ -33,7 +35,7 @@ type Route =
 
         match parts with
         | [| "0"; serviceId; embassyId; login; password |] ->
-            CheckSlotsNow(
+            SetManualRequest(
                 serviceId |> Graph.NodeIdValue |> ServiceId,
                 embassyId |> Graph.NodeIdValue |> EmbassyId,
                 login,
@@ -41,7 +43,7 @@ type Route =
             )
             |> Ok
         | [| "1"; serviceId; embassyId; login; password |] ->
-            SlotsAutoNotification(
+            SetAutoNotifications(
                 serviceId |> Graph.NodeIdValue |> ServiceId,
                 embassyId |> Graph.NodeIdValue |> EmbassyId,
                 login,
@@ -51,6 +53,7 @@ type Route =
         | [| "2"; requestId; appointmentId |] ->
             ConfirmAppointment(requestId |> UUID16 |> RequestId, appointmentId |> UUID16 |> AppointmentId)
             |> Ok
+        | [| "3"; requestId |] -> StartManualRequest(requestId |> UUID16 |> RequestId) |> Ok
         | _ ->
             $"'{input}' of 'Services.Italian.Prenotami.Post' endpoint is not supported."
             |> NotSupported

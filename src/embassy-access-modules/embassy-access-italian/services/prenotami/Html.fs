@@ -23,14 +23,11 @@ let setPassword (request: Request<Payload>) client =
         client.Browser.fillInput (Browser.Selector "//input[@id='login-password']") request.Payload.Credentials.Password
     )
 
-let mouseShuffle client =
-    ResultAsync.bindAsync client.Browser.mouseShuffle
-
 let submitForm client =
     ResultAsync.bindAsync (
         client.Browser.submitForm
             (Browser.Selector "form#login-form")
-            (Regex("https?://prenotami\\.esteri\\.it/(UserArea(\\?.*)?|Home/Login)$"))
+            (Regex "https?://prenotami\\.esteri\\.it/(UserArea(\\?.*)?|Home/Login)$")
     )
 
 let clickBookTab client =
@@ -38,7 +35,7 @@ let clickBookTab client =
         page
         |> client.Browser.mouseClick
             (Browser.Selector "//a[@id='advanced']")
-            (Some(Regex("https?://prenotami\\.esteri\\.it/Services(\\?.*)?$")))
+            (Browser.Mouse.WaitFor.Url "https?://prenotami\\.esteri\\.it/Services(\\?.*)?$")
 
     ResultAsync.bindAsync (fun page ->
         page
@@ -66,7 +63,11 @@ let chooseBookService (request: Request<Payload>) client =
             |> NotFound
             |> Error
         |> Result.map Browser.Selector
-        |> ResultAsync.wrap (fun selector -> page |> client.Browser.mouseClick selector None))
+        |> ResultAsync.wrap (fun selector ->
+            page
+            |> client.Browser.mouseClick
+                selector
+                (Browser.Mouse.WaitFor.Selector(Browser.Selector "//div[starts-with(@id, 'jconfirm-box')]//div"))))
 
 let setProcessResult (request: Request<Payload>) client =
     ResultAsync.bindAsync (fun page ->

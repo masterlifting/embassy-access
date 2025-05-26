@@ -11,6 +11,9 @@ open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services.Domain.Kdmid
 open EA.Russian.Services.Router
 
+[<Literal>]
+let private INPUT_LINK = "<link>"
+
 let private createBaseRoute method =
     Router.Services(Services.Method.Russian(Method.Kdmid(method)))
 
@@ -19,6 +22,8 @@ let menu (requestId: RequestId) =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
+            let startRequest =
+                Kdmid.Method.Post(Kdmid.Post.StartManualRequest r.Id) |> createBaseRoute
             let info = Kdmid.Method.Get(Kdmid.Get.Info r.Id) |> createBaseRoute
             let delete = Kdmid.Method.Delete(Kdmid.Delete.Subscription(r.Id)) |> createBaseRoute
 
@@ -26,9 +31,8 @@ let menu (requestId: RequestId) =
                 Name = r.Service.BuildName 1 "."
                 Columns = 1
                 Buttons =
-                    [ info.Value, "Info"; delete.Value, "Delete" ]
-                    |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                    |> Set.ofSeq
+                    [ "Info", info.Value; "Check now", startRequest.Value; "Delete", delete.Value ]
+                    |> ButtonsGroup.createButtons
             }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
@@ -38,9 +42,6 @@ let info (requestId: RequestId) =
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map Request.print<Payload>
         |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
-
-[<Literal>]
-let private INPUT_LINK = "<link>"
 
 let private createKdmidInstruction chatId method =
     let route = Kdmid.Method.Post(method) |> createBaseRoute
@@ -53,29 +54,29 @@ let private createKdmidInstruction chatId method =
     |> Ok
     |> async.Return
 
-let private checkSlotsNow (serviceId: ServiceId) (embassyId: EmbassyId) =
+let private setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.CheckSlotsNow(serviceId, embassyId, INPUT_LINK)
+        Kdmid.Post.SetManualRequest(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
-let private slotsAutoNotification (serviceId: ServiceId) (embassyId: EmbassyId) =
+let private setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.SlotsAutoNotification(serviceId, embassyId, INPUT_LINK)
+        Kdmid.Post.SetAutoNotifications(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
-let private bookFirstSlot (serviceId: ServiceId) (embassyId: EmbassyId) =
+let private setAutoBookingFirst (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.BookFirstSlot(serviceId, embassyId, INPUT_LINK)
+        Kdmid.Post.SetAutoBookingFirst(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
-let private bookFirstSlotInPeriod (serviceId: ServiceId) (embassyId: EmbassyId) =
+let private setAutoBookingFirstInPeriod (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, DateTime.UtcNow, DateTime.UtcNow, INPUT_LINK)
+        Kdmid.Post.SetAutoBookingFirstInPeriod(serviceId, embassyId, DateTime.UtcNow, DateTime.UtcNow, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
-let private bookLastSlot (serviceId: ServiceId) (embassyId: EmbassyId) =
+let private setAutoBookingLast (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.BookLastSlot(serviceId, embassyId, INPUT_LINK)
+        Kdmid.Post.SetAutoBookingLast(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
 let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
@@ -86,15 +87,12 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
             requests
             |> Seq.map (fun r ->
                 let route = Kdmid.Method.Get(Kdmid.Get.Menu r.Id) |> createBaseRoute
-                route.Value, r.Service.BuildName 1 ".")
+                r.Service.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {
                     Name = "Your subscriptions to manage"
                     Columns = 1
-                    Buttons =
-                        buttons
-                        |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                        |> Set.ofSeq
+                    Buttons = buttons |> ButtonsGroup.createButtons
                 }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
@@ -104,8 +102,8 @@ let getService operation (serviceId: ServiceId) (embassyId: EmbassyId) forUser =
         | true -> deps |> getUserSubscriptions serviceId embassyId
         | false ->
             match operation with
-            | Kdmid.Operation.CheckSlotsNow -> deps |> checkSlotsNow serviceId embassyId
-            | Kdmid.Operation.SlotsAutoNotification -> deps |> slotsAutoNotification serviceId embassyId
-            | Kdmid.Operation.AutoBookingFirstSlot -> deps |> bookFirstSlot serviceId embassyId
-            | Kdmid.Operation.AutoBookingFirstSlotInPeriod -> deps |> bookFirstSlotInPeriod serviceId embassyId
-            | Kdmid.Operation.AutoBookingLastSlot -> deps |> bookLastSlot serviceId embassyId
+            | Kdmid.Operation.ManualRequest -> deps |> setManualRequest serviceId embassyId
+            | Kdmid.Operation.AutoNotifications -> deps |> setAutoNotifications serviceId embassyId
+            | Kdmid.Operation.AutoBookingFirst -> deps |> setAutoBookingFirst serviceId embassyId
+            | Kdmid.Operation.AutoBookingFirstInPeriod -> deps |> setAutoBookingFirstInPeriod serviceId embassyId
+            | Kdmid.Operation.AutoBookingLast -> deps |> setAutoBookingLast serviceId embassyId

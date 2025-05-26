@@ -19,10 +19,7 @@ let private createButtonsGroup chatId messageId name buttons =
         ButtonsGroup.create {
             Name = name |> Option.defaultValue "Choose the embassy you what to visit"
             Columns = 3
-            Buttons =
-                buttons
-                |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                |> Set.ofSeq
+            Buttons = buttons |> ButtonsGroup.createButtons
         }
     |> Message.tryReplace messageId chatId
     |> Ok
@@ -47,7 +44,7 @@ let private getEmbassy' embassyId firstCall =
                 |> Seq.map _.Value
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.Embassy embassy.Id))
-                    route.Value, embassy.LastName)
+                    embassy.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"Embassy '%s{embassyId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
@@ -77,7 +74,7 @@ let private getUserEmbassy' embassyId firstCall =
                 |> Seq.filter (fun embassy -> embassy.Id.Value.IsInSeq userEmbassyIds)
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.UserEmbassy embassy.Id))
-                    route.Value, embassy.LastName)
+                    embassy.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"You have no embassies for '%s{embassyId.ValueStr}'."

@@ -19,8 +19,7 @@ let init (deps: Dependencies) = {
         loadPage = fun uri -> deps.WebBrowser |> Browser.Page.load uri
         closePage = fun page -> page |> Browser.Page.close
         fillInput = fun selector value page -> page |> Browser.Page.Input.fill selector value
-        mouseClick = fun selector pattern page -> page |> Browser.Page.Mouse.click selector pattern
-        mouseShuffle = fun page -> page |> Browser.Page.Mouse.shuffle (TimeSpan.FromSeconds 20.0)
+        mouseClick = fun selector awaiter page -> page |> Browser.Page.Mouse.click selector awaiter
         tryFindText = fun selector page -> page |> Browser.Page.Text.tryFind selector
         submitForm = fun selector urlPattern page -> page |> Browser.Page.Form.submit selector urlPattern
     |}

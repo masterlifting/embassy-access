@@ -25,10 +25,7 @@ let menu (requestId: RequestId) =
             ButtonsGroup.create {
                 Name = r.Service.BuildName 1 "."
                 Columns = 1
-                Buttons =
-                    [ info.Value, "Info"; delete.Value, "Delete" ]
-                    |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                    |> Set.ofSeq
+                Buttons = [ "Info", info.Value; "Delete", delete.Value ] |> ButtonsGroup.createButtons
             }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 
@@ -66,15 +63,12 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
             requests
             |> Seq.map (fun r ->
                 let route = Midpass.Method.Get(Midpass.Get.Menu r.Id) |> createBaseRoute
-                route.Value, r.Service.BuildName 1 ".")
+                r.Service.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {
                     Name = "Your subscriptions to manage"
                     Columns = 1
-                    Buttons =
-                        buttons
-                        |> Seq.map (fun (callback, name) -> Button.create name (CallbackData callback))
-                        |> Set.ofSeq
+                    Buttons = buttons |> ButtonsGroup.createButtons
                 }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
 

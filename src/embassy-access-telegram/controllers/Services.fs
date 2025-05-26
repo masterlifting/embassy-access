@@ -28,18 +28,19 @@ module Russian =
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Kdmid.Method.Post post ->
                         match post with
-                        | Kdmid.Post.CheckSlotsNow(serviceId, embassyId, link) ->
-                            Kdmid.Command.checkSlotsNow serviceId embassyId link
-                        | Kdmid.Post.SlotsAutoNotification(serviceId, embassyId, link) ->
-                            Kdmid.Command.slotsAutoNotification serviceId embassyId link
-                        | Kdmid.Post.BookFirstSlot(serviceId, embassyId, link) ->
-                            Kdmid.Command.bookFirstSlot serviceId embassyId link
-                        | Kdmid.Post.BookLastSlot(serviceId, embassyId, link) ->
-                            Kdmid.Command.bookLastSlot serviceId embassyId link
-                        | Kdmid.Post.BookFirstSlotInPeriod(serviceId, embassyId, start, finish, link) ->
-                            Kdmid.Command.bookFirstSlotInPeriod serviceId embassyId start finish link
+                        | Kdmid.Post.SetManualRequest(serviceId, embassyId, link) ->
+                            Kdmid.Command.setManualRequest serviceId embassyId link
+                        | Kdmid.Post.SetAutoNotifications(serviceId, embassyId, link) ->
+                            Kdmid.Command.setAutoNotifications serviceId embassyId link
+                        | Kdmid.Post.SetAutoBookingFirst(serviceId, embassyId, link) ->
+                            Kdmid.Command.setAutoBookingFirst serviceId embassyId link
+                        | Kdmid.Post.SetAutoBookingLast(serviceId, embassyId, link) ->
+                            Kdmid.Command.setAutoBookingLast serviceId embassyId link
+                        | Kdmid.Post.SetAutoBookingFirstInPeriod(serviceId, embassyId, start, finish, link) ->
+                            Kdmid.Command.setAutoBookingFirstInPeriod serviceId embassyId start finish link
                         | Kdmid.Post.ConfirmAppointment(requestId, appointmentId) ->
                             Kdmid.Command.confirmAppointment requestId appointmentId
+                        | Kdmid.Post.StartManualRequest requestId -> Kdmid.Command.startManualRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Kdmid.Method.Delete delete ->
                         match delete with
@@ -86,12 +87,13 @@ module Italian =
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Prenotami.Method.Post post ->
                         match post with
-                        | Prenotami.Post.CheckSlotsNow(serviceId, embassyId, login, password) ->
-                            Prenotami.Command.checkSlotsNow serviceId embassyId login password
-                        | Prenotami.Post.SlotsAutoNotification(serviceId, embassyId, login, password) ->
-                            Prenotami.Command.slotsAutoNotification serviceId embassyId login password
+                        | Prenotami.Post.SetManualRequest(serviceId, embassyId, login, password) ->
+                            Prenotami.Command.setManualRequest serviceId embassyId login password
+                        | Prenotami.Post.SetAutoNotifications(serviceId, embassyId, login, password) ->
+                            Prenotami.Command.setAutoNotifications serviceId embassyId login password
                         | Prenotami.Post.ConfirmAppointment(requestId, appointmentId) ->
                             Prenotami.Command.confirmAppointment requestId appointmentId
+                        | Prenotami.Post.StartManualRequest requestId -> Prenotami.Command.startManualRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
                     | Prenotami.Method.Delete delete ->
                         match delete with

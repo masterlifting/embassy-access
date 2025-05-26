@@ -14,7 +14,6 @@ let private processWebSite request client =
     Html.loadPage client
     |> Html.setLogin request client
     |> Html.setPassword request client
-    |> Html.mouseShuffle client
     |> Html.submitForm client
     |> Html.clickBookTab client
     |> Html.chooseBookService request client
