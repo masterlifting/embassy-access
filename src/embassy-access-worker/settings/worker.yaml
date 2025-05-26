@@ -69,7 +69,7 @@ Worker:
           Tasks:
             - Id: SA
               Enabled: true
-              Recursively: 00:30:00
+              Recursively: 02:00:00
               Duration: 00:02:00
               Description: Search appointments for Russian embassy in Serbia
               Schedule:
