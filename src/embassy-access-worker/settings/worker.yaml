@@ -4,7 +4,6 @@ Worker:
   Id: WRK
   Enabled: true
   WaitResult: true
-  Description: Initialization of the required services
   Schedule:
   Tasks:
     - Id: FRA
