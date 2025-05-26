@@ -27,7 +27,7 @@ let submitForm client =
     ResultAsync.bindAsync (
         client.Browser.submitForm
             (Browser.Selector "form#login-form")
-            (Regex("https?://prenotami\\.esteri\\.it/(UserArea(\\?.*)?|Home/Login)$"))
+            (Regex "https?://prenotami\\.esteri\\.it/(UserArea(\\?.*)?|Home/Login)$")
     )
 
 let clickBookTab client =
@@ -35,7 +35,7 @@ let clickBookTab client =
         page
         |> client.Browser.mouseClick
             (Browser.Selector "//a[@id='advanced']")
-            (Browser.Mouse.WaitFor.UrlRegexPattern("https?://prenotami\\.esteri\\.it/Services(\\?.*)?$"))
+            (Browser.Mouse.WaitFor.Url "https?://prenotami\\.esteri\\.it/Services(\\?.*)?$")
 
     ResultAsync.bindAsync (fun page ->
         page
@@ -67,7 +67,7 @@ let chooseBookService (request: Request<Payload>) client =
             page
             |> client.Browser.mouseClick
                 selector
-                (Browser.Mouse.WaitFor.Popup(Browser.Selector "//div[starts-with(@id, 'jconfirm-box')]//div"))))
+                (Browser.Mouse.WaitFor.Selector(Browser.Selector "//div[starts-with(@id, 'jconfirm-box')]//div"))))
 
 let setProcessResult (request: Request<Payload>) client =
     ResultAsync.bindAsync (fun page ->
