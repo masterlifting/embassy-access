@@ -13,5 +13,8 @@ let run (task, cfg, ct) =
         |> Async.Ignore
         |> Async.Start
 
-        return $"%s{ActiveTask.print task} Required services have been initialized." |> Log.scs |> Ok
+        return
+            $"%s{ActiveTask.print task} Required services have been initialized."
+            |> Log.scs
+            |> Ok
     }
