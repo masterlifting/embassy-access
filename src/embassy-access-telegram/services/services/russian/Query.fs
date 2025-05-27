@@ -15,7 +15,7 @@ let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
             | Passport.Status -> Midpass
             | Passport.PassportFiveYears ops -> Kdmid ops
             | Passport.BiometricPassport ops -> Kdmid ops
-            | Passport.PassportIssuance ops -> Kdmid ops        
+            | Passport.PassportIssuance ops -> Kdmid ops
         | Notary route ->
             match route with
             | Notary.MarriageCertificate ops -> Kdmid ops

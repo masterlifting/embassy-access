@@ -54,8 +54,10 @@ module private Payload =
                 let group = payload.Value
 
                 let items =
-                    { Value = group.Name }
-                    :: (group.Buttons |> Set.map (fun button -> { Value = button.Name }) |> Set.toList)
+                    { RequestItem.Value = group.Name }
+                    :: (group.Buttons
+                        |> Set.map (fun button -> { RequestItem.Value = button.Name })
+                        |> Set.toList)
 
                 let request = {
                     Culture = culture

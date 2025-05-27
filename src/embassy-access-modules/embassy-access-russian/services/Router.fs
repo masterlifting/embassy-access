@@ -96,7 +96,7 @@ module Notary =
             | ConsentCertification op -> [ "13"; op.Value ]
             | SignatureCertification op -> [ "14"; op.Value ]
             | CertificateIssuance op -> [ "15"; op.Value ]
-    
+
     let parse (input: string list) =
         match input with
         | [ "0"; op ] -> op |> Kdmid.Operation.parse |> Result.map MarriageCertificate

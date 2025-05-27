@@ -15,6 +15,12 @@ let create cfg ct =
         let! aiProvider = aiProvider.initProvider ()
         let! cultureStorage = persistence.initCultureStorage ()
 
+        let initDataSet () =
+            cultureStorage
+            |> AIProvider.Services.DataAccess.Culture.Response.loadDataSet
+            |> ResultAsync.bindAsync (fun dataSet ->
+                aiProvider |> AIProvider.Services.Culture.initDataSet (Some dataSet) ct)
+
         let client: EA.Telegram.Dependencies.Client.Dependencies = {
             ct = ct
             Culture =
