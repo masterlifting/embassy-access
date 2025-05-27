@@ -14,25 +14,105 @@ RussianServices: &RussianServices
   Id: RUS
   Name: Russian embassy
   Description: Choose the service of the Russian embassy
-  Children:
+  Children:    
     - Id: "0"
       Name: Passport
       Description: Passport services
       Children:
         - Id: "0"
-          Name: International passport
-          Description: International passport options
+          Name: Passport status
+        - Id: "1"
+          Name: Passport for 5 years
+          Description: Application for a passport valid for 5 years
           Children:
             <<: *RussianKdmidServices
-        - Id: "1"
-          Name: Passport status
+        - Id: "2"
+          Name: Biometric passport
+          Description: Application for biometric passport for 10 years
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "3"
+          Name: Passport issuance
+          Description: Issuance of ready passport (5 or 10 years)
+          Children:
+            <<: *RussianKdmidServices    
     - Id: "1"
       Name: Notary
       Description: Notary services
       Children:
         - Id: "0"
-          Name: Power of attorney
-          Description: Power of attorney options
+          Name: Marriage certificate in Serbia
+          Description: Certificate for marriage in Serbia
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "1"
+          Name: Marriage certificate
+          Description: Marriage certificate verification
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "2"
+          Name: Divorce certificate
+          Description: Divorce documentation
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "3"
+          Name: Name change
+          Description: Documentation for name change
+          Children:
+            <<: *RussianKdmidServices        
+        - Id: "4"
+          Name: Electronic document verification
+          Description: Verification of electronic documents
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "5"
+          Name: Registration removal
+          Description: Removal from registration records
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "6"
+          Name: Consular registration
+          Description: Application for consular registration
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "7"
+          Name: Marriage registration
+          Description: Application for marriage registration
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "8"
+          Name: Will certification
+          Description: Will certification services
+          Children:
+            <<: *RussianKdmidServices        
+        - Id: "9"
+          Name: Document claim
+          Description: Document claim services
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "10"
+          Name: Power of attorney certification
+          Description: Certification of power of attorney
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "11"
+          Name: Copy certification
+          Description: Certification of document copies
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "12"
+          Name: Translation certification
+          Description: Certification of translations
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "13"
+          Name: Consent certification
+          Description: Certification of consent documents
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "14"
+          Name: Certificate issuance
+          Description: Issuance of certificates
           Children:
             <<: *RussianKdmidServices
     - Id: "2"
@@ -42,6 +122,45 @@ RussianServices: &RussianServices
         - Id: "0"
           Name: Citizenship renunciation
           Description: Renunciation options
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "1"
+          Name: Child citizenship (both parents RF)
+          Description: Citizenship for child with both parents Russian citizens
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "2"
+          Name: Child citizenship (mixed marriage)
+          Description: Citizenship for child with one Russian parent
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "3"
+          Name: Citizenship termination
+          Description: Application for termination of citizenship
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "4"
+          Name: Citizenship verification
+          Description: Verification of Russian citizenship
+          Children:
+            <<: *RussianKdmidServices
+    - Id: "3"
+      Name: Pension
+      Description: Pension services
+      Children:
+        - Id: "0"
+          Name: Initial pension consultation
+          Description: Initial consultation on pension matters
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "1"
+          Name: Other pension matters
+          Description: Consultation on other pension matters
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "2"
+          Name: Pension fund certificate
+          Description: Certificate for Russian Pension Fund
           Children:
             <<: *RussianKdmidServices
 

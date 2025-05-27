@@ -15,7 +15,7 @@ open EA.Russian.Services.Router
 let private INPUT_LINK = "<link>"
 
 let private createBaseRoute method =
-    Router.Services(Services.Method.Russian(Method.Kdmid(method)))
+    Router.Services(Services.Method.Russian(Method.Kdmid method))
 
 let menu (requestId: RequestId) =
     fun (deps: Kdmid.Dependencies) ->
@@ -44,7 +44,7 @@ let info (requestId: RequestId) =
         |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
 
 let private createKdmidInstruction chatId method =
-    let route = Kdmid.Method.Post(method) |> createBaseRoute
+    let route = Kdmid.Method.Post method |> createBaseRoute
 
     $"To use this service, please send the following command back to the bot: {String.addLines 2}'{route.Value}'"
     + $"{String.addLines 2}Replace the {INPUT_LINK} with the link that you received from the kdmid website after confirmation."
