@@ -120,7 +120,6 @@ module Notary =
 module Citizenship =
 
     type Route =
-        | Renunciation of Kdmid.Operation.Route
         | ChildCitizenshipBothParents of Kdmid.Operation.Route
         | ChildCitizenshipMixedMarriage of Kdmid.Operation.Route
         | CitizenshipTermination of Kdmid.Operation.Route
@@ -128,19 +127,17 @@ module Citizenship =
 
         member this.Value =
             match this with
-            | Renunciation op -> [ "0"; op.Value ]
-            | ChildCitizenshipBothParents op -> [ "1"; op.Value ]
-            | ChildCitizenshipMixedMarriage op -> [ "2"; op.Value ]
-            | CitizenshipTermination op -> [ "3"; op.Value ]
-            | CitizenshipVerification op -> [ "4"; op.Value ]
+            | ChildCitizenshipBothParents op -> [ "0"; op.Value ]
+            | ChildCitizenshipMixedMarriage op -> [ "1"; op.Value ]
+            | CitizenshipTermination op -> [ "2"; op.Value ]
+            | CitizenshipVerification op -> [ "3"; op.Value ]
 
     let parse (input: string list) =
         match input with
-        | [ "0"; op ] -> op |> Kdmid.Operation.parse |> Result.map Renunciation
-        | [ "1"; op ] -> op |> Kdmid.Operation.parse |> Result.map ChildCitizenshipBothParents
-        | [ "2"; op ] -> op |> Kdmid.Operation.parse |> Result.map ChildCitizenshipMixedMarriage
-        | [ "3"; op ] -> op |> Kdmid.Operation.parse |> Result.map CitizenshipTermination
-        | [ "4"; op ] -> op |> Kdmid.Operation.parse |> Result.map CitizenshipVerification
+        | [ "0"; op ] -> op |> Kdmid.Operation.parse |> Result.map ChildCitizenshipBothParents
+        | [ "1"; op ] -> op |> Kdmid.Operation.parse |> Result.map ChildCitizenshipMixedMarriage
+        | [ "2"; op ] -> op |> Kdmid.Operation.parse |> Result.map CitizenshipTermination
+        | [ "3"; op ] -> op |> Kdmid.Operation.parse |> Result.map CitizenshipVerification
         | _ ->
             "Citizenship service for the Russian embassy is not supported."
             |> NotSupported

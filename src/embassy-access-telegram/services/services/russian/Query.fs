@@ -35,7 +35,6 @@ let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
             | Notary.CertificateIssuance ops -> Kdmid ops
         | Citizenship route ->
             match route with
-            | Citizenship.Renunciation ops -> Kdmid ops
             | Citizenship.ChildCitizenshipBothParents ops -> Kdmid ops
             | Citizenship.ChildCitizenshipMixedMarriage ops -> Kdmid ops
             | Citizenship.CitizenshipTermination ops -> Kdmid ops

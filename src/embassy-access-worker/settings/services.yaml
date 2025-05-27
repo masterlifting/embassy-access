@@ -114,32 +114,27 @@ RussianServices: &RussianServices
           Name: Certificate issuance
           Description: Issuance of certificates
           Children:
-            <<: *RussianKdmidServices
+            <<: *RussianKdmidServices    
     - Id: "2"
       Name: Citizenship
       Description: Citizenship services
       Children:
         - Id: "0"
-          Name: Citizenship renunciation
-          Description: Renunciation options
-          Children:
-            <<: *RussianKdmidServices
-        - Id: "1"
           Name: Child citizenship (both parents RF)
           Description: Citizenship for child with both parents Russian citizens
           Children:
             <<: *RussianKdmidServices
-        - Id: "2"
+        - Id: "1"
           Name: Child citizenship (mixed marriage)
           Description: Citizenship for child with one Russian parent
           Children:
             <<: *RussianKdmidServices
-        - Id: "3"
+        - Id: "2"
           Name: Citizenship termination
           Description: Application for termination of citizenship
           Children:
             <<: *RussianKdmidServices
-        - Id: "4"
+        - Id: "3"
           Name: Citizenship verification
           Description: Verification of Russian citizenship
           Children:
