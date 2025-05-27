@@ -7,6 +7,7 @@ open EA.Worker.Dependencies
 
 let run (task, cfg, ct) =
     async {
+        
         Telegram.Dependencies.create cfg ct
         |> ResultAsync.wrap EA.Telegram.Client.listen
         |> ResultAsync.mapError (_.Message >> Log.crt)

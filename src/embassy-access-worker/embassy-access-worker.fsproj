@@ -11,6 +11,7 @@
         <Compile Include="dependencies\Web.fs" />
         <Compile Include="dependencies\Persistence.fs" />
         <Compile Include="dependencies\AIProvider.fs" />
+        <Compile Include="dependencies\Culture.fs" />
         <Compile Include="dependencies\Telegram.fs" />
         <Compile Include="dependencies\embassies\Common.fs" />
         <Compile Include="dependencies\embassies\Russian.fs" />
