@@ -19,7 +19,7 @@ let private createButtonsGroup chatId messageId name buttons =
         ButtonsGroup.create {
             Name = name |> Option.defaultValue "Choose the service you want to get"
             Columns = 1
-            Buttons = buttons |> ButtonsGroup.createButtons
+            Buttons = buttons |> Seq.sortBy fst |> ButtonsGroup.createButtons
         }
     |> Message.tryReplace (Some messageId) chatId
     |> Ok
