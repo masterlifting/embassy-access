@@ -73,16 +73,17 @@ module Kdmid =
                 let hasRequiredService serviceId =
                     let isRequiredService =
                         function
-                        | Passport(Passport.International op)
-                        | Notary(Notary.PowerOfAttorney op)
-                        | Citizenship(Citizenship.Renunciation op) ->
+                        | Passport Passport.Status -> false
+                        | Passport(Passport.PassportFiveYears op | Passport.BiometricPassport op | Passport.PassportIssuance op)
+                        | Notary(Notary.MarriageCertificate op | Notary.MarriageCertificateAssurance op | Notary.DivorceCertificate op | Notary.NameChange op | Notary.ElectronicDocVerification op | Notary.RegistrationRemoval op | Notary.ConsularRegistration op | Notary.MarriageRegistration op | Notary.WillCertification op | Notary.DocumentClaim op | Notary.PowerOfAttorneyCertification op | Notary.CopyCertification op | Notary.TranslationCertification op | Notary.ConsentCertification op | Notary.SignatureCertification op | Notary.CertificateIssuance op)
+                        | Citizenship(Citizenship.ChildCitizenshipBothParents op | Citizenship.ChildCitizenshipMixedMarriage op | Citizenship.CitizenshipTermination op | Citizenship.CitizenshipVerification op)
+                        | Pension(Pension.InitialPensionConsultation op | Pension.OtherPensionMatters op | Pension.PensionFundCertificate op) ->
                             match op with
                             | Kdmid.Operation.AutoNotifications
                             | Kdmid.Operation.AutoBookingFirst
                             | Kdmid.Operation.AutoBookingFirstInPeriod
                             | Kdmid.Operation.AutoBookingLast -> true
                             | Kdmid.Operation.ManualRequest -> false
-                        | Passport Passport.Status -> false
 
                     serviceId |> Router.parse |> Result.exists isRequiredService
 

@@ -18,8 +18,8 @@ let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
             | Passport.PassportIssuance ops -> Kdmid ops        
         | Notary route ->
             match route with
-            | Notary.MarriageCertificateSerbia ops -> Kdmid ops
             | Notary.MarriageCertificate ops -> Kdmid ops
+            | Notary.MarriageCertificateAssurance ops -> Kdmid ops
             | Notary.DivorceCertificate ops -> Kdmid ops
             | Notary.NameChange ops -> Kdmid ops
             | Notary.ElectronicDocVerification ops -> Kdmid ops
@@ -32,6 +32,7 @@ let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
             | Notary.CopyCertification ops -> Kdmid ops
             | Notary.TranslationCertification ops -> Kdmid ops
             | Notary.ConsentCertification ops -> Kdmid ops
+            | Notary.SignatureCertification ops -> Kdmid ops
             | Notary.CertificateIssuance ops -> Kdmid ops
         | Citizenship route ->
             match route with

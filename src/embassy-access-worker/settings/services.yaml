@@ -41,13 +41,13 @@ RussianServices: &RussianServices
       Description: Notary services
       Children:
         - Id: "0"
-          Name: Marriage certificate in Serbia
-          Description: Certificate for marriage in Serbia
+          Name: Marriage certificate
+          Description: Certificate for marriage
           Children:
             <<: *RussianKdmidServices
         - Id: "1"
-          Name: Marriage certificate
-          Description: Marriage certificate verification
+          Name: Marriage certificate assurance
+          Description: Marriage certificate assurance
           Children:
             <<: *RussianKdmidServices
         - Id: "2"
@@ -99,7 +99,7 @@ RussianServices: &RussianServices
           Name: Copy certification
           Description: Certification of document copies
           Children:
-            <<: *RussianKdmidServices
+            <<: *RussianKdmidServices        
         - Id: "12"
           Name: Translation certification
           Description: Certification of translations
@@ -111,6 +111,11 @@ RussianServices: &RussianServices
           Children:
             <<: *RussianKdmidServices
         - Id: "14"
+          Name: Signature certification
+          Description: Certification of signature authenticity
+          Children:
+            <<: *RussianKdmidServices
+        - Id: "15"
           Name: Certificate issuance
           Description: Issuance of certificates
           Children:

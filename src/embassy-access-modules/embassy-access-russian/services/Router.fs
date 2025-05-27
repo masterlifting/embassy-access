@@ -61,8 +61,8 @@ module Passport =
 module Notary =
 
     type Route =
-        | MarriageCertificateSerbia of Kdmid.Operation.Route
         | MarriageCertificate of Kdmid.Operation.Route
+        | MarriageCertificateAssurance of Kdmid.Operation.Route
         | DivorceCertificate of Kdmid.Operation.Route
         | NameChange of Kdmid.Operation.Route
         | ElectronicDocVerification of Kdmid.Operation.Route
@@ -75,12 +75,13 @@ module Notary =
         | CopyCertification of Kdmid.Operation.Route
         | TranslationCertification of Kdmid.Operation.Route
         | ConsentCertification of Kdmid.Operation.Route
+        | SignatureCertification of Kdmid.Operation.Route
         | CertificateIssuance of Kdmid.Operation.Route
 
         member this.Value =
             match this with
-            | MarriageCertificateSerbia op -> [ "0"; op.Value ]
-            | MarriageCertificate op -> [ "1"; op.Value ]
+            | MarriageCertificate op -> [ "0"; op.Value ]
+            | MarriageCertificateAssurance op -> [ "1"; op.Value ]
             | DivorceCertificate op -> [ "2"; op.Value ]
             | NameChange op -> [ "3"; op.Value ]
             | ElectronicDocVerification op -> [ "4"; op.Value ]
@@ -93,12 +94,13 @@ module Notary =
             | CopyCertification op -> [ "11"; op.Value ]
             | TranslationCertification op -> [ "12"; op.Value ]
             | ConsentCertification op -> [ "13"; op.Value ]
-            | CertificateIssuance op -> [ "14"; op.Value ]
-            
+            | SignatureCertification op -> [ "14"; op.Value ]
+            | CertificateIssuance op -> [ "15"; op.Value ]
+    
     let parse (input: string list) =
         match input with
-        | [ "0"; op ] -> op |> Kdmid.Operation.parse |> Result.map MarriageCertificateSerbia
-        | [ "1"; op ] -> op |> Kdmid.Operation.parse |> Result.map MarriageCertificate
+        | [ "0"; op ] -> op |> Kdmid.Operation.parse |> Result.map MarriageCertificate
+        | [ "1"; op ] -> op |> Kdmid.Operation.parse |> Result.map MarriageCertificateAssurance
         | [ "2"; op ] -> op |> Kdmid.Operation.parse |> Result.map DivorceCertificate
         | [ "3"; op ] -> op |> Kdmid.Operation.parse |> Result.map NameChange
         | [ "4"; op ] -> op |> Kdmid.Operation.parse |> Result.map ElectronicDocVerification
@@ -111,7 +113,8 @@ module Notary =
         | [ "11"; op ] -> op |> Kdmid.Operation.parse |> Result.map CopyCertification
         | [ "12"; op ] -> op |> Kdmid.Operation.parse |> Result.map TranslationCertification
         | [ "13"; op ] -> op |> Kdmid.Operation.parse |> Result.map ConsentCertification
-        | [ "14"; op ] -> op |> Kdmid.Operation.parse |> Result.map CertificateIssuance
+        | [ "14"; op ] -> op |> Kdmid.Operation.parse |> Result.map SignatureCertification
+        | [ "15"; op ] -> op |> Kdmid.Operation.parse |> Result.map CertificateIssuance
         | _ ->
             "Notary service for the Russian embassy is not supported."
             |> NotSupported
