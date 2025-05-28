@@ -14,10 +14,10 @@ open EA.Telegram.Dependencies.Embassies
 
 let private createButtonsGroup chatId messageId name buttons =
     match buttons |> Seq.isEmpty with
-    | true -> "No available embassies for you here." |> Text.create
+    | true -> "No embassies are available for you here." |> Text.create
     | false ->
         ButtonsGroup.create {
-            Name = name |> Option.defaultValue "Choose the embassy you what to visit"
+            Name = name |> Option.defaultValue "Choose the embassy you want to visit"
             Columns = 3
             Buttons = buttons |> Seq.sortBy fst |> ButtonsGroup.createButtons
         }
@@ -77,7 +77,7 @@ let private getUserEmbassy' embassyId firstCall =
                     embassy.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
-                $"You have no embassies for '%s{embassyId.ValueStr}'."
+                $"You have no embassies available for '%s{embassyId.ValueStr}'."
                 |> NotFound
                 |> Error
                 |> async.Return)

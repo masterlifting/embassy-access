@@ -42,8 +42,8 @@ let private INPUT_NUMBER = "<number>"
 let private createMidpassInstruction chatId method =
     let route = Midpass.Method.Post(method) |> createBaseRoute
 
-    $"To use this service, please send the following command back to the bot: {String.addLines 2}'{route.Value}'"
-    + $"{String.addLines 2}Replace the {INPUT_NUMBER} with the number that you received in the Russian embassy."
+    $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
+    + $"{String.addLines 2}Replace {INPUT_NUMBER} with the number you received from the Russian embassy."
     + $"{String.addLines 1}Send the command without apostrophes, please."
     |> Text.create
     |> Message.createNew chatId
@@ -66,7 +66,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
                 r.Service.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {
-                    Name = "Your subscriptions to manage"
+                    Name = "Your subscriptions"
                     Columns = 1
                     Buttons = buttons |> ButtonsGroup.createButtons
                 }

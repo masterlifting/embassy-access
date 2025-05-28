@@ -113,11 +113,11 @@ let handleProcessResult (request: Request<Payload>) =
 let private handleRequestResult chatId (request: Request<Payload>) =
     match request.ProcessState with
     | InProcess ->
-        "The request is still in process. Please wait for the result."
+        "Your request is still being processed. Please wait for the result."
         |> Text.create
         |> Message.createNew chatId
     | Ready ->
-        "The request is is not started yet. Please start it first."
+        "Your request has not been started yet. Please start it first."
         |> Text.create
         |> Message.createNew chatId
     | Failed error ->
@@ -128,7 +128,10 @@ let private handleRequestResult chatId (request: Request<Payload>) =
         |> Message.createNew chatId
     | Completed _ ->
         match request.Payload.State with
-        | NoAppointments -> "No appointments found for now." |> Text.create |> Message.createNew chatId
+        | NoAppointments ->
+            "No appointments are available at the moment."
+            |> Text.create
+            |> Message.createNew chatId
         | HasConfirmation(msg, _) -> msg |> Text.create |> Message.createNew chatId
         | HasAppointments appointments ->
             appointments
@@ -198,7 +201,7 @@ let setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) (link: string
             do! deps.tryAddSubscription request
 
             return
-                $"Manual request for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}' saved and can be started from your services list."
+                $"Manual request for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}' has been saved and can be started from your services list."
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -221,7 +224,7 @@ let startManualRequest (requestId: RequestId) =
             match request.ProcessState with
             | InProcess ->
                 return
-                    "The request is still in process. Please wait for the result."
+                    "Your request is still being processed. Please wait for the result."
                     |> Text.create
                     |> Message.createNew deps.ChatId
                     |> Ok
@@ -274,7 +277,7 @@ let setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) (link: st
             do! deps.tryAddSubscription request
 
             return
-                $"Auto notification for slots enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
+                $"Automatic notifications for available slots have been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -321,7 +324,7 @@ let setAutoBookingFirst (serviceId: ServiceId) (embassyId: EmbassyId) (link: str
             do! deps.tryAddSubscription request
 
             return
-                $"The booking first available slot enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
+                $"Automatic booking of the first available slot has been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -374,7 +377,7 @@ let setAutoBookingFirstInPeriod
             do! deps.tryAddSubscription request
 
             return
-                $"The booking first available slot in period enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
+                $"Automatic booking of the first available slot within the specified period has been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -421,7 +424,7 @@ let setAutoBookingLast (serviceId: ServiceId) (embassyId: EmbassyId) (link: stri
             do! deps.tryAddSubscription request
 
             return
-                $"The booking last available slot enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
+                $"Automatic booking of the last available slot has been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -448,6 +451,6 @@ let deleteRequest requestId =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.deleteRequest requestId)
         |> ResultAsync.map (fun _ ->
-            $"Subscription with id '%s{requestId.ValueStr}' deleted successfully."
+            $"Subscription with ID '%s{requestId.ValueStr}' has been deleted successfully."
             |> Text.create
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)

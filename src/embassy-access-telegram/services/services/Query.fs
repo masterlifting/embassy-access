@@ -14,10 +14,10 @@ open EA.Telegram.Dependencies.Services.Italian
 
 let private createButtonsGroup chatId messageId name buttons =
     match buttons |> Seq.isEmpty with
-    | true -> "No available services for you here." |> Text.create
+    | true -> "No services are available for you here." |> Text.create
     | false ->
         ButtonsGroup.create {
-            Name = name |> Option.defaultValue "Choose the service you want to get"
+            Name = name |> Option.defaultValue "Choose the service you need"
             Columns = 1
             Buttons = buttons |> Seq.sortBy fst |> ButtonsGroup.createButtons
         }
@@ -36,7 +36,7 @@ let private tryCreateServiceRootId (embassyId: EmbassyId) =
     | RUS value -> value |> Ok
     | ITA value -> value |> Ok
     | EmbassyNotFound ->
-        $"Services for embassy '%s{embassyId.ValueStr}' is not implemented. "
+        $"Services for embassy '%s{embassyId.ValueStr}' are not implemented. "
         + NOT_IMPLEMENTED
         |> NotImplemented
         |> Error
@@ -102,7 +102,7 @@ let getUserService embassyId serviceId =
                     service.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
-                $"You have no services for '%s{serviceId.ValueStr}'."
+                $"You have no services available for '%s{serviceId.ValueStr}'."
                 |> NotFound
                 |> Error
                 |> async.Return)

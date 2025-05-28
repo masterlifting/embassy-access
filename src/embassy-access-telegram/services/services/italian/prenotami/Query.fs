@@ -17,7 +17,7 @@ let private INPUT_LOGIN = "<login>"
 let private INPUT_PASSWORD = "<password>"
 
 let private createBaseRoute method =
-    Router.Services(Services.Method.Italian(Method.Prenotami(method)))
+    Router.Services(Services.Method.Italian(Method.Prenotami method))
 
 let menu (requestId: RequestId) =
     fun (deps: Prenotami.Dependencies) ->
@@ -28,7 +28,7 @@ let menu (requestId: RequestId) =
                 Prenotami.Method.Post(Prenotami.Post.StartManualRequest r.Id) |> createBaseRoute
             let info = Prenotami.Method.Get(Prenotami.Get.Info r.Id) |> createBaseRoute
             let delete =
-                Prenotami.Method.Delete(Prenotami.Delete.Subscription(r.Id)) |> createBaseRoute
+                Prenotami.Method.Delete(Prenotami.Delete.Subscription r.Id) |> createBaseRoute
 
             ButtonsGroup.create {
                 Name = r.Service.BuildName 1 "."
@@ -47,10 +47,10 @@ let print (requestId: RequestId) =
         |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
 
 let private createPrenotamiInstruction chatId method =
-    let route = Prenotami.Method.Post(method) |> createBaseRoute
+    let route = Prenotami.Method.Post method |> createBaseRoute
 
-    $"To use this service, please send the following command back to the bot: {String.addLines 2}'{route.Value}'"
-    + $"{String.addLines 2}Replace the {INPUT_LOGIN} and {INPUT_PASSWORD} with the login and password that you received from the prenotami website after confirmation."
+    $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
+    + $"{String.addLines 2}Replace {INPUT_LOGIN} and {INPUT_PASSWORD} with the login and password you received from the Prenotami website after confirmation."
     + $"{String.addLines 1}Send the command without apostrophes, please."
     |> Text.create
     |> Message.createNew chatId
@@ -78,7 +78,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
                 r.Service.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {
-                    Name = "Your subscriptions to manage"
+                    Name = "Your subscriptions"
                     Columns = 1
                     Buttons = buttons |> ButtonsGroup.createButtons
                 }

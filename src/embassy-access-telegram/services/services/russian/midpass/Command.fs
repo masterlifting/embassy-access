@@ -11,7 +11,7 @@ open EA.Russian.Services.Domain.Midpass
 
 let handleProcessResult (_: Request<Payload>) =
     fun (_: Midpass.Dependencies) ->
-        $"The spread messages is not implemented yet."
+        $"Spreading messages is not implemented yet."
         |> NotImplemented
         |> Error
         |> async.Return
@@ -29,6 +29,6 @@ let deleteRequest requestId =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.deleteRequest requestId)
         |> ResultAsync.map (fun _ ->
-            $"Subscription with id '%s{requestId.ValueStr}' deleted successfully."
+            $"Subscription with ID '%s{requestId.ValueStr}' has been deleted successfully."
             |> Text.create
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)

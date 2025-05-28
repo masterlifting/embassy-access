@@ -9,12 +9,8 @@ let run (task, cfg, ct) =
     async {
 
         Telegram.Dependencies.create cfg ct
-        |> ResultAsync.wrap (fun deps ->
-            deps.Culture.setContext ()
-            |> ResultAsync.bindAsync (fun _ ->
-                let processData data =
-                    deps |> EA.Telegram.Client.processData data
-                deps.Web.Telegram.start processData))
+        |> ResultAsync.wrap (fun deps -> deps.Culture.setContext () |> ResultAsync.map (fun _ -> deps))
+        |> ResultAsync.bindAsync (EA.Telegram.Client.start ())
         |> ResultAsync.mapError (_.Message >> Log.crt)
         |> Async.Ignore
         |> Async.Start
