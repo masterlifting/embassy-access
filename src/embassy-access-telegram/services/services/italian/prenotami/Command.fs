@@ -258,6 +258,6 @@ let deleteRequest requestId =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.deleteRequest requestId)
         |> ResultAsync.map (fun _ ->
-            $"Request with id '%s{requestId.ValueStr}' deleted successfully."
+            $"Subscription with id '%s{requestId.ValueStr}' deleted successfully."
             |> Text.create
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
