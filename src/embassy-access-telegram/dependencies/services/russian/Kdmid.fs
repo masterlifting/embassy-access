@@ -35,7 +35,7 @@ type Dependencies = {
             |> Storage.Request.Query.tryFind (Storage.Request.Query.Id requestId)
             |> ResultAsync.bind (function
                 | Some request -> Ok request
-                | None -> $"Request '{requestId.ValueStr}' not found." |> NotFound |> Error)
+                | None -> $"Subscription '{requestId.ValueStr}' not found." |> NotFound |> Error)
 
         let tryFindRequest embassyId credentials storage =
             storage

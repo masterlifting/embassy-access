@@ -17,7 +17,7 @@ let private respond payload =
             Router.parse payload.Value
             |> ResultAsync.wrap (fun request -> deps |> Controller.respond request))
 
-let private consume data =
+let public processData data =
     fun deps ->
         match data with
         | Message msg ->
@@ -34,8 +34,3 @@ let private consume data =
             |> NotSupported
             |> Error
             |> async.Return
-
-let listen (deps: Client.Dependencies) =
-    let handler = fun data -> consume data deps
-    let client, handler = deps.Web.Telegram.initConsumer handler
-    client |> Web.Clients.Telegram.Consumer.start handler deps.ct

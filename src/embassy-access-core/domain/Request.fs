@@ -33,7 +33,18 @@ type Request<'payload> = {
 } with
 
     static member inline print(request: Request<_>) =
-        let limits = request.Limits |> Seq.map Limit.print |> String.concat "\n - "
+        let limits =
+            request.Limits
+            |> Set.toList
+            |> function
+                | [] -> "No limits"
+                | limits ->
+                    limits
+                    |> Seq.sortBy _.Period
+                    |> Seq.sortBy _.Attempts
+                    |> Seq.map Limit.print
+                    |> String.concat "\n - "
+                    |> sprintf "\n - %s"
         let state = request.ProcessState |> ProcessState.print
         let embassyName = request.Embassy.BuildName 1 "->"
         let serviceName = request.Service.BuildName 2 "->"
@@ -44,7 +55,7 @@ type Request<'payload> = {
         + $"\n[Created] '%s{request.Created.AddHours request.Embassy.TimeZone |> String.fromDateTime}'"
         + $"\n[Modified] '%s{request.Modified.AddHours request.Embassy.TimeZone |> String.fromDateTime}'"
         + $"\n[Last state] %s{state}"
-        + $"\n[Limits]\n - %s{limits}"
+        + $"\n[Limits] %s{limits}"
 
     member this.UpdateLimits() =
         this.Limits

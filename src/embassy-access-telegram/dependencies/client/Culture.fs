@@ -54,10 +54,8 @@ module private Payload =
                 let group = payload.Value
 
                 let items =
-                    { RequestItem.Value = group.Name }
-                    :: (group.Buttons
-                        |> Set.map (fun button -> { RequestItem.Value = button.Name })
-                        |> Set.toList)
+                    { Value = group.Name }
+                    :: (group.Buttons |> Set.map (fun button -> { Value = button.Name }) |> Set.toList)
 
                 let request = {
                     Culture = culture
@@ -94,6 +92,7 @@ module private Payload =
 
 type Dependencies = {
     getAvailable: unit -> Map<Culture, string>
+    setContext: unit -> Async<Result<unit, Error'>>
     translate: Culture -> Message -> Async<Result<Message, Error'>>
     translateSeq: Culture -> Message seq -> Async<Result<Message list, Error'>>
     translateRes: Culture -> Async<Result<Message, Error'>> -> Async<Result<Message, Error'>>
@@ -119,6 +118,9 @@ type Dependencies = {
                     Korean, "한국어"
                 ]
                 |> Map
+
+            let setContext () =
+                deps |> AIProvider.Services.Culture.setContext ct
 
             let shield = Shield.create ''' '''
 
@@ -155,6 +157,7 @@ type Dependencies = {
 
             {
                 getAvailable = getAvailable
+                setContext = setContext
                 translate = translate
                 translateSeq = translateSeq
                 translateRes = translateRes
