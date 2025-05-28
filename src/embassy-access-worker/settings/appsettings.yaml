@@ -2,7 +2,7 @@
 
 Logging:
   LogLevel:
-    Default: Warning
+    Default: Information
 
 Persistence:
   FileSystem: /usr/src/embassy-access-data
