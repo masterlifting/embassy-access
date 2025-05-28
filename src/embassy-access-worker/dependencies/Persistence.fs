@@ -82,7 +82,7 @@ type Dependencies = {
     initChatStorage: unit -> Result<Chat.Storage, Error'>
     initServiceStorage: unit -> Result<ServiceGraph.Storage, Error'>
     initEmbassyStorage: unit -> Result<EmbassyGraph.Storage, Error'>
-    initCultureStorage: unit -> Result<Culture.Response.Storage, Error'>
+    initCultureStorage: unit -> Result<Culture.Storage, Error'>
     RussianStorage: Russian.Dependencies
     ItalianStorage: Italian.Dependencies
 } with
@@ -101,8 +101,8 @@ type Dependencies = {
                 FileSystem.Connection.FilePath = fileStoragePath
                 FileSystem.Connection.FileName = "culture.json"
             }
-            |> Culture.Response.FileSystem
-            |> Culture.Response.init
+            |> Storage.Culture.FileSystem
+            |> Storage.Culture.init
 
         let initChatStorage fileStoragePath =
             {
