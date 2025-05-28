@@ -81,11 +81,11 @@ let handleProcessResult (request: Request<Payload>) =
 let private handleRequestResult chatId (request: Request<Payload>) =
     match request.ProcessState with
     | InProcess ->
-        "The request is still in process. Please wait for the result."
+        "Your request is still being processed. Please wait for the result."
         |> Text.create
         |> Message.createNew chatId
     | Ready ->
-        "The request is is not started yet. Please start it first."
+        "Your request has not been started yet. Please start it first."
         |> Text.create
         |> Message.createNew chatId
     | Failed error ->
@@ -96,7 +96,10 @@ let private handleRequestResult chatId (request: Request<Payload>) =
         |> Message.createNew chatId
     | Completed _ ->
         match request.Payload.State with
-        | NoAppointments -> "No appointments found for now." |> Text.create |> Message.createNew chatId
+        | NoAppointments ->
+            "No appointments are available at the moment."
+            |> Text.create
+            |> Message.createNew chatId
         | HasAppointments appointments ->
             appointments
             |> Seq.map (fun a ->
@@ -164,7 +167,7 @@ let setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) (login: strin
             do! deps.tryAddSubscription request
 
             return
-                $"Manual request for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}'  with login '%s{login}' saved and can be started from your services list."
+                $"Manual request for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with login '%s{login}' has been saved and can be started from your services list."
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -187,7 +190,7 @@ let startManualRequest (requestId: RequestId) =
             match request.ProcessState with
             | InProcess ->
                 return
-                    "The request is still in process. Please wait for the result."
+                    "Your request is still being processed. Please wait for the result."
                     |> Text.create
                     |> Message.createNew deps.ChatId
                     |> Ok
@@ -238,7 +241,7 @@ let setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) (login: s
             do! deps.tryAddSubscription request
 
             return
-                $"Auto notification for slots enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with login '%s{login}'"
+                $"Automatic notifications for available slots have been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with login '%s{login}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -247,7 +250,7 @@ let setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) (login: s
 
 let confirmAppointment (requestId: RequestId) (appointmentId: AppointmentId) =
     fun (deps: Prenotami.Dependencies) ->
-        $"The confirmation of appointments '%s{appointmentId.ValueStr}' for request '%s{requestId.ValueStr}' is not implemented yet. "
+        $"Confirmation of appointment '%s{appointmentId.ValueStr}' for request '%s{requestId.ValueStr}' is not implemented yet. "
         + NOT_IMPLEMENTED
         |> NotImplemented
         |> Error
@@ -258,6 +261,6 @@ let deleteRequest requestId =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.deleteRequest requestId)
         |> ResultAsync.map (fun _ ->
-            $"Subscription with id '%s{requestId.ValueStr}' deleted successfully."
+            $"Subscription with ID '%s{requestId.ValueStr}' has been deleted successfully."
             |> Text.create
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)

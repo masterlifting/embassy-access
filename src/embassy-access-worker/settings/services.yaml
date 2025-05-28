@@ -1,19 +1,19 @@
 RussianKdmidServices: &RussianKdmidServices
   - Id: "0"
-    Name: Manual check slots
+    Name: Check available time slots manually
   - Id: "1"
-    Name: Slots auto notification
+    Name: Receive automatic notifications for available slots
   - Id: "2"
-    Name: Auto booking first slot
+    Name: Automatically book the first available slot
   - Id: "3"
-    Name: Auto booking first slot in period
+    Name: Automatically book the first available slot within a specific period
   - Id: "4"
-    Name: Auto booking last slot
+    Name: Automatically book the last available slot
 
 RussianServices: &RussianServices
   Id: RUS
   Name: Russian embassy
-  Description: Choose the service of the Russian embassy
+  Description: Choose the service you need at the Russian embassy
   Children:
     - Id: "0"
       Name: Passport
@@ -21,7 +21,7 @@ RussianServices: &RussianServices
       Children:
         - Id: "0"
           Name: Application status
-          Description: Check status of passport application
+          Description: Check the status of your passport application
         - Id: "1"
           Name: 5-year passport
           Description: Apply for a 5-year passport
@@ -33,22 +33,22 @@ RussianServices: &RussianServices
           Children:
             <<: *RussianKdmidServices
         - Id: "3"
-          Name: Passport issuance
-          Description: Collect a ready passport (5 or 10 years)
+          Name: Passport collection
+          Description: Collect your ready passport (5 or 10 years)
           Children:
             <<: *RussianKdmidServices
     - Id: "1"
       Name: Notary and Civil Registry
-      Description: Notary services and civil acts registration
+      Description: Notary services and civil registry document processing
       Children:
         - Id: "0"
           Name: Marriage certificate
-          Description: Certificate for marriage
+          Description: Obtain a certificate for marriage purposes
           Children:
             <<: *RussianKdmidServices
         - Id: "1"
           Name: Marriage contract notarization
-          Description: Notarize a marriage contract
+          Description: Have your marriage contract notarized
           Children:
             <<: *RussianKdmidServices
         - Id: "2"
@@ -58,17 +58,17 @@ RussianServices: &RussianServices
             <<: *RussianKdmidServices
         - Id: "3"
           Name: Name change
-          Description: Submit documents for name change
+          Description: Submit documents for an official name change
           Children:
             <<: *RussianKdmidServices
         - Id: "4"
-          Name: E-document equivalence
-          Description: Certify equivalence of electronic and paper documents
+          Name: Electronic document equivalence
+          Description: Certify the equivalence of electronic and paper documents
           Children:
             <<: *RussianKdmidServices
         - Id: "5"
-          Name: Deregistration
-          Description: Removal from residence registration
+          Name: Residence deregistration
+          Description: Remove yourself from residence registration
           Children:
             <<: *RussianKdmidServices
         - Id: "6"
@@ -78,47 +78,47 @@ RussianServices: &RussianServices
             <<: *RussianKdmidServices
         - Id: "7"
           Name: Marriage registration
-          Description: Submit marriage registration application
+          Description: Submit your marriage registration application
           Children:
             <<: *RussianKdmidServices
         - Id: "8"
           Name: Will notarization
-          Description: Notarize a will
+          Description: Have your will notarized
           Children:
             <<: *RussianKdmidServices
         - Id: "9"
           Name: Inheritance
-          Description: Inheritance-related services
+          Description: Services related to inheritance matters
           Children:
             <<: *RussianKdmidServices
         - Id: "10"
           Name: Power of attorney
-          Description: Notarize a power of attorney
+          Description: Have your power of attorney notarized
           Children:
             <<: *RussianKdmidServices
         - Id: "11"
           Name: Copy verification
-          Description: Verify authenticity of document copies
+          Description: Verify the authenticity of document copies
           Children:
             <<: *RussianKdmidServices
         - Id: "12"
           Name: Translation verification
-          Description: Verify translation accuracy
+          Description: Verify the accuracy of document translations
           Children:
             <<: *RussianKdmidServices
         - Id: "13"
           Name: Consent form notarization
-          Description: Notarize a consent form
+          Description: Have your consent form notarized
           Children:
             <<: *RussianKdmidServices
         - Id: "14"
           Name: Signature authentication
-          Description: Authenticate a signature
+          Description: Authenticate a signature on documents
           Children:
             <<: *RussianKdmidServices
         - Id: "15"
           Name: Certificate issuance
-          Description: Issue official certificates
+          Description: Obtain official certificates
           Children:
             <<: *RussianKdmidServices
     - Id: "2"
@@ -126,55 +126,55 @@ RussianServices: &RussianServices
       Description: Russian citizenship services
       Children:
         - Id: "0"
-          Name: Child citizenship (both Russian parents)
-          Description: Citizenship for a child with both parents Russian citizens
+          Name: Child citizenship (both parents Russian)
+          Description: Obtain citizenship for a child when both parents are Russian citizens
           Children:
             <<: *RussianKdmidServices
         - Id: "1"
-          Name: Child citizenship (mixed marriage)
-          Description: Citizenship for a child with one Russian parent
+          Name: Child citizenship (mixed parentage)
+          Description: Obtain citizenship for a child when one parent is a Russian citizen
           Children:
             <<: *RussianKdmidServices
         - Id: "2"
           Name: Renounce citizenship
-          Description: Submit application to renounce citizenship
+          Description: Submit an application to renounce Russian citizenship
           Children:
             <<: *RussianKdmidServices
         - Id: "3"
           Name: Citizenship status verification
-          Description: Verify loss or presence of Russian citizenship
+          Description: Verify the loss or retention of Russian citizenship
           Children:
             <<: *RussianKdmidServices
     - Id: "3"
       Name: Pension
-      Description: Pension-related services
+      Description: Services related to pension matters
       Children:
         - Id: "0"
           Name: Initial consultation
-          Description: Initial consultation for pension processing
+          Description: Receive an initial consultation for pension processing
           Children:
             <<: *RussianKdmidServices
         - Id: "1"
           Name: General pension inquiries
-          Description: Consultation for other pension-related matters
+          Description: Get consultation for other pension-related matters
           Children:
             <<: *RussianKdmidServices
         - Id: "2"
           Name: Certificate for Pension Fund
-          Description: Issue certificate for Russian Pension Fund
+          Description: Obtain a certificate for the Russian Pension Fund
           Children:
             <<: *RussianKdmidServices
 
 ItalianPrenotamiServices: &ItalianPrenotamiServices
   - Id: "0"
-    Name: Manual check slots
+    Name: Check available time slots manually
   - Id: "1"
-    Name: Slots auto notification
+    Name: Receive automatic notifications for available slots
 
 ItalianServices: &ItalianServices
   Id: ITA
   Name: Italian embassy
-  Description: Choose the service of the Italian embassy
+  Description: Choose the service you need at the Italian embassy
   Children:
     - Id: "0"
       Name: Visa
@@ -182,12 +182,12 @@ ItalianServices: &ItalianServices
       Children:
         - Id: "0"
           Name: Tourism visa (Counter 1)
-          Description: Check visa appointment for tourism at counter 1
+          Description: Get a visa appointment for tourism at counter 1
           Children:
             <<: *ItalianPrenotamiServices
         - Id: "1"
           Name: Tourism visa (Counter 2)
-          Description: Check visa appointment for tourism at counter 2
+          Description: Get a visa appointment for tourism at counter 2
           Children:
             <<: *ItalianPrenotamiServices
 

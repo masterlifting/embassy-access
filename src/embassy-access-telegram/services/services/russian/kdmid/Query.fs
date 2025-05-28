@@ -46,8 +46,8 @@ let info (requestId: RequestId) =
 let private createKdmidInstruction chatId method =
     let route = Kdmid.Method.Post method |> createBaseRoute
 
-    $"To use this service, please send the following command back to the bot: {String.addLines 2}'{route.Value}'"
-    + $"{String.addLines 2}Replace the {INPUT_LINK} with the link that you received from the kdmid website after confirmation."
+    $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
+    + $"{String.addLines 2}Replace {INPUT_LINK} with the link you received from the KDMID website after confirmation."
     + $"{String.addLines 1}Send the command without apostrophes, please."
     |> Text.create
     |> Message.createNew chatId
@@ -90,7 +90,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
                 r.Service.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {
-                    Name = "Your subscriptions to manage"
+                    Name = "Your subscriptions"
                     Columns = 1
                     Buttons = buttons |> ButtonsGroup.createButtons
                 }
