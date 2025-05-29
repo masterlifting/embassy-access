@@ -1,5 +1,6 @@
 ﻿module internal EA.Worker.Embassies.Italian
 
+open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
@@ -45,7 +46,12 @@ module private Prenotami =
 
     module SearchAppointments =
         let private handle (task, cfg, ct) =
-            Prenotami.Dependencies.create task cfg ct |> ResultAsync.wrap start
+            Prenotami.Dependencies.create task cfg ct
+            |> ResultAsync.wrap start
+            |> ResultAsync.map (fun _ ->
+                let memory = GC.GetTotalMemory(false)
+                let taskName = ActiveTask.print task + " "
+                Log.wrn $"{taskName}Memory usage after processing: %u{memory / 1024L} KB")
 
         let Handler = {
             Id = "SA" |> Graph.NodeIdValue
