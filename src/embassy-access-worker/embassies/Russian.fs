@@ -1,5 +1,6 @@
 ﻿module internal EA.Worker.Embassies.Russian
 
+open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
@@ -49,7 +50,12 @@ module private Kdmid =
 
     module SearchAppointments =
         let private handle (task, cfg, ct) =
-            Kdmid.Dependencies.create task cfg ct |> ResultAsync.wrap start
+            Kdmid.Dependencies.create task cfg ct
+            |> ResultAsync.wrap start
+            |> ResultAsync.map (fun _ ->
+                let memory = GC.GetTotalMemory(false)
+                let taskName = ActiveTask.print task + " "
+                Log.wrn $"{taskName}Memory usage after processing: %u{memory / 1024L} KB")
 
         let Handler = {
             Id = "SA" |> Graph.NodeIdValue
