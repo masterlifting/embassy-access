@@ -8,6 +8,8 @@ open Web.Clients.Domain.Telegram.Consumer
 open EA.Telegram.Router
 open EA.Telegram.Dependencies
 open EA.Telegram.Controllers
+open System.Diagnostics
+open Infrastructure.Logging
 
 let private respond payload =
     fun deps ->
@@ -34,8 +36,16 @@ let private processData data =
             |> NotSupported
             |> Error
             |> async.Return
+        |> Async.apply (
+            let taskName = "Telegram response"
+            let currentProcessMemory = Process.GetCurrentProcess().WorkingSet64 / 1024L
+            let gcTotalMemory = GC.GetTotalMemory false / 1024L
+            Log.wrn $"{taskName}Memory usage: %u{currentProcessMemory} KB"
+            Log.wrn $"{taskName}GC total memory: %u{gcTotalMemory} KB"
+            Ok() |> async.Return
+        )
 
 let start () =
     fun (deps: Client.Dependencies) ->
-    let processData data = deps |> processData data
-    deps.Web.Telegram.start processData
+        let processData data = deps |> processData data
+        deps.Web.Telegram.start processData

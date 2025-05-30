@@ -45,13 +45,18 @@ module private Prenotami =
                         errors |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt) |> Ok))
 
     module SearchAppointments =
+        open System.Diagnostics
         let private handle (task, cfg, ct) =
             Prenotami.Dependencies.create task cfg ct
             |> ResultAsync.wrap start
-            |> ResultAsync.map (fun _ ->
-                let memory = GC.GetTotalMemory(false)
+            |> Async.apply (
                 let taskName = ActiveTask.print task + " "
-                Log.wrn $"{taskName}Memory usage after processing: %u{memory / 1024L} KB")
+                let currentProcessMemory = Process.GetCurrentProcess().WorkingSet64 / 1024L
+                let gcTotalMemory = GC.GetTotalMemory false / 1024L
+                Log.wrn $"{taskName}Memory usage: %u{currentProcessMemory} KB"
+                Log.wrn $"{taskName}GC total memory: %u{gcTotalMemory} KB"
+                Ok() |> async.Return
+            )
 
         let Handler = {
             Id = "SA" |> Graph.NodeIdValue
