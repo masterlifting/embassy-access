@@ -196,7 +196,7 @@ Worker:
           Parallel: true
           Tasks:
             - Id: SA
-              Enabled: true
+              Enabled: false
               Recursively: 00:30:00
               Duration: 00:02:00
               Description: Search for appointments at the Italian embassy in Serbia
