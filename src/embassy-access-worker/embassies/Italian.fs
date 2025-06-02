@@ -1,6 +1,5 @@
 ﻿module internal EA.Worker.Embassies.Italian
 
-open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
@@ -45,18 +44,8 @@ module private Prenotami =
                         errors |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt) |> Ok))
 
     module SearchAppointments =
-        open System.Diagnostics
         let private handle (task, cfg, ct) =
-            Prenotami.Dependencies.create task cfg ct
-            |> ResultAsync.wrap start
-            |> Async.apply (
-                let taskName = ActiveTask.print task + " "
-                let currentProcessMemory = Process.GetCurrentProcess().WorkingSet64 / 1024L
-                let gcTotalMemory = GC.GetTotalMemory false / 1024L
-                Log.wrn $"{taskName}Memory usage: %u{currentProcessMemory} KB"
-                Log.wrn $"{taskName}GC total memory: %u{gcTotalMemory} KB"
-                Ok() |> async.Return
-            )
+            Prenotami.Dependencies.create task cfg ct |> ResultAsync.wrap start
 
         let Handler = {
             Id = "SA" |> Graph.NodeIdValue

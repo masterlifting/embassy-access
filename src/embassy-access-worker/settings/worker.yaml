@@ -62,19 +62,19 @@ Worker:
       Parallel: true
       Description: Russian embassy appointments
       Schedule:
-        Workdays: mon,tue,wed,thu,fri,sat,sun
+        Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
           Parallel: true
           Tasks:
             - Id: SA
-              Enabled: true
-              Recursively: 00:20:00
+              Enabled: false
+              Recursively: 00:30:00
               Duration: 00:02:00
               Description: Search for appointments at the Russian embassy in Serbia
               Schedule:
-                StartTime: 00:01:00
-                StopTime: 23:41:00
+                StartTime: 00:08:30
+                StopTime: 00:17:30
                 TimeZone: 2
         - Id: HUN
           Parallel: true
@@ -190,19 +190,19 @@ Worker:
       Parallel: true
       Description: Italian embassy appointments
       Schedule:
-        Workdays: mon,tue,wed,thu,fri,sat,sun
+        Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
           Parallel: true
           Tasks:
             - Id: SA
-              Enabled: true
-              Recursively: 00:20:00
+              Enabled: false
+              Recursively: 00:30:00
               Duration: 00:02:00
               Description: Search for appointments at the Italian embassy in Serbia
               Schedule:
-                StartTime: 00:01:00
-                StopTime: 23:41:00
+                StartTime: 00:08:30
+                StopTime: 17:30:00
                 TimeZone: 2
     - Id: ESP
       Parallel: true
