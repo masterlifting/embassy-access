@@ -73,8 +73,8 @@ Worker:
               Duration: 00:02:00
               Description: Search for appointments at the Russian embassy in Serbia
               Schedule:
-                StartTime: 00:08:30
-                StopTime: 00:17:30
+                StartTime: 08:30:00
+                StopTime: 17:00:00
                 TimeZone: 2
         - Id: HUN
           Parallel: true
@@ -201,8 +201,8 @@ Worker:
               Duration: 00:02:00
               Description: Search for appointments at the Italian embassy in Serbia
               Schedule:
-                StartTime: 00:08:30
-                StopTime: 17:30:00
+                StartTime: 08:30:00
+                StopTime: 17:00:00
                 TimeZone: 2
     - Id: ESP
       Parallel: true
