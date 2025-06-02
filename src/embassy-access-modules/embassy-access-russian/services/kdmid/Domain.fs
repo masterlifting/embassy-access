@@ -128,7 +128,7 @@ type Client = {
     initHttpClient: string -> Result<Http.Client, Error'>
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
     getCaptcha: Http.Request -> Http.Client -> Async<Result<Http.Response<byte array>, Error'>>
-    solveIntCaptcha: byte array -> Async<Result<int, Error'>>
+    solveCaptcha: byte array -> Async<Result<int, Error'>>
     getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
     postValidationPage: Http.Request -> Http.Content -> Http.Client -> Async<Result<string, Error'>>
     postAppointmentsPage: Http.Request -> Http.Content -> Http.Client -> Async<Result<string, Error'>>

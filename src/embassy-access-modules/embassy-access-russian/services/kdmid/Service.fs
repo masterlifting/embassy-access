@@ -74,7 +74,7 @@ let tryProcess (request: Request<Payload>) =
         let parseInitialPage =
             ResultAsync.bindAsync (fun (httpClient, r) ->
                 let queryParams = r.Payload.Credentials |> Http.createQueryParams
-                (httpClient, client.getInitialPage, client.getCaptcha, client.solveIntCaptcha)
+                (httpClient, client.getInitialPage, client.getCaptcha, client.solveCaptcha)
                 |> Html.InitialPage.parse queryParams
                 |> ResultAsync.map (fun formData -> httpClient, r, queryParams, formData)
                 |> ResultAsync.mapError (fun error ->

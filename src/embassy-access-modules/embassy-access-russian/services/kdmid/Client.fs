@@ -58,7 +58,7 @@ let init (deps: Dependencies) =
                 httpClient
                 |> Http.Request.get request deps.ct
                 |> Http.Response.Bytes.read deps.ct
-        solveIntCaptcha = Web.Captcha.solveToInt deps.ct
+        solveCaptcha = Web.Captcha.Number.fromImage deps.ct
         postValidationPage =
             fun request content httpClient ->
                 httpClient
