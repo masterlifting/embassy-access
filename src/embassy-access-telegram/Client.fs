@@ -37,5 +37,5 @@ let private processData data =
 
 let start () =
     fun (deps: Client.Dependencies) ->
-    let processData data = deps |> processData data
-    deps.Web.Telegram.start processData
+        let processData data = deps |> processData data
+        deps.Web.Telegram.start processData

@@ -40,7 +40,7 @@ let init (deps: Dependencies) =
             |> Some
 
         {
-            Http.Host = host
+            Http.BaseUrl = host
             Http.Headers = headers
         }
         |> Http.Client.init

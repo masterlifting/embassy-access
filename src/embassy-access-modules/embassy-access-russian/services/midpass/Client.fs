@@ -16,7 +16,7 @@ type Dependencies = {
 let init (deps: Dependencies) =
     let initHttpClient (url: string) =
         {
-            Http.Host = "midpass.ru"
+            Http.BaseUrl = "midpass.ru"
             Http.Headers = None
         }
         |> Http.Client.init

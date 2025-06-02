@@ -130,7 +130,7 @@ type Client = {
     getCaptcha: Http.Request -> Http.Client -> Async<Result<Http.Response<byte array>, Error'>>
     solveIntCaptcha: byte array -> Async<Result<int, Error'>>
     getInitialPage: Http.Request -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
-    postValidationPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
-    postAppointmentsPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
-    postConfirmationPage: Http.Request -> Http.RequestContent -> Http.Client -> Async<Result<string, Error'>>
+    postValidationPage: Http.Request -> Http.Content -> Http.Client -> Async<Result<string, Error'>>
+    postAppointmentsPage: Http.Request -> Http.Content -> Http.Client -> Async<Result<string, Error'>>
+    postConfirmationPage: Http.Request -> Http.Content -> Http.Client -> Async<Result<string, Error'>>
 }

@@ -56,11 +56,11 @@ let private createHttpRequest queryParamsId formData =
         Headers = None
     }
 
-    let content: RequestContent =
+    let content: Content =
         String {|
             Data = formData
             Encoding = Text.Encoding.ASCII
-            MediaType = "application/x-www-form-urlencoded"
+            ContentType = "application/x-www-form-urlencoded"
         |}
 
     request, content
