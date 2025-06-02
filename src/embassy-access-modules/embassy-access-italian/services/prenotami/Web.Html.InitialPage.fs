@@ -1,15 +1,14 @@
-﻿module EA.Russian.Services.Kdmid.Web.Html.InitialPage
+﻿module EA.Italian.Services.Prenotami.Web.Html.InitialPage
 
 open System
-open SkiaSharp
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Browser
 open Web.Clients.Domain.Http
-open EA.Russian.Services.Kdmid.Web
+open EA.Italian.Services.Prenotami.Web
 
 let private createHttpRequest queryParams = {
-    Path = "/queue/orderinfo.aspx?" + queryParams
+    Path = "/" + queryParams
     Headers = None
 }
 
@@ -61,36 +60,6 @@ let private createCaptchaRequest urlPath = {
     Path = $"/queue/%s{urlPath}"
     Headers = None
 }
-
-let private prepareCaptchaImage (image: byte array) =
-    try
-        if image.Length = 0 then
-            Error <| NotFound "Kdmid 'captcha image' not found."
-        else
-            use bitmap = image |> SKBitmap.Decode
-            let bitmapInfo = bitmap.Info
-            let bitmapPixels = bitmap.GetPixels()
-
-            use pixmap = new SKPixmap(bitmapInfo, bitmapPixels)
-
-            if pixmap.Height = pixmap.Width then
-                Ok image
-            else
-                let x = pixmap.Width / 3
-                let y = 0
-                let width = x * 2
-                let height = pixmap.Height
-
-                use subset = pixmap.ExtractSubset <| SKRectI(x, y, width, height)
-                use data = subset.Encode(SKEncodedImageFormat.Png, 100)
-
-                Ok <| data.ToArray()
-    with ex ->
-        Error
-        <| Operation {
-            Message = "Kdmid 'captcha image' error. " + (ex |> Exception.toMessage)
-            Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
-        }
 
 let private prepareHttpFormData pageData captcha =
     pageData

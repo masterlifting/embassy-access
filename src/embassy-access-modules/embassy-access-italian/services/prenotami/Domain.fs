@@ -11,7 +11,7 @@ module Constants =
     module ErrorCode =
 
         [<Literal>]
-        let TECHNICAL_ERROR = "Technical error"
+        let PAGE_HAS_ERROR = "Page has an error"
 
 type Credentials = {
     Login: string
@@ -71,7 +71,7 @@ type Payload = {
         match error with
         | Operation reason ->
             match reason.Code with
-            | Some(Custom Constants.ErrorCode.TECHNICAL_ERROR) -> None
+            | Some(Custom Constants.ErrorCode.PAGE_HAS_ERROR) -> None
             | _ -> error.Message |> Some
         | _ -> error.Message |> Some
         |> Option.map (fun error ->

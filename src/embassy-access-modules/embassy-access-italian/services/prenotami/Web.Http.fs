@@ -1,15 +1,16 @@
-﻿module EA.Russian.Services.Kdmid.Web.Http
+﻿module EA.Italian.Services.Prenotami.Web.Http
 
 open System
 open Infrastructure.Domain
 open Web.Clients
 open Web.Clients.Domain.Http
-open EA.Russian.Services.Domain.Kdmid
+open EA.Italian.Services.Domain.Prenotami
 
-let createQueryParams (credentials: Credentials) =
-    match credentials.Ems with
-    | Some ems -> $"id=%i{credentials.Id}&cd=%s{credentials.Cd}&ems=%s{ems}"
-    | None -> $"id=%i{credentials.Id}&cd=%s{credentials.Cd}"
+let buildFormData (credentials: Credentials) data =
+    data
+    |> Map.add "Email" credentials.Login
+    |> Map.add "Password" credentials.Password
+    |> FormData.build
 
 let getQueryParamsId queryParams =
     queryParams
@@ -35,8 +36,3 @@ let setSessionCookie httpClient (response: Response<byte array>) =
     |> Option.map (fun cookie -> httpClient |> setCookie cookie |> Result.map (fun _ -> response.Content))
     |> Option.defaultValue (Ok response.Content)
 
-let buildFormData data =
-    data
-    |> Map.add "__EVENTTARGET" ""
-    |> Map.add "__EVENTARGUMENT" ""
-    |> FormData.build

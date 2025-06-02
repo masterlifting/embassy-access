@@ -32,7 +32,7 @@ let private setFinalProcessState (request: Request<Payload>) =
                 match error with
                 | Operation reason ->
                     match reason.Code with
-                    | Some(Custom Constants.ErrorCode.TECHNICAL_ERROR) -> request
+                    | Some(Custom Constants.ErrorCode.PAGE_HAS_ERROR) -> request
                     | _ -> request.UpdateLimits()
                 | _ -> request.UpdateLimits()
                 |> fun r ->
