@@ -91,6 +91,4 @@ let internal processWeb =
         |> ResultAsync.bindAsync deps.getServicePage
         |> ResultAsync.bind (fun response -> getServiceState response.Content)
 
-let internal setRequestState (request: Request<Payload>) =
-    fun (state: string) ->
-            request
+let internal setRequestState (request: Request<Payload>) = fun (state: string) -> request

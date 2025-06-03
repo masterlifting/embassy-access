@@ -50,11 +50,12 @@ let tryProcess (request: Request<Payload>) =
                 }
                 |> client.Persistence.updateRequest)
 
-        let processWebSite = ResultAsync.bindAsync (fun r ->
-            client.Http
-            |> Web.Html.Dependencies.create r.Payload.Credentials r.Service.Id
-            |> ResultAsync.wrap Web.Html.processWeb
-            |> ResultAsync.map (Web.Html.setRequestState r))
+        let processWebSite =
+            ResultAsync.bindAsync (fun r ->
+                client.Http
+                |> Web.Html.Dependencies.create r.Payload.Credentials r.Service.Id
+                |> ResultAsync.wrap Web.Html.processWeb
+                |> ResultAsync.map (Web.Html.setRequestState r))
 
         let setFinalState = client.Persistence.updateRequest |> setFinalProcessState request
 

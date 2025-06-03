@@ -23,7 +23,5 @@ type Dependencies = {
                     | Some token -> { Telegram.Token = token } |> Telegram.Client.init
                     | None -> $"The environment '{TELEGRAM_BOT_TOKEN_KEY}' not found." |> NotFound |> Error)
 
-            return {
-                TelegramClient = telegramClient
-            }
+            return { TelegramClient = telegramClient }
         }
