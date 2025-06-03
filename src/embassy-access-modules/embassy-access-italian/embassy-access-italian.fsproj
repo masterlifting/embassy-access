@@ -9,9 +9,9 @@
       <Compile Include="services\Router.fs" />
       <Compile Include="services\prenotami\Domain.fs" />
       <Compile Include="services\prenotami\DataAccess.fs" />
+      <Compile Include="services\prenotami\Web.Http.fs" />
       <Compile Include="services\prenotami\Client.fs" />
       <Compile Include="services\prenotami\Html.fs" />
-      <Compile Include="services\prenotami\Web.Http.fs" />
       <Compile Include="services\prenotami\Web.Html.fs" />
       <Compile Include="services\prenotami\Service.fs" />
     </ItemGroup>

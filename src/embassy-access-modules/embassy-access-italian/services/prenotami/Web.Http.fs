@@ -5,7 +5,6 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Http
 open Web.Clients.Domain.Http
-open EA.Core.Domain
 open EA.Italian.Services
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
@@ -27,19 +26,18 @@ let setSessionCookie (response: Response<string>) =
             | Some result -> result |> Result.map (fun _ -> response)
             | None -> Error <| NotFound "Session cookie not found in response headers."
 
-let solveCaptcha siteKey =
-    fun (siteUri, ct) -> Web.AntiCaptcha.ReCaptcha.V3.Enterprise.fromPage ct siteUri siteKey
+let solveCaptcha ct siteUri siteKey =
+    Web.AntiCaptcha.ReCaptcha.V3.Enterprise.fromPage ct siteUri siteKey
 
-let buildFormData recaptchaToken =
-    fun (credentials: Credentials) ->
-        Map [
-            "RECAPTCHA", recaptchaToken
-            "Email", credentials.Login
-            "Password", credentials.Password
-        ]
+let buildFormData (credentials: Credentials) recaptchaToken =
+    Map [
+        "RECAPTCHA", recaptchaToken
+        "Email", credentials.Login
+        "Password", credentials.Password
+    ]
 
-let postLoginPage formData =
-    fun (httpClient, ct) ->
+let postLoginPage ct formData =
+    fun httpClient ->
         httpClient
         |> Request.post
             { Path = "/Home/Login"; Headers = None }
@@ -62,8 +60,8 @@ let setAuthCookie (response: Response<string>) =
             | Some result -> result |> Result.map ignore
             | None -> Error <| NotFound "Auth cookie not found in response headers."
 
-let getServicePage () =
-    fun (httpClient, serviceId: ServiceId, ct) ->
+let getServicePage ct serviceId =
+    fun httpClient ->
         match serviceId |> Router.parse with
         | Ok(Visa service) ->
             match service with

@@ -1,7 +1,6 @@
 ﻿module EA.Italian.Services.Domain.Prenotami
 
 open System
-open System.Text.RegularExpressions
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain
@@ -79,26 +78,20 @@ type Payload = {
             |> Credentials.print
             |> fun credentials -> credentials + Environment.NewLine + error)
 
-type Client = {
+type PersistenceClient = {
     updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
-    Browser: {|
-        loadPage: Uri -> Async<Result<Browser.Page, Error'>>
-        closePage: Browser.Page -> Async<Result<unit, Error'>>
-        fillInput: Browser.Selector -> string -> Browser.Page -> Async<Result<Browser.Page, Error'>>
-        mouseClick: Browser.Selector -> Browser.Mouse.WaitFor -> Browser.Page -> Async<Result<Browser.Page, Error'>>
-        submitForm: Browser.Selector -> Regex -> Browser.Page -> Async<Result<Browser.Page, Error'>>
-        tryFindText: Browser.Selector -> Browser.Page -> Async<Result<string option, Error'>>
-    |}
 }
-
-type ClientNew = {
-    initHttpClient: unit -> Async<Result<Http.Client, Error'>>
-    updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
-    getInitialPage: unit -> Async<Result<Http.Response<string>, Error'>>
-    setSessionCookie: Http.Response<string> -> Result<Http.Response<string>, Error'>
-    solveCaptcha: string -> Async<Result<string, Error'>>
-    buildFormData: string -> Map<string, string>
-    postLoginPage: Map<string, string> -> Async<Result<Http.Response<string>, Error'>>
-    setAuthCookie: Http.Response<string> -> Result<unit, Error'>
-    getServicePage: unit -> Async<Result<Http.Response<string>, Error'>>
+type HttpClient = {
+    initClient: unit -> Result<Http.Client, Error'>
+    getInitialPage: Http.Client -> Async<Result<Http.Response<string>, Error'>>
+    setSessionCookie: Http.Response<string> -> Http.Client -> Result<Http.Response<string>, Error'>
+    solveCaptcha: Uri -> string -> Async<Result<string, Error'>>
+    buildFormData: Credentials -> string -> Map<string, string>
+    postLoginPage: Map<string, string> -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
+    setAuthCookie: Http.Response<string> -> Http.Client -> Result<unit, Error'>
+    getServicePage: ServiceId -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
+}
+type Client = {
+    Persistence: PersistenceClient
+    Http: HttpClient
 }

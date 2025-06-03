@@ -1,11 +1,37 @@
 ﻿module EA.Italian.Services.Prenotami.Web.Html
 
-open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Clients.Browser
-open Web.Clients.Domain.Http
+open Web.Clients
+open Web.Clients.Domain
 open EA.Italian.Services.Domain.Prenotami
+
+type internal Dependencies = {
+    getInitialPage: unit -> Async<Result<Http.Response<string>, Error'>>
+    setSessionCookie: Http.Response<string> -> Result<Http.Response<string>, Error'>
+    solveCaptcha: string -> Async<Result<string, Error'>>
+    buildFormData: string -> Map<string, string>
+    postLoginPage: Map<string, string> -> Async<Result<Http.Response<string>, Error'>>
+    setAuthCookie: Http.Response<string> -> Result<unit, Error'>
+    getServicePage: unit -> Async<Result<Http.Response<string>, Error'>>
+} with
+
+    static member create credentials serviceId =
+        fun (client: HttpClient) ->
+            client.initClient ()
+            |> Result.map (fun httpClient -> {
+                getInitialPage = fun () -> httpClient |> client.getInitialPage
+                setSessionCookie = fun response -> httpClient |> client.setSessionCookie response
+                solveCaptcha =
+                    fun siteKey ->
+                        match httpClient.BaseAddress with
+                        | null -> "Base address of HTTP client is not set." |> NotFound |> Error |> async.Return
+                        | siteUri -> client.solveCaptcha siteUri siteKey
+                buildFormData = client.buildFormData credentials
+                postLoginPage = fun formData -> httpClient |> client.postLoginPage formData
+                setAuthCookie = fun response -> httpClient |> client.setAuthCookie response
+                getServicePage = fun () -> httpClient |> client.getServicePage serviceId
+            })
 
 let private getCaptchaSiteKey page =
     Html.load page
@@ -51,14 +77,14 @@ let private getServiceState page =
         | Some state -> Ok state
         | None -> Error <| NotFound "Service state of 'Prenotami Initial Page' not found."
 
-let processWeb () =
-    fun (client: ClientNew) ->
-        client.getInitialPage ()
-        |> ResultAsync.bind client.setSessionCookie
+let internal processWeb () =
+    fun (deps: Dependencies) ->
+        deps.getInitialPage ()
+        |> ResultAsync.bind deps.setSessionCookie
         |> ResultAsync.bind (fun response -> getCaptchaSiteKey response.Content)
-        |> ResultAsync.bindAsync client.solveCaptcha
-        |> ResultAsync.map client.buildFormData
-        |> ResultAsync.bindAsync client.postLoginPage
-        |> ResultAsync.bind client.setAuthCookie
-        |> ResultAsync.bindAsync client.getServicePage
+        |> ResultAsync.bindAsync deps.solveCaptcha
+        |> ResultAsync.map deps.buildFormData
+        |> ResultAsync.bindAsync deps.postLoginPage
+        |> ResultAsync.bind deps.setAuthCookie
+        |> ResultAsync.bindAsync deps.getServicePage
         |> ResultAsync.bind (fun response -> getServiceState response.Content)
