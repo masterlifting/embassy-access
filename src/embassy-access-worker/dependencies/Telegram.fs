@@ -22,7 +22,7 @@ let create cfg ct =
                     Provider = aiProvider
                     Storage = cultureStorage
                 }
-            Web = EA.Telegram.Dependencies.Web.Dependencies.create ct web.TelegramClient web.initBrowser
+            Web = EA.Telegram.Dependencies.Web.Dependencies.create ct web.TelegramClient
             Persistence = {
                 initChatStorage = persistence.initChatStorage
                 initServiceStorage = persistence.initServiceStorage

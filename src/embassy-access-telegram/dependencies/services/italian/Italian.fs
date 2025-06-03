@@ -16,7 +16,6 @@ type Dependencies = {
     ct: CancellationToken
     Chat: Chat
     MessageId: int
-    initWebBrowser: unit -> Async<Result<Browser.Client, Error'>>
     tryFindServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
     tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
     findService: ServiceId -> Async<Result<Service, Error'>>
@@ -32,7 +31,6 @@ type Dependencies = {
         ct = deps.ct
         Chat = deps.Chat
         MessageId = deps.MessageId
-        initWebBrowser = deps.Request.initWebBrowser
         tryFindServiceNode = deps.tryFindServiceNode
         tryFindEmbassyNode = deps.tryFindEmbassyNode
         findService = deps.findService

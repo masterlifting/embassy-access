@@ -4,7 +4,7 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain.Http
-open Web.Clients.Browser
+open Web.Clients
 open EA.Core.Domain
 open EA.Russian.Services.Kdmid.Web
 open EA.Russian.Services.Domain.Kdmid

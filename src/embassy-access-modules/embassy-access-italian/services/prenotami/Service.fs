@@ -5,19 +5,11 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Italian.Services.Domain.Prenotami
+open EA.Italian.Services.Prenotami.Client
 
 let private validate (request: Request<Payload>) =
     request.ValidateLimits()
     |> Result.mapError (fun error -> $"{error} Operation cancelled." |> Canceled)
-
-let private processWebSite request client =
-    Html.loadPage client
-    |> Html.setLogin request client
-    |> Html.setPassword request client
-    |> Html.submitForm client
-    |> Html.clickBookTab client
-    |> Html.chooseBookService request client
-    |> Html.setProcessResult request client
 
 let private setFinalProcessState (request: Request<Payload>) =
     fun updateRequest ->
@@ -56,11 +48,15 @@ let tryProcess (request: Request<Payload>) =
                         ProcessState = InProcess
                         Modified = DateTime.UtcNow
                 }
-                |> client.updateRequest)
+                |> client.Persistence.updateRequest)
 
-        let processWebSite = ResultAsync.bindAsync (fun r -> client |> processWebSite r)
+        let processWebSite = ResultAsync.bindAsync (fun r ->
+            client.Http
+            |> Web.Html.Dependencies.create r.Payload.Credentials r.Service.Id
+            |> ResultAsync.wrap Web.Html.processWeb
+            |> ResultAsync.map (Web.Html.setRequestState r))
 
-        let setFinalState = client.updateRequest |> setFinalProcessState request
+        let setFinalState = client.Persistence.updateRequest |> setFinalProcessState request
 
         // pipe
         request |> validate |> setInitialState |> processWebSite |> setFinalState

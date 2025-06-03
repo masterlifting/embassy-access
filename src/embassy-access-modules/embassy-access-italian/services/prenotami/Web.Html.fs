@@ -4,7 +4,9 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients
 open Web.Clients.Domain
+open EA.Core.Domain
 open EA.Italian.Services.Domain.Prenotami
+open EA.Italian.Services.Prenotami.Client
 
 type internal Dependencies = {
     getInitialPage: unit -> Async<Result<Http.Response<string>, Error'>>
@@ -77,7 +79,7 @@ let private getServiceState page =
         | Some state -> Ok state
         | None -> Error <| NotFound "Service state of 'Prenotami Initial Page' not found."
 
-let internal processWeb () =
+let internal processWeb =
     fun (deps: Dependencies) ->
         deps.getInitialPage ()
         |> ResultAsync.bind deps.setSessionCookie
@@ -88,3 +90,7 @@ let internal processWeb () =
         |> ResultAsync.bind deps.setAuthCookie
         |> ResultAsync.bindAsync deps.getServicePage
         |> ResultAsync.bind (fun response -> getServiceState response.Content)
+
+let internal setRequestState (request: Request<Payload>) =
+    fun (state: string) ->
+            request

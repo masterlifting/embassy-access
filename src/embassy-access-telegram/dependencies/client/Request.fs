@@ -16,7 +16,6 @@ type Dependencies = {
     ChatId: Telegram.ChatId
     MessageId: int
     Persistence: Persistence.Dependencies
-    initWebBrowser: unit -> Async<Result<Browser.Client, Error'>>
     tryGetChat: unit -> Async<Result<Chat option, Error'>>
     getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
     getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
@@ -55,7 +54,6 @@ type Dependencies = {
                     ChatId = payload.ChatId
                     MessageId = payload.MessageId
                     Persistence = deps.Persistence
-                    initWebBrowser = deps.Web.initBrowser
                     tryGetChat = tryGetChat
                     getEmbassyGraph = getEmbassyGraph
                     getServiceGraph = getServiceGraph

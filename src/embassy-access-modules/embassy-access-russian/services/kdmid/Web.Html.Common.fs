@@ -4,7 +4,7 @@ open System
 open System.Text.RegularExpressions
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Clients.Browser
+open Web.Clients
 open EA.Russian.Services.Domain.Kdmid
 
 let pageHasError page =

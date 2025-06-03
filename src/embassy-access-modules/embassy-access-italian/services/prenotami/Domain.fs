@@ -3,7 +3,7 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Clients.Domain
+
 open EA.Core.Domain
 
 module Constants =
@@ -77,21 +77,3 @@ type Payload = {
             payload.Credentials
             |> Credentials.print
             |> fun credentials -> credentials + Environment.NewLine + error)
-
-type PersistenceClient = {
-    updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
-}
-type HttpClient = {
-    initClient: unit -> Result<Http.Client, Error'>
-    getInitialPage: Http.Client -> Async<Result<Http.Response<string>, Error'>>
-    setSessionCookie: Http.Response<string> -> Http.Client -> Result<Http.Response<string>, Error'>
-    solveCaptcha: Uri -> string -> Async<Result<string, Error'>>
-    buildFormData: Credentials -> string -> Map<string, string>
-    postLoginPage: Map<string, string> -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
-    setAuthCookie: Http.Response<string> -> Http.Client -> Result<unit, Error'>
-    getServicePage: ServiceId -> Http.Client -> Async<Result<Http.Response<string>, Error'>>
-}
-type Client = {
-    Persistence: PersistenceClient
-    Http: HttpClient
-}
