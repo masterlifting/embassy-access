@@ -12,8 +12,7 @@
       <Compile Include="services\prenotami\Client.fs" />
       <Compile Include="services\prenotami\Html.fs" />
       <Compile Include="services\prenotami\Web.Http.fs" />
-      <Compile Include="services\prenotami\Web.Html.Common.fs" />
-      <Compile Include="services\prenotami\Web.Html.InitialPage.fs" />
+      <Compile Include="services\prenotami\Web.Html.fs" />
       <Compile Include="services\prenotami\Service.fs" />
     </ItemGroup>
 

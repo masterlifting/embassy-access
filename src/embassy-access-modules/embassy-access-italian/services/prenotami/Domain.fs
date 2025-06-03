@@ -90,3 +90,15 @@ type Client = {
         tryFindText: Browser.Selector -> Browser.Page -> Async<Result<string option, Error'>>
     |}
 }
+
+type ClientNew = {
+    initHttpClient: unit -> Async<Result<Http.Client, Error'>>
+    updateRequest: Request<Payload> -> Async<Result<Request<Payload>, Error'>>
+    getInitialPage: unit -> Async<Result<Http.Response<string>, Error'>>
+    setSessionCookie: Http.Response<string> -> Result<Http.Response<string>, Error'>
+    solveCaptcha: string -> Async<Result<string, Error'>>
+    buildFormData: string -> Map<string, string>
+    postLoginPage: Map<string, string> -> Async<Result<Http.Response<string>, Error'>>
+    setAuthCookie: Http.Response<string> -> Result<unit, Error'>
+    getServicePage: unit -> Async<Result<Http.Response<string>, Error'>>
+}

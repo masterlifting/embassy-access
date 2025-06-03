@@ -2,37 +2,78 @@
 
 open System
 open Infrastructure.Domain
-open Web.Clients
+open Infrastructure.Prelude
+open Web.Clients.Http
 open Web.Clients.Domain.Http
+open EA.Core.Domain
+open EA.Italian.Services
+open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
 
-let buildFormData (credentials: Credentials) data =
-    data
-    |> Map.add "Email" credentials.Login
-    |> Map.add "Password" credentials.Password
-    |> FormData.build
+let getInitialPage ct =
+    fun httpClient ->
+        httpClient
+        |> Request.get { Path = "/"; Headers = None } ct
+        |> Response.String.read ct
 
-let getQueryParamsId queryParams =
-    queryParams
-    |> Http.Route.fromQueryParams
-    |> Result.map (Map.tryFind "id")
-    |> Result.bind (function
-        | Some id -> Ok id
-        | None -> Error <| NotFound "Kdmid query parameter 'id'.")
+let setSessionCookie (response: Response<string>) =
+    fun httpClient ->
+        response.Headers
+        |> Headers.tryFind "Set-Cookie" []
+        |> Option.map (fun cookie ->
+            let headers = Map [ "Cookie", cookie ] |> Some
+            httpClient |> Headers.set headers)
+        |> function
+            | Some result -> result |> Result.map (fun _ -> response)
+            | None -> Error <| NotFound "Session cookie not found in response headers."
 
-let private setCookie cookie httpClient =
-    let headers = Map [ "Cookie", cookie ] |> Some
-    httpClient |> Http.Headers.set headers
+let solveCaptcha siteKey =
+    fun (siteUri, ct) -> Web.AntiCaptcha.ReCaptcha.V3.Enterprise.fromPage ct siteUri siteKey
 
-let setRequiredCookie httpClient (response: Response<string>) =
-    response.Headers
-    |> Http.Headers.tryFind "Set-Cookie" [ "AlteonP"; "__ddg1_" ]
-    |> Option.map (fun cookie -> httpClient |> setCookie cookie |> Result.map (fun _ -> response.Content))
-    |> Option.defaultValue (Ok response.Content)
+let buildFormData recaptchaToken =
+    fun (credentials: Credentials) ->
+        Map [
+            "RECAPTCHA", recaptchaToken
+            "Email", credentials.Login
+            "Password", credentials.Password
+        ]
 
-let setSessionCookie httpClient (response: Response<byte array>) =
-    response.Headers
-    |> Http.Headers.tryFind "Set-Cookie" [ "ASP.NET_SessionId" ]
-    |> Option.map (fun cookie -> httpClient |> setCookie cookie |> Result.map (fun _ -> response.Content))
-    |> Option.defaultValue (Ok response.Content)
+let postLoginPage formData =
+    fun (httpClient, ct) ->
+        httpClient
+        |> Request.post
+            { Path = "/Home/Login"; Headers = None }
+            (Content.String {|
+                Data = formData |> FormData.build
+                Encoding = Text.Encoding.UTF8
+                ContentType = "application/x-www-form-urlencoded"
+            |})
+            ct
+        |> Response.String.read ct
 
+let setAuthCookie (response: Response<string>) =
+    fun httpClient ->
+        response.Headers
+        |> Headers.tryFind "Set-Cookie" []
+        |> Option.map (fun cookie ->
+            let headers = Map [ "Cookie", cookie ] |> Some
+            httpClient |> Headers.set headers)
+        |> function
+            | Some result -> result |> Result.map ignore
+            | None -> Error <| NotFound "Auth cookie not found in response headers."
+
+let getServicePage () =
+    fun (httpClient, serviceId: ServiceId, ct) ->
+        match serviceId |> Router.parse with
+        | Ok(Visa service) ->
+            match service with
+            | Visa.Tourism1 _ -> "/Services/Booking/1151" |> Ok
+            | Visa.Tourism2 _ -> "/Services/Booking/1258" |> Ok
+        | Error _ ->
+            $"The service Id '{serviceId}' is not recognized to process prenotami."
+            |> NotFound
+            |> Error
+        |> ResultAsync.wrap (fun path ->
+            httpClient
+            |> Request.get { Path = path; Headers = None } ct
+            |> Response.String.read ct)
