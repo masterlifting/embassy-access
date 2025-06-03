@@ -61,12 +61,30 @@ let private createCaptchaRequest urlPath = {
     Headers = None
 }
 
-let private prepareHttpFormData pageData captcha =
-    pageData
-    |> Map.remove "captchaUrlPath"
-    |> Map.add "ctl00$MainContent$txtCode" $"%i{captcha}"
-    |> Map.add "ctl00$MainContent$FeedbackClientID" "0"
-    |> Map.add "ctl00$MainContent$FeedbackOrderID" "0"
+let private tryFindRecaptchaSiteKey doc =
+    doc
+    |> Html.getNodes "//script[contains(@src, 'recaptcha/enterprise.js')]"
+    |> Result.bind (function
+        | None -> Ok None
+        | Some nodes ->
+            nodes
+            |> Seq.tryPick (fun node ->
+                node
+                |> Html.getAttributeValue "src"
+                |> Result.toOption
+                |> Option.bind id
+                |> Option.bind (fun src ->
+                    if src.Contains "render=" then
+                        let startIdx = src.IndexOf("render=") + 7
+                        let endIdx = src.IndexOf("&", startIdx)
+                        let value = 
+                            if endIdx > 0 then 
+                                src.Substring(startIdx, endIdx - startIdx)
+                            else
+                                src.Substring(startIdx)
+                        Some("recaptchaRenderKey", value)
+                    else None))
+            |> Ok)
 
 let parse queryParams =
     fun (httpClient, getInitialPage, getCaptcha, solveIntCaptcha) ->
