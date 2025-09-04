@@ -5,6 +5,20 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="data\worker-tasks-tree.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>data\worker-tasks-tree.yaml</Link>
+    </Content>
+    <Content Include="data\embassy-tasks-tree.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>data\embassy-tasks-tree.yaml</Link>
+    </Content>
+    <Content Include="data\service-tasks-tree.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>data\service-tasks-tree.yaml</Link>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="dependencies\Persistence.fs" />
     <Compile Include="dependencies\embassies\Common.fs" />
     <Compile Include="dependencies\embassies\Russian.fs" />
@@ -15,30 +29,9 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="data\chats.json" />
-    <Content Include="data\culture.json" />
-    <Content Include="data\requests-rus-kdmid.json" />
-    <Content Include="data\requests-rus-midpass.json" />
-    <Content Include="data\requests-ita-prenotami.json" />
-    <Content Include="Dockerfile" />
-    <Content Include="..\..\.dockerignore">
-      <Link>.dockerignore</Link>
-    </Content>
-    <Content Include="settings\appsettings.yaml">
+    <Content Include="appsettings.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>appsettings.yaml</Link>
-    </Content>
-    <Content Include="settings\worker.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>worker.yaml</Link>
-    </Content>
-    <Content Include="settings\embassies.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>embassies.yaml</Link>
-    </Content>
-    <Content Include="settings\services.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>services.yaml</Link>
     </Content>
   </ItemGroup>
   <ItemGroup>
