@@ -7,7 +7,7 @@ open Worker.Dependencies
 open Worker.Domain
 open EA.Worker
 
-let resultAsync = ResultAsyncBuilder()
+let private resultAsync = ResultAsyncBuilder()
 
 [<EntryPoint>]
 let main _ =

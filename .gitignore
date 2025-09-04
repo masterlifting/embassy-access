@@ -455,5 +455,3 @@ bower_components
 Scripts/
 
 .env
-### Test Data ###
-/src/embassy-access-worker/data/

@@ -1,0 +1,45 @@
+﻿services:
+  
+  ea-worker:
+    image: ea-worker
+    container_name: ea-worker
+    build:
+      context: ../
+      dockerfile: ./src/embassy-access-worker/Dockerfile
+    networks:
+      - default
+
+  ea-telegram:
+    image: ea-telegram
+    container_name: ea-telegram
+    build:
+      context: ../
+      dockerfile: ./src/embassy-access-telegram/Dockerfile
+    networks:
+      - default
+
+  browser-webapi:
+    container_name: browser-webapi
+    image: ponkorn/browser-webapi:1.0.0
+    ports:
+      - 8080:8080
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - USE_UI=false
+      - BINARY_DATA_DIR=/usr/bin/chromium-browser
+      - USER_DATA_DIR=/tmp/chrome_temp
+      - IDLE_TIMEOUT_DAYS=365
+    networks:
+      - default
+
+  ea-redis:
+    image: redis:7.0-alpine
+    container_name: ea-redis
+    networks:
+      - default
+
+networks:
+  default:
+    external:
+      name: ea-network

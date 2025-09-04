@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  
   <ItemGroup>
     <Content Include="data\worker-tasks-tree.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -18,6 +20,7 @@
       <Link>data\service-tasks-tree.yaml</Link>
     </Content>
   </ItemGroup>
+  
   <ItemGroup>
     <Compile Include="dependencies\Persistence.fs" />
     <Compile Include="dependencies\embassies\Common.fs" />
@@ -28,15 +31,18 @@
     <Compile Include="Initializer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
+  
   <ItemGroup>
     <Content Include="appsettings.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>appsettings.yaml</Link>
     </Content>
   </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
     <ProjectReference Include="..\embassy-access-modules\embassy-access-italian\embassy-access-italian.fsproj" />
     <ProjectReference Include="..\embassy-access-modules\embassy-access-russian\embassy-access-russian.fsproj" />
   </ItemGroup>
+  
 </Project>
