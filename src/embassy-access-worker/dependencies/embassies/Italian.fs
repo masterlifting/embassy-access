@@ -5,11 +5,8 @@ open Infrastructure.Prelude
 open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
-open EA.Core.DataAccess
 open EA.Italian.Services
 open EA.Italian.Services.Router
-open EA.Telegram.DataAccess
-open EA.Telegram.Services.Services.Italian
 open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies
 
@@ -29,33 +26,12 @@ module Prenotami =
             result {
 
                 let! persistence = Persistence.Dependencies.create cfg
-                let! telegram = Telegram.Dependencies.create cfg ct
 
-                let! chatStorage = persistence.initChatStorage ()
                 let! requestStorage = persistence.ItalianStorage.initPrenotamiRequestStorage ()
-
-                let getChats subscriptions =
-                    chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptions
-
-                let getRequests embassyIs serviceId =
-                    requestStorage |> Common.getRequests embassyIs serviceId
-
-                let updateRequests requests =
-                    requestStorage |> Storage.Request.Command.updateSeq requests
-
-                let spreadTranslatedMessages data =
-                    (telegram.Culture.translateSeq, telegram.Web.Telegram.sendMessages)
-                    |> Common.spreadTranslatedMessages data
 
                 let handleProcessResult (result: Result<Request<Payload>, Error'>) =
                     result
-                    |> ResultAsync.wrap (fun r ->
-                        Prenotami.Command.handleProcessResult r {
-                            getChats = getChats
-                            getRequests = getRequests
-                            updateRequests = updateRequests
-                            spreadTranslatedMessages = spreadTranslatedMessages
-                        })
+                    |> ResultAsync.wrap (fun r -> Ok() |> async.Return) //TODO: add result handling
                     |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                     |> Async.Ignore
 
@@ -70,9 +46,9 @@ module Prenotami =
 
                     serviceId |> Router.parse |> Result.exists isRequiredService
 
-                let getRequestsToProcess rootServiceId =
+                let getRequests rootServiceId =
                     (requestStorage, hasRequiredService)
-                    |> Common.getRequestsToProcess rootServiceId task.Duration
+                    |> Common.getRequests rootServiceId task.Duration
 
                 let tryProcessFirst requests =
                     Prenotami.Client.init {
@@ -84,7 +60,7 @@ module Prenotami =
 
                 return {
                     TaskName = taskName
-                    getRequests = getRequestsToProcess
+                    getRequests = getRequests
                     tryProcessFirst = tryProcessFirst
                 }
             }

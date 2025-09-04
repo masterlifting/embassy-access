@@ -6,10 +6,7 @@ open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Storages.Domain
-open AIProvider.Services.DataAccess
 open EA.Core.DataAccess
-open EA.Telegram.Domain
-open EA.Telegram.DataAccess
 open EA.Russian.Services.Domain
 open EA.Italian.Services.Domain
 
@@ -42,7 +39,7 @@ module Russian =
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "requests-rus-midpass.json"
                 }
-                |> Storage.Request.FileSystem
+                |> Storage.Request.StorageType.FileSystem
                 |> Storage.Request.init {
                     toDomain = Midpass.Payload.toDomain
                     toEntity = Midpass.Payload.toEntity
@@ -67,7 +64,7 @@ module Italian =
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "requests-ita-prenotami.json"
                 }
-                |> Storage.Request.FileSystem
+                |> Storage.Request.StorageType.FileSystem
                 |> Storage.Request.init {
                     toDomain = Prenotami.Payload.toDomain fileStorageKey
                     toEntity = Prenotami.Payload.toEntity fileStorageKey
@@ -78,10 +75,8 @@ module Italian =
             }
 
 type Dependencies = {
-    initChatStorage: unit -> Result<Chat.Storage, Error'>
     initServiceStorage: unit -> Result<ServicesTree.Storage, Error'>
     initEmbassyStorage: unit -> Result<EmbassiesTree.Storage, Error'>
-    initCultureStorage: unit -> Result<Culture.Storage, Error'>
     RussianStorage: Russian.Dependencies
     ItalianStorage: Italian.Dependencies
 } with
@@ -95,28 +90,12 @@ type Dependencies = {
                 | Some value -> Ok value
                 | None -> $"Environment configuration '{name}' not found." |> NotFound |> Error)
 
-        let initCultureStorage fileStoragePath =
-            {
-                FileSystem.Connection.FilePath = fileStoragePath
-                FileSystem.Connection.FileName = "culture.json"
-            }
-            |> Storage.Culture.FileSystem
-            |> Storage.Culture.init
-
-        let initChatStorage fileStoragePath =
-            {
-                FileSystem.Connection.FilePath = fileStoragePath
-                FileSystem.Connection.FileName = "chats.json"
-            }
-            |> Storage.Chat.FileSystem
-            |> Storage.Chat.init
-
         let initEmbassyStorage () =
             {
                 Configuration.Connection.Provider = cfg
                 Configuration.Connection.Section = "Embassies"
             }
-            |> EmbassiesTree.Configuration
+            |> EmbassiesTree.StorageType.Configuration
             |> EmbassiesTree.init
 
         let initServiceStorage () =
@@ -124,22 +103,17 @@ type Dependencies = {
                 Configuration.Connection.Provider = cfg
                 Configuration.Connection.Section = "Services"
             }
-            |> ServicesTree.Configuration
+            |> ServicesTree.StorageType.Configuration
             |> ServicesTree.init
 
         result {
 
             let! fileStoragePath = getEnv "Persistence:FileSystem"
-            let! fileStorageKey = getEnv "Persistence:Key"
-
-            let initCultureStorage () = initCultureStorage fileStoragePath
-            let initChatStorage () = initChatStorage fileStoragePath
+            let! fileStorageKey = getEnv "Persistence:Encryption:Key"
 
             return {
                 initServiceStorage = initServiceStorage
                 initEmbassyStorage = initEmbassyStorage
-                initCultureStorage = initCultureStorage
-                initChatStorage = initChatStorage
                 RussianStorage = Russian.Dependencies.create fileStoragePath
                 ItalianStorage = Italian.Dependencies.create fileStoragePath fileStorageKey
             }

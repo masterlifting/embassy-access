@@ -5,11 +5,8 @@ open Infrastructure.Prelude
 open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
-open EA.Core.DataAccess
 open EA.Russian.Services
 open EA.Russian.Services.Router
-open EA.Telegram.DataAccess
-open EA.Telegram.Services.Services.Russian
 open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies
 
@@ -28,45 +25,12 @@ module Kdmid =
 
             result {
                 let! persistence = Persistence.Dependencies.create cfg
-                let! telegram = Telegram.Dependencies.create cfg ct
 
-                let! chatStorage = persistence.initChatStorage ()
                 let! requestStorage = persistence.RussianStorage.initKdmidRequestStorage ()
-
-                let getChats subscriptions =
-                    chatStorage |> Storage.Chat.Query.findManyBySubscriptions subscriptions
-
-                let getRequests embassyIs serviceId =
-                    requestStorage |> Common.getRequests embassyIs serviceId
-
-                let updateRequests requests =
-                    requestStorage |> Storage.Request.Command.updateSeq requests
-
-                let spreadTranslatedMessages data =
-                    (telegram.Culture.translateSeq, telegram.Web.Telegram.sendMessages)
-                    |> Common.spreadTranslatedMessages data
-
-                let processAll requests =
-                    fun handleProcessResult ->
-
-                        Kdmid.Client.init {
-                            ct = ct
-                            RequestStorage = requestStorage
-                        }
-                        |> Result.map (fun client -> client, handleProcessResult)
-                        |> ResultAsync.wrap (Kdmid.Service.tryProcessAll requests)
 
                 let rec handleProcessResult (result: Result<Request<Payload>, Error'>) =
                     result
-                    |> ResultAsync.wrap (fun r ->
-                        Kdmid.Command.handleProcessResult r {
-                            TaskName = taskName
-                            getChats = getChats
-                            getRequests = getRequests
-                            updateRequests = updateRequests
-                            processAllRequests = fun requests -> processAll requests handleProcessResult
-                            spreadTranslatedMessages = spreadTranslatedMessages
-                        })
+                    |> ResultAsync.wrap (fun r -> Ok() |> async.Return) //TODO: add result handling
                     |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                     |> Async.Ignore
 
@@ -87,9 +51,9 @@ module Kdmid =
 
                     serviceId |> Router.parse |> Result.exists isRequiredService
 
-                let getRequestsToProcess rootServiceId =
+                let getRequests rootServiceId =
                     (requestStorage, hasRequiredService)
-                    |> Common.getRequestsToProcess rootServiceId task.Duration
+                    |> Common.getRequests rootServiceId task.Duration
                     |> ResultAsync.map (
                         List.filter (fun request ->
                             match request.Payload.State with
@@ -109,7 +73,7 @@ module Kdmid =
 
                 return {
                     TaskName = taskName
-                    getRequests = getRequestsToProcess
+                    getRequests = getRequests
                     tryProcessFirst = tryProcessFirst
                 }
             }

@@ -4,7 +4,6 @@ open Infrastructure.Prelude
 open Infrastructure.Configuration.Domain
 open Persistence.Storages.Domain
 open Worker.Dependencies
-open Worker.DataAccess
 open Worker.Domain
 open EA.Worker
 
@@ -22,7 +21,7 @@ let main _ =
             |> async.Return
 
         configuration
-        |> Logging.Client.tryFindLevel
+        |> Logging.Client.getLevel
         |> Logging.Client.Console
         |> Logging.Client.init
 
@@ -31,21 +30,21 @@ let main _ =
                 Configuration.Connection.Section = "Worker"
                 Configuration.Connection.Provider = configuration
             }
-            |> TasksTree.Configuration
-            |> TasksTree.init
-            |> ResultAsync.wrap TasksTree.get
+            |> Worker.DataAccess.TasksTree.StorageType.Configuration
+            |> Worker.DataAccess.TasksTree.init
+            |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
         let rootTaskHandler = {
             Id = "WRK" |> Tree.NodeIdValue
             Handler = Initializer.run |> Some
         }
 
-        let taskHandlers =
+        let tasksTreeHandlers =
             Tree.Node(
                 rootTaskHandler,
                 [
-                    tasksTree |> Embassies.Russian.createHandlers rootTaskHandler
-                    tasksTree |> Embassies.Italian.createHandlers rootTaskHandler
+                    tasksTree |> Embassies.Russian.createHandlers rootTaskHandler.Id
+                    tasksTree |> Embassies.Italian.createHandlers rootTaskHandler.Id
                 ]
                 |> List.choose id
             )
@@ -58,7 +57,7 @@ let main _ =
                 tryFindTask =
                     fun taskId ->
                         tasksTree
-                        |> Worker.Client.registerHandlers taskHandlers
+                        |> Worker.Client.mapTasks tasksTreeHandlers
                         |> Tree.DFS.tryFind taskId
                         |> Ok
                         |> async.Return
