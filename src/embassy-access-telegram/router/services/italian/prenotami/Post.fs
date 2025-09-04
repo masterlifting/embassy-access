@@ -36,16 +36,16 @@ type Route =
         match parts with
         | [| "0"; serviceId; embassyId; login; password |] ->
             SetManualRequest(
-                serviceId |> Graph.NodeIdValue |> ServiceId,
-                embassyId |> Graph.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeIdValue |> ServiceId,
+                embassyId |> Tree.NodeIdValue |> EmbassyId,
                 login,
                 password
             )
             |> Ok
         | [| "1"; serviceId; embassyId; login; password |] ->
             SetAutoNotifications(
-                serviceId |> Graph.NodeIdValue |> ServiceId,
-                embassyId |> Graph.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeIdValue |> ServiceId,
+                embassyId |> Tree.NodeIdValue |> EmbassyId,
                 login,
                 password
             )

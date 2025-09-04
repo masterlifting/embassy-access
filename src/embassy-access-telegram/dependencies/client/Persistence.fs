@@ -27,8 +27,8 @@ module Italian =
 
 type Dependencies = {
     initChatStorage: unit -> Result<Chat.Storage, Error'>
-    initServiceStorage: unit -> Result<ServiceGraph.Storage, Error'>
-    initEmbassyStorage: unit -> Result<EmbassyGraph.Storage, Error'>
+    initServiceStorage: unit -> Result<ServicesTree.Storage, Error'>
+    initEmbassyStorage: unit -> Result<EmbassiesTree.Storage, Error'>
     RussianStorage: Russian.Dependencies
     ItalianStorage: Italian.Dependencies
 }

@@ -18,8 +18,8 @@ type Dependencies = {
     Request: Request.Dependencies
     tryAddSubscription: RequestId -> ServiceId -> EmbassyId -> Async<Result<unit, Error'>>
     deleteSubscription: RequestId -> Async<Result<unit, Error'>>
-    tryFindServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
-    tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
+    tryFindServiceNode: ServiceId -> Async<Result<Tree.Node<Service> option, Error'>>
+    tryFindEmbassyNode: EmbassyId -> Async<Result<Tree.Node<Embassy> option, Error'>>
     findService: ServiceId -> Async<Result<Service, Error'>>
     findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
@@ -31,10 +31,10 @@ type Dependencies = {
         result {
 
             let tryFindServiceNode (serviceId: ServiceId) =
-                deps.getServiceGraph () |> ResultAsync.map (Graph.BFS.tryFind serviceId.Value)
+                deps.getServiceTree () |> ResultAsync.map (Tree.BFS.tryFind serviceId.Value)
 
             let tryFindEmbassyNode (embassyId: EmbassyId) =
-                deps.getEmbassyGraph () |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
+                deps.getEmbassyTree () |> ResultAsync.map (Tree.BFS.tryFind embassyId.Value)
 
             let findService serviceId =
                 tryFindServiceNode serviceId

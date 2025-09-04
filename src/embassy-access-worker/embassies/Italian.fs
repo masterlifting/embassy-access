@@ -8,7 +8,7 @@ open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Dependencies.Embassies.Italian
 
-let private ServiceId = Embassies.ITA |> Graph.NodeIdValue
+let private ServiceId = Embassies.ITA |> Tree.NodeIdValue
 
 module private Prenotami =
     open EA.Italian.Services.Domain.Prenotami
@@ -54,14 +54,14 @@ module private Prenotami =
                 Log.wrn $"{taskName}Memory usage after processing: %u{memory / 1024L} KB")
 
         let Handler = {
-            Id = "SA" |> Graph.NodeIdValue
+            Id = "SA" |> Tree.NodeIdValue
             Handler = handle |> Some
         }
 
 let createHandlers (parentHandler: WorkerTaskHandler) =
-    fun workerGraph ->
+    fun workerTree ->
 
-        let taskId = Graph.NodeId.combine [ parentHandler.Id; ServiceId ]
+        let taskId = Tree.NodeId.combine [ parentHandler.Id; ServiceId ]
         let taskHandlers = [ Prenotami.SearchAppointments.Handler ]
 
-        workerGraph |> Worker.Client.createHandlers taskId taskHandlers
+        workerTree |> Worker.Client.createHandlers taskId taskHandlers

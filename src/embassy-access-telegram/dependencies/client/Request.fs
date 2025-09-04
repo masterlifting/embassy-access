@@ -17,8 +17,8 @@ type Dependencies = {
     MessageId: int
     Persistence: Persistence.Dependencies
     tryGetChat: unit -> Async<Result<Chat option, Error'>>
-    getEmbassyGraph: unit -> Async<Result<Graph.Node<Embassy>, Error'>>
-    getServiceGraph: unit -> Async<Result<Graph.Node<Service>, Error'>>
+    getEmbassyTree: unit -> Async<Result<Tree.Node<Embassy>, Error'>>
+    getServiceTree: unit -> Async<Result<Tree.Node<Service>, Error'>>
     sendMessage: Telegram.Producer.Message -> Async<Result<unit, Error'>>
     sendMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
     translateMessageRes:
@@ -36,11 +36,11 @@ type Dependencies = {
                     deps.Persistence.initChatStorage ()
                     |> ResultAsync.wrap (Storage.Chat.Query.tryFindById payload.ChatId)
 
-                let getEmbassyGraph () =
-                    deps.Persistence.initEmbassyStorage () |> ResultAsync.wrap EmbassyGraph.get
+                let getEmbassyTree () =
+                    deps.Persistence.initEmbassyStorage () |> ResultAsync.wrap EmbassiesTree.get
 
-                let getServiceGraph () =
-                    deps.Persistence.initServiceStorage () |> ResultAsync.wrap ServiceGraph.get
+                let getServiceTree () =
+                    deps.Persistence.initServiceStorage () |> ResultAsync.wrap ServicesTree.get
 
                 let sendMessageRes data =
                     deps.Web.Telegram.sendMessageRes data payload.ChatId
@@ -55,8 +55,8 @@ type Dependencies = {
                     MessageId = payload.MessageId
                     Persistence = deps.Persistence
                     tryGetChat = tryGetChat
-                    getEmbassyGraph = getEmbassyGraph
-                    getServiceGraph = getServiceGraph
+                    getEmbassyTree = getEmbassyTree
+                    getServiceTree = getServiceTree
                     sendMessage = deps.Web.Telegram.sendMessage
                     sendMessageRes = sendMessageRes
                     translateMessageRes = deps.Culture.translateRes

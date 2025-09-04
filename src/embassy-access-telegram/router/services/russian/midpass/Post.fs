@@ -19,8 +19,8 @@ type Route =
         match parts with
         | [| "0"; serviceId; embassyId; number |] ->
             CheckStatus(
-                serviceId |> Graph.NodeIdValue |> ServiceId,
-                embassyId |> Graph.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeIdValue |> ServiceId,
+                embassyId |> Tree.NodeIdValue |> EmbassyId,
                 number
             )
             |> Ok

@@ -13,8 +13,8 @@ open EA.Russian.Services.DataAccess.Midpass
 type Dependencies = {
     ChatId: Telegram.ChatId
     MessageId: int
-    tryFindServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
-    tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
+    tryFindServiceNode: ServiceId -> Async<Result<Tree.Node<Service> option, Error'>>
+    tryFindEmbassyNode: EmbassyId -> Async<Result<Tree.Node<Embassy> option, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
     findRequest: RequestId -> StorageType -> Async<Result<Request<Payload>, Error'>>
     findRequests: EmbassyId -> ServiceId -> StorageType -> Async<Result<Request<Payload> list, Error'>>

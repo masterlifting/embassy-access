@@ -30,12 +30,12 @@ type Route =
             "4"
             serviceId.ValueStr
             embassyId.ValueStr
-            (start |> String.fromDateTime)
-            (finish |> String.fromDateTime)
+            start |> String.fromDateTime
+            finish |> String.fromDateTime
             payload
           ]
         | ConfirmAppointment(requestId, appointmentId) -> [ "5"; requestId.ValueStr; appointmentId.ValueStr ]
-        | StartManualRequest(requestId) -> [ "6"; requestId.ValueStr ]
+        | StartManualRequest requestId -> [ "6"; requestId.ValueStr ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
@@ -44,29 +44,29 @@ type Route =
         match parts with
         | [| "0"; serviceId; embassyId; payload |] ->
             SetManualRequest(
-                serviceId |> Graph.NodeIdValue |> ServiceId,
-                embassyId |> Graph.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeIdValue |> ServiceId,
+                embassyId |> Tree.NodeIdValue |> EmbassyId,
                 payload
             )
             |> Ok
         | [| "1"; serviceId; embassyId; payload |] ->
             SetAutoNotifications(
-                serviceId |> Graph.NodeIdValue |> ServiceId,
-                embassyId |> Graph.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeIdValue |> ServiceId,
+                embassyId |> Tree.NodeIdValue |> EmbassyId,
                 payload
             )
             |> Ok
         | [| "2"; serviceId; embassyId; payload |] ->
             SetAutoBookingFirst(
-                serviceId |> Graph.NodeIdValue |> ServiceId,
-                embassyId |> Graph.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeIdValue |> ServiceId,
+                embassyId |> Tree.NodeIdValue |> EmbassyId,
                 payload
             )
             |> Ok
         | [| "3"; serviceId; embassyId; payload |] ->
             SetAutoBookingLast(
-                serviceId |> Graph.NodeIdValue |> ServiceId,
-                embassyId |> Graph.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeIdValue |> ServiceId,
+                embassyId |> Tree.NodeIdValue |> EmbassyId,
                 payload
             )
             |> Ok
@@ -74,8 +74,8 @@ type Route =
             match start, finish with
             | AP.IsDateTime start, AP.IsDateTime finish ->
                 SetAutoBookingFirstInPeriod(
-                    serviceId |> Graph.NodeIdValue |> ServiceId,
-                    embassyId |> Graph.NodeIdValue |> EmbassyId,
+                    serviceId |> Tree.NodeIdValue |> ServiceId,
+                    embassyId |> Tree.NodeIdValue |> EmbassyId,
                     start,
                     finish,
                     payload

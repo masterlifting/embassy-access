@@ -26,26 +26,26 @@ let main _ =
         |> Logging.Client.Console
         |> Logging.Client.init
 
-        let! taskGraph =
+        let! tasksTree =
             {
                 Configuration.Connection.Section = "Worker"
                 Configuration.Connection.Provider = configuration
             }
-            |> TaskGraph.Configuration
-            |> TaskGraph.init
-            |> ResultAsync.wrap TaskGraph.get
+            |> TasksTree.Configuration
+            |> TasksTree.init
+            |> ResultAsync.wrap TasksTree.get
 
         let rootTaskHandler = {
-            Id = "WRK" |> Graph.NodeIdValue
+            Id = "WRK" |> Tree.NodeIdValue
             Handler = Initializer.run |> Some
         }
 
         let taskHandlers =
-            Graph.Node(
+            Tree.Node(
                 rootTaskHandler,
                 [
-                    taskGraph |> Embassies.Russian.createHandlers rootTaskHandler
-                    taskGraph |> Embassies.Italian.createHandlers rootTaskHandler
+                    tasksTree |> Embassies.Russian.createHandlers rootTaskHandler
+                    tasksTree |> Embassies.Italian.createHandlers rootTaskHandler
                 ]
                 |> List.choose id
             )
@@ -57,9 +57,9 @@ let main _ =
                 RootTaskId = rootTaskHandler.Id
                 tryFindTask =
                     fun taskId ->
-                        taskGraph
+                        tasksTree
                         |> Worker.Client.registerHandlers taskHandlers
-                        |> Graph.DFS.tryFind taskId
+                        |> Tree.DFS.tryFind taskId
                         |> Ok
                         |> async.Return
             }

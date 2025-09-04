@@ -14,7 +14,7 @@ type Dependencies = {
     Chat: Chat
     MessageId: int
     Request: Request.Dependencies
-    getEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
+    getEmbassyNode: EmbassyId -> Async<Result<Tree.Node<Embassy> option, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
 } with
 
@@ -23,7 +23,7 @@ type Dependencies = {
 
         result {
             let getEmbassyNode (embassyId: EmbassyId) =
-                deps.getEmbassyGraph () |> ResultAsync.map (Graph.BFS.tryFind embassyId.Value)
+                deps.getEmbassyTree () |> ResultAsync.map (Tree.BFS.tryFind embassyId.Value)
 
             let sendMessageRes data =
                 data |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes

@@ -26,7 +26,7 @@ let private createButtonsGroup chatId messageId name buttons =
     |> async.Return
 
 let private (|RUS|ITA|EmbassyNotFound|) (embassyId: EmbassyId) =
-    match embassyId.Value |> Graph.NodeId.splitValues |> List.truncate 2 with
+    match embassyId.Value |> Tree.NodeId.splitValues |> List.truncate 2 with
     | [ _; Embassies.RUS ] -> RUS Embassies.RUS
     | [ _; Embassies.ITA ] -> ITA Embassies.ITA
     | _ -> EmbassyNotFound
@@ -41,7 +41,7 @@ let private tryCreateServiceRootId (embassyId: EmbassyId) =
         |> NotImplemented
         |> Error
     |> Result.map (fun embassyIdValue ->
-        Graph.NodeId.combine [ Graph.NodeIdValue Services.ROOT_ID; Graph.NodeIdValue embassyIdValue ]
+        Tree.NodeId.combine [ Tree.NodeIdValue Services.ROOT_ID; Tree.NodeIdValue embassyIdValue ]
         |> ServiceId)
 
 let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser =

@@ -14,7 +14,6 @@ open EA.Russian.Services.Domain
 open EA.Italian.Services.Domain
 
 let private result = ResultBuilder()
-let private resultAsync = ResultAsyncBuilder()
 
 module Russian =
     open EA.Russian.Services.DataAccess
@@ -80,8 +79,8 @@ module Italian =
 
 type Dependencies = {
     initChatStorage: unit -> Result<Chat.Storage, Error'>
-    initServiceStorage: unit -> Result<ServiceGraph.Storage, Error'>
-    initEmbassyStorage: unit -> Result<EmbassyGraph.Storage, Error'>
+    initServiceStorage: unit -> Result<ServicesTree.Storage, Error'>
+    initEmbassyStorage: unit -> Result<EmbassiesTree.Storage, Error'>
     initCultureStorage: unit -> Result<Culture.Storage, Error'>
     RussianStorage: Russian.Dependencies
     ItalianStorage: Italian.Dependencies
@@ -117,16 +116,16 @@ type Dependencies = {
                 Configuration.Connection.Provider = cfg
                 Configuration.Connection.Section = "Embassies"
             }
-            |> EmbassyGraph.Configuration
-            |> EmbassyGraph.init
+            |> EmbassiesTree.Configuration
+            |> EmbassiesTree.init
 
         let initServiceStorage () =
             {
                 Configuration.Connection.Provider = cfg
                 Configuration.Connection.Section = "Services"
             }
-            |> ServiceGraph.Configuration
-            |> ServiceGraph.init
+            |> ServicesTree.Configuration
+            |> ServicesTree.init
 
         result {
 

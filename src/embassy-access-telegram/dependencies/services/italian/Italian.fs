@@ -16,8 +16,8 @@ type Dependencies = {
     ct: CancellationToken
     Chat: Chat
     MessageId: int
-    tryFindServiceNode: ServiceId -> Async<Result<Graph.Node<Service> option, Error'>>
-    tryFindEmbassyNode: EmbassyId -> Async<Result<Graph.Node<Embassy> option, Error'>>
+    tryFindServiceNode: ServiceId -> Async<Result<Tree.Node<Service> option, Error'>>
+    tryFindEmbassyNode: EmbassyId -> Async<Result<Tree.Node<Embassy> option, Error'>>
     findService: ServiceId -> Async<Result<Service, Error'>>
     findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
     tryAddSubscription: RequestId -> ServiceId -> EmbassyId -> Async<Result<unit, Error'>>

@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Core.DataAccess.ServiceGraph
+module EA.Core.DataAccess.EmbassiesTree
 
 open System
 open Infrastructure.Domain
@@ -12,17 +12,18 @@ open EA.Core.Domain
 type Storage = Provider of Storage.Provider
 type StorageType = Configuration of Configuration.Connection
 
-type ServiceGraphEntity() =
-    member val Id: string = String.Empty with get, set
-    member val Name: string = String.Empty with get, set
+type EmbassiesTreeEntity() =
+    member val Id = String.Empty with get, set
+    member val Name = String.Empty with get, set
     member val Description: string option = None with get, set
-    member val Children: ServiceGraphEntity[] | null = [||] with get, set
+    member val TimeZone: float option = None with get, set
+    member val Children: EmbassiesTreeEntity[] | null = [||] with get, set
 
     member this.ToDomain() =
 
-        let rec innerLoop names (entity: ServiceGraphEntity) =
+        let rec innerLoop names (entity: EmbassiesTreeEntity) =
             entity.Id
-            |> Graph.NodeId.parse
+            |> Tree.NodeId.parse
             |> Result.bind (fun nodeId ->
                 match entity.Children with
                 | null -> [] |> Ok
@@ -31,11 +32,12 @@ type ServiceGraphEntity() =
                     |> Seq.map (fun c -> c |> innerLoop (names @ [ c.Name ]))
                     |> Result.choose
                 |> Result.map (fun children ->
-                    Graph.Node(
+                    Tree.Node(
                         {
-                            Id = nodeId |> ServiceId
+                            Id = nodeId |> EmbassyId
                             NameParts = names
                             Description = entity.Description
+                            TimeZone = entity.TimeZone |> Option.defaultValue 0.
                         },
                         children
                     )))
@@ -45,7 +47,7 @@ type ServiceGraphEntity() =
 module private Configuration =
     open Persistence.Storages.Configuration
 
-    let private loadData = Read.section<ServiceGraphEntity>
+    let private loadData = Read.section<EmbassiesTreeEntity>
 
     let get client =
         client |> loadData |> Result.bind _.ToDomain() |> async.Return

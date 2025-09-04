@@ -87,7 +87,7 @@ let getEmbassy embassyId =
 
 let getEmbassies () =
     fun (deps: Embassies.Dependencies) ->
-        let embassyId = Embassies.ROOT_ID |> Graph.NodeIdValue |> EmbassyId
+        let embassyId = Embassies.ROOT_ID |> Tree.NodeIdValue |> EmbassyId
         deps |> getEmbassy' embassyId true
 
 let getUserEmbassy embassyId =
@@ -95,5 +95,5 @@ let getUserEmbassy embassyId =
 
 let getUserEmbassies () =
     fun (deps: Embassies.Dependencies) ->
-        let embassyId = Embassies.ROOT_ID |> Graph.NodeIdValue |> EmbassyId
+        let embassyId = Embassies.ROOT_ID |> Tree.NodeIdValue |> EmbassyId
         deps |> getUserEmbassy' embassyId true

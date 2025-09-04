@@ -184,7 +184,7 @@ type Route =
 
 let parse (serviceId: ServiceId) =
     // Maybe I should make sure that the serviceId is an Russian serviceId
-    let input = serviceId.Value |> Graph.NodeId.splitValues |> List.skip 2
+    let input = serviceId.Value |> Tree.NodeId.splitValues |> List.skip 2
     let remaining = input[1..]
 
     match input[0] with

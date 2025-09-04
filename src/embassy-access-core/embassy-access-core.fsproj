@@ -1,31 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-    <ItemGroup>
-        <Compile Include="domain\Constants.fs" />
-        <Compile Include="domain\Embassy.fs" />
-        <Compile Include="domain\Service.fs" />
-        <Compile Include="domain\Appointment.fs" />
-        <Compile Include="domain\ProcessState.fs" />
-        <Compile Include="domain\Confirmation.fs" />
-        <Compile Include="domain\Limit.fs" />
-        <Compile Include="domain\Request.fs" />
-        <Compile Include="data_access\EmbassyGraph.fs" />
-        <Compile Include="data_access\ServiceGraph.fs" />
-        <Compile Include="data_access\Appointment.fs" />
-        <Compile Include="data_access\ProcessState.fs" />
-        <Compile Include="data_access\Confirmation.fs" />
-        <Compile Include="data_access\Limit.fs" />
-        <Compile Include="data_access\request\Request.fs" />
-        <Compile Include="data_access\request\FileSystem.fs" />
-        <Compile Include="data_access\request\InMemory.fs" />
-        <Compile Include="data_access\request\Storage.fs" />
-    </ItemGroup>
-  
-    <ItemGroup>
-        <ProjectReference Include="..\..\submodules\fsharp-infrastructure\src\fsharp-infrastructure.fsproj"/>
-        <ProjectReference Include="..\..\submodules\fsharp-persistence\src\fsharp-persistence.fsproj"/>
-    </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="domain\Constants.fs" />
+    <Compile Include="domain\Embassy.fs" />
+    <Compile Include="domain\Service.fs" />
+    <Compile Include="domain\Appointment.fs" />
+    <Compile Include="domain\ProcessState.fs" />
+    <Compile Include="domain\Confirmation.fs" />
+    <Compile Include="domain\Limit.fs" />
+    <Compile Include="domain\Request.fs" />
+    <Compile Include="data_access\EmbassiesTree.fs" />
+    <Compile Include="data_access\ServicesTree.fs" />
+    <Compile Include="data_access\Appointment.fs" />
+    <Compile Include="data_access\ProcessState.fs" />
+    <Compile Include="data_access\Confirmation.fs" />
+    <Compile Include="data_access\Limit.fs" />
+    <Compile Include="data_access\request\Request.fs" />
+    <Compile Include="data_access\request\FileSystem.fs" />
+    <Compile Include="data_access\request\InMemory.fs" />
+    <Compile Include="data_access\request\Storage.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\submodules\fsharp-infrastructure\src\fsharp-infrastructure.fsproj" />
+    <ProjectReference Include="..\..\submodules\fsharp-persistence\src\fsharp-persistence.fsproj" />
+  </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@ open Infrastructure.Domain
 open Infrastructure.Prelude
 
 type EmbassyId =
-    | EmbassyId of Graph.NodeId
+    | EmbassyId of Tree.NodeId
 
     member this.Value =
         match this with
@@ -28,6 +28,6 @@ type Embassy = {
 
     member this.LastName = this.NameParts |> List.tryLast |> Option.defaultValue "Unknown"
 
-    interface Graph.INode with
+    interface Tree.INode with
         member this.Id = this.Id.Value
         member this.set id = { this with Id = id |> EmbassyId }
