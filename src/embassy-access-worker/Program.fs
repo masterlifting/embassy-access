@@ -39,17 +39,17 @@ let main _ =
             |> Worker.DataAccess.TasksTree.init
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
-        let rootTaskHandler = {
+        let rootTask = {
             Id = "WRK" |> Tree.NodeIdValue
             Handler = Initializer.run |> Some
         }
 
         let tasksTreeHandlers =
             Tree.Node(
-                rootTaskHandler,
+                rootTask,
                 [
-                    tasksTree |> Embassies.Russian.createHandlers rootTaskHandler.Id
-                    tasksTree |> Embassies.Italian.createHandlers rootTaskHandler.Id
+                    tasksTree |> Embassies.Russian.createHandlers rootTask.Id
+                    tasksTree |> Embassies.Italian.createHandlers rootTask.Id
                 ]
                 |> List.choose id
             )
@@ -58,7 +58,7 @@ let main _ =
             Worker.Client.start {
                 Name = "Embassy Access Worker"
                 Configuration = configuration
-                RootTaskId = rootTaskHandler.Id
+                RootTaskId = rootTask.Id
                 tryFindTask =
                     fun taskId ->
                         tasksTree
