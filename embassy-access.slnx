@@ -10,7 +10,7 @@
   <Folder Name="/modules/">
     <Project Path="src/embassy-access-modules/embassy-access-russian/embassy-access-russian.fsproj" />
     <Project Path="src/embassy-access-modules/embassy-access-russian-tests/embassy-access-russian-tests.fsproj" />
-    <Project Path="src/embassy-access-modules/embassy-access-italian/embassy-access-italian.fsproj" Type="Classic F#" />
+    <Project Path="src/embassy-access-modules/embassy-access-italian/embassy-access-italian.fsproj" />
   </Folder>
   <Folder Name="/submodules/">
     <Project Path="submodules/fsharp-infrastructure/src/fsharp-infrastructure.fsproj" />
