@@ -3,8 +3,4 @@
 open Infrastructure.Logging
 open Worker.Domain
 
-let run (task, cfg, ct) =
-    async {
-        return
-             Ok()
-    }
+let run (task, cfg, ct) = async { return Ok() }

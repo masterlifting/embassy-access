@@ -83,8 +83,6 @@ type Dependencies = {
 
     static member create cfg =
 
-
-
         let initEmbassyStorage () =
             {
                 Configuration.Connection.Provider = cfg

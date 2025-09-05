@@ -17,8 +17,9 @@ type Environments = {
     OpenAIApiKey: string
     DataEncryptionKey: string
 } with
-    static member init () =
-        let getEnv key = 
+
+    static member init() =
+        let getEnv key =
             match getEnv key with
             | Ok v -> v
             | Error e -> failwith e.Message
@@ -31,4 +32,4 @@ type Environments = {
             DataEncryptionKey = getEnv "DATA_ENCRYPTION_KEY"
         }
 
-let ENVIRONMENTS = Environments.init()
+let ENVIRONMENTS = Environments.init ()

@@ -45,8 +45,7 @@ module private Prenotami =
 
     module SearchAppointments =
         let private handle (task, cfg, ct) =
-            Prenotami.Dependencies.create task cfg ct
-            |> ResultAsync.wrap start
+            Prenotami.Dependencies.create task cfg ct |> ResultAsync.wrap start
 
         let Handler = {
             Id = "SA" |> Tree.NodeIdValue

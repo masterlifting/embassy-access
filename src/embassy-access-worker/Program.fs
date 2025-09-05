@@ -11,10 +11,8 @@ let private resultAsync = ResultAsyncBuilder()
 
 [<EntryPoint>]
 let main _ =
-    
-    Logging.Client.getLevel()
-    |> Logging.Client.Console
-    |> Logging.Client.init
+
+    Logging.Client.getLevel () |> Logging.Client.Console |> Logging.Client.init
 
     resultAsync {
         let! configuration =

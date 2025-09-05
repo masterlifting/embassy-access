@@ -49,8 +49,7 @@ module private Kdmid =
 
     module SearchAppointments =
         let private handle (task, cfg, ct) =
-            Kdmid.Dependencies.create task cfg ct
-            |> ResultAsync.wrap start
+            Kdmid.Dependencies.create task cfg ct |> ResultAsync.wrap start
 
         let Handler = {
             Id = "SA" |> Tree.NodeIdValue
