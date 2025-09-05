@@ -28,7 +28,7 @@ module Russian =
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "requests-rus-kdmid.json"
                 }
-                |> Storage.Request.FileSystem
+                |> Storage.Request.StorageType.FileSystem
                 |> Storage.Request.init {
                     toDomain = Kdmid.Payload.toDomain
                     toEntity = Kdmid.Payload.toEntity

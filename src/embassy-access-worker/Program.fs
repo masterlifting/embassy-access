@@ -28,6 +28,15 @@ let main _ =
             |> Configuration.Client.init
             |> async.Return
 
+        let version =
+            configuration
+            |> Configuration.Client.tryGetSection<string> "Version"
+            |> function
+                | Some v -> v
+                | None -> "unknown"
+
+        Logging.Log.inf $"EA.Worker version: %s{version}"
+
         let! tasksTree =
             {
                 Configuration.Connection.Section = "Worker"
@@ -54,7 +63,7 @@ let main _ =
 
         return
             Worker.Client.start {
-                Name = "Embassy Access Worker"
+                Name = $"EA.Worker: v{version}"
                 Configuration = configuration
                 RootTaskId = rootTask.Id
                 tryFindTask =

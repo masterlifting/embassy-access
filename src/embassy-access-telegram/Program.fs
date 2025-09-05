@@ -16,6 +16,15 @@ let main _ =
             |> Configuration.Client.init
             |> async.Return
 
+        let version =
+            configuration
+            |> Configuration.Client.tryGetSection<string> "Version"
+            |> function
+                | Some v -> v
+                | None -> "unknown"
+
+        Logging.Log.inf $"EA.Telegram version: %s{version}"
+
         return 0 |> Ok |> async.Return
     }
     |> Async.RunSynchronously
