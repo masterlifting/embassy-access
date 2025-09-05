@@ -11,24 +11,24 @@ let private resultAsync = ResultAsyncBuilder()
 
 [<EntryPoint>]
 let main _ =
+    
+    Logging.Client.getLevel()
+    |> Logging.Client.Console
+    |> Logging.Client.init
+
     resultAsync {
         let! configuration =
             {
                 Files = [
-                    "appsettings.yaml"
-                    "data/worker-tasks-tree.yaml"
-                    "data/embassy-tasks-tree.yaml"
-                    "data/service-tasks-tree.yaml"
+                    "appsettings.yml"
+                    "data/worker-tasks-tree.yml"
+                    "data/embassy-tasks-tree.yml"
+                    "data/service-tasks-tree.yml"
                 ]
             }
             |> Configuration.Client.Yaml
             |> Configuration.Client.init
             |> async.Return
-
-        configuration
-        |> Logging.Client.getLevel
-        |> Logging.Client.Console
-        |> Logging.Client.init
 
         let! tasksTree =
             {

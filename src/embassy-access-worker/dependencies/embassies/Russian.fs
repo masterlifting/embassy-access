@@ -66,6 +66,7 @@ module Kdmid =
 
                     Kdmid.Client.init {
                         ct = ct
+                        AntiCaptchaApiKey = Configuration.ENVIRONMENTS.AntiCaptchaApiKey
                         RequestStorage = requestStorage
                     }
                     |> Result.map (fun client -> client, handleProcessResult)

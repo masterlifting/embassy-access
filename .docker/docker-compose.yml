@@ -6,8 +6,17 @@
     build:
       context: ../
       dockerfile: ./src/embassy-access-worker/Dockerfile
+    depends_on:
+      - ea-postgres
+      - browser-webapi
+    environment:
+      - LOG_LEVEL=info
+      - POSTGRES_CONNECTION=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ea-postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+      - BROWSER_WEBAPI_URL=http://browser-webapi:${BROWSER_WEBAPI_PORT}
+      - ANTICAPTCHA_API_KEY=${ANTICAPTCHA_API_KEY}
+      - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
     networks:
-      - default
+      - ea-network
 
   ea-telegram:
     image: ea-telegram
@@ -15,31 +24,48 @@
     build:
       context: ../
       dockerfile: ./src/embassy-access-telegram/Dockerfile
+    depends_on:
+      - ea-postgres
+    environment:
+      - LOG_LEVEL=info
+      - POSTGRES_CONNECTION=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ea-postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - ANTICAPTCHA_API_KEY=${ANTICAPTCHA_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
     networks:
-      - default
+      - ea-network
 
   browser-webapi:
-    container_name: browser-webapi
     image: ponkorn/browser-webapi:1.0.0
+    container_name: browser-webapi
     ports:
       - 8080:8080
     environment:
       - SERVER_HOST=0.0.0.0
-      - SERVER_PORT=8080
+      - SERVER_PORT=${BROWSER_WEBAPI_PORT}
       - USE_UI=false
       - BINARY_DATA_DIR=/usr/bin/chromium-browser
       - USER_DATA_DIR=/tmp/chrome_temp
       - IDLE_TIMEOUT_DAYS=365
     networks:
-      - default
+      - ea-network
 
-  ea-redis:
-    image: redis:7.0-alpine
-    container_name: ea-redis
+  ea-postgres:
+    image: postgres:17
+    container_name: ea-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ea-postgres-data:/var/lib/postgresql/data
     networks:
-      - default
+      - ea-network
 
 networks:
-  default:
-    external:
-      name: ea-network
+  ea-network:
+    driver: bridge
+
+volumes:
+  ea-postgres-data:

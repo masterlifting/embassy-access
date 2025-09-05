@@ -14,7 +14,7 @@ type StorageType =
 
 let private toProvider =
     function
-    | Request.Storage.Provider(provider, payloadConverter) -> (provider, payloadConverter)
+    | Request.Storage.Provider(provider, payloadConverter) -> provider, payloadConverter
 
 let init payloadConverter =
     fun storageType ->

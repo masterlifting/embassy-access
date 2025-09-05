@@ -13,6 +13,7 @@ open EA.Italian.Services
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
 open EA.Italian.Services.DataAccess.Prenotami
+open EA.Telegram.Dependencies
 
 type Dependencies = {
     ct: CancellationToken
@@ -81,6 +82,7 @@ type Dependencies = {
         let processRequest request storage =
             Prenotami.Client.init {
                 ct = deps.ct
+                AntiCaptchaApiKey = Configuration.ENVIRONMENTS.AntiCaptchaApiKey
                 RequestStorage = storage
             }
             |> Prenotami.Service.tryProcess request

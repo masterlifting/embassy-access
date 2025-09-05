@@ -12,6 +12,7 @@ open EA.Italian.Services.DataAccess.Prenotami
 
 type Dependencies = {
     ct: CancellationToken
+    AntiCaptchaApiKey: string
     RequestStorage: Request.Storage<Payload, Payload.Entity>
 }
 
@@ -46,7 +47,7 @@ let init (deps: Dependencies) = {
                 }
         getInitialPage = fun client -> client |> Web.Http.getInitialPage deps.ct
         setSessionCookie = fun response client -> client |> Web.Http.setSessionCookie response
-        solveCaptcha = Web.Http.solveCaptcha deps.ct
+        solveCaptcha = Web.Http.solveCaptcha deps.ct deps.AntiCaptchaApiKey
         buildFormData = Web.Http.buildFormData
         postLoginPage = fun formData client -> client |> Web.Http.postLoginPage deps.ct formData
         setAuthCookie = fun response client -> client |> Web.Http.setAuthCookie response

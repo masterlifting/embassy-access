@@ -7,6 +7,7 @@ open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
+open EA.Telegram.Dependencies
 open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services
 open EA.Russian.Services.Domain.Kdmid
@@ -59,6 +60,7 @@ type Dependencies = {
         let processRequest request storage =
             Kdmid.Client.init {
                 ct = deps.ct
+                AntiCaptchaApiKey = Configuration.ENVIRONMENTS.AntiCaptchaApiKey
                 RequestStorage = storage
             }
             |> ResultAsync.wrap (Kdmid.Service.tryProcess request)

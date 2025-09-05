@@ -6,17 +6,17 @@ let private resultAsync = ResultAsyncBuilder()
 
 [<EntryPoint>]
 let main _ =
+
+    Logging.Client.getLevel()
+    |> Logging.Client.Console
+    |> Logging.Client.init
+
     resultAsync {
         let! configuration =
             { Files = [ "appsettings.yaml" ] }
             |> Configuration.Client.Yaml
             |> Configuration.Client.init
             |> async.Return
-
-        configuration
-        |> Logging.Client.getLevel
-        |> Logging.Client.Console
-        |> Logging.Client.init
 
         return 0 |> Ok |> async.Return
     }

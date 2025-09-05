@@ -1,27 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  
   <ItemGroup>
-    <Content Include="data\worker-tasks-tree.yaml">
+    <Content Include="data\worker-tasks-tree.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>data\worker-tasks-tree.yaml</Link>
+      <Link>data\worker-tasks-tree.yml</Link>
     </Content>
-    <Content Include="data\embassy-tasks-tree.yaml">
+    <Content Include="data\embassy-tasks-tree.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>data\embassy-tasks-tree.yaml</Link>
+      <Link>data\embassy-tasks-tree.yml</Link>
     </Content>
-    <Content Include="data\service-tasks-tree.yaml">
+    <Content Include="data\service-tasks-tree.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>data\service-tasks-tree.yaml</Link>
+      <Link>data\service-tasks-tree.yml</Link>
     </Content>
   </ItemGroup>
-  
   <ItemGroup>
+    <Compile Include="dependencies\Configuration.fs" />
     <Compile Include="dependencies\Persistence.fs" />
     <Compile Include="dependencies\embassies\Common.fs" />
     <Compile Include="dependencies\embassies\Russian.fs" />
@@ -31,18 +29,15 @@
     <Compile Include="Initializer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-  
   <ItemGroup>
-    <Content Include="appsettings.yaml">
+    <Content Include="appsettings.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>appsettings.yaml</Link>
+      <Link>appsettings.yml</Link>
     </Content>
   </ItemGroup>
-  
   <ItemGroup>
     <ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
     <ProjectReference Include="..\embassy-access-modules\embassy-access-italian\embassy-access-italian.fsproj" />
     <ProjectReference Include="..\embassy-access-modules\embassy-access-russian\embassy-access-russian.fsproj" />
   </ItemGroup>
-  
 </Project>

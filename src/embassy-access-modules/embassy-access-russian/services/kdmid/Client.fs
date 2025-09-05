@@ -10,6 +10,7 @@ open EA.Russian.Services.DataAccess.Kdmid
 
 type Dependencies = {
     ct: CancellationToken
+    AntiCaptchaApiKey: string
     RequestStorage: Request.Storage<Payload, Payload.Entity>
 }
 
@@ -58,7 +59,7 @@ let init (deps: Dependencies) =
                 httpClient
                 |> Http.Request.get request deps.ct
                 |> Http.Response.Bytes.read deps.ct
-        solveCaptcha = Web.AntiCaptcha.Number.fromImage deps.ct
+        solveCaptcha = Web.AntiCaptcha.Number.fromImage deps.ct deps.AntiCaptchaApiKey
         postValidationPage =
             fun request content httpClient ->
                 httpClient

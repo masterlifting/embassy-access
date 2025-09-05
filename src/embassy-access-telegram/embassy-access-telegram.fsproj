@@ -1,86 +1,82 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <Compile Include="domain\Constants.fs" />
-        <Compile Include="domain\Subscription.fs" />
-        <Compile Include="domain\Chat.fs" />
-        <Compile Include="data_access\Subscriptions.fs" />
-        <Compile Include="data_access\chat\Chat.fs" />
-        <Compile Include="data_access\chat\FileSystem.fs" />
-        <Compile Include="data_access\chat\InMemory.fs" />
-        <Compile Include="data_access\chat\Storage.fs" />
-        <Compile Include="router\culture\Get.fs" />
-        <Compile Include="router\culture\Post.fs" />
-        <Compile Include="router\culture\Method.fs" />
-        <Compile Include="router\embassies\Get.fs" />
-        <Compile Include="router\embassies\Method.fs" />
-        <Compile Include="router\services\russian\kdmid\Get.fs" />
-        <Compile Include="router\services\russian\kdmid\Post.fs" />
-        <Compile Include="router\services\russian\kdmid\Delete.fs" />
-        <Compile Include="router\services\russian\kdmid\Method.fs" />
-        <Compile Include="router\services\russian\midpass\Get.fs" />
-        <Compile Include="router\services\russian\midpass\Post.fs" />
-        <Compile Include="router\services\russian\midpass\Delete.fs" />
-        <Compile Include="router\services\russian\midpass\Method.fs" />
-        <Compile Include="router\services\russian\Method.fs" />
-        <Compile Include="router\services\italian\prenotami\Get.fs" />
-        <Compile Include="router\services\italian\prenotami\Post.fs" />
-        <Compile Include="router\services\italian\prenotami\Delete.fs" />
-        <Compile Include="router\services\italian\prenotami\Method.fs" />
-        <Compile Include="router\services\italian\Method.fs" />
-        <Compile Include="router\services\Get.fs" />
-        <Compile Include="router\services\Method.fs" />
-        <Compile Include="router\Router.fs" />
-        <Compile Include="dependencies\client\Web.fs" />
-        <Compile Include="dependencies\client\Persistence.fs" />
-        <Compile Include="dependencies\client\Culture.fs" />
-        <Compile Include="dependencies\client\Client.fs" />
-        <Compile Include="dependencies\client\Request.fs" />
-        <Compile Include="dependencies\services\Services.fs" />
-        <Compile Include="dependencies\services\russian\Russian.fs" />
-        <Compile Include="dependencies\services\russian\Midpass.fs" />
-        <Compile Include="dependencies\services\russian\Kdmid.fs" />
-        <Compile Include="dependencies\services\italian\Italian.fs" />
-        <Compile Include="dependencies\services\italian\Prenotami.fs" />
-        <Compile Include="dependencies\Embassies.fs" />
-        <Compile Include="services\culture\Query.fs" />
-        <Compile Include="services\culture\Command.fs" />
-        <Compile Include="services\services\russian\kdmid\Query.fs" />
-        <Compile Include="services\services\russian\kdmid\Command.fs" />
-        <Compile Include="services\services\russian\midpass\Query.fs" />
-        <Compile Include="services\services\russian\midpass\Command.fs" />
-        <Compile Include="services\services\russian\Query.fs" />
-        <Compile Include="services\services\italian\prenotami\Query.fs" />
-        <Compile Include="services\services\italian\prenotami\Command.fs" />
-        <Compile Include="services\services\italian\Query.fs" />
-        <Compile Include="services\services\Query.fs" />
-        <Compile Include="services\embassies\Query.fs" />
-        <Compile Include="controllers\Culture.fs" />
-        <Compile Include="controllers\Embassies.fs" />
-        <Compile Include="controllers\Services.fs" />
-        <Compile Include="controllers\Controller.fs" />
-        <Compile Include="Client.fs" />
-        <Compile Include="Program.fs" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="appsettings.yaml">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        <Link>appsettings.yaml</Link>
-        </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\submodules\fsharp-ai-provider\src\fsharp-ai-provider.fsproj" />
-        <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
-        <ProjectReference Include="..\embassy-access-modules\embassy-access-italian\embassy-access-italian.fsproj" />
-        <ProjectReference Include="..\embassy-access-modules\embassy-access-russian\embassy-access-russian.fsproj" />
-    </ItemGroup>
-
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="domain\Constants.fs" />
+    <Compile Include="domain\Subscription.fs" />
+    <Compile Include="domain\Chat.fs" />
+    <Compile Include="data_access\Subscriptions.fs" />
+    <Compile Include="data_access\chat\Chat.fs" />
+    <Compile Include="data_access\chat\FileSystem.fs" />
+    <Compile Include="data_access\chat\InMemory.fs" />
+    <Compile Include="data_access\chat\Storage.fs" />
+    <Compile Include="router\culture\Get.fs" />
+    <Compile Include="router\culture\Post.fs" />
+    <Compile Include="router\culture\Method.fs" />
+    <Compile Include="router\embassies\Get.fs" />
+    <Compile Include="router\embassies\Method.fs" />
+    <Compile Include="router\services\russian\kdmid\Get.fs" />
+    <Compile Include="router\services\russian\kdmid\Post.fs" />
+    <Compile Include="router\services\russian\kdmid\Delete.fs" />
+    <Compile Include="router\services\russian\kdmid\Method.fs" />
+    <Compile Include="router\services\russian\midpass\Get.fs" />
+    <Compile Include="router\services\russian\midpass\Post.fs" />
+    <Compile Include="router\services\russian\midpass\Delete.fs" />
+    <Compile Include="router\services\russian\midpass\Method.fs" />
+    <Compile Include="router\services\russian\Method.fs" />
+    <Compile Include="router\services\italian\prenotami\Get.fs" />
+    <Compile Include="router\services\italian\prenotami\Post.fs" />
+    <Compile Include="router\services\italian\prenotami\Delete.fs" />
+    <Compile Include="router\services\italian\prenotami\Method.fs" />
+    <Compile Include="router\services\italian\Method.fs" />
+    <Compile Include="router\services\Get.fs" />
+    <Compile Include="router\services\Method.fs" />
+    <Compile Include="router\Router.fs" />
+    <Compile Include="dependencies\Configuration.fs" />
+    <Compile Include="dependencies\client\Web.fs" />
+    <Compile Include="dependencies\client\Persistence.fs" />
+    <Compile Include="dependencies\client\Culture.fs" />
+    <Compile Include="dependencies\client\Client.fs" />
+    <Compile Include="dependencies\client\Request.fs" />
+    <Compile Include="dependencies\services\Services.fs" />
+    <Compile Include="dependencies\services\russian\Russian.fs" />
+    <Compile Include="dependencies\services\russian\Midpass.fs" />
+    <Compile Include="dependencies\services\russian\Kdmid.fs" />
+    <Compile Include="dependencies\services\italian\Italian.fs" />
+    <Compile Include="dependencies\services\italian\Prenotami.fs" />
+    <Compile Include="dependencies\Embassies.fs" />
+    <Compile Include="services\culture\Query.fs" />
+    <Compile Include="services\culture\Command.fs" />
+    <Compile Include="services\services\russian\kdmid\Query.fs" />
+    <Compile Include="services\services\russian\kdmid\Command.fs" />
+    <Compile Include="services\services\russian\midpass\Query.fs" />
+    <Compile Include="services\services\russian\midpass\Command.fs" />
+    <Compile Include="services\services\russian\Query.fs" />
+    <Compile Include="services\services\italian\prenotami\Query.fs" />
+    <Compile Include="services\services\italian\prenotami\Command.fs" />
+    <Compile Include="services\services\italian\Query.fs" />
+    <Compile Include="services\services\Query.fs" />
+    <Compile Include="services\embassies\Query.fs" />
+    <Compile Include="controllers\Culture.fs" />
+    <Compile Include="controllers\Embassies.fs" />
+    <Compile Include="controllers\Services.fs" />
+    <Compile Include="controllers\Controller.fs" />
+    <Compile Include="Client.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="appsettings.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>appsettings.yml</Link>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\submodules\fsharp-ai-provider\src\fsharp-ai-provider.fsproj" />
+    <ProjectReference Include="..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
+    <ProjectReference Include="..\embassy-access-modules\embassy-access-italian\embassy-access-italian.fsproj" />
+    <ProjectReference Include="..\embassy-access-modules\embassy-access-russian\embassy-access-russian.fsproj" />
+  </ItemGroup>
 </Project>

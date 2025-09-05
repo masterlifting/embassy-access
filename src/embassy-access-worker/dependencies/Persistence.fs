@@ -83,12 +83,7 @@ type Dependencies = {
 
     static member create cfg =
 
-        let getEnv name =
-            Some cfg
-            |> Configuration.Client.tryGetEnv name
-            |> Result.bind (function
-                | Some value -> Ok value
-                | None -> $"Environment configuration '{name}' not found." |> NotFound |> Error)
+
 
         let initEmbassyStorage () =
             {
@@ -108,8 +103,8 @@ type Dependencies = {
 
         result {
 
-            let! fileStoragePath = getEnv "Persistence:FileSystem"
-            let! fileStorageKey = getEnv "Persistence:Encryption:Key"
+            let! fileStoragePath = Configuration.getEnv "Persistence:FileSystem"
+            let! fileStorageKey = Configuration.getEnv "Persistence:Encryption:Key"
 
             return {
                 initServiceStorage = initServiceStorage
