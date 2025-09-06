@@ -82,7 +82,7 @@ type Dependencies = {
         let processRequest request storage =
             Prenotami.Client.init {
                 ct = deps.ct
-                AntiCaptchaApiKey = Configuration.ENVIRONMENTS.AntiCaptchaApiKey
+                BrowserWebApiUrl = Configuration.ENVIRONMENTS.AntiCaptchaApiKey
                 RequestStorage = storage
             }
             |> Prenotami.Service.tryProcess request

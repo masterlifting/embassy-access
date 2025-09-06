@@ -1,23 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <Compile Include="services\Router.fs" />
-      <Compile Include="services\prenotami\Domain.fs" />
-      <Compile Include="services\prenotami\DataAccess.fs" />
-      <Compile Include="services\prenotami\Web.Http.fs" />
-      <Compile Include="services\prenotami\Client.fs" />
-      <Compile Include="services\prenotami\Web.Html.fs" />
-      <Compile Include="services\prenotami\Service.fs" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
-      <ProjectReference Include="..\..\embassy-access-core\embassy-access-core.fsproj" />
-    </ItemGroup>
-
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="services\Router.fs" />
+    <Compile Include="services\prenotami\Domain.fs" />
+    <Compile Include="services\prenotami\DataAccess.fs" />
+    <Compile Include="services\prenotami\Client.fs" />
+    <Compile Include="services\prenotami\Web.BrowserWebApi.fs" />
+    <Compile Include="services\prenotami\Service.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />
+    <ProjectReference Include="..\..\embassy-access-core\embassy-access-core.fsproj" />
+  </ItemGroup>
 </Project>
