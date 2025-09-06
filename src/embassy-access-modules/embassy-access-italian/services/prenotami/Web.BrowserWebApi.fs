@@ -3,53 +3,19 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Web.Clients.Http
-open Web.Clients.Domain.Http
 open EA.Italian.Services
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
+open EA.Italian.Services.Prenotami.Client
 open Web.Clients.Domain.BrowserWebApi
 
-let private createOpenDto () = {
-    Dto.Open.Url = "https://prenotami.esteri.it"
-}
-
-let private createFillCredentialsDto credentials = {
-    Dto.Fill.Inputs = [
-        {
-            Dto.Input.Selector = "#Email"
-            Value = credentials.Login
-        }
-        {
-            Dto.Input.Selector = "#Password"
-            Value = credentials.Password
-        }
-    ]
-}
-
-let private createSubmitCredentialsDto () = {
-    Dto.Execute.Selector = "#FormLogin"
-    Dto.Execute.Function = "submit();"
-}
-
-let private createClickServicesDto () = {
-    Dto.Click.Selector = "a[href='/Services']"
-}
-
-let private createClickVisaDto serviceId =
+let private getBookAppointmentSelector serviceId =
     match serviceId |> Router.parse with
     | Ok(Visa service) ->
         match service with
-        | Visa.Tourism1 _ ->
-            {
-                Dto.Click.Selector = "a[href='/Services/Booking/1151']"
-            }
-            |> Ok
-        | Visa.Tourism2 _ ->
-            {
-                Dto.Click.Selector = "a[href='/Services/Booking/1258']"
-            }
-            |> Ok
+        | Visa.Tourism1 _ -> "a[href='/Services/Booking/1151']"
+        | Visa.Tourism2 _ -> "a[href='/Services/Booking/1258']"
+        |> Ok
     | Error _ ->
         $"The service Id '{serviceId}' is not recognized to process prenotami."
         |> NotFound
@@ -58,14 +24,60 @@ let private createClickVisaDto serviceId =
 let private resultAsync = ResultAsyncBuilder()
 
 let processWebSite credentials serviceId =
-    fun (api: Prenotami.Client.BrowserWebApi) ->
+    fun (api: BrowserWebApi) ->
         resultAsync {
             let! httpClient = api.initClient () |> async.Return
-            let! tabId = httpClient |> api.openTab (createOpenDto ())
-            do! httpClient |> api.fillCredentials tabId (createFillCredentialsDto credentials)
-            do! httpClient |> api.submitCredentials tabId (createSubmitCredentialsDto ())
-            do! httpClient |> api.clickServices tabId (createClickServicesDto ())
-            let! clickVisaDto = createClickVisaDto serviceId |> async.Return
-            do! httpClient |> api.clickVisa tabId clickVisaDto
-            return httpClient |> api.closeTab tabId
+
+            let! tabId =
+                httpClient
+                |> api.openTab {
+                    Dto.Open.Url = "https://prenotami.esteri.it"
+                }
+
+            do!
+                httpClient
+                |> api.fillCredentials tabId {
+                    Dto.Fill.Inputs = [
+                        {
+                            Dto.Input.Selector = "#login-email"
+                            Value = credentials.Login
+                        }
+                        {
+                            Dto.Input.Selector = "#login-password"
+                            Value = credentials.Password
+                        }
+                    ]
+                }
+
+            do!
+                httpClient
+                |> api.submitCredentials tabId {
+                    Dto.Execute.Selector = "form#login-form"
+                    Dto.Execute.Function = "submit();"
+                }
+
+            do!
+                httpClient
+                |> api.clickBookService tabId {
+                    Dto.Click.Selector = "a#advanced"
+                }
+
+            let! selector = getBookAppointmentSelector serviceId |> async.Return
+            do! httpClient |> api.clickBookAppointment tabId { Dto.Click.Selector = selector }
+
+            let! result =
+                httpClient
+                |> api.extractResult tabId {
+                    Dto.Extract.Selector = "div.jconfirm-box div.jconfirm-content"
+                }
+                |> ResultAsync.bind (function
+                    | Some text -> text |> Ok
+                    | None ->
+                        "Could not extract the result from the page."
+                        |> NotFound
+                        |> Error)
+
+            do! httpClient |> api.closeTab tabId
+
+            return result |> Ok |> async.Return
         }

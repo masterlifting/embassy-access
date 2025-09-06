@@ -54,7 +54,7 @@ let tryProcess (request: Request<Payload>) =
             ResultAsync.bindAsync (fun r ->
                 client.BrowserWebApi
                 |> Web.BrowserWebApi.processWebSite r.Payload.Credentials r.Service.Id
-                |> ResultAsync.mapAsync (fun () -> r))
+                |> ResultAsync.mapAsync (fun text -> r))
 
         let setFinalState = client.Persistence.updateRequest |> setFinalProcessState request
 

@@ -12,6 +12,7 @@ let getEnv name =
 
 type Environments = {
     PostgresConnection: string
+    BrowserWebApiUrl: string
     TelegramBotToken: string
     AntiCaptchaApiKey: string
     OpenAIApiKey: string
@@ -26,6 +27,7 @@ type Environments = {
 
         {
             PostgresConnection = getEnv "POSTGRES_CONNECTION"
+            BrowserWebApiUrl = getEnv "BROWSER_WEB_API_URL"
             TelegramBotToken = getEnv "TELEGRAM_BOT_TOKEN"
             AntiCaptchaApiKey = getEnv "ANTICAPTCHA_API_KEY"
             OpenAIApiKey = getEnv "OPENAI_API_KEY"

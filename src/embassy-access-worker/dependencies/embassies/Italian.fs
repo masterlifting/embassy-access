@@ -53,7 +53,7 @@ module Prenotami =
                 let tryProcessFirst requests =
                     Prenotami.Client.init {
                         ct = ct
-                        BrowserWebApiUrl = Configuration.ENVIRONMENTS.AntiCaptchaApiKey
+                        BrowserWebApiUrl = Configuration.ENVIRONMENTS.BrowserWebApiUrl
                         RequestStorage = requestStorage
                     }
                     |> fun client -> client, handleProcessResult

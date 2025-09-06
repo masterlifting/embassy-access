@@ -25,8 +25,9 @@ type BrowserWebApi = {
     openTab: BrowserWebApi.Dto.Open -> Http.Client -> Async<Result<string, Error'>>
     fillCredentials: string -> BrowserWebApi.Dto.Fill -> Http.Client -> Async<Result<unit, Error'>>
     submitCredentials: string -> BrowserWebApi.Dto.Execute -> Http.Client -> Async<Result<unit, Error'>>
-    clickServices: string -> BrowserWebApi.Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
-    clickVisa: string -> BrowserWebApi.Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
+    clickBookService: string -> BrowserWebApi.Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
+    clickBookAppointment: string -> BrowserWebApi.Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
+    extractResult: string -> BrowserWebApi.Dto.Extract -> Http.Client -> Async<Result<string option, Error'>>
     closeTab: string -> Http.Client -> Async<Result<unit, Error'>>
 }
 
@@ -45,8 +46,9 @@ let init (deps: Dependencies) = {
         fillCredentials = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.fill tabId dto deps.ct
         submitCredentials =
             fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.execute tabId dto deps.ct
-        clickServices = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
-        clickVisa = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+        clickBookService = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+        clickBookAppointment = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+        extractResult = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.extract tabId dto deps.ct
         closeTab = fun tabId client -> client |> BrowserWebApi.Request.Tab.close tabId deps.ct
     }
 }
