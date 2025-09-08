@@ -26,7 +26,7 @@ let private resultAsync = ResultAsyncBuilder()
 let processWebSite credentials serviceId =
     fun (api: BrowserWebApi) ->
         resultAsync {
-            let! httpClient = api.initClient () |> async.Return
+            let! httpClient = api.init () |> async.Return
 
             let! tabId =
                 httpClient

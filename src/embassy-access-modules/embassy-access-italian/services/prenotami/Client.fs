@@ -21,7 +21,7 @@ type Persistence = {
 }
 
 type BrowserWebApi = {
-    initClient: unit -> Result<Http.Client, Error'>
+    init: unit -> Result<Http.Client, Error'>
     openTab: BrowserWebApi.Dto.Open -> Http.Client -> Async<Result<string, Error'>>
     fillCredentials: string -> BrowserWebApi.Dto.Fill -> Http.Client -> Async<Result<unit, Error'>>
     submitCredentials: string -> BrowserWebApi.Dto.Execute -> Http.Client -> Async<Result<unit, Error'>>
@@ -41,7 +41,7 @@ let init (deps: Dependencies) = {
         updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
     }
     BrowserWebApi = {
-        initClient = fun () -> BrowserWebApi.Client.init { BaseUrl = deps.BrowserWebApiUrl }
+        init = fun () -> BrowserWebApi.Client.init { BaseUrl = deps.BrowserWebApiUrl }
         openTab = fun dto client -> client |> BrowserWebApi.Request.Tab.open' dto deps.ct
         fillCredentials = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.fill tabId dto deps.ct
         submitCredentials =

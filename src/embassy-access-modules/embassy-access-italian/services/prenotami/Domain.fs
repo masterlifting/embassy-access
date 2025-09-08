@@ -53,12 +53,12 @@ type internal Appointment with
         |> Ok
 
 type PayloadState =
-    | NoAppointments
+    | NoAppointments of string
     | HasAppointments of Set<Appointment>
 
     static member print(payloadState: PayloadState) =
         match payloadState with
-        | NoAppointments -> "No appointments found."
+        | NoAppointments message -> message
         | HasAppointments appointments -> appointments |> Seq.map Appointment.print |> String.concat "\n "
 
 type Payload = {

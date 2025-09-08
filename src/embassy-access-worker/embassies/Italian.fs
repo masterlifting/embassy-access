@@ -17,7 +17,7 @@ module private Prenotami =
             deps.tryProcessFirst requests
             |> ResultAsync.map (fun request ->
                 match request.Payload.State with
-                | NoAppointments -> deps.TaskName + " No appointments found." |> Log.dbg
+                | NoAppointments msg -> deps.TaskName + $" {msg}." |> Log.dbg
                 | HasAppointments appointments ->
                     deps.TaskName + $" Appointments found: %i{appointments.Count}" |> Log.scs)
 

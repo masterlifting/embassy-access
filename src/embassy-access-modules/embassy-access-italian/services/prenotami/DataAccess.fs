@@ -42,11 +42,12 @@ module PayloadState =
 
     type Entity() =
         member val Type = NO_APPOINTMENTS with get, set
+        member val Message = String.Empty with get, set
         member val Appointments = Array.empty<AppointmentEntity> with get, set
 
         member this.ToDomain() =
             match this.Type with
-            | NO_APPOINTMENTS -> NoAppointments |> Ok
+            | NO_APPOINTMENTS -> NoAppointments this.Message |> Ok
             | HAS_APPOINTMENTS ->
                 this.Appointments
                 |> Array.map _.ToDomain()
@@ -77,7 +78,9 @@ type PayloadState with
         let result = PayloadState.Entity()
 
         match this with
-        | NoAppointments -> result.Type <- PayloadState.NO_APPOINTMENTS
+        | NoAppointments message ->
+            result.Type <- PayloadState.NO_APPOINTMENTS
+            result.Message <- message
         | HasAppointments appointments ->
             result.Type <- PayloadState.HAS_APPOINTMENTS
             result.Appointments <- appointments |> Seq.map _.ToEntity() |> Seq.toArray

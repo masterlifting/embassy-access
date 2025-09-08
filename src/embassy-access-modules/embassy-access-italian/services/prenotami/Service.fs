@@ -54,7 +54,13 @@ let tryProcess (request: Request<Payload>) =
             ResultAsync.bindAsync (fun r ->
                 client.BrowserWebApi
                 |> Web.BrowserWebApi.processWebSite r.Payload.Credentials r.Service.Id
-                |> ResultAsync.mapAsync (fun text -> r))
+                |> ResultAsync.mapAsync (fun messsage -> {
+                    r with
+                        Payload = {
+                            r.Payload with
+                                State = NoAppointments messsage
+                        }
+                }))
 
         let setFinalState = client.Persistence.updateRequest |> setFinalProcessState request
 
