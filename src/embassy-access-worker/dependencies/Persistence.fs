@@ -9,6 +9,7 @@ open Persistence.Storages.Domain
 open EA.Core.DataAccess
 open EA.Russian.Services.Domain
 open EA.Italian.Services.Domain
+open EA.Worker.Dependencies
 
 let private result = ResultBuilder()
 
@@ -101,8 +102,8 @@ type Dependencies = {
 
         result {
 
-            let! fileStoragePath = Configuration.getEnv "Persistence:FileSystem"
-            let! fileStorageKey = Configuration.getEnv "Persistence:Encryption:Key"
+            let fileStoragePath = "data"
+            let fileStorageKey = Configuration.ENVIRONMENTS.DataEncryptionKey
 
             return {
                 initServiceStorage = initServiceStorage
