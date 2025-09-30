@@ -46,10 +46,30 @@ let main _ =
             |> Worker.DataAccess.TasksTree.init
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
-        let rootTask = {
-            Id = "WRK" |> Tree.NodeIdValue
-            Handler = Initializer.run |> Some
+        let rootTask = Tree.Node.Create ("WRK", Initializer.run |> Some)
+
+        let rus = Tree.init {
+            Id = "RUS" |> Tree.NodeIdValue
+            Handler = None
         }
+        Some [Embassies.Russian.Kdmid.SearchAppointments.Handler]
+
+        let ita = Tree.init {
+            Id = "ITA" |> Tree.NodeIdValue
+            Handler = None
+        }
+        Some [Embassies.Italian.Prenotami.SearchAppointments.Handler]
+
+        let tree =
+            Tree.init rootTask
+            |> Tree.addChild {
+                Id = "RUS" |> Tree.NodeIdValue
+                Handler = None
+            }
+            |> Tree.addChildren [
+                rus
+                ita
+            ]
 
         let tasksTreeHandlers =
             Tree.Node(

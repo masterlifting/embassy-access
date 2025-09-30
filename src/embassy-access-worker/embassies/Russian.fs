@@ -9,7 +9,7 @@ open EA.Worker.Dependencies.Embassies.Russian
 
 let private SERVICE_ID = Embassies.RUS |> Tree.NodeIdValue
 
-module private Kdmid =
+module Kdmid =
     open EA.Russian.Services.Domain.Kdmid
 
     let private processGroup requests =

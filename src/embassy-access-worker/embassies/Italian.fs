@@ -9,7 +9,7 @@ open EA.Worker.Dependencies.Embassies.Italian
 
 let private SERVICE_ID = Embassies.ITA |> Tree.NodeIdValue
 
-module private Prenotami =
+module Prenotami =
     open EA.Italian.Services.Domain.Prenotami
 
     let private processGroup requests =
