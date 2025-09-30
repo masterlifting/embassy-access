@@ -48,7 +48,8 @@ module Kdmid =
                         errors |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt) |> Ok))
 
     module SearchAppointments =
-        let private handle (task, cfg, ct) =
+        [<EA.Worker.Attributes.Name("WRK.RUS.SRB.SA")>]
+        let handle (task, cfg, ct) =
             Kdmid.Dependencies.create task cfg ct |> ResultAsync.wrap start
 
         let Handler = {

@@ -44,7 +44,8 @@ module Prenotami =
                         errors |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt) |> Ok))
 
     module SearchAppointments =
-        let private handle (task, cfg, ct) =
+        [<EA.Worker.Attributes.Name("WRK.RUS.ITA.SA")>]
+        let handle (task, cfg, ct) =
             Prenotami.Dependencies.create task cfg ct |> ResultAsync.wrap start
 
         let Handler = {

@@ -47,29 +47,26 @@ let main _ =
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
         let rootTask = Tree.Node.Create ("WRK", Initializer.run |> Some)
+        
+        let rusTask = Tree.Node.Create ("RUS", None)
+        let itaTask = Tree.Node.Create ("ITA", None)
 
-        let rus = Tree.init {
-            Id = "RUS" |> Tree.NodeIdValue
-            Handler = None
-        }
-        Some [Embassies.Russian.Kdmid.SearchAppointments.Handler]
+        rootTask.Add rusTask
+        rootTask.Add itaTask
+        
+        let rusSrbTask = Tree.Node.Create ("SRB", None)
+        let rusKdmidTask = Tree.Node.Create ("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some)
 
-        let ita = Tree.init {
-            Id = "ITA" |> Tree.NodeIdValue
-            Handler = None
-        }
-        Some [Embassies.Italian.Prenotami.SearchAppointments.Handler]
+        rusSrbTask.Add rusKdmidTask
+        rusTask.Add rusSrbTask
 
-        let tree =
-            Tree.init rootTask
-            |> Tree.addChild {
-                Id = "RUS" |> Tree.NodeIdValue
-                Handler = None
-            }
-            |> Tree.addChildren [
-                rus
-                ita
-            ]
+        let itaSrbTask = Tree.Node.Create ("SRB", None)
+        let itaPrenotamiTask = Tree.Node.Create ("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some)
+        
+        itaSrbTask.Add itaPrenotamiTask
+        itaTask.Add itaSrbTask
+        
+        let tree = Tree.Root.Create (rootTask, '.')
 
         let tasksTreeHandlers =
             Tree.Node(
