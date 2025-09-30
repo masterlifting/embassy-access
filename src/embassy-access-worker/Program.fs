@@ -6,6 +6,7 @@ open Persistence.Storages.Domain
 open Worker.Dependencies
 open Worker.Domain
 open EA.Worker
+open Infrastructure.Prelude.Tree.NodeBuilder
 
 let private resultAsync = ResultAsyncBuilder()
 
@@ -46,37 +47,58 @@ let main _ =
             |> Worker.DataAccess.TasksTree.init
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
-        // Build tree structure in functional style - multiple approaches available:
+        // Functional tree building - multiple approaches:
         
-        // Approach 1: Using WithChildren/WithChild methods
+        // Approach 1: Using pipe operator |> with helper functions
         let rootTask = 
             Tree.Node.Create("WRK", Initializer.run |> Some)
-                .WithChildren([
-                    Tree.Node.Create("RUS", None)
-                        .WithChild(
-                            Tree.Node.Create("SRB", None)
-                                .WithChild(Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some))
-                        )
-                    
-                    Tree.Node.Create("ITA", None)
-                        .WithChild(
-                            Tree.Node.Create("SRB", None)
-                                .WithChild(Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some))
-                        )
-                ])
-        
-        // Alternative Approach 2: Using CreateWithChildren for more concise syntax
-        (*
-        let rootTask = 
-            Tree.Node.CreateWithChildren("WRK", Initializer.run |> Some, [
-                Tree.Node.CreateWith("RUS", None,
-                    Tree.Node.CreateWith("SRB", None,
-                        Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some)))
+            |> withChildren [
+                Tree.Node.Create("RUS", None)
+                |> withChild (
+                    Tree.Node.Create("SRB", None) 
+                    |> withChild (Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some))
+                )
                 
-                Tree.Node.CreateWith("ITA", None,
-                    Tree.Node.CreateWith("SRB", None,
-                        Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some)))
-            ])
+                Tree.Node.Create("ITA", None)
+                |> withChild (
+                    Tree.Node.Create("SRB", None)
+                    |> withChild (Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some))
+                )
+            ]
+        
+        // Alternative approaches (choose any style you prefer):
+        (*
+        // Approach 2: Using custom operators ++ and +++
+        let rootTask = 
+            Tree.Node.Create("WRK", Initializer.run |> Some) +++ [
+                Tree.Node.Create("RUS", None) ++ 
+                    (Tree.Node.Create("SRB", None) ++ Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some))
+                
+                Tree.Node.Create("ITA", None) ++
+                    (Tree.Node.Create("SRB", None) ++ Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some))
+            ]
+        
+        // Approach 3: Using tree-specific operators |+ and |++
+        let rootTask = 
+            Tree.Node.Create("WRK", Initializer.run |> Some) |++ [
+                Tree.Node.Create("RUS", None) |+ 
+                    (Tree.Node.Create("SRB", None) |+ Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some))
+                
+                Tree.Node.Create("ITA", None) |+
+                    (Tree.Node.Create("SRB", None) |+ Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some))
+            ]
+            
+        // Approach 4: Using reverse operators (right-to-left composition)
+        let rootTask = 
+            [
+                Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some) +| 
+                Tree.Node.Create("SRB", None) +| 
+                Tree.Node.Create("RUS", None)
+                
+                Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some) +|
+                Tree.Node.Create("SRB", None) +|
+                Tree.Node.Create("ITA", None)
+            ] ++| Tree.Node.Create("WRK", Initializer.run |> Some)
         *)
         
         let tree = Tree.Root.Create(rootTask, '.')
