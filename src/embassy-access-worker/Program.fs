@@ -47,77 +47,28 @@ let main _ =
             |> Worker.DataAccess.TasksTree.init
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
-        // Functional tree building - multiple approaches:
-        
-        // Approach 1: Using pipe operator |> with helper functions
-        let rootTask = 
+        let tasksTreeHandlers =
             Tree.Node.Create("WRK", Initializer.run |> Some)
             |> withChildren [
                 Tree.Node.Create("RUS", None)
                 |> withChild (
-                    Tree.Node.Create("SRB", None) 
+                    Tree.Node.Create("SRB", None)
                     |> withChild (Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some))
                 )
-                
+
                 Tree.Node.Create("ITA", None)
                 |> withChild (
                     Tree.Node.Create("SRB", None)
                     |> withChild (Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some))
                 )
             ]
-        
-        // Alternative approaches (choose any style you prefer):
-        (*
-        // Approach 2: Using custom operators ++ and +++
-        let rootTask = 
-            Tree.Node.Create("WRK", Initializer.run |> Some) +++ [
-                Tree.Node.Create("RUS", None) ++ 
-                    (Tree.Node.Create("SRB", None) ++ Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some))
-                
-                Tree.Node.Create("ITA", None) ++
-                    (Tree.Node.Create("SRB", None) ++ Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some))
-            ]
-        
-        // Approach 3: Using tree-specific operators |+ and |++
-        let rootTask = 
-            Tree.Node.Create("WRK", Initializer.run |> Some) |++ [
-                Tree.Node.Create("RUS", None) |+ 
-                    (Tree.Node.Create("SRB", None) |+ Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some))
-                
-                Tree.Node.Create("ITA", None) |+
-                    (Tree.Node.Create("SRB", None) |+ Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some))
-            ]
-            
-        // Approach 4: Using reverse operators (right-to-left composition)
-        let rootTask = 
-            [
-                Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some) +| 
-                Tree.Node.Create("SRB", None) +| 
-                Tree.Node.Create("RUS", None)
-                
-                Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some) +|
-                Tree.Node.Create("SRB", None) +|
-                Tree.Node.Create("ITA", None)
-            ] ++| Tree.Node.Create("WRK", Initializer.run |> Some)
-        *)
-        
-        let tree = Tree.Root.Create(rootTask, '.')
-
-        let tasksTreeHandlers =
-            Tree.Node(
-                rootTask,
-                [
-                    tasksTree |> Embassies.Russian.createHandlers rootTask.Id
-                    tasksTree |> Embassies.Italian.createHandlers rootTask.Id
-                ]
-                |> List.choose id
-            )
+            |> Tree.Root.Init
 
         return
             Worker.Client.start {
                 Name = $"EA.Worker: v{version}"
                 Configuration = configuration
-                RootTaskId = rootTask.Id
+                RootTaskId = "WRK"
                 tryFindTask =
                     fun taskId ->
                         tasksTree
