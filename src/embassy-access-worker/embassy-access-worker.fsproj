@@ -19,7 +19,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="attributes\NameAttribute.fs" />
     <Compile Include="dependencies\Configuration.fs" />
     <Compile Include="dependencies\Persistence.fs" />
     <Compile Include="dependencies\embassies\Common.fs" />

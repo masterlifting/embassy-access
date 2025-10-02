@@ -48,21 +48,26 @@ let main _ =
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
         let tasksTreeHandlers =
-            Tree.Node.Create("WRK", Initializer.run |> Some)
+            Tree.Node.Create("WRK", Some Initializer.run)
             |> withChildren [
+                
                 Tree.Node.Create("RUS", None)
                 |> withChild (
                     Tree.Node.Create("SRB", None)
-                    |> withChild (Tree.Node.Create("SA", Embassies.Russian.Kdmid.SearchAppointments.handle |> Some))
+                    |> withChild (Tree.Node.Create("SA", Some Embassies.Russian.Kdmid.SearchAppointments.handle))
                 )
 
                 Tree.Node.Create("ITA", None)
                 |> withChild (
                     Tree.Node.Create("SRB", None)
-                    |> withChild (Tree.Node.Create("SA", Embassies.Italian.Prenotami.SearchAppointments.handle |> Some))
+                    |> withChild (Tree.Node.Create("SA", Some Embassies.Italian.Prenotami.SearchAppointments.handle))
                 )
             ]
             |> Tree.Root.Init
+
+        let workerTasks =
+            tasksTree
+            |> Worker.Client.merge tasksTreeHandlers
 
         return
             Worker.Client.start {
@@ -71,9 +76,7 @@ let main _ =
                 RootTaskId = "WRK"
                 tryFindTask =
                     fun taskId ->
-                        tasksTree
-                        |> Worker.Client.mapTasks tasksTreeHandlers
-                        |> Tree.DFS.tryFind taskId
+                        workerTasks.FindNode taskId
                         |> Ok
                         |> async.Return
             }

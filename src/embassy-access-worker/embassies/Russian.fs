@@ -3,7 +3,6 @@
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
-open Worker.Domain
 open EA.Core.Domain
 open EA.Worker.Dependencies.Embassies.Russian
 
@@ -48,19 +47,5 @@ module Kdmid =
                         errors |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt) |> Ok))
 
     module SearchAppointments =
-        [<EA.Worker.Attributes.Name("WRK.RUS.SRB.SA")>]
         let handle (task, cfg, ct) =
             Kdmid.Dependencies.create task cfg ct |> ResultAsync.wrap start
-
-        let Handler = {
-            Id = "SA" |> Tree.NodeIdValue
-            Handler = handle |> Some
-        }
-
-let createHandlers (parentTaskId: Tree.NodeId) =
-    fun tasksTree ->
-
-        let taskId = Tree.NodeId.combine [ parentTaskId; SERVICE_ID ]
-        let taskHandlers = [ Kdmid.SearchAppointments.Handler ]
-
-        tasksTree |> Worker.Client.createHandlers taskId taskHandlers
