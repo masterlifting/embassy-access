@@ -48,22 +48,21 @@ let main _ =
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
         let tasksTreeHandlers =
-            Tree.Node.Create("WRK", Some Initializer.run)
+            Tree.Node.create("WRK", Some Initializer.run)
             |> withChildren [
                 
-                Tree.Node.Create("RUS", None)
+                Tree.Node.create("RUS", None)
                 |> withChild (
-                    Tree.Node.Create("SRB", None)
-                    |> withChild (Tree.Node.Create("SA", Some Embassies.Russian.Kdmid.SearchAppointments.handle))
+                    Tree.Node.create("SRB", None)
+                    |> withChild (Tree.Node.create("SA", Some Embassies.Russian.Kdmid.SearchAppointments.handle))
                 )
 
-                Tree.Node.Create("ITA", None)
+                Tree.Node.create("ITA", None)
                 |> withChild (
-                    Tree.Node.Create("SRB", None)
-                    |> withChild (Tree.Node.Create("SA", Some Embassies.Italian.Prenotami.SearchAppointments.handle))
+                    Tree.Node.create("SRB", None)
+                    |> withChild (Tree.Node.create("SA", Some Embassies.Italian.Prenotami.SearchAppointments.handle))
                 )
             ]
-            |> Tree.Root.Init
 
         let workerTasks =
             tasksTree
@@ -74,7 +73,7 @@ let main _ =
                 Name = $"EA.Worker: v{version}"
                 Configuration = configuration
                 RootTaskId = "WRK"
-                tryFindTask =
+                findTask =
                     fun taskId ->
                         workerTasks.FindNode taskId
                         |> Ok
