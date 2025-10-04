@@ -9,6 +9,7 @@ open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.Domain
 
+let private result = ResultBuilder()
 type Storage = Provider of Storage.Provider
 type StorageType = Configuration of Configuration.Connection
 
@@ -19,28 +20,29 @@ type ServicesTreeEntity() =
     member val Children: ServicesTreeEntity[] | null = [||] with get, set
 
     member this.ToDomain() =
+        let rec toNode names (entity: ServicesTreeEntity) =
+            result {
+                let! nodeId = entity.Id |> Tree.NodeId.parse
+                
+                let node = Tree.Node.create(entity.Id, {
+                    Id = nodeId |> ServiceId
+                    NameParts = names
+                    Description = entity.Description
+                })
 
-        let rec innerLoop names (entity: ServicesTreeEntity) =
-            entity.Id
-            |> Tree.NodeId.parse
-            |> Result.bind (fun nodeId ->
                 match entity.Children with
-                | null -> [] |> Ok
+                | null
+                | [||] -> return node
                 | children ->
-                    children
-                    |> Seq.map (fun c -> c |> innerLoop (names @ [ c.Name ]))
-                    |> Result.choose
-                |> Result.map (fun children ->
-                    Tree.Node(
-                        {
-                            Id = nodeId |> ServiceId
-                            NameParts = names
-                            Description = entity.Description
-                        },
+                    let! nodeChildren =
                         children
-                    )))
+                        |> Array.map (fun c -> toNode (names @ [ c.Name ]) c)
+                        |> Result.choose
+                    
+                    return node.AddChildren nodeChildren
+                }
 
-        this |> innerLoop [ this.Name ]
+        this |> toNode [ this.Name ]
 
 module private Configuration =
     open Persistence.Storages.Configuration
