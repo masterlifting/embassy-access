@@ -1,12 +1,10 @@
 ﻿open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Infrastructure.Prelude.Tree.Builder
 open Infrastructure.Configuration.Domain
 open Persistence.Storages.Domain
-open Worker.Dependencies
-open Worker.Domain
 open EA.Worker
-open Infrastructure.Prelude.Tree.NodeBuilder
 
 let private resultAsync = ResultAsyncBuilder()
 
@@ -38,7 +36,7 @@ let main _ =
 
         Logging.Log.inf $"EA.Worker version: %s{version}"
 
-        let! tasksTree =
+        let! tasks =
             {
                 Configuration.Connection.Section = "Worker"
                 Configuration.Connection.Provider = configuration
@@ -47,37 +45,31 @@ let main _ =
             |> Worker.DataAccess.TasksTree.init
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
-        let tasksTreeHandlers =
-            Tree.Node.create("WRK", Some Initializer.run)
+        let tasksHandlers =
+            Tree.Node.create ("WRK", Some Initializer.run)
             |> withChildren [
-                
-                Tree.Node.create("RUS", None)
+
+                Tree.Node.create ("RUS", None)
                 |> withChild (
-                    Tree.Node.create("SRB", None)
-                    |> withChild (Tree.Node.create("SA", Some Embassies.Russian.Kdmid.SearchAppointments.handle))
+                    Tree.Node.create ("SRB", None)
+                    |> withChild (Tree.Node.create ("SA", Some Embassies.Russian.Kdmid.SearchAppointments.handle))
                 )
 
-                Tree.Node.create("ITA", None)
+                Tree.Node.create ("ITA", None)
                 |> withChild (
-                    Tree.Node.create("SRB", None)
-                    |> withChild (Tree.Node.create("SA", Some Embassies.Italian.Prenotami.SearchAppointments.handle))
+                    Tree.Node.create ("SRB", None)
+                    |> withChild (Tree.Node.create ("SA", Some Embassies.Italian.Prenotami.SearchAppointments.handle))
                 )
             ]
 
-        let workerTasks =
-            tasksTree
-            |> Worker.Client.merge tasksTreeHandlers
+        let workerTasks = tasks |> Worker.Client.merge tasksHandlers
 
         return
             Worker.Client.start {
                 Name = $"EA.Worker: v{version}"
                 Configuration = configuration
                 RootTaskId = "WRK"
-                findTask =
-                    fun taskId ->
-                        workerTasks.FindNode taskId
-                        |> Ok
-                        |> async.Return
+                findTask = fun taskId -> workerTasks |> Tree.findNode taskId |> Ok |> async.Return
             }
             |> Async.map (fun _ -> 0 |> Ok)
     }
