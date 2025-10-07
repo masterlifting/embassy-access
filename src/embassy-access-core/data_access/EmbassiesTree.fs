@@ -3,13 +3,12 @@ module EA.Core.DataAccess.EmbassiesTree
 
 open System
 open Infrastructure.Domain
-open Infrastructure.Prelude
+open Infrastructure.Prelude.Tree.Builder
 open Persistence
 open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.Domain
 
-let private result = ResultBuilder()
 type Storage = Provider of Storage.Provider
 type StorageType = Configuration of Configuration.Connection
 
@@ -22,27 +21,22 @@ type EmbassiesTreeEntity() =
 
     member this.ToDomain() =
         let rec toNode names (e: EmbassiesTreeEntity) =
-            result {
-                let! nodeId = e.Id |> Tree.NodeId.parse
-                
-                let node = Tree.Node.create(e.Id, {
-                    Id = nodeId |> EmbassyId
-                    NameParts = names
-                    Description = e.Description
-                    TimeZone = e.TimeZone |> Option.defaultValue 0.
-                })
+            let node = Tree.Node.create(e.Id, {
+                Id = e.Id |> Tree.NodeId.create |> EmbassyId
+                NameParts = names
+                Description = e.Description
+                TimeZone = e.TimeZone |> Option.defaultValue 0.
+            })
 
-                match e.Children with
-                | null
-                | [||] -> return node
-                | children ->
-                    let! nodeChildren =
-                        children
-                        |> Array.map (fun c -> toNode (names @ [ c.Name ]) c)
-                        |> Result.choose
-                    
-                    return node.AddChildren nodeChildren
-                }
+            match e.Children with
+            | null
+            | [||] -> node
+            | children ->
+                let nodeChildren =
+                    children
+                    |> Array.map (fun c -> toNode (names @ [ c.Name ]) c)
+                
+                node |> withChildren nodeChildren
 
         this |> toNode [ this.Name ]
 
@@ -52,7 +46,7 @@ module private Configuration =
     let private loadData = Read.section<EmbassiesTreeEntity>
 
     let get client =
-        client |> loadData |> Result.bind _.ToDomain() |> async.Return
+        client |> loadData |> Result.map _.ToDomain() |> async.Return
 
 let private toProvider =
     function

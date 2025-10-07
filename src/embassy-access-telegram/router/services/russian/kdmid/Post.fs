@@ -17,19 +17,19 @@ type Route =
 
     member this.Value =
         match this with
-        | SetManualRequest(serviceId, embassyId, payload) -> [ "0"; serviceId.ValueStr; embassyId.ValueStr; payload ]
+        | SetManualRequest(serviceId, embassyId, payload) -> [ "0"; serviceId.Value; embassyId.Value; payload ]
         | SetAutoNotifications(serviceId, embassyId, payload) -> [
             "1"
-            serviceId.ValueStr
-            embassyId.ValueStr
+            serviceId.Value
+            embassyId.Value
             payload
           ]
-        | SetAutoBookingFirst(serviceId, embassyId, payload) -> [ "2"; serviceId.ValueStr; embassyId.ValueStr; payload ]
-        | SetAutoBookingLast(serviceId, embassyId, payload) -> [ "3"; serviceId.ValueStr; embassyId.ValueStr; payload ]
+        | SetAutoBookingFirst(serviceId, embassyId, payload) -> [ "2"; serviceId.Value; embassyId.Value; payload ]
+        | SetAutoBookingLast(serviceId, embassyId, payload) -> [ "3"; serviceId.Value; embassyId.Value; payload ]
         | SetAutoBookingFirstInPeriod(serviceId, embassyId, start, finish, payload) -> [
             "4"
-            serviceId.ValueStr
-            embassyId.ValueStr
+            serviceId.Value
+            embassyId.Value
             start |> String.fromDateTime
             finish |> String.fromDateTime
             payload

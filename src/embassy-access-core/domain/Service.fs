@@ -2,6 +2,7 @@
 module EA.Core.Domain.Service
 
 open Infrastructure.Domain
+open Infrastructure.Prelude
 
 type ServiceId =
     | ServiceId of Tree.NodeId
@@ -10,7 +11,10 @@ type ServiceId =
         match this with
         | ServiceId id -> id
 
-    member this.ValueStr = this.Value.Value
+    static member create value =
+        match value with
+        | AP.IsString id -> Tree.NodeId.create id |> ServiceId |> Ok
+        | _ -> $"ServiceId '{value}' is not supported." |> NotSupported |> Error
 
 type Service = {
     Id: ServiceId
@@ -25,7 +29,3 @@ type Service = {
         |> String.concat delimiter
 
     member this.LastName = this.NameParts |> List.tryLast |> Option.defaultValue "Unknown"
-
-    interface Tree.INode with
-        member this.Id = this.Id.Value
-        member this.set id = { this with Id = id |> ServiceId }

@@ -18,7 +18,7 @@ let handleProcessResult (_: Request<Payload>) =
 
 let checkStatus (serviceId: ServiceId) (embassyId: EmbassyId) (number: string) =
     fun (_: Midpass.Dependencies) ->
-        $"Checking status for service {serviceId.ValueStr} at embassy {embassyId.ValueStr} with number {number} is not implemented."
+        $"Checking status for service {serviceId.Value} at embassy {embassyId.Value} with number {number} is not implemented."
         + NOT_IMPLEMENTED
         |> NotImplemented
         |> Error

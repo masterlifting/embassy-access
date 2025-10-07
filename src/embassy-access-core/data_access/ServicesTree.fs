@@ -3,13 +3,12 @@ module EA.Core.DataAccess.ServicesTree
 
 open System
 open Infrastructure.Domain
-open Infrastructure.Prelude
+open Infrastructure.Prelude.Tree.Builder
 open Persistence
 open Persistence.Storages
 open Persistence.Storages.Domain
 open EA.Core.Domain
 
-let private result = ResultBuilder()
 type Storage = Provider of Storage.Provider
 type StorageType = Configuration of Configuration.Connection
 
@@ -20,27 +19,22 @@ type ServicesTreeEntity() =
     member val Children: ServicesTreeEntity[] | null = [||] with get, set
 
     member this.ToDomain() =
-        let rec toNode names (entity: ServicesTreeEntity) =
-            result {
-                let! nodeId = entity.Id |> Tree.NodeId.parse
-                
-                let node = Tree.Node.create(entity.Id, {
-                    Id = nodeId |> ServiceId
-                    NameParts = names
-                    Description = entity.Description
-                })
+        let rec toNode names (e: ServicesTreeEntity) =
+            let node = Tree.Node.create(e.Id, {
+                Id = e.Id |> Tree.NodeId.create |> ServiceId
+                NameParts = names
+                Description = e.Description
+            })
 
-                match entity.Children with
-                | null
-                | [||] -> return node
-                | children ->
-                    let! nodeChildren =
-                        children
-                        |> Array.map (fun c -> toNode (names @ [ c.Name ]) c)
-                        |> Result.choose
-                    
-                    return node.AddChildren nodeChildren
-                }
+            match e.Children with
+            | null
+            | [||] -> node
+            | children ->
+                let nodeChildren =
+                    children
+                    |> Array.map (fun c -> toNode (names @ [ c.Name ]) c)
+
+                node |> withChildren nodeChildren
 
         this |> toNode [ this.Name ]
 
@@ -50,7 +44,7 @@ module private Configuration =
     let private loadData = Read.section<ServicesTreeEntity>
 
     let get client =
-        client |> loadData |> Result.bind _.ToDomain() |> async.Return
+        client |> loadData |> Result.map _.ToDomain() |> async.Return
 
 let private toProvider =
     function

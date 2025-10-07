@@ -73,7 +73,7 @@ let handleProcessResult (request: Request<Payload>) =
         | Failed error -> spreadFailure error
         | Completed _ ->
             match request.Payload.State with
-            | NoAppointments -> Ok() |> async.Return
+            | NoAppointments msg -> Ok() |> async.Return
             | HasAppointments appointments ->
                 deps.getRequests request.Embassy.Id request.Service.Id
                 |> ResultAsync.bindAsync (spreadAppointments appointments)
@@ -96,8 +96,8 @@ let private handleRequestResult chatId (request: Request<Payload>) =
         |> Message.createNew chatId
     | Completed _ ->
         match request.Payload.State with
-        | NoAppointments ->
-            "No appointments are available at the moment."
+        | NoAppointments msg->
+            msg
             |> Text.create
             |> Message.createNew chatId
         | HasAppointments appointments ->
@@ -146,7 +146,7 @@ let setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) (login: strin
                     x with
                         Payload = {
                             x.Payload with
-                                State = NoAppointments
+                                State = NoAppointments "No appointments yet."
                         }
                 })
                 |> Option.defaultValue {
@@ -158,7 +158,7 @@ let setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) (login: strin
                     Created = DateTime.UtcNow
                     Modified = DateTime.UtcNow
                     Payload = {
-                        State = NoAppointments
+                        State = NoAppointments "No appointments yet."
                         Credentials = payloadCredentials
                     }
                 }
@@ -167,7 +167,7 @@ let setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) (login: strin
             do! deps.tryAddSubscription request
 
             return
-                $"Manual request for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with login '%s{login}' has been saved and can be started from your services list."
+                $"Manual request for service '%s{serviceId.Value}' at embassy '%s{embassyId.Value}' with login '%s{login}' has been saved and can be started from your services list."
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -184,7 +184,7 @@ let startManualRequest (requestId: RequestId) =
                 request with
                     Payload = {
                         request.Payload with
-                            State = NoAppointments
+                            State = NoAppointments "No appointments yet."
                     }
             }
             match request.ProcessState with
@@ -220,7 +220,7 @@ let setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) (login: s
                         ProcessState = Ready
                         Payload = {
                             x.Payload with
-                                State = NoAppointments
+                                State = NoAppointments "No appointments yet."
                         }
                 })
                 |> Option.defaultValue {
@@ -232,7 +232,7 @@ let setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) (login: s
                     Created = DateTime.UtcNow
                     Modified = DateTime.UtcNow
                     Payload = {
-                        State = NoAppointments
+                        State = NoAppointments "No appointments yet."
                         Credentials = payloadCredentials
                     }
                 }
@@ -241,7 +241,7 @@ let setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) (login: s
             do! deps.tryAddSubscription request
 
             return
-                $"Automatic notifications for available slots have been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with login '%s{login}'"
+                $"Automatic notifications for available slots have been enabled for service '%s{serviceId.Value}' at embassy '%s{embassyId.Value}' with login '%s{login}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok

@@ -59,7 +59,7 @@ let getService embassyId serviceId forUser =
             |> Midpass.Dependencies.create
             |> Midpass.Query.getService serviceId embassyId forUser
         | ServiceNotFound _ ->
-            $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
+            $"Service '%s{serviceId.Value}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
             |> Error
             |> async.Return

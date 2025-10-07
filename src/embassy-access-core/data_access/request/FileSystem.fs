@@ -12,7 +12,7 @@ module Query =
     let getIdentifiers client =
         client
         |> loadData
-        |> ResultAsync.bind (Seq.map (fun e -> e.Id |> RequestId.parse) >> Result.choose)
+        |> ResultAsync.bind (Seq.map (fun e -> e.Id |> RequestId.create) >> Result.choose)
 
     let tryFindById (id: RequestId) payloadConverter client =
         client
@@ -23,19 +23,19 @@ module Query =
     let findManyByEmbassyId (embassyId: EmbassyId) payloadConverter client =
         client
         |> loadData
-        |> ResultAsync.map (Seq.filter (fun e -> e.EmbassyId = embassyId.ValueStr))
+        |> ResultAsync.map (Seq.filter (fun e -> e.EmbassyId = embassyId.Value))
         |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
 
     let findManyByServiceId (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
-        |> ResultAsync.map (Seq.filter (fun e -> e.ServiceId = serviceId.ValueStr))
+        |> ResultAsync.map (Seq.filter (fun e -> e.ServiceId = serviceId.Value))
         |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
 
     let findManyWithServiceId (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
-        |> ResultAsync.map (Seq.filter (fun e -> e.ServiceId.Contains serviceId.ValueStr))
+        |> ResultAsync.map (Seq.filter (fun e -> e.ServiceId.Contains serviceId.Value))
         |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
 
     let findManyByIds (ids: RequestId seq) payloadConverter client =
@@ -50,7 +50,7 @@ module Query =
     let findManyByEmbassyIdAndServiceId (embassyId: EmbassyId) (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
-        |> ResultAsync.map (Seq.filter (fun e -> e.EmbassyId = embassyId.ValueStr && e.ServiceId = serviceId.ValueStr))
+        |> ResultAsync.map (Seq.filter (fun e -> e.EmbassyId = embassyId.Value && e.ServiceId = serviceId.Value))
         |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
 
 module Command =

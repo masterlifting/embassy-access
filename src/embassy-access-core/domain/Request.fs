@@ -14,7 +14,7 @@ type RequestId =
 
     member this.ValueStr = this.Value.Value
 
-    static member parse value =
+    static member create value =
         match value with
         | AP.IsUUID16 id -> RequestId id |> Ok
         | _ -> $"RequestId '{value}' is not supported." |> NotSupported |> Error

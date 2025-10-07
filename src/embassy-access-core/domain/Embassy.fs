@@ -11,7 +11,13 @@ type EmbassyId =
         match this with
         | EmbassyId id -> id
 
-    member this.ValueStr = this.Value.Value
+    static member create value =
+        match value with
+        | AP.IsString id -> Tree.NodeId.create id |> EmbassyId |> Ok
+        | _ -> $"EmbassyId '{value}' is not supported." |> NotSupported |> Error
+    
+    static member split (EmbassyId id) =
+        id |> Tree.NodeId.split
 
 type Embassy = {
     Id: EmbassyId
@@ -27,7 +33,3 @@ type Embassy = {
         |> String.concat delimiter
 
     member this.LastName = this.NameParts |> List.tryLast |> Option.defaultValue "Unknown"
-
-    interface Tree.INode with
-        member this.Id = this.Id.Value
-        member this.set id = { this with Id = id |> EmbassyId }

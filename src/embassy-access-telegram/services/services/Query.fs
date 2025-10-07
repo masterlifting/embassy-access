@@ -26,7 +26,7 @@ let private createButtonsGroup chatId messageId name buttons =
     |> async.Return
 
 let private (|RUS|ITA|EmbassyNotFound|) (embassyId: EmbassyId) =
-    match embassyId.Value |> Tree.NodeId.splitValues |> List.truncate 2 with
+    match embassyId.Value |> Tree.NodeId.split |> List.truncate 2 with
     | [ _; Embassies.RUS ] -> RUS Embassies.RUS
     | [ _; Embassies.ITA ] -> ITA Embassies.ITA
     | _ -> EmbassyNotFound
@@ -36,7 +36,7 @@ let private tryCreateServiceRootId (embassyId: EmbassyId) =
     | RUS value -> value |> Ok
     | ITA value -> value |> Ok
     | EmbassyNotFound ->
-        $"Services for embassy '%s{embassyId.ValueStr}' are not implemented. "
+        $"Services for embassy '%s{embassyId.Value}' are not implemented. "
         + NOT_IMPLEMENTED
         |> NotImplemented
         |> Error
@@ -56,7 +56,7 @@ let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser 
             |> Italian.Dependencies.create
             |> Italian.Query.getService embassyId serviceId forUser
         | EmbassyNotFound ->
-            $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
+            $"Service '%s{serviceId.Value}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
             |> Error
             |> async.Return
@@ -74,7 +74,7 @@ let getService embassyId serviceId =
                     service.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
-                $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
+                $"Service '%s{serviceId.Value}' is not implemented. " + NOT_IMPLEMENTED
                 |> NotImplemented
                 |> Error
                 |> async.Return)
@@ -102,7 +102,7 @@ let getUserService embassyId serviceId =
                     service.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
-                $"You have no services available for '%s{serviceId.ValueStr}'."
+                $"You have no services available for '%s{serviceId.Value}'."
                 |> NotFound
                 |> Error
                 |> async.Return)

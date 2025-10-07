@@ -24,7 +24,7 @@ let getService embassyId serviceId forUser =
             |> Prenotami.Dependencies.create
             |> Prenotami.Query.getService op serviceId embassyId forUser
         | ServiceNotFound _ ->
-            $"Service '%s{serviceId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
+            $"Service '%s{serviceId.Value}' is not implemented. " + NOT_IMPLEMENTED
             |> NotImplemented
             |> Error
             |> async.Return

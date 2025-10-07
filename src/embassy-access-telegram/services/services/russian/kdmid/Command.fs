@@ -201,7 +201,7 @@ let setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) (link: string
             do! deps.tryAddSubscription request
 
             return
-                $"Manual request for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}' has been saved and can be started from your services list."
+                $"Manual request for service '%s{serviceId.Value}' at embassy '%s{embassyId.Value}' with link '%s{link}' has been saved and can be started from your services list."
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -277,7 +277,7 @@ let setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) (link: st
             do! deps.tryAddSubscription request
 
             return
-                $"Automatic notifications for available slots have been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
+                $"Automatic notifications for available slots have been enabled for service '%s{serviceId.Value}' at embassy '%s{embassyId.Value}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -324,7 +324,7 @@ let setAutoBookingFirst (serviceId: ServiceId) (embassyId: EmbassyId) (link: str
             do! deps.tryAddSubscription request
 
             return
-                $"Automatic booking of the first available slot has been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
+                $"Automatic booking of the first available slot has been enabled for service '%s{serviceId.Value}' at embassy '%s{embassyId.Value}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -377,7 +377,7 @@ let setAutoBookingFirstInPeriod
             do! deps.tryAddSubscription request
 
             return
-                $"Automatic booking of the first available slot within the specified period has been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
+                $"Automatic booking of the first available slot within the specified period has been enabled for service '%s{serviceId.Value}' at embassy '%s{embassyId.Value}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok
@@ -424,7 +424,7 @@ let setAutoBookingLast (serviceId: ServiceId) (embassyId: EmbassyId) (link: stri
             do! deps.tryAddSubscription request
 
             return
-                $"Automatic booking of the last available slot has been enabled for service '%s{serviceId.ValueStr}' at embassy '%s{embassyId.ValueStr}' with link '%s{link}'"
+                $"Automatic booking of the last available slot has been enabled for service '%s{serviceId.Value}' at embassy '%s{embassyId.Value}' with link '%s{link}'"
                 |> Text.create
                 |> Message.createNew deps.ChatId
                 |> Ok

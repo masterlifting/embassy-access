@@ -12,12 +12,12 @@ type Entity() =
     member val EmbassyId = String.Empty with get, set
 
     member this.ToDomain() =
-        match RequestId.parse this.Id, Tree.NodeId.parse this.EmbassyId, Tree.NodeId.parse this.ServiceId with
-        | Ok id, Ok embassyId, Ok serviceId ->
+        match RequestId.create this.Id with
+        | Ok id ->
             {
                 Id = id
-                EmbassyId = embassyId |> EmbassyId
-                ServiceId = serviceId |> ServiceId
+                EmbassyId = this.EmbassyId |> EmbassyId
+                ServiceId = this.ServiceId |> ServiceId
             }
             |> Ok
         | _ -> $"Subscription '{this.Id}' is not supported." |> NotSupported |> Error

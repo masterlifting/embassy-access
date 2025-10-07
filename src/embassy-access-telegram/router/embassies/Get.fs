@@ -12,9 +12,9 @@ type Route =
 
     member this.Value =
         match this with
-        | Embassy id -> [ "0"; id.ValueStr ]
+        | Embassy id -> [ "0"; id.Value ]
         | Embassies -> [ "1" ]
-        | UserEmbassy id -> [ "2"; id.ValueStr ]
+        | UserEmbassy id -> [ "2"; id.Value ]
         | UserEmbassies -> [ "3" ]
         |> String.concat Router.DELIMITER
 

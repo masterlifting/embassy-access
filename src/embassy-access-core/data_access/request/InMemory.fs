@@ -12,7 +12,7 @@ module Query =
     let getIdentifiers client =
         client
         |> loadData
-        |> Result.bind (Seq.map (fun e -> e.Id |> RequestId.parse) >> Result.choose)
+        |> Result.bind (Seq.map (fun e -> e.Id |> RequestId.create) >> Result.choose)
         |> async.Return
 
     let tryFindById (id: RequestId) payloadConverter client =
@@ -25,21 +25,21 @@ module Query =
     let findManyByEmbassyId (embassyId: EmbassyId) payloadConverter client =
         client
         |> loadData
-        |> Result.map (Seq.filter (fun e -> e.EmbassyId = embassyId.ValueStr))
+        |> Result.map (Seq.filter (fun e -> e.EmbassyId = embassyId.Value))
         |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 
     let findManyByServiceId (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
-        |> Result.map (Seq.filter (fun e -> e.ServiceId = serviceId.ValueStr))
+        |> Result.map (Seq.filter (fun e -> e.ServiceId = serviceId.Value))
         |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 
     let findManyWithServiceId (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
-        |> Result.map (Seq.filter (fun e -> e.ServiceId.Contains serviceId.ValueStr))
+        |> Result.map (Seq.filter (fun e -> e.ServiceId.Contains serviceId.Value))
         |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 
@@ -56,7 +56,7 @@ module Query =
     let findManyByEmbassyIdAndServiceId (embassyId: EmbassyId) (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
-        |> Result.map (Seq.filter (fun e -> e.EmbassyId = embassyId.ValueStr && e.ServiceId = serviceId.ValueStr))
+        |> Result.map (Seq.filter (fun e -> e.EmbassyId = embassyId.Value && e.ServiceId = serviceId.Value))
         |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 

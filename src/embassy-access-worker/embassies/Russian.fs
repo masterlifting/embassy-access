@@ -1,12 +1,9 @@
 ﻿module internal EA.Worker.Embassies.Russian
 
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
 open EA.Core.Domain
 open EA.Worker.Dependencies.Embassies.Russian
-
-let private SERVICE_ID = Embassies.RUS |> Tree.NodeIdValue
 
 module Kdmid =
     open EA.Russian.Services.Domain.Kdmid
@@ -28,7 +25,7 @@ module Kdmid =
         fun (deps: Kdmid.Dependencies) ->
             let inline processGroup requests = deps |> processGroup requests
 
-            deps.getRequests (SERVICE_ID |> Service.ServiceId)
+            deps.getRequests (Embassies.RUS |> Service.ServiceId)
             |> ResultAsync.map (fun requests ->
                 requests
                 |> Seq.groupBy _.Service.Id

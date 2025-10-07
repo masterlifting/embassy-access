@@ -10,7 +10,7 @@ type Route =
     member this.Value =
         match this with
         | CheckStatus(serviceId, embassyId, number) ->
-            [ "0"; serviceId.ValueStr; embassyId.ValueStr; number ]
+            [ "0"; serviceId.Value; embassyId.Value; number ]
             |> String.concat Router.DELIMITER
 
     static member parse(input: string) =

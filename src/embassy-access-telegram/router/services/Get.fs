@@ -12,10 +12,10 @@ type Route =
 
     member this.Value =
         match this with
-        | Service(embassyId, serviceId) -> [ "0"; embassyId.ValueStr; serviceId.ValueStr ]
-        | Services embassyId -> [ "1"; embassyId.ValueStr ]
-        | UserService(embassyId, serviceId) -> [ "2"; embassyId.ValueStr; serviceId.ValueStr ]
-        | UserServices embassyId -> [ "3"; embassyId.ValueStr ]
+        | Service(embassyId, serviceId) -> [ "0"; embassyId.Value; serviceId.Value ]
+        | Services embassyId -> [ "1"; embassyId.Value ]
+        | UserService(embassyId, serviceId) -> [ "2"; embassyId.Value; serviceId.Value ]
+        | UserServices embassyId -> [ "3"; embassyId.Value ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =

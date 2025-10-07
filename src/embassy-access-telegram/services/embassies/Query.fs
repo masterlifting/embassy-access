@@ -47,7 +47,7 @@ let private getEmbassy' embassyId firstCall =
                     embassy.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
-                $"Embassy '%s{embassyId.ValueStr}' is not implemented. " + NOT_IMPLEMENTED
+                $"Embassy '%s{embassyId.Value}' is not implemented. " + NOT_IMPLEMENTED
                 |> NotImplemented
                 |> Error
                 |> async.Return)
@@ -77,7 +77,7 @@ let private getUserEmbassy' embassyId firstCall =
                     embassy.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
-                $"You have no embassies available for '%s{embassyId.ValueStr}'."
+                $"You have no embassies available for '%s{embassyId.Value}'."
                 |> NotFound
                 |> Error
                 |> async.Return)

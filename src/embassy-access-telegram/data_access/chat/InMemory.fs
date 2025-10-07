@@ -76,8 +76,8 @@ module Command =
                     |> List.append [
                         Subscriptions.Entity(
                             Id = subscription.Id.ValueStr,
-                            EmbassyId = subscription.EmbassyId.ValueStr,
-                            ServiceId = subscription.ServiceId.ValueStr
+                            EmbassyId = subscription.EmbassyId.Value,
+                            ServiceId = subscription.ServiceId.Value
                         )
                     ]
 

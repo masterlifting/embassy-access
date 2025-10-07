@@ -37,9 +37,9 @@ type Entity<'p>() =
 
         result {
 
-            let! serviceId = this.ServiceId |> Tree.NodeId.parse
-            let! embassyId = this.EmbassyId |> Tree.NodeId.parse
-            let! requestId = RequestId.parse this.Id
+            let serviceId = this.ServiceId |> Tree.NodeId.create
+            let embassyId = this.EmbassyId |> Tree.NodeId.create
+            let! requestId = RequestId.create this.Id
             let! processState = this.ProcessState.ToDomain()
             let! limitations = this.Limits |> Seq.map _.ToDomain() |> Result.choose
             let! payload = this.Payload |> payloadConverter.toDomain
@@ -72,10 +72,10 @@ type private Request<'a> with
         |> Result.map (fun payload ->
             Entity(
                 Id = this.Id.ValueStr,
-                ServiceId = this.Service.Id.ValueStr,
+                ServiceId = this.Service.Id.Value.Value,
                 ServiceName = (this.Service.NameParts |> Array.ofList),
                 ServiceDescription = this.Service.Description,
-                EmbassyId = this.Embassy.Id.ValueStr,
+                EmbassyId = this.Embassy.Id.Value.Value,
                 EmbassyName = (this.Embassy.NameParts |> Array.ofList),
                 EmbassyDescription = this.Embassy.Description,
                 EmbassyTimeZone = this.Embassy.TimeZone,

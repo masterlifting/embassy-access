@@ -14,15 +14,15 @@ type Route =
         match this with
         | SetManualRequest(serviceId, embassyId, login, password) -> [
             "0"
-            serviceId.ValueStr
-            embassyId.ValueStr
+            serviceId.Value
+            embassyId.Value
             login
             password
           ]
         | SetAutoNotifications(serviceId, embassyId, login, password) -> [
             "1"
-            serviceId.ValueStr
-            embassyId.ValueStr
+            serviceId.Value
+            embassyId.Value
             login
             password
           ]

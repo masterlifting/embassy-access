@@ -31,22 +31,22 @@ type Dependencies = {
         result {
 
             let tryFindServiceNode (serviceId: ServiceId) =
-                deps.getServiceTree () |> ResultAsync.map (Tree.BFS.tryFind serviceId.Value)
+                deps.getServiceTree () |> ResultAsync.map (Tree.findNode serviceId.Value)
 
             let tryFindEmbassyNode (embassyId: EmbassyId) =
-                deps.getEmbassyTree () |> ResultAsync.map (Tree.BFS.tryFind embassyId.Value)
+                deps.getEmbassyTree () |> ResultAsync.map (Tree.findNode embassyId.Value)
 
             let findService serviceId =
                 tryFindServiceNode serviceId
                 |> ResultAsync.bind (function
                     | Some node -> node.Value |> Ok
-                    | None -> $"Service '{serviceId.ValueStr}' not found." |> NotFound |> Error)
+                    | None -> $"Service '{serviceId.Value}' not found." |> NotFound |> Error)
 
             let findEmbassy embassyId =
                 tryFindEmbassyNode embassyId
                 |> ResultAsync.bind (function
                     | Some node -> node.Value |> Ok
-                    | None -> $"Embassy '{embassyId.ValueStr}' not found." |> NotFound |> Error)
+                    | None -> $"Embassy '{embassyId.Value}' not found." |> NotFound |> Error)
 
             let sendTranslatedMessageRes msg =
                 msg |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes

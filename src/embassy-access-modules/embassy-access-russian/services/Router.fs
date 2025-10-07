@@ -184,7 +184,7 @@ type Route =
 
 let parse (serviceId: ServiceId) =
     // Maybe I should make sure that the serviceId is an Russian serviceId
-    let input = serviceId.Value |> Tree.NodeId.splitValues |> List.skip 2
+    let input = serviceId.Value |> Tree.NodeId.split |> List.skip 2
     let remaining = input[1..]
 
     match input[0] with
@@ -193,6 +193,6 @@ let parse (serviceId: ServiceId) =
     | "2" -> remaining |> Citizenship.parse |> Result.map Citizenship
     | "3" -> remaining |> Pension.parse |> Result.map Pension
     | _ ->
-        $"'%s{serviceId.ValueStr}' for the Russian embassy is not supported."
+        $"'%s{serviceId.Value}' for the Russian embassy is not supported."
         |> NotSupported
         |> Error
