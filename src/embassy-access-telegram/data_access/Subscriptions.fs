@@ -16,8 +16,8 @@ type Entity() =
         | Ok id ->
             {
                 Id = id
-                EmbassyId = this.EmbassyId |> EmbassyId
-                ServiceId = this.ServiceId |> ServiceId
+                EmbassyId = this.EmbassyId |> Tree.NodeId.create |> EmbassyId
+                ServiceId = this.ServiceId |> Tree.NodeId.create |> ServiceId
             }
             |> Ok
         | _ -> $"Subscription '{this.Id}' is not supported." |> NotSupported |> Error

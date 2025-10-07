@@ -44,29 +44,29 @@ type Route =
         match parts with
         | [| "0"; serviceId; embassyId; payload |] ->
             SetManualRequest(
-                serviceId |> Tree.NodeIdValue |> ServiceId,
-                embassyId |> Tree.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeId.create |> ServiceId,
+                embassyId |> Tree.NodeId.create |> EmbassyId,
                 payload
             )
             |> Ok
         | [| "1"; serviceId; embassyId; payload |] ->
             SetAutoNotifications(
-                serviceId |> Tree.NodeIdValue |> ServiceId,
-                embassyId |> Tree.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeId.create |> ServiceId,
+                embassyId |> Tree.NodeId.create |> EmbassyId,
                 payload
             )
             |> Ok
         | [| "2"; serviceId; embassyId; payload |] ->
             SetAutoBookingFirst(
-                serviceId |> Tree.NodeIdValue |> ServiceId,
-                embassyId |> Tree.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeId.create |> ServiceId,
+                embassyId |> Tree.NodeId.create |> EmbassyId,
                 payload
             )
             |> Ok
         | [| "3"; serviceId; embassyId; payload |] ->
             SetAutoBookingLast(
-                serviceId |> Tree.NodeIdValue |> ServiceId,
-                embassyId |> Tree.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeId.create |> ServiceId,
+                embassyId |> Tree.NodeId.create |> EmbassyId,
                 payload
             )
             |> Ok
@@ -74,8 +74,8 @@ type Route =
             match start, finish with
             | AP.IsDateTime start, AP.IsDateTime finish ->
                 SetAutoBookingFirstInPeriod(
-                    serviceId |> Tree.NodeIdValue |> ServiceId,
-                    embassyId |> Tree.NodeIdValue |> EmbassyId,
+                    serviceId |> Tree.NodeId.create |> ServiceId,
+                    embassyId |> Tree.NodeId.create |> EmbassyId,
                     start,
                     finish,
                     payload

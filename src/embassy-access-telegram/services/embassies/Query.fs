@@ -71,7 +71,7 @@ let private getUserEmbassy' embassyId firstCall =
 
                 node.Children
                 |> Seq.map _.Value
-                |> Seq.filter (fun embassy -> embassy.Id.Value.IsInSeq userEmbassyIds)
+                |> Seq.filter (fun embassy -> embassy.Id |> EmbassyId.contains userEmbassyIds)
                 |> Seq.map (fun embassy ->
                     let route = Router.Embassies(Method.Get(Get.UserEmbassy embassy.Id))
                     embassy.LastName, route.Value)
@@ -87,7 +87,7 @@ let getEmbassy embassyId =
 
 let getEmbassies () =
     fun (deps: Embassies.Dependencies) ->
-        let embassyId = Embassies.ROOT_ID |> Tree.NodeIdValue |> EmbassyId
+        let embassyId = Embassies.ROOT_ID |> Tree.NodeId.create |> EmbassyId
         deps |> getEmbassy' embassyId true
 
 let getUserEmbassy embassyId =
@@ -95,5 +95,5 @@ let getUserEmbassy embassyId =
 
 let getUserEmbassies () =
     fun (deps: Embassies.Dependencies) ->
-        let embassyId = Embassies.ROOT_ID |> Tree.NodeIdValue |> EmbassyId
+        let embassyId = Embassies.ROOT_ID |> Tree.NodeId.create |> EmbassyId
         deps |> getUserEmbassy' embassyId true

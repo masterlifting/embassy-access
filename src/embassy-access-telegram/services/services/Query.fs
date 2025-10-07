@@ -26,7 +26,7 @@ let private createButtonsGroup chatId messageId name buttons =
     |> async.Return
 
 let private (|RUS|ITA|EmbassyNotFound|) (embassyId: EmbassyId) =
-    match embassyId.Value |> Tree.NodeId.split |> List.truncate 2 with
+    match embassyId |> EmbassyId.split |> List.truncate 2 with
     | [ _; Embassies.RUS ] -> RUS Embassies.RUS
     | [ _; Embassies.ITA ] -> ITA Embassies.ITA
     | _ -> EmbassyNotFound
@@ -40,9 +40,7 @@ let private tryCreateServiceRootId (embassyId: EmbassyId) =
         + NOT_IMPLEMENTED
         |> NotImplemented
         |> Error
-    |> Result.map (fun embassyIdValue ->
-        Tree.NodeId.combine [ Tree.NodeIdValue Services.ROOT_ID; Tree.NodeIdValue embassyIdValue ]
-        |> ServiceId)
+    |> Result.map (fun embassyIdValue -> ServiceId.combine [ Services.ROOT_ID; embassyIdValue ])
 
 let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser =
     fun (deps: Services.Dependencies) ->
@@ -96,7 +94,7 @@ let getUserService embassyId serviceId =
 
                 node.Children
                 |> Seq.map _.Value
-                |> Seq.filter (fun service -> service.Id.Value.IsInSeq userServiceIds)
+                |> Seq.filter (fun service -> service.Id |> ServiceId.contains userServiceIds)
                 |> Seq.map (fun service ->
                     let route = Router.Services(Method.Get(Get.UserService(embassyId, service.Id)))
                     service.LastName, route.Value)

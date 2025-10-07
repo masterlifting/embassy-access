@@ -23,15 +23,15 @@ type Route =
 
         match parts with
         | [| "0"; embassyId; serviceId |] ->
-            let embassyId = embassyId |> Tree.NodeIdValue |> EmbassyId
-            let serviceId = serviceId |> Tree.NodeIdValue |> ServiceId
+            let embassyId = embassyId |> Tree.NodeId.create |> EmbassyId
+            let serviceId = serviceId |> Tree.NodeId.create |> ServiceId
             (embassyId, serviceId) |> Service |> Ok
-        | [| "1"; embassyId |] -> embassyId |> Tree.NodeIdValue |> EmbassyId |> Services |> Ok
+        | [| "1"; embassyId |] -> embassyId |> Tree.NodeId.create |> EmbassyId |> Services |> Ok
         | [| "2"; embassyId; serviceId |] ->
-            let embassyId = embassyId |> Tree.NodeIdValue |> EmbassyId
-            let serviceId = serviceId |> Tree.NodeIdValue |> ServiceId
+            let embassyId = embassyId |> Tree.NodeId.create |> EmbassyId
+            let serviceId = serviceId |> Tree.NodeId.create |> ServiceId
             (embassyId, serviceId) |> UserService |> Ok
-        | [| "3"; embassyId |] -> embassyId |> Tree.NodeIdValue |> EmbassyId |> UserServices |> Ok
+        | [| "3"; embassyId |] -> embassyId |> Tree.NodeId.create |> EmbassyId |> UserServices |> Ok
         | _ ->
             $"'{input}' of 'Services.Get' endpoint is not supported."
             |> NotSupported

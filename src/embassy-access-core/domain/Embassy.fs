@@ -9,7 +9,7 @@ type EmbassyId =
 
     member this.Value =
         match this with
-        | EmbassyId id -> id
+        | EmbassyId id -> id.Value
 
     static member create value =
         match value with
@@ -18,6 +18,12 @@ type EmbassyId =
     
     static member split (EmbassyId id) =
         id |> Tree.NodeId.split
+
+    static member contains (parts: string seq) (EmbassyId id) =
+        id |> Tree.NodeId.contains parts
+
+    static member combine (parts: string seq) =
+        parts |> Tree.NodeId.combine |> EmbassyId
 
 type Embassy = {
     Id: EmbassyId

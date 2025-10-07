@@ -27,7 +27,7 @@ type Route =
             password
           ]
         | ConfirmAppointment(requestId, appointmentId) -> [ "2"; requestId.ValueStr; appointmentId.ValueStr ]
-        | StartManualRequest(requestId) -> [ "3"; requestId.ValueStr ]
+        | StartManualRequest requestId -> [ "3"; requestId.ValueStr ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
@@ -36,16 +36,16 @@ type Route =
         match parts with
         | [| "0"; serviceId; embassyId; login; password |] ->
             SetManualRequest(
-                serviceId |> Tree.NodeIdValue |> ServiceId,
-                embassyId |> Tree.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeId.create |> ServiceId,
+                embassyId |> Tree.NodeId.create |> EmbassyId,
                 login,
                 password
             )
             |> Ok
         | [| "1"; serviceId; embassyId; login; password |] ->
             SetAutoNotifications(
-                serviceId |> Tree.NodeIdValue |> ServiceId,
-                embassyId |> Tree.NodeIdValue |> EmbassyId,
+                serviceId |> Tree.NodeId.create |> ServiceId,
+                embassyId |> Tree.NodeId.create |> EmbassyId,
                 login,
                 password
             )

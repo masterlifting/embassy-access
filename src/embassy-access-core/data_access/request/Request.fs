@@ -72,10 +72,10 @@ type private Request<'a> with
         |> Result.map (fun payload ->
             Entity(
                 Id = this.Id.ValueStr,
-                ServiceId = this.Service.Id.Value.Value,
+                ServiceId = this.Service.Id.Value,
                 ServiceName = (this.Service.NameParts |> Array.ofList),
                 ServiceDescription = this.Service.Description,
-                EmbassyId = this.Embassy.Id.Value.Value,
+                EmbassyId = this.Embassy.Id.Value,
                 EmbassyName = (this.Embassy.NameParts |> Array.ofList),
                 EmbassyDescription = this.Embassy.Description,
                 EmbassyTimeZone = this.Embassy.TimeZone,
