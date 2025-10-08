@@ -5,6 +5,7 @@ open Infrastructure.Prelude.Tree.Builder
 open Infrastructure.Configuration.Domain
 open Persistence.Storages.Domain
 open EA.Worker
+open Worker.Domain
 
 let private resultAsync = ResultAsyncBuilder()
 
@@ -45,7 +46,7 @@ let main _ =
             |> Worker.DataAccess.TasksTree.init
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
-        let tasksHandlers =
+        let handlers =
             Tree.Node.create ("WRK", Some Initializer.run)
             |> withChildren [
 
@@ -62,14 +63,14 @@ let main _ =
                 )
             ]
 
-        let workerTasks = tasks |> Worker.Client.merge tasksHandlers
+        let workerTasks = tasks |> Worker.Client.merge handlers
 
         return
             Worker.Client.start {
                 Name = $"EA.Worker: v{version}"
                 Configuration = configuration
-                RootTaskId = "WRK"
-                findTask = fun taskId -> workerTasks |> Tree.findNode taskId |> Ok |> async.Return
+                RootTaskId = "WRK" |> Tree.NodeId.create |> WorkerTaskId.create
+                findTask = fun taskId -> workerTasks |> Tree.findNode taskId.NodeId |> Ok |> async.Return
             }
             |> Async.map (fun _ -> 0 |> Ok)
     }

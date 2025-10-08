@@ -25,6 +25,8 @@ type EmbassyId =
     static member combine (parts: string seq) =
         parts |> Tree.NodeId.combine |> EmbassyId
 
+    override this.ToString() = this.Value
+
 type Embassy = {
     Id: EmbassyId
     NameParts: string list

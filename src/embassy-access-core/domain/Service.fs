@@ -25,6 +25,8 @@ type ServiceId =
     static member combine (parts: string seq) =
         parts |> Tree.NodeId.combine |> ServiceId
 
+    override this.ToString() = this.Value
+
 type Service = {
     Id: ServiceId
     NameParts: string list
