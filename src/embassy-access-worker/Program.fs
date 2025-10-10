@@ -63,13 +63,13 @@ let main _ =
                 )
             ]
 
-        let workerTasks = tasks |> Worker.Client.merge handlers
+        let! workerTasks = tasks |> Worker.Client.merge handlers |> async.Return
 
         return
             Worker.Client.start {
                 Name = $"EA.Worker: v{version}"
                 Configuration = configuration
-                RootTaskId = "WRK" |> Tree.NodeId.create |> WorkerTaskId.create
+                RootTaskId = "WRK" |> WorkerTaskId.create
                 findTask = fun taskId -> workerTasks |> Tree.findNode taskId.NodeId |> Ok |> async.Return
             }
             |> Async.map (fun _ -> 0 |> Ok)

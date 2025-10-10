@@ -23,7 +23,7 @@ type Dependencies = {
 
         result {
             let getEmbassyNode (embassyId: EmbassyId) =
-                deps.getEmbassyTree () |> ResultAsync.map (Tree.findNode embassyId.Value)
+                deps.getEmbassyTree () |> ResultAsync.map (Tree.findNode embassyId.NodeId)
 
             let sendMessageRes data =
                 data |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes

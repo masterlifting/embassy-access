@@ -7,6 +7,10 @@ open Infrastructure.Prelude
 type EmbassyId =
     | EmbassyId of Tree.NodeId
 
+    member this.NodeId =
+        match this with
+        | EmbassyId id -> id
+
     member this.Value =
         match this with
         | EmbassyId id -> id.Value

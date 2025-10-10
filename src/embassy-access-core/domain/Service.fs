@@ -7,6 +7,10 @@ open Infrastructure.Prelude
 type ServiceId =
     | ServiceId of Tree.NodeId
 
+    member this.NodeId =
+        match this with
+        | ServiceId id -> id
+
     member this.Value =
         match this with
         | ServiceId id -> id.Value

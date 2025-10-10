@@ -22,9 +22,9 @@ type Route =
         let parts = input.Split Router.DELIMITER
 
         match parts with
-        | [| "0"; id |] -> id |> Tree.NodeIdValue |> EmbassyId |> Embassy |> Ok
+        | [| "0"; id |] -> id |> EmbassyId.create |> Result.map Embassy
         | [| "1" |] -> Embassies |> Ok
-        | [| "2"; id |] -> id |> Tree.NodeIdValue |> EmbassyId |> UserEmbassy |> Ok
+        | [| "2"; id |] -> id |> EmbassyId.create |> Result.map UserEmbassy
         | [| "3" |] -> UserEmbassies |> Ok
         | _ ->
             $"'{input}' of 'Embassies.Get' endpoint is not supported."
