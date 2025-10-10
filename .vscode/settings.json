@@ -1,0 +1,26 @@
+{
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  },
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  },
+  "FSharp.dotnetRoot": "",
+  "FSharp.FSIExtraSharedParameters": [],
+  "FSharp.enableAnalyzers": true,
+  "FSharp.unusedOpensAnalyzer": true,
+  "FSharp.unusedDeclarationsAnalyzer": true,
+  "FSharp.simplifyNameAnalyzer": true,
+  "FSharp.resolveNamespaces": true,
+  "FSharp.codeLenses.references.enabled": true,
+  "FSharp.lineLens.enabled": "replaceCodeLens",
+  "editor.inlayHints.enabled": "on",
+  "FSharp.inlayHints.typeAnnotations": true,
+  "FSharp.inlayHints.parameterNames": true,
+  "[fsharp]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true
+  }
+}
