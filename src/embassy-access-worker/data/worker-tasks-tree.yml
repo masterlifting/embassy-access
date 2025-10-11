@@ -60,7 +60,6 @@ Worker:
             TimeZone: 2
     - Id: RUS
       Parallel: true
-      Description: Russian embassy appointments
       Schedule:
         Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
@@ -188,7 +187,6 @@ Worker:
             TimeZone: 2
     - Id: ITA
       Parallel: true
-      Description: Italian embassy appointments
       Schedule:
         Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
