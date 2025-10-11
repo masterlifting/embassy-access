@@ -51,9 +51,9 @@ module Kdmid =
 
                     serviceId |> Router.parse |> Result.exists isRequiredService
 
-                let getRequests rootServiceId =
+                let getRequests serviceId =
                     (requestStorage, hasRequiredService)
-                    |> Common.getRequests rootServiceId task.Duration
+                    |> Common.getRequests serviceId task.Duration
                     |> ResultAsync.map (
                         List.filter (fun request ->
                             match request.Payload.State with

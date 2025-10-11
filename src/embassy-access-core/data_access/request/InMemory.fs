@@ -36,10 +36,10 @@ module Query =
         |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 
-    let findManyWithServiceId (serviceId: ServiceId) payloadConverter client =
+    let findManyStartWithServiceId (serviceId: ServiceId) payloadConverter client =
         client
         |> loadData
-        |> Result.map (Seq.filter (fun e -> e.ServiceId.Contains serviceId.Value))
+        |> Result.map (Seq.filter (fun e -> e.ServiceId.StartsWith serviceId.Value))
         |> Result.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         |> async.Return
 

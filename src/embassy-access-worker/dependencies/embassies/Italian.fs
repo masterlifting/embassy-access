@@ -46,9 +46,9 @@ module Prenotami =
 
                     serviceId |> Router.parse |> Result.exists isRequiredService
 
-                let getRequests rootServiceId =
+                let getRequests serviceId =
                     (requestStorage, hasRequiredService)
-                    |> Common.getRequests rootServiceId task.Duration
+                    |> Common.getRequests serviceId task.Duration
 
                 let tryProcessFirst requests =
                     Prenotami.Client.init {

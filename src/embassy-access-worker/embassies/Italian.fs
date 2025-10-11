@@ -1,6 +1,5 @@
 ﻿module internal EA.Worker.Embassies.Italian
 
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
 open EA.Core.Domain
@@ -22,7 +21,9 @@ module Prenotami =
         fun (deps: Prenotami.Dependencies) ->
             let inline processGroup requests = deps |> processGroup requests
 
-            deps.getRequests (Embassies.ITA |> Tree.NodeId.create |> Service.ServiceId)
+            [ Services.ROOT_ID; Embassies.ITA ]
+            |> ServiceId.combine
+            |> deps.getRequests
             |> ResultAsync.map (fun requests ->
                 requests
                 |> Seq.groupBy _.Service.Id

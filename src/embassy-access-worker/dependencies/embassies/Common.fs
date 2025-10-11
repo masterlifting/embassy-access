@@ -5,10 +5,11 @@ open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Core.DataAccess
 
-let getRequests (rootServiceId: ServiceId) (taskDuration: TimeSpan) =
+let getRequests (serviceId: ServiceId) (taskDuration: TimeSpan) =
+
     fun (requestStorage, hasRequiredService) ->
         requestStorage
-        |> Storage.Request.Query.findMany (Storage.Request.Query.ContainsServiceId rootServiceId)
+        |> Storage.Request.Query.findMany (Storage.Request.Query.StartWithServiceId serviceId)
         |> ResultAsync.map (
             List.filter (fun request ->
                 request.Service.Id |> hasRequiredService
