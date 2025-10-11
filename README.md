@@ -60,6 +60,7 @@ Use the `appsettings.yaml` file as a template.
 ```bash
 cd src/embassy-access-worker
 dotnet run
+dotenv -e .env -- dotnet run
 ```
 
 ### Contributing

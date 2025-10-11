@@ -18,7 +18,7 @@ let main _ =
 
         let version =
             configuration
-            |> Configuration.Client.tryGetSection<string> "Version"
+            |> Configuration.Client.getSection<string> "Version"
             |> function
                 | Some v -> v
                 | None -> "unknown"

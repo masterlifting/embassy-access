@@ -30,10 +30,8 @@ let main _ =
 
         let version =
             configuration
-            |> Configuration.Client.tryGetSection<string> "Version"
-            |> function
-                | Some v -> v
-                | None -> "unknown"
+            |> Configuration.Client.getSection<string> "Version"
+            |> Option.defaultValue "unknown"
 
         Logging.Log.inf $"EA.Worker version: %s{version}"
 
