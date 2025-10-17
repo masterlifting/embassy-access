@@ -19,9 +19,9 @@ module Kdmid =
         getRequests: ServiceId -> Async<Result<Request<Payload> list, Error'>>
     } with
 
-        static member create (task: ActiveTask) cfg ct =
+        static member create task cfg ct =
             let result = ResultBuilder()
-            let taskName = ActiveTask.print task + " "
+            let taskName = ActiveTask.print task
 
             result {
                 let! persistence = Persistence.Dependencies.create cfg

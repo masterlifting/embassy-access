@@ -17,7 +17,7 @@ module Prenotami =
                 | HasAppointments appointments ->
                     deps.TaskName + $" Appointments found: %i{appointments.Count}" |> Log.scs)
 
-    let start =
+    let private start =
         fun (deps: Prenotami.Dependencies) ->
             let inline processGroup requests = deps |> processGroup requests
 

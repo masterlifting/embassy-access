@@ -21,7 +21,7 @@ module Kdmid =
                     + $" Confirmation found: %s{msg}. %s{Appointment.print appointment}"
                     |> Log.scs)
 
-    let start =
+    let private start =
         fun (deps: Kdmid.Dependencies) ->
             let inline processGroup requests = deps |> processGroup requests
 
