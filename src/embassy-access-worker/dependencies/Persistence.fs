@@ -28,6 +28,7 @@ module Russian =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "requests-rus-kdmid.json"
+                    FileSystem.Connection.Type = FileSystem.ConnectionType.Singleton
                 }
                 |> Storage.Request.StorageType.FileSystem
                 |> Storage.Request.init {
@@ -39,6 +40,7 @@ module Russian =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "requests-rus-midpass.json"
+                    FileSystem.Connection.Type = FileSystem.ConnectionType.Singleton
                 }
                 |> Storage.Request.StorageType.FileSystem
                 |> Storage.Request.init {
@@ -64,6 +66,7 @@ module Italian =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "requests-ita-prenotami.json"
+                    FileSystem.Connection.Type = FileSystem.ConnectionType.Singleton
                 }
                 |> Storage.Request.StorageType.FileSystem
                 |> Storage.Request.init {
