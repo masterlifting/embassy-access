@@ -5,6 +5,7 @@ open System
 open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Persistence.Domain
 open Persistence.Storages.Domain
 open EA.Core.DataAccess
 open EA.Russian.Services.Domain
@@ -28,7 +29,7 @@ module Russian =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "requests-rus-kdmid.json"
-                    FileSystem.Connection.Type = FileSystem.ConnectionType.Transient
+                    FileSystem.Connection.Lifetime = Transient
                 }
                 |> Storage.Request.StorageType.FileSystem
                 |> Storage.Request.init {
@@ -40,7 +41,7 @@ module Russian =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "requests-rus-midpass.json"
-                    FileSystem.Connection.Type = FileSystem.ConnectionType.Transient
+                    FileSystem.Connection.Lifetime = Transient
                 }
                 |> Storage.Request.StorageType.FileSystem
                 |> Storage.Request.init {
@@ -66,7 +67,7 @@ module Italian =
                 {
                     FileSystem.Connection.FilePath = fileStoragePath
                     FileSystem.Connection.FileName = "requests-ita-prenotami.json"
-                    FileSystem.Connection.Type = FileSystem.ConnectionType.Transient
+                    FileSystem.Connection.Lifetime = Transient
                 }
                 |> Storage.Request.StorageType.FileSystem
                 |> Storage.Request.init {
