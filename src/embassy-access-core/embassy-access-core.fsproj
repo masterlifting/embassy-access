@@ -21,6 +21,7 @@
     <Compile Include="data_access\request\Request.fs" />
     <Compile Include="data_access\request\FileSystem.fs" />
     <Compile Include="data_access\request\InMemory.fs" />
+    <Compile Include="data_access\request\Postrgre.fs" />
     <Compile Include="data_access\request\Storage.fs" />
   </ItemGroup>
   <ItemGroup>
