@@ -343,6 +343,32 @@ module Command =
                         |}
                 }
 
-                return! client |> Command.execute sql
+                return! client |> Command.execute sql |> ResultAsync.map ignore
             | Error err -> return Error err
+        }
+
+module Migrations =
+
+    let private init (client: Client) =
+        async {
+            let migration = {
+                Sql =
+                    """
+                    CREATE TABLE IF NOT EXISTS chats (
+                        id BIGINT PRIMARY KEY,
+                        subscriptions JSONB NOT NULL,
+                        culture VARCHAR(10) NOT NULL
+                    );
+                    """
+                Params = None
+            }
+
+            return! client |> Command.execute migration
+        }
+
+    let apply (client: Client) =
+        async {
+            match! init client with
+            | Ok _ -> return ()
+            | Error err -> failwithf "Failed to apply migrations for chats: %A" err
         }

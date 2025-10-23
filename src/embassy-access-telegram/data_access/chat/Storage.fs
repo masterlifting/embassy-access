@@ -15,7 +15,7 @@ type StorageType =
 
 let private toProvider =
     function
-    | Chat.Provider provider -> provider
+    | Chat.Storage.Provider provider -> provider
 
 let init storageType =
     match storageType with
@@ -28,7 +28,7 @@ let init storageType =
         }
         |> Storage.Connection.Database
         |> Storage.init
-    |> Result.map Chat.Provider
+    |> Result.map Chat.Storage.Provider
 
 module Query =
 
@@ -39,7 +39,7 @@ module Query =
         | Storage.FileSystem client -> client |> FileSystem.Chat.Query.getSubscriptions
         | Storage.Database database ->
             match database with
-            | Database.Client.Postgre client -> client |> EA.Telegram.DataAccess.Postgre.Chat.Query.getSubscriptions
+            | Database.Client.Postgre client -> client |> Postgre.Chat.Query.getSubscriptions
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let tryFindById chatId storage =
@@ -49,7 +49,7 @@ module Query =
         | Storage.FileSystem client -> client |> FileSystem.Chat.Query.tryFindById chatId
         | Storage.Database database ->
             match database with
-            | Database.Client.Postgre client -> client |> EA.Telegram.DataAccess.Postgre.Chat.Query.tryFindById chatId
+            | Database.Client.Postgre client -> client |> Postgre.Chat.Query.tryFindById chatId
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyBySubscription subscriptionId storage =
@@ -61,7 +61,7 @@ module Query =
             match database with
             | Database.Client.Postgre client ->
                 client
-                |> EA.Telegram.DataAccess.Postgre.Chat.Query.findManyBySubscription subscriptionId
+                |> Postgre.Chat.Query.findManyBySubscription subscriptionId
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let findManyBySubscriptions subscriptionIds storage =
@@ -73,7 +73,7 @@ module Query =
             match database with
             | Database.Client.Postgre client ->
                 client
-                |> EA.Telegram.DataAccess.Postgre.Chat.Query.findManyBySubscriptions subscriptionIds
+                |> Postgre.Chat.Query.findManyBySubscriptions subscriptionIds
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
 module Command =
@@ -84,7 +84,7 @@ module Command =
         | Storage.FileSystem client -> client |> FileSystem.Chat.Command.create chat
         | Storage.Database database ->
             match database with
-            | Database.Client.Postgre client -> client |> EA.Telegram.DataAccess.Postgre.Chat.Command.create chat
+            | Database.Client.Postgre client -> client |> Postgre.Chat.Command.create chat
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let update chat storage =
@@ -94,7 +94,7 @@ module Command =
         | Storage.FileSystem client -> client |> FileSystem.Chat.Command.update chat
         | Storage.Database database ->
             match database with
-            | Database.Client.Postgre client -> client |> EA.Telegram.DataAccess.Postgre.Chat.Command.update chat
+            | Database.Client.Postgre client -> client |> Postgre.Chat.Command.update chat
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let createChatSubscription chatId subscription storage =
@@ -106,7 +106,7 @@ module Command =
             match database with
             | Database.Client.Postgre client ->
                 client
-                |> EA.Telegram.DataAccess.Postgre.Chat.Command.createChatSubscription chatId subscription
+                |> Postgre.Chat.Command.createChatSubscription chatId subscription
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let deleteChatSubscription chatId subscription storage =
@@ -118,7 +118,7 @@ module Command =
             match database with
             | Database.Client.Postgre client ->
                 client
-                |> EA.Telegram.DataAccess.Postgre.Chat.Command.deleteChatSubscription chatId subscription
+                |> Postgre.Chat.Command.deleteChatSubscription chatId subscription
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let deleteChatSubscriptions chatId subscriptions storage =
@@ -130,7 +130,7 @@ module Command =
             match database with
             | Database.Client.Postgre client ->
                 client
-                |> EA.Telegram.DataAccess.Postgre.Chat.Command.deleteChatSubscriptions chatId subscriptions
+                |> Postgre.Chat.Command.deleteChatSubscriptions chatId subscriptions
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let deleteSubscriptions subscriptions storage =
@@ -142,7 +142,7 @@ module Command =
             match database with
             | Database.Client.Postgre client ->
                 client
-                |> EA.Telegram.DataAccess.Postgre.Chat.Command.deleteSubscriptions subscriptions
+                |> Postgre.Chat.Command.deleteSubscriptions subscriptions
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let setCulture chatId culture storage =
@@ -153,5 +153,5 @@ module Command =
         | Storage.Database database ->
             match database with
             | Database.Client.Postgre client ->
-                client |> EA.Telegram.DataAccess.Postgre.Chat.Command.setCulture chatId culture
+                client |> Postgre.Chat.Command.setCulture chatId culture
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return

@@ -27,8 +27,8 @@ type Entity() =
             Culture = this.Culture |> Culture.parse
         })
 
-type internal Subscription with
-    member internal this.ToEntity() =
+type private Subscription with
+    member private this.ToEntity() =
         Subscriptions.Entity(Id = this.Id.ValueStr, EmbassyId = this.EmbassyId.Value, ServiceId = this.ServiceId.Value)
 
 type private Chat with

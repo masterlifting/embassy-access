@@ -292,9 +292,9 @@ module Command =
 
 module Migrations =
 
-    let createTable (client: Client) =
+    let private init (client: Client) =
         async {
-            let sql = {
+            let migration = {
                 Sql =
                     """
                     CREATE TABLE IF NOT EXISTS requests (
@@ -316,5 +316,12 @@ module Migrations =
                 Params = None
             }
 
-            return! client |> Command.execute sql |> ResultAsync.map ignore
+            return! client |> Command.execute migration
+        }
+
+    let apply (client: Client) =
+        async {
+            match! init client with
+            | Ok _ -> return ()
+            | Error e -> failwithf "Failed to apply migrations for requests: %A" e
         }
