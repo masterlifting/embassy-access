@@ -34,7 +34,7 @@ type Dependencies = {
             result {
                 let tryGetChat () =
                     deps.Persistence.initChatStorage ()
-                    |> ResultAsync.wrap (Storage.Chat.Query.tryFindById payload.ChatId)
+                    |> ResultAsync.wrap (Storage.Chat.Query.findOne payload.ChatId)
 
                 let getEmbassyTree () =
                     deps.Persistence.initEmbassyStorage () |> ResultAsync.wrap EmbassiesTree.get

@@ -32,7 +32,7 @@ let init storageType =
 
 module Query =
 
-    let tryFindById chatId storage =
+    let findOne chatId storage =
         let provider = storage |> toProvider
         match provider with
         | Storage.InMemory client -> client |> InMemory.Chat.Query.tryFindById chatId

@@ -42,7 +42,7 @@ module Query =
         | StartWithServiceId of ServiceId
         | ByEmbassyAndServiceId of EmbassyId * ServiceId
 
-    let tryFind filter storage =
+    let findOne filter storage =
         let provider, payloadMapper = storage |> toProvider
 
         let inMemoryQuery client =
