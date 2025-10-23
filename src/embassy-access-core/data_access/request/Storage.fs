@@ -2,10 +2,10 @@
 module EA.Core.DataAccess.Storage.Request
 
 open Infrastructure.Domain
-open EA.Core.Domain
 open Persistence
 open Persistence.Storages
 open Persistence.Storages.Domain
+open EA.Core.Domain
 open EA.Core.DataAccess
 
 type StorageType =

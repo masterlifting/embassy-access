@@ -86,6 +86,9 @@ type private Request<'a> with
                 Modified = this.Modified
             ))
 
+// Helper function for external modules to access ToEntity method
+let toEntity payloadConverter (request: Request<_>) = request.ToEntity payloadConverter
+
 module internal Common =
     let create (request: Request<_>) payloadConverter (data: Entity<_> array) =
         match data |> Array.exists (fun x -> x.Id = request.Id.ValueStr) with

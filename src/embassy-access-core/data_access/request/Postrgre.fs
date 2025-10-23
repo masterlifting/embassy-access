@@ -158,28 +158,9 @@ module Query =
         }
 
 module Command =
-
-    let private toEntity (request: Request<_>) (payloadConverter: Request.PayloadConverter<_, _>) =
-        payloadConverter.toEntity request.Payload
-        |> Result.map (fun payload -> {|
-            Id = request.Id.ValueStr
-            ServiceId = request.Service.Id.Value
-            ServiceName = request.Service.NameParts |> Array.ofList
-            ServiceDescription = request.Service.Description
-            EmbassyId = request.Embassy.Id.Value
-            EmbassyName = request.Embassy.NameParts |> Array.ofList
-            EmbassyDescription = request.Embassy.Description
-            EmbassyTimeZone = request.Embassy.TimeZone
-            Payload = payload
-            ProcessState = request.ProcessState // Needs serialization
-            Limits = request.Limits // Needs serialization
-            Created = request.Created
-            Modified = request.Modified
-        |})
-
     let create (request: Request<_>) payloadConverter (client: Client) =
         async {
-            match toEntity request payloadConverter with
+            match request |> Request.toEntity payloadConverter with
             | Error err -> return Error err
             | Ok entity ->
                 let sql = {
@@ -203,7 +184,7 @@ module Command =
 
     let update (request: Request<_>) payloadConverter (client: Client) =
         async {
-            match toEntity request payloadConverter with
+            match request |> Request.toEntity payloadConverter with
             | Error err -> return Error err
             | Ok entity ->
                 let sql = {
@@ -253,7 +234,7 @@ module Command =
 
     let createOrUpdate (request: Request<_>) payloadConverter (client: Client) =
         async {
-            match toEntity request payloadConverter with
+            match request |> Request.toEntity payloadConverter with
             | Error err -> return Error err
             | Ok entity ->
                 let sql = {
@@ -304,6 +285,35 @@ module Command =
             let sql = {
                 Sql = "DELETE FROM requests WHERE id = ANY(@Ids)"
                 Params = Some {| Ids = idArray |}
+            }
+
+            return! client |> Command.execute sql |> ResultAsync.map ignore
+        }
+
+module Migrations =
+
+    let createTable (client: Client) =
+        async {
+            let sql = {
+                Sql =
+                    """
+                    CREATE TABLE IF NOT EXISTS requests (
+                        id TEXT PRIMARY KEY,
+                        service_id TEXT NOT NULL,
+                        service_name TEXT[] NOT NULL,
+                        service_description TEXT,
+                        embassy_id TEXT NOT NULL,
+                        embassy_name TEXT[] NOT NULL,
+                        embassy_description TEXT,
+                        embassy_timezone TEXT NOT NULL,
+                        payload JSONB NOT NULL,
+                        process_state JSONB NOT NULL,
+                        limits JSONB NOT NULL,
+                        created TIMESTAMPTZ NOT NULL,
+                        modified TIMESTAMPTZ NOT NULL
+                    )
+                    """
+                Params = None
             }
 
             return! client |> Command.execute sql |> ResultAsync.map ignore

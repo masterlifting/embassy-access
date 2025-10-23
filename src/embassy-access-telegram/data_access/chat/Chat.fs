@@ -29,11 +29,7 @@ type Entity() =
 
 type internal Subscription with
     member internal this.ToEntity() =
-        Subscriptions.Entity(
-            Id = this.Id.ValueStr,
-            EmbassyId = this.EmbassyId.Value,
-            ServiceId = this.ServiceId.Value
-        )
+        Subscriptions.Entity(Id = this.Id.ValueStr, EmbassyId = this.EmbassyId.Value, ServiceId = this.ServiceId.Value)
 
 type private Chat with
     member private this.ToEntity() =
@@ -42,6 +38,9 @@ type private Chat with
         result.Subscriptions <- this.Subscriptions |> Seq.map _.ToEntity() |> Seq.toList
 
         result
+
+// Helper function for external modules to access ToEntity method
+let toEntity (chat: Chat) = chat.ToEntity() |> Ok
 
 module internal Common =
     let create (chat: Chat) (data: Entity array) =

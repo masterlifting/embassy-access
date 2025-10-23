@@ -12,6 +12,7 @@
     <Compile Include="data_access\chat\Chat.fs" />
     <Compile Include="data_access\chat\FileSystem.fs" />
     <Compile Include="data_access\chat\InMemory.fs" />
+    <Compile Include="data_access\chat\Postgre.fs" />
     <Compile Include="data_access\chat\Storage.fs" />
     <Compile Include="router\culture\Get.fs" />
     <Compile Include="router\culture\Post.fs" />
