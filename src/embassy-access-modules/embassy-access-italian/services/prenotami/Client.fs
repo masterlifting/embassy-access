@@ -38,7 +38,7 @@ type Client = {
 
 let init (deps: Dependencies) = {
     Persistence = {
-        updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
+        updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.upsert request
     }
     BrowserWebApi = {
         init = fun () -> BrowserWebApi.Client.init { BaseUrl = deps.BrowserWebApiUrl }

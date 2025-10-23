@@ -106,12 +106,6 @@ module internal Common =
                 data)
         | None -> $"The '{request.Id}' not found." |> NotFound |> Error
 
-    let updateSeq (requests: Request<_> seq) payloadConverter (data: Entity<_> array) =
-        requests
-        |> Seq.map (fun request -> data |> update request payloadConverter)
-        |> Result.choose
-        |> Result.map Array.concat
-
     let delete (id: RequestId) (data: Entity<_> array) =
         match data |> Array.tryFindIndex (fun x -> x.Id = id.ValueStr) with
         | Some index -> data |> Array.removeAt index |> Ok

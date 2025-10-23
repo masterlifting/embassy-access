@@ -9,11 +9,6 @@ let private loadData = Query.Json.get<Request.Entity<_>>
 
 module Query =
 
-    let getIdentifiers client =
-        client
-        |> loadData
-        |> ResultAsync.bind (Seq.map (fun e -> e.Id |> RequestId.create) >> Result.choose)
-
     let tryFindById (id: RequestId) payloadConverter client =
         client
         |> loadData
@@ -54,29 +49,8 @@ module Query =
         |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
 
 module Command =
-
-    let create request payloadConverter client =
-        client
-        |> loadData
-        |> ResultAsync.bind (Request.Common.create request payloadConverter)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
-        |> ResultAsync.map (fun _ -> request)
-
-    let update request payloadConverter client =
-        client
-        |> loadData
-        |> ResultAsync.bind (Request.Common.update request payloadConverter)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
-        |> ResultAsync.map (fun _ -> request)
-
-    let updateSeq requests payloadConverter client =
-        client
-        |> loadData
-        |> ResultAsync.bind (Request.Common.updateSeq requests payloadConverter)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
-        |> ResultAsync.map (fun _ -> requests |> Seq.toList)
-
-    let createOrUpdate request payloadConverter client =
+    
+    let upsert request payloadConverter client =
         client
         |> loadData
         |> ResultAsync.bind (fun data ->
@@ -90,12 +64,4 @@ module Command =
         client
         |> loadData
         |> ResultAsync.bind (Request.Common.delete id)
-        |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)
-
-    let deleteMany (ids: RequestId Set) client =
-        let idSet = ids |> Set.map _.ValueStr
-
-        client
-        |> loadData
-        |> ResultAsync.map (Array.filter (fun request -> not (idSet.Contains request.Id)))
         |> ResultAsync.bindAsync (fun data -> client |> Command.Json.save data)

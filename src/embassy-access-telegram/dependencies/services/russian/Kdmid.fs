@@ -49,7 +49,7 @@ type Dependencies = {
 
         let createOrUpdateRequest request storage =
             storage
-            |> Storage.Request.Command.createOrUpdate request
+            |> Storage.Request.Command.upsert request
             |> ResultAsync.map ignore
 
         let deleteRequest requestId storage =

@@ -48,7 +48,7 @@ let init (deps: Dependencies) =
 
     {
         initHttpClient = initHttpClient
-        updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.createOrUpdate request
+        updateRequest = fun request -> deps.RequestStorage |> Storage.Request.Command.upsert request
         getInitialPage =
             fun request httpClient ->
                 httpClient

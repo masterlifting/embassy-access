@@ -42,16 +42,6 @@ module Query =
         | StartWithServiceId of ServiceId
         | ByEmbassyAndServiceId of EmbassyId * ServiceId
 
-    let getIdentifiers storage =
-        let provider, _ = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Request.Query.getIdentifiers
-        | Storage.FileSystem client -> client |> FileSystem.Request.Query.getIdentifiers
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client -> client |> Postgre.Request.Query.getIdentifiers
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
     let tryFind filter storage =
         let provider, payloadMapper = storage |> toProvider
 
@@ -119,44 +109,14 @@ module Query =
 
 module Command =
 
-    let create request storage =
+    let upsert request storage =
         let provider, payloadMapper = storage |> toProvider
         match provider with
-        | Storage.InMemory client -> client |> InMemory.Request.Command.create request payloadMapper
-        | Storage.FileSystem client -> client |> FileSystem.Request.Command.create request payloadMapper
+        | Storage.InMemory client -> client |> InMemory.Request.Command.upsert request payloadMapper
+        | Storage.FileSystem client -> client |> FileSystem.Request.Command.upsert request payloadMapper
         | Storage.Database database ->
             match database with
-            | Database.Client.Postgre client -> client |> Postgre.Request.Command.create request payloadMapper
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
-    let update request storage =
-        let provider, payloadMapper = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Request.Command.update request payloadMapper
-        | Storage.FileSystem client -> client |> FileSystem.Request.Command.update request payloadMapper
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client -> client |> Postgre.Request.Command.update request payloadMapper
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
-    let updateSeq requests storage =
-        let provider, payloadMapper = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Request.Command.updateSeq requests payloadMapper
-        | Storage.FileSystem client -> client |> FileSystem.Request.Command.updateSeq requests payloadMapper
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client -> client |> Postgre.Request.Command.updateSeq requests payloadMapper
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
-    let createOrUpdate request storage =
-        let provider, payloadMapper = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Request.Command.createOrUpdate request payloadMapper
-        | Storage.FileSystem client -> client |> FileSystem.Request.Command.createOrUpdate request payloadMapper
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client -> client |> Postgre.Request.Command.createOrUpdate request payloadMapper
+            | Database.Client.Postgre client -> client |> Postgre.Request.Command.upsert request payloadMapper
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let delete id storage =
@@ -167,14 +127,4 @@ module Command =
         | Storage.Database database ->
             match database with
             | Database.Client.Postgre client -> client |> Postgre.Request.Command.delete id
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
-    let deleteMany ids storage =
-        let provider, _ = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Request.Command.deleteMany ids
-        | Storage.FileSystem client -> client |> FileSystem.Request.Command.deleteMany ids
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client -> client |> Postgre.Request.Command.deleteMany ids
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return

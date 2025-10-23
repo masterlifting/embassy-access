@@ -32,16 +32,6 @@ let init storageType =
 
 module Query =
 
-    let getSubscriptions storage =
-        let provider = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Chat.Query.getSubscriptions
-        | Storage.FileSystem client -> client |> FileSystem.Chat.Query.getSubscriptions
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client -> client |> Postgre.Chat.Query.getSubscriptions
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
     let tryFindById chatId storage =
         let provider = storage |> toProvider
         match provider with
@@ -52,40 +42,7 @@ module Query =
             | Database.Client.Postgre client -> client |> Postgre.Chat.Query.tryFindById chatId
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
-    let findManyBySubscription subscriptionId storage =
-        let provider = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Chat.Query.findManyBySubscription subscriptionId
-        | Storage.FileSystem client -> client |> FileSystem.Chat.Query.findManyBySubscription subscriptionId
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client ->
-                client
-                |> Postgre.Chat.Query.findManyBySubscription subscriptionId
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
-    let findManyBySubscriptions subscriptionIds storage =
-        let provider = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Chat.Query.findManyBySubscriptions subscriptionIds
-        | Storage.FileSystem client -> client |> FileSystem.Chat.Query.findManyBySubscriptions subscriptionIds
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client ->
-                client
-                |> Postgre.Chat.Query.findManyBySubscriptions subscriptionIds
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
 module Command =
-    let create chat storage =
-        let provider = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Chat.Command.create chat
-        | Storage.FileSystem client -> client |> FileSystem.Chat.Command.create chat
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client -> client |> Postgre.Chat.Command.create chat
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let update chat storage =
         let provider = storage |> toProvider
@@ -95,54 +52,6 @@ module Command =
         | Storage.Database database ->
             match database with
             | Database.Client.Postgre client -> client |> Postgre.Chat.Command.update chat
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
-    let createChatSubscription chatId subscription storage =
-        let provider = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Chat.Command.createChatSubscription chatId subscription
-        | Storage.FileSystem client -> client |> FileSystem.Chat.Command.createChatSubscription chatId subscription
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client ->
-                client
-                |> Postgre.Chat.Command.createChatSubscription chatId subscription
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
-    let deleteChatSubscription chatId subscription storage =
-        let provider = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Chat.Command.deleteChatSubscription chatId subscription
-        | Storage.FileSystem client -> client |> FileSystem.Chat.Command.deleteChatSubscription chatId subscription
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client ->
-                client
-                |> Postgre.Chat.Command.deleteChatSubscription chatId subscription
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
-    let deleteChatSubscriptions chatId subscriptions storage =
-        let provider = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Chat.Command.deleteChatSubscriptions chatId subscriptions
-        | Storage.FileSystem client -> client |> FileSystem.Chat.Command.deleteChatSubscriptions chatId subscriptions
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client ->
-                client
-                |> Postgre.Chat.Command.deleteChatSubscriptions chatId subscriptions
-        | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
-
-    let deleteSubscriptions subscriptions storage =
-        let provider = storage |> toProvider
-        match provider with
-        | Storage.InMemory client -> client |> InMemory.Chat.Command.deleteSubscriptions subscriptions
-        | Storage.FileSystem client -> client |> FileSystem.Chat.Command.deleteSubscriptions subscriptions
-        | Storage.Database database ->
-            match database with
-            | Database.Client.Postgre client ->
-                client
-                |> Postgre.Chat.Command.deleteSubscriptions subscriptions
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return
 
     let setCulture chatId culture storage =

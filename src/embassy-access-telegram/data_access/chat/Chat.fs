@@ -54,8 +54,3 @@ module internal Common =
             data[index] <- chat.ToEntity()
             Ok data
         | None -> $"The '{chat.Id}' not found." |> NotFound |> Error
-
-    let delete (chatId: ChatId) (data: Entity array) =
-        match data |> Array.tryFindIndex (fun x -> x.Id = chatId.Value) with
-        | Some index -> data |> Array.removeAt index |> Ok
-        | None -> $"The '{chatId}' not found." |> NotFound |> Error
