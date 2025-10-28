@@ -194,7 +194,7 @@ module Command =
 
 module Migrations =
 
-    let private init (client: Client) =
+    let private initial (client: Client) =
         async {
             let migration = {
                 Sql =
@@ -218,12 +218,13 @@ module Migrations =
                 Params = None
             }
 
-            return! client |> Command.execute migration
+            return! client |> Command.execute migration |> ResultAsync.map ignore
         }
 
-    let apply (client: Client) =
-        async {
-            match! init client with
-            | Ok _ -> return ()
-            | Error e -> failwithf "Failed to apply migrations for requests: %A" e
+    let apply (connectionString: string) =
+        {
+            String = connectionString
+            Lifetime = Persistence.Domain.Transient
         }
+        |> Provider.init
+        |> ResultAsync.wrap initial

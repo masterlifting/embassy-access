@@ -1,3 +1,7 @@
 ﻿module internal EA.Worker.Initializer
 
-let run (task, cfg, ct) = async { return Ok() }
+open EA.Worker.Dependencies
+open EA.Core.DataAccess
+
+let run (_, __, ___) =
+    Postgre.Request.Migrations.apply Configuration.ENVIRONMENTS.PostgresConnection

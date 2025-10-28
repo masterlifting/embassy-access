@@ -33,7 +33,7 @@ module Command =
 
     let create (chat: Chat) (client: Client) =
         async {
-            match EA.Telegram.DataAccess.Chat.toEntity chat with
+            match Chat.toEntity chat with
             | Error err -> return Error err
             | Ok entity ->
                 let sql = {
@@ -50,7 +50,7 @@ module Command =
 
     let update (chat: Chat) (client: Client) =
         async {
-            match EA.Telegram.DataAccess.Chat.toEntity chat with
+            match Chat.toEntity chat with
             | Error err -> return Error err
             | Ok entity ->
                 let sql = {
@@ -69,37 +69,28 @@ module Command =
 
     let setCulture (chatId: ChatId) (culture: Culture) (client: Client) =
         async {
-            // Try to find the existing chat
-            let! chatResult = Query.tryFindById chatId client
+            let sql = {
+                Sql =
+                    """
+                    INSERT INTO chats (id, subscriptions, culture)
+                    VALUES (@Id, @Subscriptions::jsonb, @Culture)
+                    ON CONFLICT (id) DO UPDATE SET
+                        culture = EXCLUDED.culture
+                    """
+                Params =
+                    Some {|
+                        Id = chatId.Value
+                        Subscriptions = "[]" // Default empty subscriptions as JSONB
+                        Culture = culture.Code
+                    |}
+            }
 
-            match chatResult with
-            | Ok None ->
-                // Create new chat if it doesn't exist
-                let newChat = {
-                    Id = chatId
-                    Subscriptions = Set.empty
-                    Culture = culture
-                }
-                let! result = create newChat client
-                return result |> Result.map ignore
-            | Ok(Some chat) ->
-                // Update existing chat's culture
-                let sql = {
-                    Sql = "UPDATE chats SET culture = @Culture WHERE id = @Id"
-                    Params =
-                        Some {|
-                            Id = chatId.Value
-                            Culture = culture.Code
-                        |}
-                }
-
-                return! client |> Command.execute sql |> ResultAsync.map ignore
-            | Error err -> return Error err
+            return! client |> Command.execute sql |> ResultAsync.map ignore
         }
 
 module Migrations =
 
-    let private init (client: Client) =
+    let private initial (client: Client) =
         async {
             let migration = {
                 Sql =
@@ -116,9 +107,10 @@ module Migrations =
             return! client |> Command.execute migration
         }
 
-    let apply (client: Client) =
-        async {
-            match! init client with
-            | Ok _ -> return ()
-            | Error err -> failwithf "Failed to apply migrations for chats: %A" err
+    let apply (connectionString: string) =
+        {
+            String = connectionString
+            Lifetime = Persistence.Domain.Transient
         }
+        |> Provider.init
+        |> ResultAsync.wrap initial

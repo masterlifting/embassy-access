@@ -24,14 +24,13 @@ module Russian =
         initMidpassRequestStorage: unit -> Result<Midpass.StorageType, Error'>
     } with
 
-        static member create fileStoragePath =
+        static member create pgConnectionString =
             let initKdmidRequestStorage () =
                 {
-                    FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "requests-rus-kdmid.json"
-                    FileSystem.Connection.Lifetime = Transient
+                    Postgre.Connection.String = pgConnectionString
+                    Postgre.Connection.Lifetime = Transient
                 }
-                |> Storage.Request.StorageType.FileSystem
+                |> Storage.Request.StorageType.Postgre
                 |> Storage.Request.init {
                     toDomain = Kdmid.Payload.toDomain
                     toEntity = Kdmid.Payload.toEntity
@@ -39,11 +38,10 @@ module Russian =
 
             let initMidpassRequestStorage () =
                 {
-                    FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "requests-rus-midpass.json"
-                    FileSystem.Connection.Lifetime = Transient
+                    Postgre.Connection.String = pgConnectionString
+                    Postgre.Connection.Lifetime = Transient
                 }
-                |> Storage.Request.StorageType.FileSystem
+                |> Storage.Request.StorageType.Postgre
                 |> Storage.Request.init {
                     toDomain = Midpass.Payload.toDomain
                     toEntity = Midpass.Payload.toEntity
@@ -62,14 +60,13 @@ module Italian =
         initPrenotamiRequestStorage: unit -> Result<Prenotami.StorageType, Error'>
     } with
 
-        static member create fileStoragePath fileStorageKey =
+        static member create pgConnectionString fileStorageKey =
             let initPrenotamiRequestStorage () =
                 {
-                    FileSystem.Connection.FilePath = fileStoragePath
-                    FileSystem.Connection.FileName = "requests-ita-prenotami.json"
-                    FileSystem.Connection.Lifetime = Transient
+                    Postgre.Connection.String = pgConnectionString
+                    Postgre.Connection.Lifetime = Transient
                 }
-                |> Storage.Request.StorageType.FileSystem
+                |> Storage.Request.StorageType.Postgre
                 |> Storage.Request.init {
                     toDomain = Prenotami.Payload.toDomain fileStorageKey
                     toEntity = Prenotami.Payload.toEntity fileStorageKey
@@ -106,13 +103,13 @@ type Dependencies = {
 
         result {
 
-            let fileStoragePath = "data"
+            let pgConnectionString = Configuration.ENVIRONMENTS.PostgresConnection
             let fileStorageKey = Configuration.ENVIRONMENTS.DataEncryptionKey
 
             return {
                 initServiceStorage = initServiceStorage
                 initEmbassyStorage = initEmbassyStorage
-                RussianStorage = Russian.Dependencies.create fileStoragePath
-                ItalianStorage = Italian.Dependencies.create fileStoragePath fileStorageKey
+                RussianStorage = Russian.Dependencies.create pgConnectionString
+                ItalianStorage = Italian.Dependencies.create pgConnectionString fileStorageKey
             }
         }
