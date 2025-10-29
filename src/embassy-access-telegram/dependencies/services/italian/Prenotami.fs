@@ -75,9 +75,7 @@ type Dependencies = {
             |> ResultAsync.bindAsync (fun _ -> deps.deleteSubscription requestId)
 
         let createOrUpdateRequest request storage =
-            storage
-            |> Storage.Request.Command.upsert request
-            |> ResultAsync.map ignore
+            storage |> Storage.Request.Command.upsert request |> ResultAsync.map ignore
 
         let processRequest request storage =
             Prenotami.Client.init {

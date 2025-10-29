@@ -56,11 +56,7 @@ let processWebSite credentials serviceId =
                     Dto.Execute.Function = "submit();"
                 }
 
-            do!
-                httpClient
-                |> api.clickBookService tabId {
-                    Dto.Click.Selector = "a#advanced"
-                }
+            do! httpClient |> api.clickBookService tabId { Dto.Click.Selector = "a#advanced" }
 
             let! selector = getBookAppointmentSelector serviceId |> async.Return
             do! httpClient |> api.clickBookAppointment tabId { Dto.Click.Selector = selector }
@@ -72,10 +68,7 @@ let processWebSite credentials serviceId =
                 }
                 |> ResultAsync.bind (function
                     | Some text -> text |> Ok
-                    | None ->
-                        "Could not extract the result from the page."
-                        |> NotFound
-                        |> Error)
+                    | None -> "Could not extract the result from the page." |> NotFound |> Error)
 
             do! httpClient |> api.closeTab tabId
 

@@ -54,7 +54,7 @@ module Query =
         |> async.Return
 
 module Command =
-    
+
     let upsert request payloadConverter client =
         client
         |> loadData

@@ -18,7 +18,11 @@ type Route =
 
         match parts with
         | [| "0"; serviceId; embassyId; number |] ->
-            CheckStatus(serviceId |> Tree.NodeId.create |> ServiceId, embassyId |> Tree.NodeId.create |> EmbassyId, number)
+            CheckStatus(
+                serviceId |> Tree.NodeId.create |> ServiceId,
+                embassyId |> Tree.NodeId.create |> EmbassyId,
+                number
+            )
             |> Ok
         | _ ->
             $"'{input}' of 'Services.Russian.Midpass.Post' endpoint is not supported."

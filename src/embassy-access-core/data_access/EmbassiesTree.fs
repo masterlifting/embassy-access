@@ -21,21 +21,23 @@ type EmbassiesTreeEntity() =
 
     member this.ToDomain() =
         let rec toNode names (e: EmbassiesTreeEntity) =
-            let node = Tree.Node.create(e.Id, {
-                Id = e.Id |> Tree.NodeId.create |> EmbassyId
-                NameParts = names
-                Description = e.Description
-                TimeZone = e.TimeZone |> Option.defaultValue 0.
-            })
+            let node =
+                Tree.Node.create (
+                    e.Id,
+                    {
+                        Id = e.Id |> Tree.NodeId.create |> EmbassyId
+                        NameParts = names
+                        Description = e.Description
+                        TimeZone = e.TimeZone |> Option.defaultValue 0.
+                    }
+                )
 
             match e.Children with
             | null
             | [||] -> node
             | children ->
-                let nodeChildren =
-                    children
-                    |> Array.map (fun c -> toNode (names @ [ c.Name ]) c)
-                
+                let nodeChildren = children |> Array.map (fun c -> toNode (names @ [ c.Name ]) c)
+
                 node |> withChildren nodeChildren
 
         this |> toNode [ this.Name ]

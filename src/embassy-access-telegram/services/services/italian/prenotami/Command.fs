@@ -96,10 +96,7 @@ let private handleRequestResult chatId (request: Request<Payload>) =
         |> Message.createNew chatId
     | Completed _ ->
         match request.Payload.State with
-        | NoAppointments msg->
-            msg
-            |> Text.create
-            |> Message.createNew chatId
+        | NoAppointments msg -> msg |> Text.create |> Message.createNew chatId
         | HasAppointments appointments ->
             appointments
             |> Seq.map (fun a ->

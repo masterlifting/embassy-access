@@ -49,7 +49,7 @@ module Query =
         |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
 
 module Command =
-    
+
     let upsert request payloadConverter client =
         client
         |> loadData

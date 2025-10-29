@@ -48,9 +48,7 @@ type Dependencies = {
             |> Storage.Request.Query.findMany (Storage.Request.Query.ByEmbassyAndServiceId(embassyId, serviceId))
 
         let createOrUpdateRequest request storage =
-            storage
-            |> Storage.Request.Command.upsert request
-            |> ResultAsync.map ignore
+            storage |> Storage.Request.Command.upsert request |> ResultAsync.map ignore
 
         let deleteRequest requestId storage =
             storage

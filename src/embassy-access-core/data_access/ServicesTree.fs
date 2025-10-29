@@ -20,19 +20,21 @@ type ServicesTreeEntity() =
 
     member this.ToDomain() =
         let rec toNode names (e: ServicesTreeEntity) =
-            let node = Tree.Node.create(e.Id, {
-                Id = e.Id |> Tree.NodeId.create |> ServiceId
-                NameParts = names
-                Description = e.Description
-            })
+            let node =
+                Tree.Node.create (
+                    e.Id,
+                    {
+                        Id = e.Id |> Tree.NodeId.create |> ServiceId
+                        NameParts = names
+                        Description = e.Description
+                    }
+                )
 
             match e.Children with
             | null
             | [||] -> node
             | children ->
-                let nodeChildren =
-                    children
-                    |> Array.map (fun c -> toNode (names @ [ c.Name ]) c)
+                let nodeChildren = children |> Array.map (fun c -> toNode (names @ [ c.Name ]) c)
 
                 node |> withChildren nodeChildren
 

@@ -19,14 +19,12 @@ type EmbassyId =
         match value with
         | AP.IsString id -> Tree.NodeId.create id |> EmbassyId |> Ok
         | _ -> $"EmbassyId '{value}' is not supported." |> NotSupported |> Error
-    
-    static member split (EmbassyId id) =
-        id |> Tree.NodeId.split
 
-    static member contains (parts: string seq) (EmbassyId id) =
-        id |> Tree.NodeId.contains parts
+    static member split(EmbassyId id) = id |> Tree.NodeId.split
 
-    static member combine (parts: string seq) =
+    static member contains (parts: string seq) (EmbassyId id) = id |> Tree.NodeId.contains parts
+
+    static member combine(parts: string seq) =
         parts |> Tree.NodeId.combine |> EmbassyId
 
     override this.ToString() = this.Value

@@ -61,6 +61,5 @@ module Command =
         | Storage.FileSystem client -> client |> FileSystem.Chat.Command.setCulture chatId culture
         | Storage.Database database ->
             match database with
-            | Database.Client.Postgre client ->
-                client |> Postgre.Chat.Command.setCulture chatId culture
+            | Database.Client.Postgre client -> client |> Postgre.Chat.Command.setCulture chatId culture
         | _ -> $"The '{provider}' is not supported." |> NotSupported |> Error |> async.Return

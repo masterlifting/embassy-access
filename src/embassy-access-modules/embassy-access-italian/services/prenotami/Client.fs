@@ -47,7 +47,8 @@ let init (deps: Dependencies) = {
         submitCredentials =
             fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.execute tabId dto deps.ct
         clickBookService = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
-        clickBookAppointment = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+        clickBookAppointment =
+            fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
         extractResult = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.extract tabId dto deps.ct
         closeTab = fun tabId client -> client |> BrowserWebApi.Request.Tab.close tabId deps.ct
     }
