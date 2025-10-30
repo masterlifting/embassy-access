@@ -65,6 +65,19 @@
     networks:
       - ea-network
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ea-pgadmin
+    ports:
+      - "8081:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - ea-postgres
+    networks:
+      - ea-network
+
 networks:
   ea-network:
     driver: bridge
