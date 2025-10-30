@@ -31,6 +31,10 @@ let init payloadConverter =
             |> Storage.init
         |> Result.map (fun provider -> (provider, payloadConverter) |> Request.Storage.Provider)
 
+let dispose storage =
+    let provider, _ = storage |> toProvider
+    provider |> Storage.dispose
+
 module Query =
 
     type Filter = Id of RequestId
