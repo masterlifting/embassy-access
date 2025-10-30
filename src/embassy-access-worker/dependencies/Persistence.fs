@@ -26,10 +26,11 @@ module Russian =
 
         static member create pgConnectionString =
             let initKdmidRequestStorage () =
-                {
-                    Postgre.Connection.String = pgConnectionString
-                    Postgre.Connection.Lifetime = Transient
+                ({
+                    String = pgConnectionString
+                    Lifetime = Transient
                 }
+                : Postgre.Connection)
                 |> Storage.Request.StorageType.Postgre
                 |> Storage.Request.init {
                     toDomain = Kdmid.Payload.toDomain
@@ -37,10 +38,11 @@ module Russian =
                 }
 
             let initMidpassRequestStorage () =
-                {
-                    Postgre.Connection.String = pgConnectionString
-                    Postgre.Connection.Lifetime = Transient
+                ({
+                    String = pgConnectionString
+                    Lifetime = Transient
                 }
+                : Postgre.Connection)
                 |> Storage.Request.StorageType.Postgre
                 |> Storage.Request.init {
                     toDomain = Midpass.Payload.toDomain
@@ -62,10 +64,11 @@ module Italian =
 
         static member create pgConnectionString fileStorageKey =
             let initPrenotamiRequestStorage () =
-                {
-                    Postgre.Connection.String = pgConnectionString
-                    Postgre.Connection.Lifetime = Transient
+                ({
+                    String = pgConnectionString
+                    Lifetime = Transient
                 }
+                : Postgre.Connection)
                 |> Storage.Request.StorageType.Postgre
                 |> Storage.Request.init {
                     toDomain = Prenotami.Payload.toDomain fileStorageKey

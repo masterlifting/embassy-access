@@ -230,4 +230,4 @@ module Migrations =
         |> ResultAsync.wrap (fun client ->
             client
             |> initial
-            |> Async.apply (client |> Provider.dispose |> Ok |> async.Return))
+            |> ResultAsync.apply (client |> Provider.dispose |> Ok |> async.Return))
