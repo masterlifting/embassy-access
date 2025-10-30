@@ -1,0 +1,79 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/embassy-access.slnx",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-release",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/embassy-access.slnx",
+                "--configuration",
+                "Release",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-telegram",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/embassy-access-telegram/embassy-access-telegram.fsproj",
+                "--configuration",
+                "Release",
+                "--output",
+                "${workspaceFolder}/publish/telegram"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-worker",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/embassy-access-worker/embassy-access-worker.fsproj",
+                "--configuration",
+                "Release",
+                "--output",
+                "${workspaceFolder}/publish/worker"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-all",
+            "dependsOn": [
+                "publish-telegram",
+                "publish-worker"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "watch",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/embassy-access-telegram/embassy-access-telegram.fsproj"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

@@ -221,13 +221,16 @@ module Migrations =
             return! client |> Command.execute migration |> ResultAsync.map ignore
         }
 
+    let private clean (client: Client) =
+        async {
+            client |> Provider.dispose
+            return Ok()
+        }
+
     let apply (connectionString: string) =
         {
             String = connectionString
             Lifetime = Persistence.Domain.Transient
         }
         |> Provider.init
-        |> ResultAsync.wrap (fun client ->
-            client
-            |> initial
-            |> ResultAsync.apply (client |> Provider.dispose |> Ok |> async.Return))
+        |> ResultAsync.wrap (fun client -> client |> initial |> ResultAsync.apply (client |> clean))

@@ -60,10 +60,10 @@ module Prenotami =
                     |> Prenotami.Service.tryProcessFirst requests
 
                 let cleanResources () =
-                    requestStorage
-                    |> EA.Core.DataAccess.Storage.Request.dispose
-                    |> Ok
-                    |> async.Return
+                    async {
+                        requestStorage |> EA.Core.DataAccess.Storage.Request.dispose
+                        return Ok()
+                    }
 
                 return {
                     TaskName = taskName

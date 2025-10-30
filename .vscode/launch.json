@@ -1,0 +1,51 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Telegram Bot",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/embassy-access-telegram/bin/Debug/net10.0/embassy-access-telegram.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/embassy-access-telegram",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Release Telegram Bot",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-release",
+            "program": "${workspaceFolder}/src/embassy-access-telegram/bin/Release/net10.0/embassy-access-telegram.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/embassy-access-telegram",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Debug Worker",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/embassy-access-worker/bin/Debug/net10.0/embassy-access-worker.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/embassy-access-worker",
+            "envFile": "${workspaceFolder}/src/embassy-access-worker/.env",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Release Worker",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-release",
+            "program": "${workspaceFolder}/src/embassy-access-worker/bin/Release/net10.0/embassy-access-worker.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/embassy-access-worker",
+            "envFile": "${workspaceFolder}/src/embassy-access-worker/.env",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ]
+}
