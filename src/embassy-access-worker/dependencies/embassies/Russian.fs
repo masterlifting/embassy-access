@@ -25,7 +25,7 @@ module Kdmid =
             let taskName = ActiveTask.print task
 
             result {
-                let! persistence = Persistence.Dependencies.create cfg
+                let! persistence = Persistence.Dependencies.create ()
 
                 let! requestStorage = persistence.RussianStorage.initKdmidRequestStorage ()
 

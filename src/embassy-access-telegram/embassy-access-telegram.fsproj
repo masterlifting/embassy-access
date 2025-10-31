@@ -4,6 +4,16 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+    <ItemGroup>
+    <Content Include="data\embassy-tasks-tree.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>data\embassy-tasks-tree.yml</Link>
+    </Content>
+    <Content Include="data\service-tasks-tree.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>data\service-tasks-tree.yml</Link>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="domain\Constants.fs" />
     <Compile Include="domain\Subscription.fs" />
@@ -66,6 +76,7 @@
     <Compile Include="controllers\Services.fs" />
     <Compile Include="controllers\Controller.fs" />
     <Compile Include="Client.fs" />
+    <Compile Include="Initializer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

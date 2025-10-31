@@ -2,8 +2,9 @@
 open Infrastructure
 open Infrastructure.Prelude
 open Infrastructure.Configuration.Domain
+open Web.Clients
+open AIProvider.Clients
 open EA.Telegram.Dependencies
-open AIProvider.Services.Dependencies
 
 let private resultAsync = ResultAsyncBuilder()
 
@@ -12,60 +13,56 @@ let main _ =
 
     Logging.Client.getLevel () |> Logging.Client.Console |> Logging.Client.init
 
-    let run () =
-        resultAsync {
-            let! configuration =
-                { Files = [ "appsettings.yaml" ] }
-                |> Configuration.Client.Yaml
-                |> Configuration.Client.init
-                |> async.Return
+    resultAsync {
+        let! configuration =
+            { Files = [ "appsettings.yaml" ] }
+            |> Configuration.Client.Yaml
+            |> Configuration.Client.init
+            |> async.Return
 
-            let version =
-                configuration
-                |> Configuration.Client.getSection<string> "Version"
-                |> Option.defaultValue "unknown"
+        let version =
+            configuration
+            |> Configuration.Client.getSection<string> "Version"
+            |> Option.defaultValue "unknown"
 
-            Logging.Log.inf $"EA.Telegram version: %s{version}"
+        Logging.Log.inf $"EA.Telegram version: %s{version}"
 
-            let ct = CancellationToken.None
+        let ct = CancellationToken.None
 
-            let! telegramClient =
-                Web.Clients.Telegram.Client.init {
-                    Token = Configuration.ENVIRONMENTS.TelegramBotToken
-                }
-                |> async.Return
+        let! telegramClient =
+            Telegram.Client.init {
+                Token = Configuration.ENVIRONMENTS.TelegramBotToken
+            }
+            |> async.Return
 
-            let! openApiClient =
-                AIProvider.Clients.OpenAI.Client.init {
-                    Token = Configuration.ENVIRONMENTS.OpenAIApiKey
-                    ProjectId = "embassy-access"
-                }
-                |> async.Return
+        let! openApiClient =
+            OpenAI.Client.init {
+                Token = Configuration.ENVIRONMENTS.OpenAIApiKey
+                ProjectId = "embassy-access"
+            }
+            |> async.Return
 
-            let! persistenceDeps = Persistence.Dependencies.create configuration |> async.Return
+        let! persistenceDeps = Persistence.Dependencies.create configuration |> async.Return
 
-            let! cultureStorage = persistenceDeps.initCultureStorage () |> async.Return
+        let webDeps = telegramClient |> Web.Dependencies.create ct
 
-            let webDeps = telegramClient |> Web.Dependencies.create ct
-
-            let cultureDeps =
+        let! cultureDeps =
+            persistenceDeps.initCultureStorage ()
+            |> Result.map (fun storage ->
                 Culture.Dependencies.create ct {
-                    Culture.Provider = AIProvider.Client.OpenAI openApiClient
-                    Culture.Storage = cultureStorage
-                }
+                    Provider = AIProvider.Client.OpenAI openApiClient
+                    Storage = storage
+                })
+            |> async.Return
 
-            let deps: EA.Telegram.Dependencies.Client.Dependencies = {
+        return
+            EA.Telegram.Client.start {
                 ct = ct
                 Web = webDeps
                 Culture = cultureDeps
                 Persistence = persistenceDeps
             }
-
-            return EA.Telegram.Client.start deps
-        }
-
-    run ()
+            |> Async.map (fun _ -> 0 |> Ok)
+    }
     |> Async.RunSynchronously
     |> Result.defaultWith (fun error -> failwithf $"Failed to start EA.Telegram: %s{error.Message}")
-
-    0

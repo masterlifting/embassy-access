@@ -9,14 +9,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>data\worker-tasks-tree.yml</Link>
     </Content>
-    <Content Include="data\embassy-tasks-tree.yml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>data\embassy-tasks-tree.yml</Link>
-    </Content>
-    <Content Include="data\service-tasks-tree.yml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>data\service-tasks-tree.yml</Link>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="dependencies\Configuration.fs" />

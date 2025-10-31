@@ -1,13 +1,10 @@
 ﻿[<RequireQualifiedAccess>]
 module EA.Telegram.Dependencies.Persistence
 
-open Infrastructure
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Infrastructure.Configuration.Domain
 open Persistence.Domain
-open Persistence.Storages.Domain
-open EA.Core.Domain
+open AIProvider.Services.DataAccess
 open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
@@ -28,24 +25,20 @@ module Russian =
 
         static member create pgConnectionString =
             let initKdmidRequestStorage () =
-                ({
+                Storage.Request.Postgre {
                     String = pgConnectionString
                     Lifetime = Transient
                 }
-                : Postgre.Connection)
-                |> Storage.Request.StorageType.Postgre
                 |> Storage.Request.init {
                     toDomain = Kdmid.Payload.toDomain
                     toEntity = Kdmid.Payload.toEntity
                 }
 
             let initMidpassRequestStorage () =
-                ({
+                Storage.Request.Postgre {
                     String = pgConnectionString
                     Lifetime = Transient
                 }
-                : Postgre.Connection)
-                |> Storage.Request.StorageType.Postgre
                 |> Storage.Request.init {
                     toDomain = Midpass.Payload.toDomain
                     toEntity = Midpass.Payload.toEntity
@@ -67,12 +60,10 @@ module Italian =
 
         static member create pgConnectionString fileStorageKey =
             let initPrenotamiRequestStorage () =
-                ({
+                Storage.Request.Postgre {
                     String = pgConnectionString
                     Lifetime = Transient
                 }
-                : Postgre.Connection)
-                |> Storage.Request.StorageType.Postgre
                 |> Storage.Request.init {
                     toDomain = Prenotami.Payload.toDomain fileStorageKey
                     toEntity = Prenotami.Payload.toEntity fileStorageKey
@@ -84,7 +75,7 @@ module Italian =
 
 type Dependencies = {
     initChatStorage: unit -> Result<Chat.Storage, Error'>
-    initCultureStorage: unit -> Result<AIProvider.Services.DataAccess.Culture.Storage, Error'>
+    initCultureStorage: unit -> Result<Culture.Storage, Error'>
     initServiceStorage: unit -> Result<ServicesTree.Storage, Error'>
     initEmbassyStorage: unit -> Result<EmbassiesTree.Storage, Error'>
     RussianStorage: Russian.Dependencies
@@ -94,38 +85,28 @@ type Dependencies = {
     static member create cfg =
 
         let initChatStorage () =
-            ({
+            Storage.Chat.Postgre {
                 String = Configuration.ENVIRONMENTS.PostgresConnection
-                Lifetime = Singleton
+                Lifetime = Transient
             }
-            : Postgre.Connection)
-            |> Storage.Chat.StorageType.Postgre
             |> Storage.Chat.init
 
         let initCultureStorage () =
-            ({
-                FilePath = "./data"
-                FileName = "culture"
-                Lifetime = Singleton
+            Storage.Culture.Postgre {
+                String = Configuration.ENVIRONMENTS.PostgresConnection
+                Lifetime = Transient
             }
-            : FileSystem.Connection)
-            |> AIProvider.Services.DataAccess.Storage.Culture.StorageType.FileSystem
-            |> AIProvider.Services.DataAccess.Storage.Culture.init
+            |> Storage.Culture.init
 
         let initEmbassyStorage () =
-            {
-                Configuration.Connection.Provider = cfg
-                Configuration.Connection.Section = "Embassies"
+            EmbassiesTree.Configuration {
+                Provider = cfg
+                Section = "Embassies"
             }
-            |> EmbassiesTree.StorageType.Configuration
             |> EmbassiesTree.init
 
         let initServiceStorage () =
-            {
-                Configuration.Connection.Provider = cfg
-                Configuration.Connection.Section = "Services"
-            }
-            |> ServicesTree.StorageType.Configuration
+            ServicesTree.Configuration { Provider = cfg; Section = "Services" }
             |> ServicesTree.init
 
         result {
