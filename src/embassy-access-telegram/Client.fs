@@ -35,7 +35,6 @@ let private processData data =
             |> Error
             |> async.Return
 
-let start () =
-    fun (deps: Client.Dependencies) ->
-        let processData data = deps |> processData data
-        deps.Web.Telegram.start processData
+let start (deps: Client.Dependencies) =
+    let processData data = deps |> processData data
+    deps.Web.Telegram.start processData

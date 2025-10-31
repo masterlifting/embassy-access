@@ -1,5 +1,5 @@
 [<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Configuration
+module internal EA.Telegram.Dependencies.Configuration
 
 open Infrastructure
 open Infrastructure.Domain
