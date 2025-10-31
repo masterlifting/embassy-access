@@ -13,12 +13,9 @@ module Query =
             let request = {
                 Sql =
                     """
-                    SELECT id, service_id, service_name, service_description,
-                           embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
-                    FROM requests
-                    WHERE id = @Id
-                """
+                        SELECT * FROM requests
+                        WHERE id = @Id
+                    """
                 Params = Some {| Id = id.ValueStr |}
             }
 
@@ -34,12 +31,9 @@ module Query =
             let request = {
                 Sql =
                     """
-                    SELECT id, service_id, service_name, service_description,
-                           embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
-                    FROM requests
-                    WHERE embassy_id = @EmbassyId
-                """
+                        SELECT * FROM requests
+                        WHERE embassy_id = @EmbassyId
+                    """
                 Params = Some {| EmbassyId = embassyId.Value |}
             }
 
@@ -54,12 +48,9 @@ module Query =
             let request = {
                 Sql =
                     """
-                    SELECT id, service_id, service_name, service_description,
-                           embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
-                    FROM requests
-                    WHERE service_id = @ServiceId
-                """
+                        SELECT * FROM requests
+                        WHERE service_id = @ServiceId
+                    """
                 Params = Some {| ServiceId = serviceId.Value |}
             }
 
@@ -74,16 +65,10 @@ module Query =
             let request = {
                 Sql =
                     """
-                    SELECT id, service_id, service_name, service_description,
-                           embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
-                    FROM requests
-                    WHERE service_id LIKE @ServiceIdPattern
-                """
-                Params =
-                    Some {|
-                        ServiceIdPattern = serviceId.Value + "%"
-                    |}
+                        SELECT * FROM requests
+                        WHERE service_id LIKE @Pattern
+                    """
+                Params = Some {| Pattern = serviceId.Value + "%" |}
             }
 
             return!
@@ -99,12 +84,9 @@ module Query =
             let request = {
                 Sql =
                     """
-                    SELECT id, service_id, service_name, service_description,
-                           embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
-                    FROM requests
-                    WHERE id = ANY(@Ids)
-                """
+                        SELECT * FROM requests
+                        WHERE id = ANY(@Ids)
+                    """
                 Params = Some {| Ids = idArray |}
             }
 
@@ -125,12 +107,9 @@ module Query =
             let request = {
                 Sql =
                     """
-                    SELECT id, service_id, service_name, service_description,
-                           embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
-                    FROM requests
-                    WHERE embassy_id = @EmbassyId AND service_id = @ServiceId
-                """
+                        SELECT * FROM requests
+                        WHERE embassy_id = @EmbassyId AND service_id = @ServiceId
+                    """
                 Params =
                     Some {|
                         EmbassyId = embassyId.Value
@@ -154,28 +133,28 @@ module Command =
                 let sql = {
                     Sql =
                         """
-                        INSERT INTO requests (
-                            id, service_id, service_name, service_description,
-                            embassy_id, embassy_name, embassy_description, embassy_timezone,
-                            payload, process_state, limits, created, modified
-                        ) VALUES (
-                            @Id, @ServiceId, @ServiceName::text[], @ServiceDescription,
-                            @EmbassyId, @EmbassyName::text[], @EmbassyDescription, @EmbassyTimeZone,
-                            @Payload::jsonb, @ProcessState::jsonb, @Limits::jsonb, @Created, @Modified
-                        )
-                        ON CONFLICT (id) DO UPDATE SET
-                            service_id = EXCLUDED.service_id,
-                            service_name = EXCLUDED.service_name,
-                            service_description = EXCLUDED.service_description,
-                            embassy_id = EXCLUDED.embassy_id,
-                            embassy_name = EXCLUDED.embassy_name,
-                            embassy_description = EXCLUDED.embassy_description,
-                            embassy_timezone = EXCLUDED.embassy_timezone,
-                            payload = EXCLUDED.payload,
-                            process_state = EXCLUDED.process_state,
-                            limits = EXCLUDED.limits,
-                            modified = EXCLUDED.modified
-                    """
+                            INSERT INTO requests (
+                                id, service_id, service_name, service_description,
+                                embassy_id, embassy_name, embassy_description, embassy_timezone,
+                                payload, process_state, limits, created, modified
+                            ) VALUES (
+                                @Id, @ServiceId, @ServiceName::text[], @ServiceDescription,
+                                @EmbassyId, @EmbassyName::text[], @EmbassyDescription, @EmbassyTimeZone,
+                                @Payload::jsonb, @ProcessState::jsonb, @Limits::jsonb, @Created, @Modified
+                            )
+                            ON CONFLICT (id) DO UPDATE SET
+                                service_id = EXCLUDED.service_id,
+                                service_name = EXCLUDED.service_name,
+                                service_description = EXCLUDED.service_description,
+                                embassy_id = EXCLUDED.embassy_id,
+                                embassy_name = EXCLUDED.embassy_name,
+                                embassy_description = EXCLUDED.embassy_description,
+                                embassy_timezone = EXCLUDED.embassy_timezone,
+                                payload = EXCLUDED.payload,
+                                process_state = EXCLUDED.process_state,
+                                limits = EXCLUDED.limits,
+                                modified = EXCLUDED.modified
+                        """
                     Params = Some entity
                 }
 
@@ -199,21 +178,21 @@ module Migrations =
             let migration = {
                 Sql =
                     """
-                    CREATE TABLE IF NOT EXISTS requests (
-                        id TEXT PRIMARY KEY,
-                        service_id TEXT NOT NULL,
-                        service_name TEXT[] NOT NULL,
-                        service_description TEXT,
-                        embassy_id TEXT NOT NULL,
-                        embassy_name TEXT[] NOT NULL,
-                        embassy_description TEXT,
-                        embassy_timezone TEXT NOT NULL,
-                        payload JSONB NOT NULL,
-                        process_state JSONB NOT NULL,
-                        limits JSONB NOT NULL,
-                        created TIMESTAMPTZ NOT NULL,
-                        modified TIMESTAMPTZ NOT NULL
-                    )
+                        CREATE TABLE IF NOT EXISTS requests (
+                            id TEXT PRIMARY KEY,
+                            service_id TEXT NOT NULL,
+                            service_name TEXT[] NOT NULL,
+                            service_description TEXT,
+                            embassy_id TEXT NOT NULL,
+                            embassy_name TEXT[] NOT NULL,
+                            embassy_description TEXT,
+                            embassy_timezone TEXT NOT NULL,
+                            payload JSONB NOT NULL,
+                            process_state JSONB NOT NULL,
+                            limits JSONB NOT NULL,
+                            created TIMESTAMPTZ NOT NULL,
+                            modified TIMESTAMPTZ NOT NULL
+                        )
                     """
                 Params = None
             }
