@@ -42,7 +42,7 @@ let main _ =
         let! openApiClient =
             OpenAI.Client.init {
                 Token = Configuration.ENVIRONMENTS.OpenAIApiKey
-                ProjectId = "embassy-access"
+                ProjectId = "proj_OsfEwmtR7Shm2Uj4wqJTdgcC"
             }
             |> async.Return
 

@@ -15,8 +15,7 @@ module Query =
             let request = {
                 Sql =
                     """
-                        SELECT id, subscriptions, culture
-                        FROM chats
+                        SELECT * FROM chats
                         WHERE id = @Id
                     """
                 Params = Some {| Id = id.Value |}
@@ -114,9 +113,8 @@ module Migrations =
         }
 
     let apply (connectionString: string) =
-        {
+        Provider.init {
             String = connectionString
             Lifetime = Persistence.Domain.Transient
         }
-        |> Provider.init
         |> ResultAsync.wrap (fun client -> client |> initial |> ResultAsync.apply (client |> clean))

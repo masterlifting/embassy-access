@@ -9,6 +9,7 @@
             "program": "${workspaceFolder}/src/embassy-access-telegram/bin/Debug/net10.0/embassy-access-telegram.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/embassy-access-telegram",
+            "envFile": "${workspaceFolder}/src/embassy-access-telegram/.env",
             "stopAtEntry": false,
             "console": "internalConsole"
         },
@@ -20,6 +21,7 @@
             "program": "${workspaceFolder}/src/embassy-access-telegram/bin/Release/net10.0/embassy-access-telegram.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/embassy-access-telegram",
+            "envFile": "${workspaceFolder}/src/embassy-access-telegram/.env",
             "stopAtEntry": false,
             "console": "internalConsole"
         },
