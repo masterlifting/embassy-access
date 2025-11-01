@@ -4,16 +4,6 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-    <ItemGroup>
-    <Content Include="data\embassy-tasks-tree.yml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>data\embassy-tasks-tree.yml</Link>
-    </Content>
-    <Content Include="data\service-tasks-tree.yml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>data\service-tasks-tree.yml</Link>
-    </Content>
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="domain\Constants.fs" />
     <Compile Include="domain\Subscription.fs" />
@@ -47,18 +37,18 @@
     <Compile Include="router\services\Method.fs" />
     <Compile Include="router\Router.fs" />
     <Compile Include="dependencies\Configuration.fs" />
-    <Compile Include="dependencies\client\Web.fs" />
-    <Compile Include="dependencies\client\Persistence.fs" />
-    <Compile Include="dependencies\client\Culture.fs" />
-    <Compile Include="dependencies\client\Client.fs" />
-    <Compile Include="dependencies\client\Request.fs" />
+    <Compile Include="dependencies\Persistence.fs" />
+    <Compile Include="dependencies\Web.fs" />
+    <Compile Include="dependencies\Culture.fs" />
+    <Compile Include="dependencies\Client.fs" />
+    <Compile Include="dependencies\Request.fs" />
+    <Compile Include="dependencies\Embassies.fs" />
     <Compile Include="dependencies\services\Services.fs" />
     <Compile Include="dependencies\services\russian\Russian.fs" />
     <Compile Include="dependencies\services\russian\Midpass.fs" />
     <Compile Include="dependencies\services\russian\Kdmid.fs" />
     <Compile Include="dependencies\services\italian\Italian.fs" />
     <Compile Include="dependencies\services\italian\Prenotami.fs" />
-    <Compile Include="dependencies\Embassies.fs" />
     <Compile Include="services\culture\Query.fs" />
     <Compile Include="services\culture\Command.fs" />
     <Compile Include="services\services\russian\kdmid\Query.fs" />
@@ -83,6 +73,14 @@
     <Content Include="appsettings.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>appsettings.yml</Link>
+    </Content>
+    <Content Include="./data/embassies.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>embassies.yml</Link>
+    </Content>
+    <Content Include="./data/services.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>services.yml</Link>
     </Content>
   </ItemGroup>
   <ItemGroup>

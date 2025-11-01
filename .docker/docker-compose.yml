@@ -36,20 +36,20 @@
   #   networks:
   #     - ea-network
 
-  # browser-webapi:
-  #   image: ponkorn/browser-webapi:1.0.0
-  #   container_name: browser-webapi
-  #   ports:
-  #     - 8080:8080
-  #   environment:
-  #     - SERVER_HOST=0.0.0.0
-  #     - SERVER_PORT=${BROWSER_WEBAPI_PORT}
-  #     - USE_UI=false
-  #     - BINARY_DATA_DIR=/usr/bin/chromium-browser
-  #     - USER_DATA_DIR=/tmp/chrome_temp
-  #     - IDLE_TIMEOUT_DAYS=365
-  #   networks:
-  #     - ea-network
+  browser-webapi:
+    image: ponkorn/browser-webapi:1.0.0
+    container_name: browser-webapi
+    ports:
+      - 8080:8080
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=${BROWSER_WEBAPI_PORT}
+      - USE_UI=false
+      - BINARY_DATA_DIR=/usr/bin/chromium-browser
+      - USER_DATA_DIR=/tmp/chrome_temp
+      - IDLE_TIMEOUT_DAYS=365
+    networks:
+      - ea-network
 
   ea-postgres:
     image: postgres:17

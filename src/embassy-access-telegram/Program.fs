@@ -15,7 +15,9 @@ let main _ =
 
     resultAsync {
         let! configuration =
-            { Files = [ "appsettings.yaml" ] }
+            {
+                Files = [ "appsettings.yml"; "embassies.yml"; "services.yml" ]
+            }
             |> Configuration.Client.Yaml
             |> Configuration.Client.init
             |> async.Return
@@ -28,6 +30,8 @@ let main _ =
         Logging.Log.inf $"EA.Telegram version: %s{version}"
 
         let ct = CancellationToken.None
+
+        do! EA.Telegram.Initializer.run ()
 
         let! telegramClient =
             Telegram.Client.init {

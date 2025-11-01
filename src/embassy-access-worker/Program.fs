@@ -16,14 +16,7 @@ let main _ =
 
     resultAsync {
         let! configuration =
-            {
-                Files = [
-                    "appsettings.yml"
-                    "data/worker-tasks-tree.yml"
-                    "data/embassy-tasks-tree.yml"
-                    "data/service-tasks-tree.yml"
-                ]
-            }
+            { Files = [ "appsettings.yml" ] }
             |> Configuration.Client.Yaml
             |> Configuration.Client.init
             |> async.Return

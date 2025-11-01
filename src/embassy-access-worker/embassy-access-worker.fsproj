@@ -5,12 +5,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="data\worker-tasks-tree.yml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>data\worker-tasks-tree.yml</Link>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="dependencies\Configuration.fs" />
     <Compile Include="dependencies\Persistence.fs" />
     <Compile Include="dependencies\embassies\Common.fs" />

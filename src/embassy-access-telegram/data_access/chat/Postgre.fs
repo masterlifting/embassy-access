@@ -15,9 +15,9 @@ module Query =
             let request = {
                 Sql =
                     """
-                    SELECT id, subscriptions, culture
-                    FROM chats
-                    WHERE id = @Id
+                        SELECT id, subscriptions, culture
+                        FROM chats
+                        WHERE id = @Id
                     """
                 Params = Some {| Id = id.Value |}
             }
@@ -39,8 +39,8 @@ module Command =
                 let sql = {
                     Sql =
                         """
-                        INSERT INTO chats (id, subscriptions, culture)
-                        VALUES (@Id, @Subscriptions::jsonb, @Culture)
+                            INSERT INTO chats (id, subscriptions, culture)
+                            VALUES (@Id, @Subscriptions::jsonb, @Culture)
                         """
                     Params = Some entity
                 }
@@ -56,10 +56,10 @@ module Command =
                 let sql = {
                     Sql =
                         """
-                        UPDATE chats SET
-                            subscriptions = @Subscriptions::jsonb,
-                            culture = @Culture
-                        WHERE id = @Id
+                            UPDATE chats SET
+                                subscriptions = @Subscriptions::jsonb,
+                                culture = @Culture
+                            WHERE id = @Id
                         """
                     Params = Some entity
                 }
@@ -72,10 +72,10 @@ module Command =
             let sql = {
                 Sql =
                     """
-                    INSERT INTO chats (id, subscriptions, culture)
-                    VALUES (@Id, @Subscriptions::jsonb, @Culture)
-                    ON CONFLICT (id) DO UPDATE SET
-                        culture = EXCLUDED.culture
+                        INSERT INTO chats (id, subscriptions, culture)
+                        VALUES (@Id, @Subscriptions::jsonb, @Culture)
+                        ON CONFLICT (id) DO UPDATE SET
+                            culture = EXCLUDED.culture
                     """
                 Params =
                     Some {|
@@ -95,16 +95,16 @@ module Migrations =
             let migration = {
                 Sql =
                     """
-                    CREATE TABLE IF NOT EXISTS chats (
-                        id BIGINT PRIMARY KEY,
-                        subscriptions JSONB NOT NULL,
-                        culture VARCHAR(10) NOT NULL
-                    );
+                        CREATE TABLE IF NOT EXISTS chats (
+                            id BIGINT PRIMARY KEY,
+                            subscriptions JSONB NOT NULL,
+                            culture VARCHAR(10) NOT NULL
+                        );
                     """
                 Params = None
             }
 
-            return! client |> Command.execute migration
+            return! client |> Command.execute migration |> ResultAsync.map ignore
         }
 
     let private clean (client: Client) =

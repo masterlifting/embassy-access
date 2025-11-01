@@ -27,7 +27,7 @@ type Environments = {
 
         {
             PostgresConnection = getEnv "POSTGRES_CONNECTION"
-            BrowserWebApiUrl = getEnv "BROWSER_WEB_API_URL"
+            BrowserWebApiUrl = getEnv "BROWSER_WEBAPI_URL"
             TelegramBotToken = getEnv "TELEGRAM_BOT_TOKEN"
             AntiCaptchaApiKey = getEnv "ANTICAPTCHA_API_KEY"
             OpenAIApiKey = getEnv "OPENAI_API_KEY"
