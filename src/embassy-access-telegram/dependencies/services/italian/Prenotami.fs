@@ -19,8 +19,8 @@ type Dependencies = {
     ct: CancellationToken
     ChatId: Telegram.ChatId
     MessageId: int
-    findService: ServiceId -> Async<Result<Service, Error'>>
-    findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
+    findService: ServiceId -> Async<Result<Tree.Node<Service>, Error'>>
+    findEmbassy: EmbassyId -> Async<Result<Tree.Node<Embassy>, Error'>>
     processRequest: Request<Payload> -> StorageType -> Async<Result<Request<Payload>, Error'>>
     findRequest: RequestId -> StorageType -> Async<Result<Request<Payload>, Error'>>
     tryFindRequest:
@@ -60,7 +60,7 @@ type Dependencies = {
                 |> ResultAsync.map (Seq.filter (fun request -> request.Payload.Credentials.Login = credentials.Login))
                 |> ResultAsync.map (
                     Seq.tryFind (fun request ->
-                        match request.Service.Id |> Router.parse with
+                        match request.Service.Id |> ServiceId |> Router.parse with
                         | Ok route2 -> compareServices route1 route2
                         | _ -> false)
                 ))
@@ -86,7 +86,9 @@ type Dependencies = {
             |> Prenotami.Service.tryProcess request
 
         let tryAddSubscription (request: Request<Payload>) =
-            deps.tryAddSubscription request.Id request.Service.Id request.Embassy.Id
+            let serviceId = request.Service.Id |> ServiceId
+            let embassyId = request.Embassy.Id |> EmbassyId
+            deps.tryAddSubscription request.Id serviceId embassyId
 
         {
             ct = deps.ct

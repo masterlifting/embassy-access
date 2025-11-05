@@ -66,10 +66,10 @@ let getService embassyId serviceId =
             | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId false
             | Some(AP.Node node) ->
                 node.Children
-                |> Seq.map _.Value
                 |> Seq.map (fun service ->
-                    let route = Router.Services(Method.Get(Get.Service(embassyId, service.Id)))
-                    service.LastName, route.Value)
+                    let serviceId = service.Id |> ServiceId
+                    let route = Router.Services(Method.Get(Get.Service(embassyId, serviceId)))
+                    service.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"Service '%s{serviceId.Value}' is not implemented. " + NOT_IMPLEMENTED
@@ -93,11 +93,11 @@ let getUserService embassyId serviceId =
                 let userServiceIds = deps.Chat.Subscriptions |> Seq.map _.ServiceId.Value
 
                 node.Children
-                |> Seq.map _.Value
-                |> Seq.filter (fun service -> service.Id |> ServiceId.contains userServiceIds)
+                |> Seq.filter (fun service -> service.Id |> Tree.NodeId.contains userServiceIds)
                 |> Seq.map (fun service ->
-                    let route = Router.Services(Method.Get(Get.UserService(embassyId, service.Id)))
-                    service.LastName, route.Value)
+                    let serviceId = service.Id |> ServiceId
+                    let route = Router.Services(Method.Get(Get.UserService(embassyId, serviceId)))
+                    service.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"You have no services available for '%s{serviceId.Value}'."

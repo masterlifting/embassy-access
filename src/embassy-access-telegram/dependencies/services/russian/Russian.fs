@@ -19,8 +19,8 @@ type Dependencies = {
     MessageId: int
     tryFindServiceNode: ServiceId -> Async<Result<Tree.Node<Service> option, Error'>>
     tryFindEmbassyNode: EmbassyId -> Async<Result<Tree.Node<Embassy> option, Error'>>
-    findService: ServiceId -> Async<Result<Service, Error'>>
-    findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
+    findService: ServiceId -> Async<Result<Tree.Node<Service>, Error'>>
+    findEmbassy: EmbassyId -> Async<Result<Tree.Node<Embassy>, Error'>>
     tryAddSubscription: RequestId -> ServiceId -> EmbassyId -> Async<Result<unit, Error'>>
     deleteSubscription: RequestId -> Async<Result<unit, Error'>>
     initChatStorage: unit -> Result<Chat.Storage, Error'>

@@ -30,7 +30,6 @@ type EmbassyId =
     override this.ToString() = this.Value
 
 type Embassy = {
-    Id: EmbassyId
     NameParts: string list
     Description: string option
     TimeZone: float

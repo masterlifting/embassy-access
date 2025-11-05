@@ -25,7 +25,6 @@ type EmbassiesTreeEntity() =
                 Tree.Node.create (
                     e.Id,
                     {
-                        Id = e.Id |> Tree.NodeId.create |> EmbassyId
                         NameParts = names
                         Description = e.Description
                         TimeZone = e.TimeZone |> Option.defaultValue 0.

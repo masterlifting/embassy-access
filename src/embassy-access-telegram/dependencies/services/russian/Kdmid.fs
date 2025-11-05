@@ -16,8 +16,8 @@ open EA.Russian.Services.DataAccess.Kdmid
 type Dependencies = {
     ChatId: Telegram.ChatId
     MessageId: int
-    findService: ServiceId -> Async<Result<Service, Error'>>
-    findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
+    findService: ServiceId -> Async<Result<Tree.Node<Service>, Error'>>
+    findEmbassy: EmbassyId -> Async<Result<Tree.Node<Embassy>, Error'>>
     processRequest: Request<Payload> -> StorageType -> Async<Result<Request<Payload>, Error'>>
     findRequest: RequestId -> StorageType -> Async<Result<Request<Payload>, Error'>>
     tryFindRequest: EmbassyId -> Credentials -> StorageType -> Async<Result<Request<Payload> option, Error'>>
@@ -64,7 +64,9 @@ type Dependencies = {
             |> ResultAsync.wrap (Kdmid.Service.tryProcess request)
 
         let tryAddSubscription (request: Request<Payload>) =
-            deps.tryAddSubscription request.Id request.Service.Id request.Embassy.Id
+            let serviceId = request.Service.Id |> ServiceId
+            let embassyId = request.Embassy.Id |> EmbassyId
+            deps.tryAddSubscription request.Id serviceId embassyId
 
         {
             ChatId = deps.Chat.Id

@@ -1,6 +1,5 @@
 ﻿module EA.Telegram.Services.Services.Russian.Midpass.Query
 
-open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
@@ -23,7 +22,7 @@ let menu (requestId: RequestId) =
                 Midpass.Method.Delete(Midpass.Delete.Subscription(r.Id)) |> createBaseRoute
 
             ButtonsGroup.create {
-                Name = r.Service.BuildName 1 "."
+                Name = r.Service.Value.BuildName 1 "."
                 Columns = 1
                 Buttons = [ "Info", info.Value; "Delete", delete.Value ] |> ButtonsGroup.createButtons
             }
@@ -63,7 +62,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
             requests
             |> Seq.map (fun r ->
                 let route = Midpass.Method.Get(Midpass.Get.Menu r.Id) |> createBaseRoute
-                r.Service.BuildName 1 ".", route.Value)
+                r.Service.Value.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {
                     Name = "Your subscriptions"

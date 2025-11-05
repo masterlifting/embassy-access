@@ -20,8 +20,8 @@ type Dependencies = {
     deleteSubscription: RequestId -> Async<Result<unit, Error'>>
     tryFindServiceNode: ServiceId -> Async<Result<Tree.Node<Service> option, Error'>>
     tryFindEmbassyNode: EmbassyId -> Async<Result<Tree.Node<Embassy> option, Error'>>
-    findService: ServiceId -> Async<Result<Service, Error'>>
-    findEmbassy: EmbassyId -> Async<Result<Embassy, Error'>>
+    findService: ServiceId -> Async<Result<Tree.Node<Service>, Error'>>
+    findEmbassy: EmbassyId -> Async<Result<Tree.Node<Embassy>, Error'>>
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
 } with
 
@@ -39,13 +39,13 @@ type Dependencies = {
             let findService serviceId =
                 tryFindServiceNode serviceId
                 |> ResultAsync.bind (function
-                    | Some node -> node.Value |> Ok
+                    | Some node -> node |> Ok
                     | None -> $"Service '{serviceId}' not found." |> NotFound |> Error)
 
             let findEmbassy embassyId =
                 tryFindEmbassyNode embassyId
                 |> ResultAsync.bind (function
-                    | Some node -> node.Value |> Ok
+                    | Some node -> node |> Ok
                     | None -> $"Embassy '{embassyId}' not found." |> NotFound |> Error)
 
             let sendTranslatedMessageRes msg =

@@ -24,7 +24,10 @@ let handleProcessResult (request: Request<Payload>) =
                 |> Payload.printError error
                 |> Option.map (Text.create >> Message.createNew chatId)
 
-            deps.getRequests request.Embassy.Id request.Service.Id
+            let embassyId = request.Embassy.Id |> EmbassyId
+            let serviceId = request.Service.Id |> ServiceId
+
+            deps.getRequests embassyId serviceId
             |> ResultAsync.bindAsync (Seq.map _.Id >> deps.getChats)
             |> ResultAsync.map (
                 Seq.choose (fun chat -> createMessage chat.Id |> Option.map (fun message -> chat.Culture, message))
@@ -35,7 +38,10 @@ let handleProcessResult (request: Request<Payload>) =
             let inline createMessage chatId =
                 confirmation |> Text.create |> Message.createNew chatId
 
-            deps.getRequests request.Embassy.Id request.Service.Id
+            let embassyId = request.Embassy.Id |> EmbassyId
+            let serviceId = request.Service.Id |> ServiceId
+
+            deps.getRequests embassyId serviceId
             |> ResultAsync.bindAsync (Seq.map _.Id >> deps.getChats)
             |> ResultAsync.map (Seq.map (fun chat -> createMessage chat.Id |> fun message -> chat.Culture, message))
             |> ResultAsync.bindAsync deps.spreadTranslatedMessages
@@ -56,7 +62,7 @@ let handleProcessResult (request: Request<Payload>) =
                         )
                     a |> Appointment.print, route.Value)
                 |> fun buttons ->
-                    let serviceName = request.Service.BuildName 1 "."
+                    let serviceName = request.Service.Value.BuildName 1 "."
                     ButtonsGroup.create {
                         Name = $"Available appointments for %s{serviceName}"
                         Columns = 1
@@ -86,7 +92,9 @@ let handleProcessResult (request: Request<Payload>) =
             | NoAppointments -> Ok() |> async.Return
             | HasConfirmation(msg, _) -> spreadConfirmation msg
             | HasAppointments appointments ->
-                deps.getRequests request.Embassy.Id request.Service.Id
+                let embassyId = request.Embassy.Id |> EmbassyId
+                let serviceId = request.Service.Id |> ServiceId
+                deps.getRequests embassyId serviceId
                 |> ResultAsync.map (List.sortBy _.Created)
                 |> ResultAsync.map (
                     List.partition (fun r ->
@@ -148,7 +156,7 @@ let private handleRequestResult chatId (request: Request<Payload>) =
                     )
                 a |> Appointment.print, route.Value)
             |> fun buttons ->
-                let serviceName = request.Service.BuildName 1 "."
+                let serviceName = request.Service.Value.BuildName 1 "."
                 ButtonsGroup.create {
                     Name = $"Available appointments for %s{serviceName}"
                     Columns = 1

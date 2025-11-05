@@ -12,7 +12,8 @@ let getRequests (serviceId: ServiceId) (taskDuration: TimeSpan) =
         |> Storage.Request.Query.findMany (Storage.Request.Query.StartWithServiceId serviceId)
         |> ResultAsync.map (
             List.filter (fun request ->
-                request.Service.Id |> hasRequiredService
+                let serviceId = request.Service.Id |> ServiceId
+                serviceId |> hasRequiredService
                 && (request.ProcessState <> InProcess
                     || request.ProcessState = InProcess
                        && request.Modified < DateTime.UtcNow.Subtract taskDuration))

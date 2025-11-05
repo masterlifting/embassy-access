@@ -37,8 +37,6 @@ type Entity<'p>() =
 
         result {
 
-            let serviceId = this.ServiceId |> Tree.NodeId.create
-            let embassyId = this.EmbassyId |> Tree.NodeId.create
             let! requestId = RequestId.create this.Id
             let! processState = this.ProcessState.ToDomain()
             let! limitations = this.Limits |> Seq.map _.ToDomain() |> Result.choose
@@ -46,17 +44,23 @@ type Entity<'p>() =
 
             return {
                 Id = requestId
-                Service = {
-                    Id = serviceId |> ServiceId
-                    NameParts = this.ServiceName |> Array.toList
-                    Description = this.ServiceDescription
-                }
-                Embassy = {
-                    Id = embassyId |> EmbassyId
-                    NameParts = this.EmbassyName |> Array.toList
-                    Description = this.EmbassyDescription
-                    TimeZone = this.EmbassyTimeZone
-                }
+                Service =
+                    Tree.Node.create (
+                        this.ServiceId,
+                        {
+                            NameParts = this.ServiceName |> Array.toList
+                            Description = this.ServiceDescription
+                        }
+                    )
+                Embassy =
+                    Tree.Node.create (
+                        this.EmbassyId,
+                        {
+                            NameParts = this.EmbassyName |> Array.toList
+                            Description = this.EmbassyDescription
+                            TimeZone = this.EmbassyTimeZone
+                        }
+                    )
                 Payload = payload
                 ProcessState = processState
                 Limits = limitations |> Set.ofSeq
@@ -73,12 +77,12 @@ type private Request<'a> with
             Entity(
                 Id = this.Id.ValueStr,
                 ServiceId = this.Service.Id.Value,
-                ServiceName = (this.Service.NameParts |> Array.ofList),
-                ServiceDescription = this.Service.Description,
+                ServiceName = (this.Service.Value.NameParts |> Array.ofList),
+                ServiceDescription = this.Service.Value.Description,
                 EmbassyId = this.Embassy.Id.Value,
-                EmbassyName = (this.Embassy.NameParts |> Array.ofList),
-                EmbassyDescription = this.Embassy.Description,
-                EmbassyTimeZone = this.Embassy.TimeZone,
+                EmbassyName = (this.Embassy.Value.NameParts |> Array.ofList),
+                EmbassyDescription = this.Embassy.Value.Description,
+                EmbassyTimeZone = this.Embassy.Value.TimeZone,
                 Payload = payload,
                 ProcessState = this.ProcessState.ToEntity(),
                 Limits = (this.Limits |> Seq.map _.ToEntity() |> Seq.toArray),

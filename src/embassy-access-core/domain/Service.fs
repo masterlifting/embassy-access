@@ -30,7 +30,6 @@ type ServiceId =
     override this.ToString() = this.Value
 
 type Service = {
-    Id: ServiceId
     NameParts: string list
     Description: string option
 } with

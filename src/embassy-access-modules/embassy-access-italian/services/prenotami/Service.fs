@@ -53,7 +53,7 @@ let tryProcess (request: Request<Payload>) =
         let processWebSite =
             ResultAsync.bindAsync (fun r ->
                 client.BrowserWebApi
-                |> Web.BrowserWebApi.processWebSite r.Payload.Credentials r.Service.Id
+                |> Web.BrowserWebApi.processWebSite r.Payload.Credentials (r.Service.Id |> ServiceId)
                 |> ResultAsync.mapAsync (fun messsage -> {
                     r with
                         Payload = {

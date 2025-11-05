@@ -41,10 +41,10 @@ let private getEmbassy' embassyId firstCall =
                     | false -> deps.MessageId |> Some
 
                 node.Children
-                |> Seq.map _.Value
                 |> Seq.map (fun embassy ->
-                    let route = Router.Embassies(Method.Get(Get.Embassy embassy.Id))
-                    embassy.LastName, route.Value)
+                    let embassyId = embassy.Id |> EmbassyId
+                    let route = Router.Embassies(Method.Get(Get.Embassy embassyId))
+                    embassy.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"Embassy '%s{embassyId.Value}' is not implemented. " + NOT_IMPLEMENTED
@@ -70,11 +70,11 @@ let private getUserEmbassy' embassyId firstCall =
                 let userEmbassyIds = deps.Chat.Subscriptions |> Seq.map _.EmbassyId.Value
 
                 node.Children
-                |> Seq.map _.Value
-                |> Seq.filter (fun embassy -> embassy.Id |> EmbassyId.contains userEmbassyIds)
+                |> Seq.filter (fun embassy -> embassy.Id |> Tree.NodeId.contains userEmbassyIds)
                 |> Seq.map (fun embassy ->
-                    let route = Router.Embassies(Method.Get(Get.UserEmbassy embassy.Id))
-                    embassy.LastName, route.Value)
+                    let embassyId = embassy.Id |> EmbassyId
+                    let route = Router.Embassies(Method.Get(Get.UserEmbassy embassyId))
+                    embassy.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"You have no embassies available for '%s{embassyId.Value}'."
@@ -87,13 +87,15 @@ let getEmbassy embassyId =
 
 let getEmbassies () =
     fun (deps: Embassies.Dependencies) ->
-        let embassyId = Embassies.ROOT_ID |> Tree.NodeId.create |> EmbassyId
-        deps |> getEmbassy' embassyId true
+        Embassies.ROOT_ID
+        |> EmbassyId.create
+        |> ResultAsync.wrap (fun embassyId -> deps |> getEmbassy' embassyId true)
 
 let getUserEmbassy embassyId =
     fun (deps: Embassies.Dependencies) -> deps |> getUserEmbassy' embassyId false
 
 let getUserEmbassies () =
     fun (deps: Embassies.Dependencies) ->
-        let embassyId = Embassies.ROOT_ID |> Tree.NodeId.create |> EmbassyId
-        deps |> getUserEmbassy' embassyId true
+        Embassies.ROOT_ID
+        |> EmbassyId.create
+        |> ResultAsync.wrap (fun embassyId -> deps |> getUserEmbassy' embassyId true)

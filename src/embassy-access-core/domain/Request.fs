@@ -23,8 +23,8 @@ type RequestId =
 
 type Request<'payload> = {
     Id: RequestId
-    Service: Service
-    Embassy: Embassy
+    Service: Tree.Node<Service>
+    Embassy: Tree.Node<Embassy>
     Payload: 'payload
     ProcessState: ProcessState
     Limits: Set<Limit>
@@ -46,14 +46,14 @@ type Request<'payload> = {
                     |> String.concat "\n - "
                     |> sprintf "\n - %s"
         let state = request.ProcessState |> ProcessState.print
-        let embassyName = request.Embassy.BuildName 1 "->"
-        let serviceName = request.Service.BuildName 2 "->"
+        let embassyName = request.Embassy.Value.BuildName 1 "->"
+        let serviceName = request.Service.Value.BuildName 2 "->"
 
         $"[Subscription] '%s{request.Id.ValueStr}'"
         + $"\n[Embassy] %s{embassyName}"
         + $"\n[Service] %s{serviceName}"
-        + $"\n[Created] '%s{request.Created.AddHours request.Embassy.TimeZone |> String.fromDateTime}'"
-        + $"\n[Modified] '%s{request.Modified.AddHours request.Embassy.TimeZone |> String.fromDateTime}'"
+        + $"\n[Created] '%s{request.Created.AddHours request.Embassy.Value.TimeZone |> String.fromDateTime}'"
+        + $"\n[Modified] '%s{request.Modified.AddHours request.Embassy.Value.TimeZone |> String.fromDateTime}'"
         + $"\n[Last state] %s{state}"
         + $"\n[Limits] %s{limits}"
 
