@@ -20,10 +20,6 @@ type ServiceId =
         | AP.IsString id -> Tree.NodeId.create id |> ServiceId |> Ok
         | _ -> $"ServiceId '{value}' is not supported." |> NotSupported |> Error
 
-    static member split(ServiceId id) = id |> Tree.NodeId.split
-
-    static member contains (parts: string seq) (ServiceId id) = id |> Tree.NodeId.contains parts
-
     static member combine(parts: string seq) =
         parts |> Tree.NodeId.combine |> ServiceId
 

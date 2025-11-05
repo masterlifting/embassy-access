@@ -26,9 +26,9 @@ let private createButtonsGroup chatId messageId name buttons =
     |> async.Return
 
 let private (|RUS|ITA|EmbassyNotFound|) (embassyId: EmbassyId) =
-    match embassyId |> EmbassyId.split |> List.truncate 2 with
-    | [ _; Embassies.RUS ] -> RUS Embassies.RUS
-    | [ _; Embassies.ITA ] -> ITA Embassies.ITA
+    match embassyId.NodeId.Values[1] with
+    | Embassies.RUS -> RUS Embassies.RUS
+    | Embassies.ITA -> ITA Embassies.ITA
     | _ -> EmbassyNotFound
 
 let private tryCreateServiceRootId (embassyId: EmbassyId) =
