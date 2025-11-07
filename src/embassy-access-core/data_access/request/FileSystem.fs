@@ -5,7 +5,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open Persistence.Storages.FileSystem
 
-let private loadData = Query.Json.get<Request.Entity<_>>
+let private loadData = Query.Json.get<Request.Entity>
 
 module Query =
 

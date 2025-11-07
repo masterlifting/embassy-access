@@ -18,7 +18,7 @@ let private COMPLETED = nameof Completed
 [<Literal>]
 let private FAILED = nameof Failed
 
-type ProcessStateEntity() =
+type Entity() =
 
     member val Type = String.Empty with get, set
     member val Error: ErrorEntity option = None with get, set
@@ -39,17 +39,17 @@ type ProcessStateEntity() =
             match this.Error with
             | Some error -> error.ToDomain() |> Result.map Failed
             | None ->
-                $"{nameof ProcessStateEntity} failed state without error is not supported."
+                "ProcessStateEntity failed state without error is not supported."
                 |> NotSupported
                 |> Error
         | _ ->
-            $"The '%s{this.Type}' of '{nameof ProcessStateEntity}' is not supported."
+            $"The '%s{this.Type}' of ProcessStateEntity is not supported."
             |> NotSupported
             |> Error
 
 type internal ProcessState with
     member this.ToEntity() =
-        let result = ProcessStateEntity()
+        let result = Entity()
 
         match this with
         | Ready -> result.Type <- READY

@@ -11,7 +11,7 @@ let private VALID = nameof Valid
 [<Literal>]
 let private INVALID = nameof Invalid
 
-type LimitEntity() =
+type Entity() =
     member val Attempts = 0u with get, set
     member val Period = String.Empty with get, set
     member val State = String.Empty with get, set
@@ -44,7 +44,7 @@ type LimitEntity() =
 type internal Limit with
     member this.ToEntity() =
         let entity =
-            LimitEntity(Attempts = this.Attempts / 1u<attempts>, Period = (this.Period |> String.fromTimeSpan))
+            Entity(Attempts = this.Attempts / 1u<attempts>, Period = (this.Period |> String.fromTimeSpan))
 
         match this.State with
         | Valid(remainingAttempts, remainingPeriod, date) ->

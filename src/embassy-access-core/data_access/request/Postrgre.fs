@@ -15,7 +15,8 @@ module Query =
                     """
                     SELECT id, service_id, service_name, service_description,
                            embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
+                           payload::text as payload, process_state::text as process_state, 
+                           limits::text as limits, created, modified
                     FROM requests
                     WHERE id = @Id
                 """
@@ -24,7 +25,7 @@ module Query =
 
             return!
                 client
-                |> Query.get<Request.Entity<_>> request
+                |> Query.get<Request.Entity> request
                 |> ResultAsync.map Seq.tryHead
                 |> ResultAsync.bind (Option.toResult (fun e -> e.ToDomain payloadConverter))
         }
@@ -36,7 +37,8 @@ module Query =
                     """
                     SELECT id, service_id, service_name, service_description,
                            embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
+                           payload::text as payload, process_state::text as process_state, 
+                           limits::text as limits, created, modified
                     FROM requests
                     WHERE embassy_id = @EmbassyId
                 """
@@ -45,7 +47,7 @@ module Query =
 
             return!
                 client
-                |> Query.get<Request.Entity<_>> request
+                |> Query.get<Request.Entity> request
                 |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         }
 
@@ -56,7 +58,8 @@ module Query =
                     """
                     SELECT id, service_id, service_name, service_description,
                            embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
+                           payload::text as payload, process_state::text as process_state, 
+                           limits::text as limits, created, modified
                     FROM requests
                     WHERE service_id = @ServiceId
                 """
@@ -65,7 +68,7 @@ module Query =
 
             return!
                 client
-                |> Query.get<Request.Entity<_>> request
+                |> Query.get<Request.Entity> request
                 |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         }
 
@@ -76,7 +79,8 @@ module Query =
                     """
                     SELECT id, service_id, service_name, service_description,
                            embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
+                           payload::text as payload, process_state::text as process_state, 
+                           limits::text as limits, created, modified
                     FROM requests
                     WHERE service_id LIKE @ServiceIdPattern
                 """
@@ -88,7 +92,7 @@ module Query =
 
             return!
                 client
-                |> Query.get<Request.Entity<_>> request
+                |> Query.get<Request.Entity> request
                 |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         }
 
@@ -101,7 +105,8 @@ module Query =
                     """
                     SELECT id, service_id, service_name, service_description,
                            embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
+                           payload::text as payload, process_state::text as process_state, 
+                           limits::text as limits, created, modified
                     FROM requests
                     WHERE id = ANY(@Ids)
                 """
@@ -110,7 +115,7 @@ module Query =
 
             return!
                 client
-                |> Query.get<Request.Entity<_>> request
+                |> Query.get<Request.Entity> request
                 |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
                 |> ResultAsync.map List.ofSeq
         }
@@ -127,7 +132,8 @@ module Query =
                     """
                     SELECT id, service_id, service_name, service_description,
                            embassy_id, embassy_name, embassy_description, embassy_timezone,
-                           payload, process_state, limits, created, modified
+                           payload::text as payload, process_state::text as process_state, 
+                           limits::text as limits, created, modified
                     FROM requests
                     WHERE embassy_id = @EmbassyId AND service_id = @ServiceId
                 """
@@ -140,12 +146,11 @@ module Query =
 
             return!
                 client
-                |> Query.get<Request.Entity<_>> request
+                |> Query.get<Request.Entity> request
                 |> ResultAsync.bind (Seq.map (fun e -> e.ToDomain payloadConverter) >> Result.choose)
         }
 
 module Command =
-
     let upsert (request: Request<_>) payloadConverter (client: Client) =
         async {
             match request |> Request.toEntity payloadConverter with
@@ -176,7 +181,22 @@ module Command =
                             limits = EXCLUDED.limits,
                             modified = EXCLUDED.modified
                     """
-                    Params = Some entity
+                    Params =
+                        Some {|
+                            Id = entity.Id
+                            ServiceId = entity.ServiceId
+                            ServiceName = entity.ServiceName
+                            ServiceDescription = entity.ServiceDescription
+                            EmbassyId = entity.EmbassyId
+                            EmbassyName = entity.EmbassyName
+                            EmbassyDescription = entity.EmbassyDescription
+                            EmbassyTimeZone = entity.EmbassyTimeZone
+                            Payload = entity.Payload
+                            ProcessState = entity.ProcessState
+                            Limits = entity.Limits
+                            Created = entity.Created
+                            Modified = entity.Modified
+                        |}
                 }
 
                 return! client |> Command.execute sql |> ResultAsync.map (fun _ -> request)
