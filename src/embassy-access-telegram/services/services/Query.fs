@@ -90,10 +90,10 @@ let getUserService embassyId serviceId =
             | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId true
             | Some(AP.Node node) ->
 
-                let userServiceIds = deps.Chat.Subscriptions |> Seq.map _.ServiceId.Value
+                let userServiceIds = deps.Chat.Subscriptions |> Seq.map _.ServiceId.NodeId
 
                 node.Children
-                |> Seq.filter (fun service -> service.Id |> Tree.NodeId.contains userServiceIds)
+                |> Seq.filter (fun service -> userServiceIds |> Tree.NodeId.contains service.Id)
                 |> Seq.map (fun service ->
                     let serviceId = service.Id |> ServiceId
                     let route = Router.Services(Method.Get(Get.UserService(embassyId, serviceId)))

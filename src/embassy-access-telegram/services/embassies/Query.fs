@@ -67,10 +67,10 @@ let private getUserEmbassy' embassyId firstCall =
                     | true -> None
                     | false -> deps.MessageId |> Some
 
-                let userEmbassyIds = deps.Chat.Subscriptions |> Seq.map _.EmbassyId.Value
+                let userEmbassyIds = deps.Chat.Subscriptions |> Seq.map _.EmbassyId.NodeId
 
                 node.Children
-                |> Seq.filter (fun embassy -> embassy.Id |> Tree.NodeId.contains userEmbassyIds)
+                |> Seq.filter (fun embassy -> userEmbassyIds |> Tree.NodeId.contains embassy.Id)
                 |> Seq.map (fun embassy ->
                     let embassyId = embassy.Id |> EmbassyId
                     let route = Router.Embassies(Method.Get(Get.UserEmbassy embassyId))
