@@ -8,11 +8,11 @@ open Infrastructure.Prelude
 type RequestId =
     | RequestId of UUID16
 
-    member this.Value =
+    member this.UUID =
         match this with
         | RequestId id -> id
 
-    member this.ValueStr = this.Value.Value
+    member this.Value = this.UUID.Value
 
     static member create value =
         match value with
@@ -49,7 +49,7 @@ type Request<'payload> = {
         let embassyName = request.Embassy.Value.BuildName 1 "->"
         let serviceName = request.Service.Value.BuildName 2 "->"
 
-        $"[Subscription] '%s{request.Id.ValueStr}'"
+        $"[Subscription] '%s{request.Id.Value}'"
         + $"\n[Embassy] %s{embassyName}"
         + $"\n[Service] %s{serviceName}"
         + $"\n[Created] '%s{request.Created.AddHours request.Embassy.Value.TimeZone |> String.fromDateTime}'"

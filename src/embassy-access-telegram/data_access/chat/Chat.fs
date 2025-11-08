@@ -42,7 +42,7 @@ type Entity() =
 
 type private Subscription with
     member private this.ToEntity() =
-        Subscriptions.Entity(Id = this.Id.ValueStr, EmbassyId = this.EmbassyId.Value, ServiceId = this.ServiceId.Value)
+        Subscriptions.Entity(Id = this.Id.Value, EmbassyId = this.EmbassyId.Value, ServiceId = this.ServiceId.Value)
 
 type private Chat with
     member private this.ToEntity() =

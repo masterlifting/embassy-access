@@ -11,7 +11,7 @@ module Query =
     let tryFindById (id: RequestId) payloadConverter client =
         client
         |> loadData
-        |> Result.map (Seq.tryFind (fun e -> e.Id = id.ValueStr))
+        |> Result.map (Seq.tryFind (fun e -> e.Id = id.Value))
         |> Result.bind (Option.toResult (fun e -> e.ToDomain payloadConverter))
         |> async.Return
 
@@ -37,7 +37,7 @@ module Query =
         |> async.Return
 
     let findManyByIds (ids: RequestId seq) payloadConverter client =
-        let idSet = ids |> Seq.map _.ValueStr |> Set.ofSeq
+        let idSet = ids |> Seq.map _.Value |> Set.ofSeq
 
         client
         |> loadData
@@ -59,7 +59,7 @@ module Command =
         client
         |> loadData
         |> Result.bind (fun data ->
-            match data |> Seq.exists (fun e -> e.Id = request.Id.ValueStr) with
+            match data |> Seq.exists (fun e -> e.Id = request.Id.Value) with
             | true -> data |> Request.Common.update request payloadConverter
             | false -> data |> Request.Common.create request payloadConverter)
         |> Result.bind (fun data -> client |> Command.Json.save data)

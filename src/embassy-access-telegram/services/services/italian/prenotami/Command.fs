@@ -254,7 +254,7 @@ let setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) (login: s
 
 let confirmAppointment (requestId: RequestId) (appointmentId: AppointmentId) =
     fun (deps: Prenotami.Dependencies) ->
-        $"Confirmation of appointment '%s{appointmentId.ValueStr}' for request '%s{requestId.ValueStr}' is not implemented yet. "
+        $"Confirmation of appointment '%s{appointmentId.ValueStr}' for request '%s{requestId.Value}' is not implemented yet. "
         + NOT_IMPLEMENTED
         |> NotImplemented
         |> Error
@@ -265,6 +265,6 @@ let deleteRequest requestId =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.deleteRequest requestId)
         |> ResultAsync.map (fun _ ->
-            $"Subscription with ID '%s{requestId.ValueStr}' has been deleted successfully."
+            $"Subscription with ID '%s{requestId.Value}' has been deleted successfully."
             |> Text.create
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)

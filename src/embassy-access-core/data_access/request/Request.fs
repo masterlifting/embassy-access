@@ -89,7 +89,7 @@ type private Request<'a> with
 
             return
                 Entity(
-                    Id = this.Id.ValueStr,
+                    Id = this.Id.Value,
                     ServiceId = this.Service.Id.Value,
                     ServiceName = (this.Service.Value.NameParts |> Array.ofList),
                     ServiceDescription = (this.Service.Value.Description |> Option.toObj),
@@ -110,14 +110,14 @@ let toEntity payloadConverter (request: Request<_>) = request.ToEntity payloadCo
 
 module internal Common =
     let create (request: Request<_>) payloadConverter (data: Entity array) =
-        match data |> Array.exists (fun x -> x.Id = request.Id.ValueStr) with
+        match data |> Array.exists (fun x -> x.Id = request.Id.Value) with
         | true -> $"The '{request.Id}' already exists." |> AlreadyExists |> Error
         | false ->
             request.ToEntity payloadConverter
             |> Result.map (fun request -> data |> Array.append [| request |])
 
     let update (request: Request<_>) payloadConverter (data: Entity array) =
-        match data |> Array.tryFindIndex (fun x -> x.Id = request.Id.ValueStr) with
+        match data |> Array.tryFindIndex (fun x -> x.Id = request.Id.Value) with
         | Some index ->
             request.ToEntity payloadConverter
             |> Result.map (fun request ->
@@ -126,6 +126,6 @@ module internal Common =
         | None -> $"The '{request.Id}' not found." |> NotFound |> Error
 
     let delete (id: RequestId) (data: Entity array) =
-        match data |> Array.tryFindIndex (fun x -> x.Id = id.ValueStr) with
+        match data |> Array.tryFindIndex (fun x -> x.Id = id.Value) with
         | Some index -> data |> Array.removeAt index |> Ok
         | None -> $"The '{id}' not found." |> NotFound |> Error

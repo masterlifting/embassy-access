@@ -9,7 +9,7 @@ type Route =
 
     member this.Value =
         match this with
-        | Subscription requestId -> [ "0"; requestId.ValueStr ]
+        | Subscription requestId -> [ "0"; requestId.Value ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =

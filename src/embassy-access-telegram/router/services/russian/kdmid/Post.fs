@@ -29,8 +29,8 @@ type Route =
             finish |> String.fromDateTime
             payload
           ]
-        | ConfirmAppointment(requestId, appointmentId) -> [ "5"; requestId.ValueStr; appointmentId.ValueStr ]
-        | StartManualRequest requestId -> [ "6"; requestId.ValueStr ]
+        | ConfirmAppointment(requestId, appointmentId) -> [ "5"; requestId.Value; appointmentId.ValueStr ]
+        | StartManualRequest requestId -> [ "6"; requestId.Value ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =

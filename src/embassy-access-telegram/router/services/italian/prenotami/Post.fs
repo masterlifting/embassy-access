@@ -26,8 +26,8 @@ type Route =
             login
             password
           ]
-        | ConfirmAppointment(requestId, appointmentId) -> [ "2"; requestId.ValueStr; appointmentId.ValueStr ]
-        | StartManualRequest requestId -> [ "3"; requestId.ValueStr ]
+        | ConfirmAppointment(requestId, appointmentId) -> [ "2"; requestId.Value; appointmentId.ValueStr ]
+        | StartManualRequest requestId -> [ "3"; requestId.Value ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =
