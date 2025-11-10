@@ -15,9 +15,13 @@ module Query =
             let request = {
                 Sql =
                     """
-                        SELECT * FROM chats
-                        WHERE id = @Id
-                    """
+                    SELECT 
+                        id as "Id", 
+                        subscriptions as "Subscriptions", 
+                        culture as "Culture"
+                    FROM chats
+                    WHERE id = @Id
+                """
                 Params = Some {| Id = id.Value |}
             }
 
@@ -35,16 +39,16 @@ module Command =
             match Chat.toEntity chat with
             | Error err -> return Error err
             | Ok entity ->
-                let sql = {
+                let request = {
                     Sql =
                         """
-                            INSERT INTO chats (id, subscriptions, culture)
-                            VALUES (@Id, @Subscriptions::jsonb, @Culture)
-                        """
+                        INSERT INTO chats (id, subscriptions, culture)
+                        VALUES (@Id, @Subscriptions::jsonb, @Culture)
+                    """
                     Params = Some entity
                 }
 
-                return! client |> Command.execute sql |> ResultAsync.map (fun _ -> chat)
+                return! client |> Command.execute request |> ResultAsync.map (fun _ -> chat)
         }
 
     let update (chat: Chat) (client: Client) =
@@ -52,30 +56,30 @@ module Command =
             match Chat.toEntity chat with
             | Error err -> return Error err
             | Ok entity ->
-                let sql = {
+                let request = {
                     Sql =
                         """
-                            UPDATE chats SET
-                                subscriptions = @Subscriptions::jsonb,
-                                culture = @Culture
-                            WHERE id = @Id
-                        """
+                        UPDATE chats SET
+                            subscriptions = @Subscriptions::jsonb,
+                            culture = @Culture
+                        WHERE id = @Id
+                    """
                     Params = Some entity
                 }
 
-                return! client |> Command.execute sql |> ResultAsync.map (fun _ -> chat)
+                return! client |> Command.execute request |> ResultAsync.map (fun _ -> chat)
         }
 
     let setCulture (chatId: ChatId) (culture: Culture) (client: Client) =
         async {
-            let sql = {
+            let request = {
                 Sql =
                     """
-                        INSERT INTO chats (id, subscriptions, culture)
-                        VALUES (@Id, @Subscriptions::jsonb, @Culture)
-                        ON CONFLICT (id) DO UPDATE SET
-                            culture = EXCLUDED.culture
-                    """
+                    INSERT INTO chats (id, subscriptions, culture)
+                    VALUES (@Id, @Subscriptions::jsonb, @Culture)
+                    ON CONFLICT (id) DO UPDATE SET
+                        culture = EXCLUDED.culture
+                """
                 Params =
                     Some {|
                         Id = chatId.Value
@@ -84,7 +88,7 @@ module Command =
                     |}
             }
 
-            return! client |> Command.execute sql |> ResultAsync.map ignore
+            return! client |> Command.execute request |> ResultAsync.map ignore
         }
 
 module Migrations =
@@ -94,12 +98,12 @@ module Migrations =
             let migration = {
                 Sql =
                     """
-                        CREATE TABLE IF NOT EXISTS chats (
-                            id BIGINT PRIMARY KEY,
-                            subscriptions JSONB NOT NULL,
-                            culture VARCHAR(10) NOT NULL
-                        );
-                    """
+                    CREATE TABLE IF NOT EXISTS chats (
+                        id BIGINT PRIMARY KEY,
+                        subscriptions JSONB NOT NULL,
+                        culture VARCHAR(10) NOT NULL
+                    );
+                """
                 Params = None
             }
 

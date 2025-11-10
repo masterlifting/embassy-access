@@ -143,23 +143,23 @@ module Query =
             let request = {
                 Sql =
                     """
-                        SELECT
-                            id as "Id",
-                            service_id as "ServiceId",
-                            service_name as "ServiceName",
-                            service_description as "ServiceDescription",
-                            embassy_id as "EmbassyId",
-                            embassy_name as "EmbassyName",
-                            embassy_description as "EmbassyDescription",
-                            embassy_timezone as "EmbassyTimeZone",
-                            payload::text as "Payload",
-                            process_state::text as "ProcessState",
-                            limits::text as "Limits",
-                            created as "Created",
-                            modified as "Modified"
-                        FROM requests
-                        WHERE id = ANY(@Ids)
-                    """
+                    SELECT
+                        id as "Id",
+                        service_id as "ServiceId",
+                        service_name as "ServiceName",
+                        service_description as "ServiceDescription",
+                        embassy_id as "EmbassyId",
+                        embassy_name as "EmbassyName",
+                        embassy_description as "EmbassyDescription",
+                        embassy_timezone as "EmbassyTimeZone",
+                        payload::text as "Payload",
+                        process_state::text as "ProcessState",
+                        limits::text as "Limits",
+                        created as "Created",
+                        modified as "Modified"
+                    FROM requests
+                    WHERE id = ANY(@Ids)
+                """
                 Params = Some {| Ids = idArray |}
             }
 
@@ -180,23 +180,23 @@ module Query =
             let request = {
                 Sql =
                     """
-                        SELECT 
-                            id as "Id",
-                            service_id as "ServiceId", 
-                            service_name as "ServiceName",
-                            service_description as "ServiceDescription",
-                            embassy_id as "EmbassyId",
-                            embassy_name as "EmbassyName",
-                            embassy_description as "EmbassyDescription",
-                            embassy_timezone as "EmbassyTimeZone",
-                            payload::text as "Payload",
-                            process_state::text as "ProcessState",
-                            limits::text as "Limits",
-                            created as "Created",
-                            modified as "Modified"
-                        FROM requests
-                        WHERE embassy_id = @EmbassyId AND service_id = @ServiceId
-                    """
+                    SELECT 
+                        id as "Id",
+                        service_id as "ServiceId", 
+                        service_name as "ServiceName",
+                        service_description as "ServiceDescription",
+                        embassy_id as "EmbassyId",
+                        embassy_name as "EmbassyName",
+                        embassy_description as "EmbassyDescription",
+                        embassy_timezone as "EmbassyTimeZone",
+                        payload::text as "Payload",
+                        process_state::text as "ProcessState",
+                        limits::text as "Limits",
+                        created as "Created",
+                        modified as "Modified"
+                    FROM requests
+                    WHERE embassy_id = @EmbassyId AND service_id = @ServiceId
+                """
                 Params =
                     Some {|
                         EmbassyId = embassyId.Value
@@ -216,65 +216,65 @@ module Command =
             match request |> Request.toEntity payloadConverter with
             | Error err -> return Error err
             | Ok entity ->
-                let sql = {
+                let sqlRequest = {
                     Sql =
                         """
-                            INSERT INTO requests (
-                                id, 
-                                service_id, 
-                                service_name, 
-                                service_description,
-                                embassy_id, 
-                                embassy_name, 
-                                embassy_description, 
-                                embassy_timezone,
-                                payload, 
-                                process_state, 
-                                limits, 
-                                created, 
-                                modified
-                            ) VALUES (
-                                @Id, 
-                                @ServiceId, 
-                                @ServiceName::text[], 
-                                @ServiceDescription,
-                                @EmbassyId, 
-                                @EmbassyName::text[], 
-                                @EmbassyDescription, 
-                                @EmbassyTimeZone,
-                                @Payload::jsonb, 
-                                @ProcessState::jsonb, 
-                                @Limits::jsonb, 
-                                @Created, 
-                                @Modified
-                            )
-                            ON CONFLICT (id) DO UPDATE SET
-                                service_id = EXCLUDED.service_id,
-                                service_name = EXCLUDED.service_name,
-                                service_description = EXCLUDED.service_description,
-                                embassy_id = EXCLUDED.embassy_id,
-                                embassy_name = EXCLUDED.embassy_name,
-                                embassy_description = EXCLUDED.embassy_description,
-                                embassy_timezone = EXCLUDED.embassy_timezone,
-                                payload = EXCLUDED.payload,
-                                process_state = EXCLUDED.process_state,
-                                limits = EXCLUDED.limits,
-                                modified = EXCLUDED.modified
-                        """
+                        INSERT INTO requests (
+                            id, 
+                            service_id, 
+                            service_name, 
+                            service_description,
+                            embassy_id, 
+                            embassy_name, 
+                            embassy_description, 
+                            embassy_timezone,
+                            payload, 
+                            process_state, 
+                            limits, 
+                            created, 
+                            modified
+                        ) VALUES (
+                            @Id, 
+                            @ServiceId, 
+                            @ServiceName::text[], 
+                            @ServiceDescription,
+                            @EmbassyId, 
+                            @EmbassyName::text[], 
+                            @EmbassyDescription, 
+                            @EmbassyTimeZone,
+                            @Payload::jsonb, 
+                            @ProcessState::jsonb, 
+                            @Limits::jsonb, 
+                            @Created, 
+                            @Modified
+                        )
+                        ON CONFLICT (id) DO UPDATE SET
+                            service_id = EXCLUDED.service_id,
+                            service_name = EXCLUDED.service_name,
+                            service_description = EXCLUDED.service_description,
+                            embassy_id = EXCLUDED.embassy_id,
+                            embassy_name = EXCLUDED.embassy_name,
+                            embassy_description = EXCLUDED.embassy_description,
+                            embassy_timezone = EXCLUDED.embassy_timezone,
+                            payload = EXCLUDED.payload,
+                            process_state = EXCLUDED.process_state,
+                            limits = EXCLUDED.limits,
+                            modified = EXCLUDED.modified
+                    """
                     Params = Some entity
                 }
 
-                return! client |> Command.execute sql |> ResultAsync.map (fun _ -> request)
+                return! client |> Command.execute sqlRequest |> ResultAsync.map (fun _ -> request)
         }
 
     let delete (id: RequestId) (client: Client) =
         async {
-            let sql = {
+            let request = {
                 Sql = "DELETE FROM requests WHERE id = @Id"
                 Params = Some {| Id = id.Value |}
             }
 
-            return! client |> Command.execute sql |> ResultAsync.map ignore
+            return! client |> Command.execute request |> ResultAsync.map ignore
         }
 
 module Migrations =
@@ -299,7 +299,7 @@ module Migrations =
                         created TIMESTAMPTZ NOT NULL,
                         modified TIMESTAMPTZ NOT NULL
                     )
-                    """
+                """
                 Params = None
             }
 
