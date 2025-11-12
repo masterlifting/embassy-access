@@ -33,7 +33,7 @@ The project is structured into several components, including core functionality,
 
 ### Prerequisites
 
-- .NET 9 SDK/Runtime
+- .NET 10 SDK/Runtime
 - F# experience
 
 ### Cloning the Repository
@@ -73,4 +73,4 @@ This project is licensed under the MIT License.
 
 ### Contact
 
-For any inquiries or issues, please contact me via telegram at @ponkorn71
+For any inquiries or issues, please contact me via telegram at @andreipestunov

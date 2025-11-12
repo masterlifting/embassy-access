@@ -41,7 +41,7 @@
     image: ponkorn/browser-webapi:1.0.0
     container_name: browser-webapi
     ports:
-      - 8080:8080
+      - 8080:${BROWSER_WEBAPI_PORT}
     environment:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=${BROWSER_WEBAPI_PORT}
