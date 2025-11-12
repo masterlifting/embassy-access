@@ -1,13 +1,14 @@
 ﻿services:
+  # docker-compose -p embassy-access up -d
   
-  # ea-worker:
+  # worker:
   #   image: ea-worker
   #   container_name: ea-worker
   #   build:
   #     context: ../
   #     dockerfile: ./src/embassy-access-worker/Dockerfile
   #   depends_on:
-  #     - ea-postgres
+  #     - postgres
   #     - browser-webapi
   #   environment:
   #     - LOG_LEVEL=info
@@ -18,14 +19,14 @@
   #   networks:
   #     - ea-network
 
-  # ea-telegram:
+  # telegram:
   #   image: ea-telegram
   #   container_name: ea-telegram
   #   build:
   #     context: ../
   #     dockerfile: ./src/embassy-access-telegram/Dockerfile
   #   depends_on:
-  #     - ea-postgres
+  #     - postgres
   #   environment:
   #     - LOG_LEVEL=info
   #     - POSTGRES_CONNECTION=Server=ea-postgres;Port=${POSTGRES_PORT};Database=${POSTGRES_DB};User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
@@ -51,7 +52,7 @@
     networks:
       - ea-network
 
-  ea-postgres:
+  postgres:
     image: postgres:17
     container_name: ea-postgres
     ports:
@@ -61,7 +62,7 @@
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - ea-postgres-data:/var/lib/postgresql/data
+      - postgres-volume:/var/lib/postgresql/data
     networks:
       - ea-network
 
@@ -74,13 +75,16 @@
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
     depends_on:
-      - ea-postgres
+      - postgres
     networks:
       - ea-network
+    volumes:
+      - pgadmin-volume:/var/lib/pgadmin
 
 networks:
   ea-network:
     driver: bridge
 
 volumes:
-  ea-postgres-data:
+  postgres-volume:
+  pgadmin-volume:

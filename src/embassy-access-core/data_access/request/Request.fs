@@ -85,7 +85,7 @@ type private Request<'a> with
         result {
             let! payload = this.Payload |> payloadConverter.toEntity |> Result.bind Json.serialize
             let! processState = this.ProcessState.ToEntity() |> Json.serialize
-            let! limits = this.Limits |> Seq.map _.ToEntity |> Seq.toArray |> Json.serialize
+            let! limits = this.Limits |> Seq.map _.ToEntity() |> Json.serialize
 
             return
                 Entity(
