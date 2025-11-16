@@ -5,6 +5,7 @@ open System.Threading
 open Infrastructure.Domain
 open Web.Clients
 open Web.Clients.Domain
+open Web.Clients.Domain.BrowserWebApi
 open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Italian.Services.Domain.Prenotami
@@ -22,12 +23,13 @@ type Persistence = {
 
 type BrowserWebApi = {
     init: unit -> Result<Http.Client, Error'>
-    openTab: BrowserWebApi.Dto.Open -> Http.Client -> Async<Result<string, Error'>>
-    fillCredentials: string -> BrowserWebApi.Dto.Fill -> Http.Client -> Async<Result<unit, Error'>>
-    submitCredentials: string -> BrowserWebApi.Dto.Execute -> Http.Client -> Async<Result<unit, Error'>>
-    clickBookService: string -> BrowserWebApi.Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
-    clickBookAppointment: string -> BrowserWebApi.Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
-    extractResult: string -> BrowserWebApi.Dto.Extract -> Http.Client -> Async<Result<string option, Error'>>
+    openTab: Dto.Open -> Http.Client -> Async<Result<string, Error'>>
+    fillCredentials: string -> Dto.Fill -> Http.Client -> Async<Result<unit, Error'>>
+    submitCaptcha: string -> Dto.Execute -> Http.Client -> Async<Result<unit, Error'>>
+    submitCredentials: string -> Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
+    clickBookService: string -> Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
+    clickBookAppointment: string -> Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
+    extractResult: string -> Dto.Extract -> Http.Client -> Async<Result<string option, Error'>>
     closeTab: string -> Http.Client -> Async<Result<unit, Error'>>
 }
 
@@ -44,8 +46,8 @@ let init (deps: Dependencies) = {
         init = fun () -> BrowserWebApi.Client.init { BaseUrl = deps.BrowserWebApiUrl }
         openTab = fun dto client -> client |> BrowserWebApi.Request.Tab.open' dto deps.ct
         fillCredentials = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.fill tabId dto deps.ct
-        submitCredentials =
-            fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.execute tabId dto deps.ct
+        submitCaptcha = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.execute tabId dto deps.ct
+        submitCredentials = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
         clickBookService = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
         clickBookAppointment =
             fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
