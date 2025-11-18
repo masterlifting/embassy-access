@@ -4,8 +4,6 @@
     <File Path=".editorconfig" />
     <File Path=".gitmodules" />
     <File Path=".gitignore" />
-    <File Path=".docker/docker-compose.yml" />
-    <File Path=".docker/.env" />
   </Folder>
   <Folder Name="/modules/">
     <Project Path="src/embassy-access-modules/embassy-access-russian/embassy-access-russian.fsproj" />
