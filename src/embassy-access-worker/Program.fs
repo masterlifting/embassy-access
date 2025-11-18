@@ -1,7 +1,6 @@
 ﻿open Infrastructure
 open Infrastructure.Prelude
 open Infrastructure.Configuration.Domain
-open Persistence.Storages.Domain
 open Worker.Domain
 
 let private resultAsync = ResultAsyncBuilder()
@@ -11,8 +10,7 @@ let main _ =
 
     resultAsync {
         let! configuration =
-            { Files = [ "appsettings.yml" ] }
-            |> Configuration.Client.Yaml
+            Configuration.Client.Yaml { Files = [ "appsettings.yml" ] }
             |> Configuration.Client.init
             |> async.Return
 
@@ -29,11 +27,10 @@ let main _ =
         Logging.Log.inf $"EA.Worker version: %s{version}"
 
         let! tasks =
-            {
-                Configuration.Connection.Section = "Worker"
-                Configuration.Connection.Provider = configuration
+            Worker.DataAccess.TasksTree.StorageType.Configuration {
+                Section = "Worker"
+                Provider = configuration
             }
-            |> Worker.DataAccess.TasksTree.StorageType.Configuration
             |> Worker.DataAccess.TasksTree.init
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 

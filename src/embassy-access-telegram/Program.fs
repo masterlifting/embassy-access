@@ -11,10 +11,9 @@ let main _ =
 
     resultAsync {
         let! configuration =
-            {
+            Configuration.Client.Yaml {
                 Files = [ "appsettings.yml"; "embassies.yml"; "services.yml" ]
             }
-            |> Configuration.Client.Yaml
             |> Configuration.Client.init
             |> async.Return
 
