@@ -5,7 +5,7 @@ open Infrastructure
 open Infrastructure.Domain
 
 let getEnv name =
-    Configuration.Client.getEnv name
+    Configuration.Client.getEnvValue name
     |> Result.bind (function
         | Some value -> Ok value
         | None -> $"Environment variable '{name}' is not set." |> NotFound |> Error)
@@ -14,7 +14,7 @@ type Environments = {
     PostgresConnection: string
     BrowserWebApiUrl: string
     AntiCaptchaApiKey: string
-    DataEncryptionKey: string
+    EncryptionKey: string
 } with
 
     static member init() =
@@ -27,7 +27,7 @@ type Environments = {
             PostgresConnection = getEnv "POSTGRES_CONNECTION"
             BrowserWebApiUrl = getEnv "BROWSER_WEBAPI_URL"
             AntiCaptchaApiKey = getEnv "ANTICAPTCHA_API_KEY"
-            DataEncryptionKey = getEnv "DATA_ENCRYPTION_KEY"
+            EncryptionKey = getEnv "DATA_ENCRYPTION_KEY"
         }
 
 let ENVIRONMENTS = Environments.init ()

@@ -5,7 +5,7 @@ open Infrastructure
 open Infrastructure.Domain
 
 let getEnv name =
-    Configuration.Client.getEnv name
+    Configuration.Client.getEnvValue name
     |> Result.bind (function
         | Some value -> Ok value
         | None -> $"Environment variable '{name}' is not set." |> NotFound |> Error)
@@ -16,7 +16,7 @@ type Environments = {
     TelegramBotToken: string
     AntiCaptchaApiKey: string
     OpenAIApiKey: string
-    DataEncryptionKey: string
+    EncryptionKey: string
 } with
 
     static member init() =
@@ -31,7 +31,7 @@ type Environments = {
             TelegramBotToken = getEnv "TELEGRAM_BOT_TOKEN"
             AntiCaptchaApiKey = getEnv "ANTICAPTCHA_API_KEY"
             OpenAIApiKey = getEnv "OPENAI_API_KEY"
-            DataEncryptionKey = getEnv "DATA_ENCRYPTION_KEY"
+            EncryptionKey = getEnv "DATA_ENCRYPTION_KEY"
         }
 
 let ENVIRONMENTS = Environments.init ()

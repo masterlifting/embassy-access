@@ -9,8 +9,6 @@ let private resultAsync = ResultAsyncBuilder()
 [<EntryPoint>]
 let main _ =
 
-    Logging.Client.getLevel () |> Logging.Client.Console |> Logging.Client.init
-
     resultAsync {
         let! configuration =
             {
@@ -20,9 +18,14 @@ let main _ =
             |> Configuration.Client.init
             |> async.Return
 
+        Some configuration
+        |> Logging.Client.setLevel
+        |> Logging.Client.Console
+        |> Logging.Client.init
+
         let version =
             configuration
-            |> Configuration.Client.getSection<string> "Version"
+            |> Configuration.Client.getValue<string> "VERSION"
             |> Option.defaultValue "unknown"
 
         Logging.Log.inf $"EA.Telegram version: %s{version}"

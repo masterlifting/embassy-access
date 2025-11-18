@@ -51,9 +51,23 @@ let processWebSite credentials serviceId =
 
             do!
                 httpClient
+                |> api.submitCaptcha tabId {
+                    Dto.Execute.Selector = None
+                    Dto.Execute.Function =
+                        """
+                            window['grecaptcha']['enterprise'].execute = 
+                                function(sitekey, parameters) {
+                                    const action = parameters.action; 
+                                    const token = '';
+                                    return new Promise(r => r(token))
+                                };
+                        """
+                }
+
+            do!
+                httpClient
                 |> api.submitCredentials tabId {
-                    Dto.Execute.Selector = "form#login-form"
-                    Dto.Execute.Function = "submit();"
+                    Dto.Click.Selector = "button#captcha-trigger"
                 }
 
             do! httpClient |> api.clickBookService tabId { Dto.Click.Selector = "a#advanced" }

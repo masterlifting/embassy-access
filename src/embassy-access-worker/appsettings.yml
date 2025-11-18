@@ -1,6 +1,8 @@
 # @format
 
-Version: '1.0'
+LOG_LEVEL: 'debug'
+VERSION: '1.0.0'
+
 Worker:
   Id: WRK
   Enabled: true

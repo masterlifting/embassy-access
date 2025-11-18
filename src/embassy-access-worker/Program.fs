@@ -1,18 +1,13 @@
 ﻿open Infrastructure
-open Infrastructure.Domain
 open Infrastructure.Prelude
-open Infrastructure.Prelude.Tree.Builder
 open Infrastructure.Configuration.Domain
 open Persistence.Storages.Domain
-open EA.Worker
 open Worker.Domain
 
 let private resultAsync = ResultAsyncBuilder()
 
 [<EntryPoint>]
 let main _ =
-
-    Logging.Client.getLevel () |> Logging.Client.Console |> Logging.Client.init
 
     resultAsync {
         let! configuration =
@@ -21,9 +16,14 @@ let main _ =
             |> Configuration.Client.init
             |> async.Return
 
+        Some configuration
+        |> Logging.Client.setLevel
+        |> Logging.Client.Console
+        |> Logging.Client.init
+
         let version =
             configuration
-            |> Configuration.Client.getSection<string> "Version"
+            |> Configuration.Client.getValue<string> "VERSION"
             |> Option.defaultValue "unknown"
 
         Logging.Log.inf $"EA.Worker version: %s{version}"
@@ -37,22 +37,7 @@ let main _ =
             |> Worker.DataAccess.TasksTree.init
             |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
 
-        let handlers =
-            Tree.Node.create ("WRK", Some Initializer.run)
-            |> withChildren [
-
-                Tree.Node.create ("RUS", None)
-                |> withChild (
-                    Tree.Node.create ("SRB", None)
-                    |> withChild (Tree.Node.create ("SA", Some Embassies.Russian.Kdmid.SearchAppointments.handle))
-                )
-
-                Tree.Node.create ("ITA", None)
-                |> withChild (
-                    Tree.Node.create ("SRB", None)
-                    |> withChild (Tree.Node.create ("SA", Some Embassies.Italian.Prenotami.SearchAppointments.handle))
-                )
-            ]
+        let handlers = EA.Worker.Handlers.register ()
 
         let! workerTasks = tasks |> Worker.Client.merge handlers |> async.Return
 

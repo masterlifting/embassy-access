@@ -112,7 +112,7 @@ type Dependencies = {
         result {
 
             let pgConnectionString = Configuration.ENVIRONMENTS.PostgresConnection
-            let fileStorageKey = Configuration.ENVIRONMENTS.DataEncryptionKey
+            let fileStorageKey = Configuration.ENVIRONMENTS.EncryptionKey
 
             return {
                 initChatStorage = initChatStorage
