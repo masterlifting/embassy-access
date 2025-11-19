@@ -15,6 +15,7 @@ COPY ./submodules ./submodules
 
 # Restore dependencies
 WORKDIR /app/src/embassy-access-telegram
+RUN dotnet nuget locals all --clear
 RUN dotnet restore
 
 # Copy source code
@@ -25,7 +26,7 @@ COPY ./src/embassy-access-telegram ./src/embassy-access-telegram
 
 # Build and publish
 WORKDIR /app/src/embassy-access-telegram
-RUN dotnet publish -c Release -r linux-x64 --self-contained true --no-restore -o /app/publish
+RUN dotnet publish -c Release -r linux-x64 --self-contained true -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 

@@ -1,31 +1,37 @@
 ﻿services:
-  
   worker:
     container_name: embassy-access-worker
+    build:
+      context: ../
+      dockerfile: ./src/embassy-access-worker/Dockerfile
     environment:
       - LOG_LEVEL=info
       - ANTICAPTCHA_KEY=${ANTICAPTCHA_KEY}
       - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
-      - BROWSER_WEBAPI_URL=${BROWSER_WEBAPI_URL}
-      - POSTGRES_CONNECTION=${POSTGRES_CONNECTION}
+      - BROWSER_WEBAPI_URL=http://embassy-access-browser-webapi:3001
+      - POSTGRES_CONNECTION=Server=embassy-access-postgres;Port=5432;Database=eadb;User Id=eauser;Password=${POSTGRES_PASSWORD:-eapassword};
     restart: unless-stopped
     networks:
       - embassy-access-network
 
   telegram:
     container_name: embassy-access-telegram
+    build:
+      context: ../
+      dockerfile: ./src/embassy-access-telegram/Dockerfile
     environment:
       - LOG_LEVEL=info
       - OPENAI_KEY=${OPENAI_KEY}
       - ANTICAPTCHA_KEY=${ANTICAPTCHA_KEY}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
-      - BROWSER_WEBAPI_URL=${BROWSER_WEBAPI_URL}
-      - POSTGRES_CONNECTION=${POSTGRES_CONNECTION}
+      - BROWSER_WEBAPI_URL=http://embassy-access-browser-webapi:3001
+      - POSTGRES_CONNECTION=Server=embassy-access-postgres;Port=5432;Database=eadb;User Id=eauser;Password=${POSTGRES_PASSWORD:-eapassword};
     restart: unless-stopped
     networks:
       - embassy-access-network
 
 networks:
   embassy-access-network:
-    driver: bridge
+    name: embassy-access_embassy-access-network
+    external: true
