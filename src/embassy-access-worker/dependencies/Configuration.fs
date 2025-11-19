@@ -11,10 +11,10 @@ let getEnv name =
         | None -> $"Environment variable '{name}' is not set." |> NotFound |> Error)
 
 type Environments = {
-    PostgresConnection: string
-    BrowserWebApiUrl: string
-    AntiCaptchaApiKey: string
     EncryptionKey: string
+    AntiCaptchaKey: string
+    BrowserWebApiUrl: string
+    PostgresConnection: string
 } with
 
     static member init() =
@@ -24,10 +24,10 @@ type Environments = {
             | Error e -> failwith e.Message
 
         {
-            PostgresConnection = getEnv "POSTGRES_CONNECTION"
-            BrowserWebApiUrl = getEnv "BROWSER_WEBAPI_URL"
-            AntiCaptchaApiKey = getEnv "ANTICAPTCHA_API_KEY"
             EncryptionKey = getEnv "DATA_ENCRYPTION_KEY"
+            AntiCaptchaKey = getEnv "ANTICAPTCHA_KEY"
+            BrowserWebApiUrl = getEnv "BROWSER_WEBAPI_URL"
+            PostgresConnection = getEnv "POSTGRES_CONNECTION"
         }
 
 let ENVIRONMENTS = Environments.init ()

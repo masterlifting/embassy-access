@@ -1,90 +1,31 @@
 ﻿services:
-  # docker-compose -p embassy-access up -d
   
-  # worker:
-  #   image: embassy-access-worker
-  #   container_name: embassy-access-worker
-  #   build:
-  #     context: ../
-  #     dockerfile: ./src/embassy-access-worker/Dockerfile
-  #   depends_on:
-  #     - postgres
-  #     - browser-webapi
-  #   environment:
-  #     - LOG_LEVEL=info
-  #     - POSTGRES_CONNECTION=Server=ea-postgres;Port=${POSTGRES_PORT};Database=${POSTGRES_DB};User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
-  #     - BROWSER_WEBAPI_URL=http://browser-webapi:${BROWSER_WEBAPI_PORT}
-  #     - ANTICAPTCHA_API_KEY=${ANTICAPTCHA_API_KEY}
-  #     - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
-  #   networks:
-  #     - embassy-access-network
-
-  # telegram:
-  #   image: embassy-access-telegram
-  #   container_name: embassy-access-telegram
-  #   build:
-  #     context: ../
-  #     dockerfile: ./src/embassy-access-telegram/Dockerfile
-  #   depends_on:
-  #     - postgres
-  #   environment:
-  #     - LOG_LEVEL=info
-  #     - POSTGRES_CONNECTION=Server=ea-postgres;Port=${POSTGRES_PORT};Database=${POSTGRES_DB};User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
-  #     - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-  #     - ANTICAPTCHA_API_KEY=${ANTICAPTCHA_API_KEY}
-  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
-  #     - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
-  #   networks:
-  #     - embassy-access-network
-
-  browser-webapi:
-    image: ponkorn/browser-webapi:latest
-    container_name: browser-webapi
-    ports:
-      - 8080:${BROWSER_WEBAPI_PORT}
+  worker:
+    container_name: embassy-access-worker
     environment:
-      - SERVER_HOST=0.0.0.0
-      - SERVER_PORT=${BROWSER_WEBAPI_PORT}
-      - USE_UI=false
-      - BINARY_DATA_DIR=/usr/bin/chromium-browser
-      - USER_DATA_DIR=/tmp/chrome_temp
-      - IDLE_TIMEOUT_DAYS=365
+      - LOG_LEVEL=info
+      - ANTICAPTCHA_KEY=${ANTICAPTCHA_KEY}
+      - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
+      - BROWSER_WEBAPI_URL=${BROWSER_WEBAPI_URL}
+      - POSTGRES_CONNECTION=${POSTGRES_CONNECTION}
+    restart: unless-stopped
     networks:
       - embassy-access-network
 
-  postgres:
-    image: postgres:17
-    container_name: embassy-access-postgres
-    ports:
-      - 5432:5432
+  telegram:
+    container_name: embassy-access-telegram
     environment:
-      POSTGRES_DB: ea
-      POSTGRES_USER: ea
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres-volume:/var/lib/postgresql/data
+      - LOG_LEVEL=info
+      - OPENAI_KEY=${OPENAI_KEY}
+      - ANTICAPTCHA_KEY=${ANTICAPTCHA_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
+      - BROWSER_WEBAPI_URL=${BROWSER_WEBAPI_URL}
+      - POSTGRES_CONNECTION=${POSTGRES_CONNECTION}
+    restart: unless-stopped
     networks:
       - embassy-access-network
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: embassy-access-pgadmin
-    ports:
-      - 8081:80
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    depends_on:
-      - postgres
-    networks:
-      - embassy-access-network
-    volumes:
-      - pgadmin-volume:/var/lib/pgadmin
 
 networks:
   embassy-access-network:
     driver: bridge
-
-volumes:
-  postgres-volume:
-  pgadmin-volume:

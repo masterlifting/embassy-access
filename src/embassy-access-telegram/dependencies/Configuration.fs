@@ -11,12 +11,12 @@ let getEnv name =
         | None -> $"Environment variable '{name}' is not set." |> NotFound |> Error)
 
 type Environments = {
-    PostgresConnection: string
-    BrowserWebApiUrl: string
-    TelegramBotToken: string
-    AntiCaptchaApiKey: string
-    OpenAIApiKey: string
+    OpenAIKey: string
     EncryptionKey: string
+    AntiCaptchaKey: string
+    TelegramBotToken: string
+    BrowserWebApiUrl: string
+    PostgresConnection: string
 } with
 
     static member init() =
@@ -26,12 +26,12 @@ type Environments = {
             | Error e -> failwith e.Message
 
         {
-            PostgresConnection = getEnv "POSTGRES_CONNECTION"
-            BrowserWebApiUrl = getEnv "BROWSER_WEBAPI_URL"
-            TelegramBotToken = getEnv "TELEGRAM_BOT_TOKEN"
-            AntiCaptchaApiKey = getEnv "ANTICAPTCHA_API_KEY"
-            OpenAIApiKey = getEnv "OPENAI_API_KEY"
+            OpenAIKey = getEnv "OPENAI_KEY"
+            AntiCaptchaKey = getEnv "ANTICAPTCHA_KEY"
             EncryptionKey = getEnv "DATA_ENCRYPTION_KEY"
+            TelegramBotToken = getEnv "TELEGRAM_BOT_TOKEN"
+            BrowserWebApiUrl = getEnv "BROWSER_WEBAPI_URL"
+            PostgresConnection = getEnv "POSTGRES_CONNECTION"
         }
 
 let ENVIRONMENTS = Environments.init ()

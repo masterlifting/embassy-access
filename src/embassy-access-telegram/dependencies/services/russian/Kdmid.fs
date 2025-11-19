@@ -58,7 +58,7 @@ type Dependencies = {
         let processRequest request storage =
             Kdmid.Client.init {
                 ct = deps.ct
-                AntiCaptchaApiKey = Configuration.ENVIRONMENTS.AntiCaptchaApiKey
+                AntiCaptchaApiKey = Configuration.ENVIRONMENTS.AntiCaptchaKey
                 RequestStorage = storage
             }
             |> ResultAsync.wrap (Kdmid.Service.tryProcess request)

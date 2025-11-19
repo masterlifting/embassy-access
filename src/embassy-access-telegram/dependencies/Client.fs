@@ -26,7 +26,7 @@ type Dependencies = {
 
             let! openApiClient =
                 OpenAI.Client.init {
-                    Token = Configuration.ENVIRONMENTS.OpenAIApiKey
+                    Token = Configuration.ENVIRONMENTS.OpenAIKey
                     ProjectId = "proj_OsfEwmtR7Shm2Uj4wqJTdgcC"
                 }
 
