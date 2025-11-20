@@ -8,8 +8,8 @@
       - LOG_LEVEL=info
       - ANTICAPTCHA_KEY=${ANTICAPTCHA_KEY}
       - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
-      - BROWSER_WEBAPI_URL=http://embassy-access-browser-webapi:3001
-      - POSTGRES_CONNECTION=Server=embassy-access-postgres;Port=5432;Database=eadb;User Id=eauser;Password=${POSTGRES_PASSWORD:-eapassword};
+      - BROWSER_WEBAPI_URL=${BROWSER_WEBAPI_URL}
+      - POSTGRES_CONNECTION=${POSTGRES_CONNECTION}
     restart: unless-stopped
     networks:
       - embassy-access-network
@@ -25,8 +25,8 @@
       - ANTICAPTCHA_KEY=${ANTICAPTCHA_KEY}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
-      - BROWSER_WEBAPI_URL=http://embassy-access-browser-webapi:3001
-      - POSTGRES_CONNECTION=Server=embassy-access-postgres;Port=5432;Database=eadb;User Id=eauser;Password=${POSTGRES_PASSWORD:-eapassword};
+      - BROWSER_WEBAPI_URL=${BROWSER_WEBAPI_URL}
+      - POSTGRES_CONNECTION=${POSTGRES_CONNECTION}
     restart: unless-stopped
     networks:
       - embassy-access-network

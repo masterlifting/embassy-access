@@ -13,11 +13,6 @@ COPY ./src/embassy-access-worker/*.fsproj ./src/embassy-access-worker/
 # Copy submodule project files
 COPY ./submodules ./submodules
 
-# Restore dependencies
-WORKDIR /app/src/embassy-access-worker
-RUN dotnet nuget locals all --clear
-RUN dotnet restore
-
 # Copy source code
 WORKDIR /app
 COPY ./src/embassy-access-core ./src/embassy-access-core

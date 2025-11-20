@@ -13,11 +13,6 @@ COPY ./src/embassy-access-telegram/*.fsproj ./src/embassy-access-telegram/
 # Copy submodule project files
 COPY ./submodules ./submodules
 
-# Restore dependencies
-WORKDIR /app/src/embassy-access-telegram
-RUN dotnet nuget locals all --clear
-RUN dotnet restore
-
 # Copy source code
 WORKDIR /app
 COPY ./src/embassy-access-core ./src/embassy-access-core
