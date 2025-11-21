@@ -27,12 +27,12 @@ let main _ =
         Logging.Log.inf $"EA.Worker version: %s{version}"
 
         let! tasks =
-            Worker.DataAccess.TasksTree.StorageType.Configuration {
+            Worker.DataAccess.Storage.TasksTree.Configuration {
                 Section = "Worker"
                 Provider = configuration
             }
-            |> Worker.DataAccess.TasksTree.init
-            |> ResultAsync.wrap Worker.DataAccess.TasksTree.get
+            |> Worker.DataAccess.Storage.TasksTree.init
+            |> ResultAsync.wrap Worker.DataAccess.Storage.TasksTree.Query.get
 
         let handlers = EA.Worker.Handlers.register ()
 
