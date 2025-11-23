@@ -47,5 +47,5 @@ module Kdmid =
             |> ResultAsync.apply (deps.cleanResources ())
 
     module SearchAppointments =
-        let handle (task, cfg, ct) =
-            Kdmid.Dependencies.create task cfg ct |> ResultAsync.wrap start
+        let handle (task, di, ct) =
+            Kdmid.Dependencies.create task di ct |> ResultAsync.wrap start

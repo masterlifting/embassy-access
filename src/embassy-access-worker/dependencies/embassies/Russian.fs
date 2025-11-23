@@ -20,7 +20,7 @@ module Kdmid =
         cleanResources: unit -> Async<Result<unit, Error'>>
     } with
 
-        static member create task cfg ct =
+        static member create task _ ct =
             let result = ResultBuilder()
             let taskName = ActiveTask.print task
 

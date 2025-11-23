@@ -51,9 +51,12 @@ let main _ =
             Worker.Client.start {
                 Name = $"EA.Worker: v{version}"
                 RootTaskId = "WRK" |> WorkerTaskId.create
-                Storage = tasksStorage
                 Handlers = handlers
-                Configuration = configuration
+                Storage = tasksStorage
+                TaskDI = {
+                    WorkerTask.Dependencies.Configuration = configuration
+                }
+
             }
             |> Async.map (fun _ -> 0 |> Ok)
     }
