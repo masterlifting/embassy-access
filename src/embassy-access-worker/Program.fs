@@ -1,7 +1,10 @@
 ﻿open Infrastructure
 open Infrastructure.Prelude
 open Infrastructure.Configuration.Domain
+open Persistence.Domain
 open Worker.Domain
+open Worker.DataAccess.Storage
+open EA.Worker.Dependencies
 
 let private resultAsync = ResultAsyncBuilder()
 
@@ -26,24 +29,31 @@ let main _ =
 
         Logging.Log.inf $"EA.Worker version: %s{version}"
 
-        let! tasks =
-            Worker.DataAccess.Storage.TasksTree.Configuration {
-                Section = "Worker"
-                Provider = configuration
+        // let! tasks =
+        //     TasksTree.Configuration {
+        //         Section = "Worker"
+        //         Provider = configuration
+        //     }
+        //     |> TasksTree.init
+        //     |> ResultAsync.wrap TasksTree.Query.get
+
+        let! tasksStorage =
+            TasksTree.Postgre {
+                String = Configuration.ENVIRONMENTS.PostgresConnection
+                Lifetime = Singleton
             }
-            |> Worker.DataAccess.Storage.TasksTree.init
-            |> ResultAsync.wrap Worker.DataAccess.Storage.TasksTree.Query.get
+            |> TasksTree.init
+            |> async.Return
 
         let handlers = EA.Worker.Handlers.register ()
-
-        let! workerTasks = tasks |> Worker.Client.merge handlers |> async.Return
 
         return
             Worker.Client.start {
                 Name = $"EA.Worker: v{version}"
-                Configuration = configuration
                 RootTaskId = "WRK" |> WorkerTaskId.create
-                findTask = fun taskId -> workerTasks |> Tree.findNode taskId.NodeId |> Ok |> async.Return
+                Storage = tasksStorage
+                Handlers = handlers
+                Configuration = configuration
             }
             |> Async.map (fun _ -> 0 |> Ok)
     }
