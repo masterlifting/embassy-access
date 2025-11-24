@@ -41,7 +41,7 @@ let main _ =
         let! taskDeps = WorkerTask.Dependencies.create configuration |> async.Return
         let workerStorage =
             Persistence.Storage.Connection.Database {
-                Database = Database.DatabaseType.Postgre Configuration.ENVIRONMENTS.PostgresConnection
+                Database = Database.Postgre Configuration.ENVIRONMENTS.PostgresConnection
                 Lifetime = Singleton
             }
 
