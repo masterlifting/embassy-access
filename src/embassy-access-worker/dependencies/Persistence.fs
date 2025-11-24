@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module internal EA.Worker.Dependencies.Persistence
+module EA.Worker.Dependencies.Persistence
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -21,10 +21,10 @@ module Russian =
         initMidpassRequestStorage: unit -> Result<Midpass.StorageType, Error'>
     } with
 
-        static member create pgConnectionString =
+        static member create connectionString =
             let initKdmidRequestStorage () =
                 Storage.Request.Postgre {
-                    String = pgConnectionString
+                    String = connectionString
                     Lifetime = Transient
                 }
                 |> Storage.Request.init {
@@ -34,7 +34,7 @@ module Russian =
 
             let initMidpassRequestStorage () =
                 Storage.Request.Postgre {
-                    String = pgConnectionString
+                    String = connectionString
                     Lifetime = Transient
                 }
                 |> Storage.Request.init {
@@ -55,15 +55,15 @@ module Italian =
         initPrenotamiRequestStorage: unit -> Result<Prenotami.StorageType, Error'>
     } with
 
-        static member create pgConnectionString fileStorageKey =
+        static member create connectionString encryptionKey =
             let initPrenotamiRequestStorage () =
                 Storage.Request.Postgre {
-                    String = pgConnectionString
+                    String = connectionString
                     Lifetime = Transient
                 }
                 |> Storage.Request.init {
-                    toDomain = Prenotami.Payload.toDomain fileStorageKey
-                    toEntity = Prenotami.Payload.toEntity fileStorageKey
+                    toDomain = Prenotami.Payload.toDomain encryptionKey
+                    toEntity = Prenotami.Payload.toEntity encryptionKey
                 }
 
             {
@@ -78,11 +78,11 @@ type Dependencies = {
     static member create() =
         result {
 
-            let pgConnectionString = Configuration.ENVIRONMENTS.PostgresConnection
-            let fileStorageKey = Configuration.ENVIRONMENTS.EncryptionKey
+            let connectionString = Configuration.ENVIRONMENTS.PostgresConnection
+            let encryptionKey = Configuration.ENVIRONMENTS.EncryptionKey
 
             return {
-                RussianStorage = Russian.Dependencies.create pgConnectionString
-                ItalianStorage = Italian.Dependencies.create pgConnectionString fileStorageKey
+                RussianStorage = Russian.Dependencies.create connectionString
+                ItalianStorage = Italian.Dependencies.create connectionString encryptionKey
             }
         }

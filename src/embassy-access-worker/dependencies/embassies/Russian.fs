@@ -20,14 +20,12 @@ module Kdmid =
         cleanResources: unit -> Async<Result<unit, Error'>>
     } with
 
-        static member create task _ ct =
+        static member create task (deps: WorkerTask.Dependencies) ct =
             let result = ResultBuilder()
             let taskName = ActiveTask.print task
 
             result {
-                let! persistence = Persistence.Dependencies.create ()
-
-                let! requestStorage = persistence.RussianStorage.initKdmidRequestStorage ()
+                let! requestStorage = deps.Persistence.RussianStorage.initKdmidRequestStorage ()
 
                 let rec handleProcessResult (result: Result<Request<Payload>, Error'>) =
                     result
