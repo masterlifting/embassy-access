@@ -43,5 +43,5 @@ module Prenotami =
             |> ResultAsync.apply (deps.cleanResources ())
 
     module SearchAppointments =
-        let handle (task, di, ct) =
-            Prenotami.Dependencies.create task di ct |> ResultAsync.wrap start
+        let handle (task, deps, ct) =
+            Prenotami.Dependencies.create task deps ct |> ResultAsync.wrap start
