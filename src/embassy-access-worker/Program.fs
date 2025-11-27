@@ -4,6 +4,7 @@ open Infrastructure.Configuration.Domain
 open Persistence.Domain
 open Persistence.Storages.Domain
 open EA.Worker.Dependencies
+open Worker.DataAccess.Storage
 
 let private resultAsync = ResultAsyncBuilder()
 
@@ -23,10 +24,18 @@ let main _ =
 
         let version =
             configuration
-            |> Configuration.Client.getValue<string> "VERSION"
+            |> Configuration.Client.getValue "VERSION"
             |> Option.defaultValue "unknown"
 
         Logging.Log.inf $"EA.Worker version: %s{version}"
+
+        let! tasks =
+            TasksTree.Configuration {
+                Section = "Worker"
+                Provider = configuration
+            }
+            |> TasksTree.init
+            |> ResultAsync.wrap TasksTree.Query.get
 
         let handlers = EA.Worker.Handlers.register ()
         let! taskDeps = WorkerTask.Dependencies.create configuration |> async.Return
@@ -40,8 +49,9 @@ let main _ =
             Worker.Client.start {
                 Name = $"EA.Worker: v{version}"
                 RootTaskId = "WRK"
-                Handlers = handlers
                 Storage = workerStorage
+                Tasks = Some tasks
+                Handlers = handlers
                 TaskDeps = taskDeps
             }
             |> Async.map (fun _ -> 0 |> Ok)

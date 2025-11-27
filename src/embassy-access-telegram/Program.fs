@@ -24,7 +24,7 @@ let main _ =
 
         let version =
             configuration
-            |> Configuration.Client.getValue<string> "VERSION"
+            |> Configuration.Client.getValue "VERSION"
             |> Option.defaultValue "unknown"
 
         Logging.Log.inf $"EA.Telegram version: %s{version}"
