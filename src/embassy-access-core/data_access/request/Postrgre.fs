@@ -279,6 +279,8 @@ module Command =
 
 module Migrations =
 
+    let private resultAsync = ResultAsyncBuilder()
+
     let private initial (client: Client) =
         async {
             let migration = {
@@ -313,9 +315,18 @@ module Migrations =
         }
 
     let apply (connectionString: string) =
-        {
-            String = connectionString
-            Lifetime = Persistence.Domain.Transient
+        let clientResult =
+            {
+                String = connectionString
+                Lifetime = Persistence.Domain.Transient
+            }
+            |> Provider.init
+
+        resultAsync {
+            let! client = clientResult |> async.Return
+
+            do! client |> initial
+            return ()
         }
-        |> Provider.init
-        |> ResultAsync.wrap (fun client -> client |> initial |> ResultAsync.apply (client |> clean))
+
+        |> ResultAsync.wrap (fun client -> client |> initial |> ResultAsync.applyAsync (client |> clean))

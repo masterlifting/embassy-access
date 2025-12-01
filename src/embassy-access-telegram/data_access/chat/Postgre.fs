@@ -121,4 +121,4 @@ module Migrations =
             String = connectionString
             Lifetime = Persistence.Domain.Transient
         }
-        |> ResultAsync.wrap (fun client -> client |> initial |> ResultAsync.apply (client |> clean))
+        |> ResultAsync.wrap (fun client -> client |> initial |> ResultAsync.applyAsync (client |> clean))
