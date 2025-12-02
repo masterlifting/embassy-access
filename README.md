@@ -17,6 +17,23 @@ The project is structured into several components, including core functionality,
   - `fsharp-infrastructure`: Provides foundational infrastructure services.
   - `fsharp-persistence`: Handles data persistence.
   - `fsharp-worker`: Manages background tasks and processing.
+<!-- WORKER_DOC_START -->
+# F# Worker (Updated)
+
+Executes a directed task tree with mixed parallel/sequential groups, per-node scheduling and optional recursion (time-based re-run). Stateless: only invokes user handlers; task state lives in configured storage.
+
+TaskNode fields: Enabled, Recursively(TimeSpan), Parallel(bool), Duration(TimeSpan, default 2m), WaitResult(bool), Schedule(optional), Description(optional). Handlers are attached by Id; merging builds WorkerTask with same fields plus Handler option.
+
+Schedule: Name, Start/Stop Date/Time, Workdays set, Recursively(bool for schedule window continuation), TimeZone(hour offset). Scheduler resolves to Started | StartIn(delay) | StopIn(delay) | Stopped | NotScheduled and supports recursive windows.
+
+Execution flow: initialize storage (Postgre applies migrations & optional task insert; Configuration just loads). Start from RootTaskId, process: take leading Parallel=true block (>=2 -> Async.Parallel else sequential group), then recurse remaining list. Each task start: schedule evaluation, optional delay, handler run with cancellation by Duration, optional fire-and-forget if WaitResult=false. Recursively(TimeSpan) reschedules same task after delay.
+
+Storage supported: Postgre database, Configuration (in-memory from config). FindTask pulls persisted/memory tree, merges with handlers tree, then walks children.
+
+Program.fs constructs Worker.Client.start with: Name, RootTaskId ("WRK"), Storage, Tasks(optional seed), Handlers, TaskDeps (custom shared deps). Returns async run.
+
+See submodules/fsharp-worker/src for full implementation details.
+<!-- WORKER_DOC_END -->
   - `fsharp-web`: Web-related functionalities.
   - `fharp-ai-provider`: Provides AI clients and services.
 
@@ -74,3 +91,4 @@ This project is licensed under the MIT License.
 ### Contact
 
 For any inquiries or issues, please contact me via telegram at @andreipestunov
+

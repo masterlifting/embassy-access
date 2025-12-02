@@ -8,11 +8,13 @@ Worker:
   Enabled: true
   WaitResult: true
   Schedule:
+    Name: Main Worker Schedule
   Tasks:
     - Id: FRA
       Parallel: true
       Description: French embassy appointments
       Schedule:
+        Name: French Embassy Schedule
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
@@ -21,11 +23,13 @@ Worker:
             - Id: SA
               Description: Search for appointments at the French embassy in Serbia
           Schedule:
+            Name: French Embassy Serbia Schedule
             TimeZone: 2
     - Id: GBR
       Parallel: true
       Description: British embassy appointments
       Schedule:
+        Name: British Embassy Schedule
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
@@ -34,11 +38,13 @@ Worker:
             - Id: SA
               Description: Search for appointments at the British embassy in Serbia
           Schedule:
+            Name: British Embassy Serbia Schedule
             TimeZone: 2
     - Id: USA
       Parallel: true
       Description: American embassy appointments
       Schedule:
+        Name: American Embassy Schedule
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
@@ -47,11 +53,13 @@ Worker:
             - Id: SA
               Description: Search for appointments at the American embassy in Serbia
           Schedule:
+            Name: American Embassy Serbia Schedule
             TimeZone: 2
     - Id: DEU
       Parallel: true
       Description: German embassy appointments
       Schedule:
+        Name: German Embassy Schedule
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
@@ -60,10 +68,12 @@ Worker:
             - Id: SA
               Description: Search for appointments at the German embassy in Serbia
           Schedule:
+            Name: German Embassy Serbia Schedule
             TimeZone: 2
     - Id: RUS
       Parallel: true
       Schedule:
+        Name: Russian Embassy Schedule
         Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
         - Id: SRB
@@ -75,6 +85,7 @@ Worker:
               Duration: 00:03:00
               Description: Search for appointments at the Russian embassy in Serbia
               Schedule:
+                Name: Russian Embassy Serbia Schedule
                 StartTime: 00:01:00
                 StopTime: 23:55:20
                 TimeZone: 2
@@ -84,6 +95,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Hungary
               Schedule:
+                Name: Russian Embassy Hungary Schedule
                 TimeZone: 2
         - Id: BIH
           Parallel: true
@@ -91,6 +103,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Bosnia and Herzegovina
               Schedule:
+                Name: Russian Embassy Bosnia Schedule
                 TimeZone: 2
         - Id: DEU
           Parallel: true
@@ -98,6 +111,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Germany
               Schedule:
+                Name: Russian Embassy Germany Schedule
                 TimeZone: 2
         - Id: MNE
           Parallel: true
@@ -105,6 +119,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Montenegro
               Schedule:
+                Name: Russian Embassy Montenegro Schedule
                 TimeZone: 2
         - Id: ALB
           Parallel: true
@@ -112,6 +127,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Albania
               Schedule:
+                Name: Russian Embassy Albania Schedule
                 TimeZone: 2
         - Id: FRA
           Parallel: true
@@ -119,6 +135,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in France
               Schedule:
+                Name: Russian Embassy France Schedule
                 TimeZone: 2
         - Id: ITA
           Parallel: true
@@ -126,6 +143,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Italy
               Schedule:
+                Name: Russian Embassy Italy Schedule
                 TimeZone: 2
         - Id: IRL
           Parallel: true
@@ -133,6 +151,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Ireland
               Schedule:
+                Name: Russian Embassy Ireland Schedule
                 TimeZone: 1
         - Id: CHE
           Parallel: true
@@ -140,6 +159,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Switzerland
               Schedule:
+                Name: Russian Embassy Switzerland Schedule
                 TimeZone: 2
         - Id: FIN
           Parallel: true
@@ -147,6 +167,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Finland
               Schedule:
+                Name: Russian Embassy Finland Schedule
                 TimeZone: 3
         - Id: NLD
           Parallel: true
@@ -154,6 +175,7 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in the Netherlands
               Schedule:
+                Name: Russian Embassy Netherlands Schedule
                 TimeZone: 2
         - Id: SVN
           Parallel: true
@@ -161,11 +183,13 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Russian embassy in Slovenia
               Schedule:
+                Name: Russian Embassy Slovenia Schedule
                 TimeZone: 2
     - Id: CHN
       Parallel: true
       Description: Chinese embassy appointments
       Schedule:
+        Name: Chinese Embassy Schedule
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
@@ -174,11 +198,13 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Chinese embassy in Serbia
           Schedule:
+            Name: Chinese Embassy Serbia Schedule
             TimeZone: 2
     - Id: GRC
       Parallel: true
       Description: Greek embassy appointments
       Schedule:
+        Name: Greek Embassy Schedule
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
@@ -187,10 +213,12 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Greek embassy in Serbia
           Schedule:
+            Name: Greek Embassy Serbia Schedule
             TimeZone: 2
     - Id: ITA
       Parallel: true
       Schedule:
+        Name: Italian Embassy Schedule
         Workdays: mon,tue,wed,thu,fri,sat,sun
       Tasks:
         - Id: SRB
@@ -202,6 +230,7 @@ Worker:
               Duration: 00:03:00
               Description: Search for appointments at the Italian embassy in Serbia
               Schedule:
+                Name: Italian Embassy Serbia Schedule
                 StartTime: 00:55:00
                 StopTime: 23:55:20
                 TimeZone: 2
@@ -209,6 +238,7 @@ Worker:
       Parallel: true
       Description: Spanish embassy appointments
       Schedule:
+        Name: Spanish Embassy Schedule
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
@@ -217,11 +247,13 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Spanish embassy in Serbia
           Schedule:
+            Name: Spanish Embassy Serbia Schedule
             TimeZone: 2
     - Id: NLD
       Parallel: true
       Description: Dutch embassy appointments
       Schedule:
+        Name: Dutch Embassy Schedule
         Workdays: mon,tue,wed,thu,fri
       Tasks:
         - Id: SRB
@@ -230,4 +262,5 @@ Worker:
             - Id: SA
               Description: Search for appointments at the Dutch embassy in Serbia
           Schedule:
+            Name: Dutch Embassy Serbia Schedule
             TimeZone: 2

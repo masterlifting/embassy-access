@@ -17,7 +17,7 @@ module Prenotami =
         TaskName: string
         tryProcessFirst: Request<Payload> seq -> Async<Result<Request<Payload>, Error'>>
         getRequests: ServiceId -> Async<Result<Request<Payload> list, Error'>>
-        cleanResources: unit -> Async<Result<unit, Error'>>
+        cleanResources: unit -> Result<unit, Error'>
     } with
 
         static member create task (deps: WorkerTask.Dependencies) ct =
@@ -59,10 +59,7 @@ module Prenotami =
                     |> Prenotami.Service.tryProcessFirst requests
 
                 let cleanResources () =
-                    async {
-                        requestStorage |> EA.Core.DataAccess.Storage.Request.dispose
-                        return Ok()
-                    }
+                    requestStorage |> EA.Core.DataAccess.Storage.Request.dispose |> Ok
 
                 return {
                     TaskName = taskName
