@@ -1,6 +1,6 @@
 # @format
 
-LOG_LEVEL: 'debug'
+LOG_LEVEL: debug
 VERSION: '1.0.0'
 
 Worker:
