@@ -5,17 +5,25 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="dependencies\Configuration.fs" />
-    <Compile Include="dependencies\Persistence.fs" />
-    <Compile Include="dependencies\WorkerTask.fs" />
-    <Compile Include="dependencies\embassies\Common.fs" />
-    <Compile Include="dependencies\embassies\Russian.fs" />
-    <Compile Include="dependencies\embassies\Italian.fs" />
-    <Compile Include="embassies\Russian.fs" />
-    <Compile Include="embassies\Italian.fs" />
-    <Compile Include="Initializer.fs" />
-    <Compile Include="Handlers.fs" />
-    <Compile Include="Program.fs" />
+    <!-- shared deps -->
+    <Compile Include="shared\deps\Configuration.fs" />
+    <Compile Include="shared\deps\Worker.fs" />
+    <Compile Include="shared\embassies\Common.fs" />
+
+    <!-- features: russian -->
+    <Compile Include="features\russian\deps\Infra.fs" />
+    <Compile Include="features\russian\deps\Deps.fs" />
+    <Compile Include="features\russian\services\SearchAppointments.fs" />
+
+    <!-- features: italian -->
+    <Compile Include="features\italian\deps\Infra.fs" />
+    <Compile Include="features\italian\deps\Deps.fs" />
+    <Compile Include="features\italian\services\SearchAppointments.fs" />
+
+    <!-- app composition -->
+    <Compile Include="app\Initializer.fs" />
+    <Compile Include="app\Handlers.fs" />
+    <Compile Include="app\Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.yml">
