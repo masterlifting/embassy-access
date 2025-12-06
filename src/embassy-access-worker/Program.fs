@@ -30,9 +30,9 @@ let main _ =
         Logging.Log.inf $"EA.Worker version: %s{version}"
 
         let! tasks =
-            TasksTree.Configuration {
-                Section = "Worker"
-                Provider = configuration
+            TasksTree.Postgre {
+                String = Configuration.ENVIRONMENTS.PostgresConnection
+                Lifetime = Transient
             }
             |> TasksTree.init
             |> ResultAsync.wrap TasksTree.Query.get

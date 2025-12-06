@@ -17,7 +17,7 @@ module Kdmid =
         TaskName: string
         tryProcessFirst: Request<Payload> seq -> Async<Result<Request<Payload>, Error'>>
         getRequests: ServiceId -> Async<Result<Request<Payload> list, Error'>>
-        cleanupResources: Result<unit, Error'>
+        cleanupResources: unit option -> Result<unit, Error'>
     } with
 
         static member create task (deps: WorkerTask.Dependencies) ct =
@@ -71,7 +71,7 @@ module Kdmid =
                     |> Result.map (fun client -> client, handleProcessResult)
                     |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
 
-                let cleanupResources =
+                let cleanupResources _ =
                     requestStorage |> EA.Core.DataAccess.Storage.Request.dispose |> Ok
 
                 return {
