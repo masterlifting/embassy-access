@@ -5,11 +5,8 @@ open Infrastructure.Prelude
 open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
-open EA.Core.DataAccess
-open Persistence.Domain
 open EA.Italian.Services
 open EA.Italian.Services.Router
-open EA.Italian.Services.DataAccess.Prenotami
 open EA.Worker.Dependencies.Embassies.ItalianInfra
 open EA.Worker.Dependencies
 open EA.Worker.Dependencies.Embassies
@@ -24,7 +21,7 @@ module Prenotami =
         cleanResources: unit option -> Result<unit, Error'>
     } with
 
-        static member create task (deps: EA.Worker.Dependencies.WorkerTask.Dependencies) ct =
+        static member create task (deps: Worker.Task.Dependencies) ct =
             let result = ResultBuilder()
             let taskName = ActiveTask.print task
 

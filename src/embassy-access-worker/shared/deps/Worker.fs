@@ -1,14 +1,11 @@
-namespace EA.Worker.Dependencies
+[<RequireQualifiedAccess>]
+module internal EA.Worker.Dependencies.Worker
 
 open Infrastructure.Prelude
-open Infrastructure.Configuration.Domain
 
 [<RequireQualifiedAccess>]
-module WorkerTask =
-
+module Task =
     open Microsoft.Extensions.Configuration
-
-    let private result = ResultBuilder()
 
     type Persistence = {
         ConnectionString: string
@@ -20,23 +17,16 @@ module WorkerTask =
         Persistence: Persistence
     } with
 
-        static member create configuration =
-            result {
-                return {
-                    Configuration = configuration
-                    Persistence = {
-                        ConnectionString = Configuration.ENVIRONMENTS.PostgresConnection
-                        EncryptionKey = Configuration.ENVIRONMENTS.EncryptionKey
-                    }
-                }
+        static member create configuration = {
+            Configuration = configuration
+            Persistence = {
+                ConnectionString = Configuration.ENVIRONMENTS.PostgresConnection
+                EncryptionKey = Configuration.ENVIRONMENTS.EncryptionKey
             }
+        }
 
-/// Build worker dependencies (handlers, tasks tree, persistence) for Worker.Client.start
-module internal App =
+module internal Dependencies =
 
-    open Infrastructure.Prelude
-    open Infrastructure.Configuration.Domain
-    open Microsoft.Extensions.Configuration
     open Persistence.Domain
     open Persistence.Storages.Domain
     open Worker.Dependencies
@@ -44,8 +34,9 @@ module internal App =
 
     let private resultAsync = ResultAsyncBuilder()
 
-    let create handlers (configuration: IConfigurationRoot) version =
+    let create handlers configuration =
         resultAsync {
+
             let! tasks =
                 TasksTree.Postgre {
                     String = Configuration.ENVIRONMENTS.PostgresConnection
@@ -53,18 +44,19 @@ module internal App =
                 }
                 |> TasksTree.init
                 |> ResultAsync.wrap TasksTree.Query.get
-            let! taskDeps = WorkerTask.Dependencies.create configuration |> async.Return
 
-            let workerStorage =
+            let taskDeps = Task.Dependencies.create configuration
+
+            let storage =
                 Persistence.Storage.Connection.Database {
                     Database = Database.Postgre Configuration.ENVIRONMENTS.PostgresConnection
                     Lifetime = Singleton
                 }
 
-            let deps: Worker.Dependencies<WorkerTask.Dependencies> = {
-                Name = $"EA.Worker: v{version}"
+            let deps: Worker.Dependencies<Task.Dependencies> = {
+                Name = "EA.Worker"
                 RootTaskId = "WRK"
-                Storage = workerStorage
+                Storage = storage
                 Tasks = Some tasks
                 Handlers = handlers
                 TaskDeps = taskDeps

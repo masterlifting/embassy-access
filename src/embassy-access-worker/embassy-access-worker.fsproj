@@ -9,21 +9,18 @@
     <Compile Include="shared\deps\Configuration.fs" />
     <Compile Include="shared\deps\Worker.fs" />
     <Compile Include="shared\embassies\Common.fs" />
-
     <!-- features: russian -->
     <Compile Include="features\russian\deps\Infra.fs" />
     <Compile Include="features\russian\deps\Deps.fs" />
-    <Compile Include="features\russian\services\SearchAppointments.fs" />
-
+    <Compile Include="features\russian\services\Kdmid.fs" />
     <!-- features: italian -->
     <Compile Include="features\italian\deps\Infra.fs" />
     <Compile Include="features\italian\deps\Deps.fs" />
     <Compile Include="features\italian\services\SearchAppointments.fs" />
-
     <!-- app composition -->
     <Compile Include="app\Initializer.fs" />
     <Compile Include="app\Handlers.fs" />
-    <Compile Include="app\Program.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.yml">

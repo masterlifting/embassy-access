@@ -1,24 +1,28 @@
-module internal EA.Worker.Embassies.Italian.Prenotami
+module internal EA.Worker.Embassies.Russian.Kdmid
 
 open Infrastructure.Prelude
 open Infrastructure.Logging
 open EA.Core.Domain
-open EA.Italian.Services.Domain.Prenotami
-open EA.Worker.Dependencies.Embassies.Italian
+open EA.Russian.Services.Domain.Kdmid
+open EA.Worker.Dependencies.Embassies.Russian
 
 let private processGroup requests =
-    fun (deps: Prenotami.Dependencies) ->
+    fun (deps: Kdmid.Dependencies) ->
         deps.tryProcessFirst requests
         |> ResultAsync.map (fun request ->
             match request.Payload.State with
-            | NoAppointments msg -> deps.TaskName + $" {msg}." |> Log.dbg
-            | HasAppointments appointments -> deps.TaskName + $" Appointments found: %i{appointments.Count}" |> Log.scs)
+            | NoAppointments -> deps.TaskName + " No appointments found." |> Log.dbg
+            | HasAppointments appointments -> deps.TaskName + $" Appointments found: %i{appointments.Count}" |> Log.scs
+            | HasConfirmation(msg, appointment) ->
+                deps.TaskName
+                + $" Confirmation found: %s{msg}. %s{Appointment.print appointment}"
+                |> Log.scs)
 
 let private start =
-    fun (deps: Prenotami.Dependencies) ->
+    fun (deps: Kdmid.Dependencies) ->
         let inline processGroup requests = deps |> processGroup requests
 
-        [ Services.ROOT_ID; Embassies.ITA ]
+        [ Services.ROOT_ID; Embassies.RUS ]
         |> ServiceId.combine
         |> deps.getRequests
         |> ResultAsync.map (fun requests ->
@@ -37,7 +41,7 @@ let private start =
                 results
                 |> Async.map (fun (_, errors) ->
                     errors |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt) |> Ok))
-        |> ResultAsync.apply deps.cleanResources
+        |> ResultAsync.apply deps.cleanupResources
 
 let searchAppointments (task, deps, ct) =
-    Prenotami.Dependencies.create task deps ct |> ResultAsync.wrap start
+    Kdmid.Dependencies.create task deps ct |> ResultAsync.wrap start

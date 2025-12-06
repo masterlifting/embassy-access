@@ -11,12 +11,12 @@ let register () =
         Tree.Node.create ("RUS", None)
         |> withChild (
             Tree.Node.create ("SRB", None)
-            |> withChild (Tree.Node.create ("SA", Some Embassies.Russian.Kdmid.SearchAppointments.handle))
+            |> withChild (Tree.Node.create ("SA", Some Embassies.Russian.Kdmid.searchAppointments))
         )
 
         Tree.Node.create ("ITA", None)
         |> withChild (
             Tree.Node.create ("SRB", None)
-            |> withChild (Tree.Node.create ("SA", Some Embassies.Italian.Prenotami.SearchAppointments.handle))
+            |> withChild (Tree.Node.create ("SA", Some Embassies.Italian.Prenotami.searchAppointments))
         )
     ]
