@@ -2,6 +2,7 @@ module internal EA.Worker.Handlers
 
 open Infrastructure.Domain
 open Infrastructure.Prelude.Tree.Builder
+open EA.Worker.Features
 open EA.Worker
 
 let register () =
@@ -11,12 +12,12 @@ let register () =
         Tree.Node.create ("RUS", None)
         |> withChild (
             Tree.Node.create ("SRB", None)
-            |> withChild (Tree.Node.create ("SA", Some Embassies.Russian.Kdmid.searchAppointments))
+            |> withChild (Tree.Node.create ("SA", Some Russian.Kdmid.Service.searchAppointments))
         )
 
         Tree.Node.create ("ITA", None)
         |> withChild (
             Tree.Node.create ("SRB", None)
-            |> withChild (Tree.Node.create ("SA", Some Embassies.Italian.Prenotami.searchAppointments))
+            |> withChild (Tree.Node.create ("SA", Some Italian.Prenotami.Service.searchAppointments))
         )
     ]

@@ -1,4 +1,4 @@
-module internal EA.Worker.Dependencies.Embassies.ItalianInfra
+module internal EA.Worker.Features.Italian.Prenotami.Infra
 
 open Persistence.Domain
 open EA.Core.DataAccess

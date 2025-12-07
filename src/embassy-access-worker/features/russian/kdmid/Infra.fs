@@ -1,4 +1,4 @@
-module internal EA.Worker.Dependencies.Embassies.RussianInfra
+module internal EA.Worker.Features.Russian.Kdmid.Infra
 
 open Persistence.Domain
 open EA.Core.DataAccess

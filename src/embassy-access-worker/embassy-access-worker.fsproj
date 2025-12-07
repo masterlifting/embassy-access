@@ -10,13 +10,11 @@
     <Compile Include="shared\deps\Worker.fs" />
     <Compile Include="shared\embassies\Common.fs" />
     <!-- features: russian -->
-    <Compile Include="features\russian\deps\Infra.fs" />
-    <Compile Include="features\russian\deps\Deps.fs" />
-    <Compile Include="features\russian\services\Kdmid.fs" />
+    <Compile Include="features\russian\kdmid\Infra.fs" />
+    <Compile Include="features\russian\kdmid\Service.fs" />
     <!-- features: italian -->
-    <Compile Include="features\italian\deps\Infra.fs" />
-    <Compile Include="features\italian\deps\Deps.fs" />
-    <Compile Include="features\italian\services\SearchAppointments.fs" />
+    <Compile Include="features\italian\prenotami\Infra.fs" />
+    <Compile Include="features\italian\prenotami\Service.fs" />
     <!-- app composition -->
     <Compile Include="app\Initializer.fs" />
     <Compile Include="app\Handlers.fs" />
@@ -32,5 +30,6 @@
     <ProjectReference Include="..\..\submodules\fsharp-worker\src\fsharp-worker.fsproj" />
     <ProjectReference Include="..\embassy-access-modules\embassy-access-italian\embassy-access-italian.fsproj" />
     <ProjectReference Include="..\embassy-access-modules\embassy-access-russian\embassy-access-russian.fsproj" />
+    <Folder Include="features\italian\prenotami\" />
   </ItemGroup>
 </Project>
