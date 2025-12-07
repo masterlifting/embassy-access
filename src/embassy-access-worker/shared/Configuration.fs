@@ -1,5 +1,5 @@
 [<RequireQualifiedAccess>]
-module internal EA.Worker.Dependencies.Configuration
+module internal EA.Worker.Shared.Configuration
 
 open Infrastructure
 open Infrastructure.Domain

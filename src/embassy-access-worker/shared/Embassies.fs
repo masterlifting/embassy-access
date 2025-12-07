@@ -1,4 +1,4 @@
-module internal EA.Worker.Dependencies.Embassies.Common
+module internal EA.Worker.Shared.Embassies
 
 open System
 open Infrastructure.Prelude

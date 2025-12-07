@@ -1,5 +1,5 @@
 [<RequireQualifiedAccess>]
-module internal EA.Worker.Dependencies.Worker
+module internal EA.Worker.Shared.Worker
 
 open Infrastructure.Prelude
 

@@ -1,7 +1,7 @@
 open Infrastructure
 open Infrastructure.Prelude
 open Infrastructure.Configuration.Domain
-open EA.Worker.Dependencies
+open EA.Worker.Shared
 
 let private resultAsync = ResultAsyncBuilder()
 

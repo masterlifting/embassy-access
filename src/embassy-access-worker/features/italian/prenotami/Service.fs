@@ -3,13 +3,12 @@ module internal EA.Worker.Features.Italian.Prenotami.Service
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
-open EA.Core.Domain
 open Worker.Domain
+open EA.Core.Domain
 open EA.Italian.Services
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
-open EA.Worker.Dependencies
-open EA.Worker.Dependencies.Embassies
+open EA.Worker.Shared
 open EA.Worker.Features.Italian.Prenotami.Infra
 
 type private Dependencies = {
@@ -24,7 +23,7 @@ type private Dependencies = {
         let taskName = ActiveTask.print task
 
         result {
-            let! requestStorage = initRequestStorage deps.Persistence.ConnectionString deps.Persistence.EncryptionKey
+            let! requestStorage = RequestStorage.init deps.Persistence.ConnectionString deps.Persistence.EncryptionKey
 
             let handleProcessResult (result: Result<Request<Payload>, Error'>) =
                 result
@@ -45,7 +44,7 @@ type private Dependencies = {
 
             let getRequests serviceId =
                 (requestStorage, hasRequiredService)
-                |> Common.getRequests serviceId task.Duration
+                |> Embassies.getRequests serviceId task.Duration
 
             let tryProcessFirst requests =
                 Prenotami.Client.init {
@@ -56,7 +55,8 @@ type private Dependencies = {
                 |> fun client -> client, handleProcessResult
                 |> Prenotami.Service.tryProcessFirst requests
 
-            let cleanResources _ = requestStorage |> disposeRequestStorage
+            let cleanResources _ =
+                requestStorage |> RequestStorage.dispose
 
             return {
                 TaskName = taskName

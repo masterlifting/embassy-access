@@ -1,6 +1,6 @@
 module internal EA.Worker.Initializer
 
-open EA.Worker.Dependencies
+open EA.Worker.Shared
 open EA.Core.DataAccess
 
 let run (_, _, _) =

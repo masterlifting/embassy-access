@@ -3,13 +3,12 @@ module internal EA.Worker.Features.Russian.Kdmid.Service
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Infrastructure.Logging
-open EA.Core.Domain
 open Worker.Domain
+open EA.Core.Domain
 open EA.Russian.Services
 open EA.Russian.Services.Router
 open EA.Russian.Services.Domain.Kdmid
-open EA.Worker.Dependencies
-open EA.Worker.Dependencies.Embassies
+open EA.Worker.Shared
 open EA.Worker.Features.Russian.Kdmid.Infra
 
 type private Dependencies = {
@@ -24,7 +23,7 @@ type private Dependencies = {
         let taskName = ActiveTask.print task
 
         result {
-            let! requestStorage = deps.Persistence.ConnectionString |> initRequestStorage
+            let! requestStorage = RequestStorage.init deps.Persistence.ConnectionString
 
             let rec handleProcessResult (result: Result<Request<Payload>, Error'>) =
                 result
@@ -51,7 +50,7 @@ type private Dependencies = {
 
             let getRequests serviceId =
                 (requestStorage, hasRequiredService)
-                |> Common.getRequests serviceId task.Duration
+                |> Embassies.getRequests serviceId task.Duration
                 |> ResultAsync.map (
                     List.filter (fun request ->
                         match request.Payload.State with
@@ -70,7 +69,8 @@ type private Dependencies = {
                 |> Result.map (fun client -> client, handleProcessResult)
                 |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
 
-            let cleanupResources _ = requestStorage |> disposeRequestStorage
+            let cleanupResources _ =
+                requestStorage |> RequestStorage.dispose
 
             return {
                 TaskName = taskName

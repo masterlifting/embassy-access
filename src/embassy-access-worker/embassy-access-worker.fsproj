@@ -6,9 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- shared deps -->
-    <Compile Include="shared\deps\Configuration.fs" />
-    <Compile Include="shared\deps\Worker.fs" />
-    <Compile Include="shared\embassies\Common.fs" />
+    <Compile Include="shared\Configuration.fs" />
+    <Compile Include="shared\Worker.fs" />
+    <Compile Include="shared\Embassies.fs" />
     <!-- features: russian -->
     <Compile Include="features\russian\kdmid\Infra.fs" />
     <Compile Include="features\russian\kdmid\Service.fs" />
