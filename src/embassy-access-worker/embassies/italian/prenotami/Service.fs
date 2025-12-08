@@ -1,4 +1,4 @@
-module internal EA.Worker.Features.Italian.Prenotami.Service
+module internal EA.Worker.Embassies.Italian.Prenotami.Service
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -9,7 +9,7 @@ open EA.Italian.Services
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
 open EA.Worker.Shared
-open EA.Worker.Features.Italian.Prenotami.Infra
+open EA.Worker.Embassies.Italian.Prenotami.Infra
 
 type private Dependencies = {
     TaskName: string

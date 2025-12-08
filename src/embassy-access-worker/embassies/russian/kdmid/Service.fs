@@ -1,4 +1,4 @@
-module internal EA.Worker.Features.Russian.Kdmid.Service
+module internal EA.Worker.Embassies.Russian.Kdmid.Service
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -9,7 +9,7 @@ open EA.Russian.Services
 open EA.Russian.Services.Router
 open EA.Russian.Services.Domain.Kdmid
 open EA.Worker.Shared
-open EA.Worker.Features.Russian.Kdmid.Infra
+open EA.Worker.Embassies.Russian.Kdmid.Infra
 
 type private Dependencies = {
     TaskName: string
