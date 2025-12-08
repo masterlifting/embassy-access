@@ -183,8 +183,7 @@ type Route =
         | Pension r -> "3" :: r.Value
 
 let parse (serviceId: ServiceId) =
-    // Maybe I should make sure that the serviceId is an Russian serviceId
-    let input = serviceId.NodeId.Values |> List.skip 2
+    let input = serviceId.NodeId.Values
     let remaining = input[1..]
 
     match input[0] with

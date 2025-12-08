@@ -43,7 +43,10 @@ module internal Dependencies =
                     Lifetime = Transient
                 }
                 |> TasksTree.init
-                |> ResultAsync.wrap TasksTree.Query.get
+                |> ResultAsync.wrap(fun storage -> 
+                    storage 
+                    |> TasksTree.Query.get
+                    |> ResultAsync.apply (fun _ -> storage |> TasksTree.dispose |> Ok ))
 
             let taskDeps = Task.Dependencies.create configuration
 
