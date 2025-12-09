@@ -34,41 +34,46 @@ type Entity() =
                 )
 
         subscriptionsResult
-        |> Result.map (fun subscriptions -> {
-            Id = this.Id |> ChatId
-            Subscriptions = subscriptions
-            Culture = this.Culture |> Culture.parse
-        })
+        |> Result.map (fun subscriptions ->
+            let chat: Chat = {
+                Id = this.Id |> ChatId
+                Subscriptions = subscriptions
+                Culture = this.Culture |> Culture.parse
+            }
 
-type private Subscription with
-    member private this.ToEntity() =
-        Subscriptions.Entity(Id = this.Id.Value, EmbassyId = this.EmbassyId.Value, ServiceId = this.ServiceId.Value)
+            chat)
 
-type private Chat with
-    member private this.ToEntity() =
-        let subscriptionsJson =
-            this.Subscriptions
-            |> Seq.map _.ToEntity()
-            |> Seq.toList
-            |> Infrastructure.SerDe.Json.serialize
-            |> Result.defaultValue "[]"
+let private subscriptionToEntity (subscription: Subscription) =
+    Subscriptions.Entity(
+        Id = subscription.Id.Value,
+        EmbassyId = subscription.EmbassyId.Value,
+        ServiceId = subscription.ServiceId.Value
+    )
 
-        let result = Entity(Id = this.Id.Value, Culture = this.Culture.Code)
-        result.Subscriptions <- subscriptionsJson
-        result
+let private chatToEntity (chat: Chat) =
+    let subscriptionsJson =
+        chat.Subscriptions
+        |> Seq.map subscriptionToEntity
+        |> Seq.toList
+        |> Infrastructure.SerDe.Json.serialize
+        |> Result.defaultValue "[]"
+
+    let result = Entity(Id = chat.Id.Value, Culture = chat.Culture.Code)
+    result.Subscriptions <- subscriptionsJson
+    result
 
 // Helper function for external modules to access ToEntity method
-let toEntity (chat: Chat) = chat.ToEntity() |> Ok
+let toEntity (chat: Chat) = chatToEntity chat |> Ok
 
 module internal Common =
     let create (chat: Chat) (data: Entity array) =
         match data |> Array.exists (fun x -> x.Id = chat.Id.Value) with
         | true -> $"The '{chat.Id}'" |> AlreadyExists |> Error
-        | false -> data |> Array.append [| chat.ToEntity() |] |> Ok
+        | false -> data |> Array.append [| chatToEntity chat |] |> Ok
 
     let update (chat: Chat) (data: Entity array) =
         match data |> Array.tryFindIndex (fun x -> x.Id = chat.Id.Value) with
         | Some index ->
-            data[index] <- chat.ToEntity()
+            data[index] <- chatToEntity chat
             Ok data
         | None -> $"The '{chat.Id}' not found." |> NotFound |> Error

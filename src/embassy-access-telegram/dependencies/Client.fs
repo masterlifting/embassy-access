@@ -7,13 +7,14 @@ open AIProvider.Services.Dependencies
 open AIProvider.Clients
 open Web.Clients
 open EA.Telegram.Dependencies
+open EA.Telegram.Features.Culture
 
 let private result = ResultBuilder()
 
 type Dependencies = {
     ct: CancellationToken
     Web: Web.Dependencies
-    Culture: Culture.Dependencies
+    Culture: EA.Telegram.Features.Culture.Dependencies.Dependencies
     Persistence: Persistence.Dependencies
 } with
 
@@ -21,12 +22,12 @@ type Dependencies = {
         result {
             let! telegramClient =
                 Telegram.Client.init {
-                    Token = Configuration.ENVIRONMENTS.TelegramBotToken
+                    Token = EA.Telegram.Shared.Configuration.ENVIRONMENTS.TelegramBotToken
                 }
 
             let! openApiClient =
                 OpenAI.Client.init {
-                    Token = Configuration.ENVIRONMENTS.OpenAIKey
+                    Token = EA.Telegram.Shared.Configuration.ENVIRONMENTS.OpenAIKey
                     ProjectId = "proj_OsfEwmtR7Shm2Uj4wqJTdgcC"
                 }
 
@@ -37,7 +38,7 @@ type Dependencies = {
             let! cultureDeps =
                 persistenceDeps.initCultureStorage ()
                 |> Result.map (fun storage ->
-                    Culture.Dependencies.create ct {
+                    EA.Telegram.Features.Culture.Dependencies.Dependencies.create ct {
                         Provider = AIProvider.Client.OpenAI openApiClient
                         Storage = storage
                     })

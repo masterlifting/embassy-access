@@ -1,4 +1,4 @@
-﻿open System.Threading
+open System.Threading
 open Infrastructure
 open Infrastructure.Prelude
 open Infrastructure.Configuration.Domain

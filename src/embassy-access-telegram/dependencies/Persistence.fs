@@ -8,7 +8,6 @@ open AIProvider.Services.DataAccess
 open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
-open EA.Telegram.Dependencies
 
 let private result = ResultBuilder()
 
@@ -86,14 +85,14 @@ type Dependencies = {
 
         let initChatStorage () =
             Storage.Chat.Postgre {
-                String = Configuration.ENVIRONMENTS.PostgresConnection
+                String = EA.Telegram.Shared.Configuration.ENVIRONMENTS.PostgresConnection
                 Lifetime = Transient
             }
             |> Storage.Chat.init
 
         let initCultureStorage () =
             Storage.Culture.Postgre {
-                String = Configuration.ENVIRONMENTS.PostgresConnection
+                String = EA.Telegram.Shared.Configuration.ENVIRONMENTS.PostgresConnection
                 Lifetime = Transient
             }
             |> Storage.Culture.init
@@ -111,8 +110,9 @@ type Dependencies = {
 
         result {
 
-            let pgConnectionString = Configuration.ENVIRONMENTS.PostgresConnection
-            let fileStorageKey = Configuration.ENVIRONMENTS.EncryptionKey
+            let pgConnectionString =
+                EA.Telegram.Shared.Configuration.ENVIRONMENTS.PostgresConnection
+            let fileStorageKey = EA.Telegram.Shared.Configuration.ENVIRONMENTS.EncryptionKey
 
             return {
                 initChatStorage = initChatStorage

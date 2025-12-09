@@ -14,10 +14,10 @@ type Entity() =
     member this.ToDomain() =
         match RequestId.create this.Id with
         | Ok id ->
-            {
+            let subscription: Subscription = {
                 Id = id
                 EmbassyId = this.EmbassyId |> Tree.NodeId.create |> EmbassyId
                 ServiceId = this.ServiceId |> Tree.NodeId.create |> ServiceId
             }
-            |> Ok
+            subscription |> Ok
         | _ -> $"Subscription '{this.Id}' is not supported." |> NotSupported |> Error
