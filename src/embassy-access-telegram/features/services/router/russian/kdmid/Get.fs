@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Services.Russian.Kdmid.Get
+﻿module EA.Telegram.Features.Services.Router.Russian.Kdmid.Get
 
 open Infrastructure.Domain
 open EA.Core.Domain

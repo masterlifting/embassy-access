@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Services.Italian.Prenotami.Delete
+﻿module EA.Telegram.Features.Services.Router.Italian.Prenotami.Delete
 
 open Infrastructure.Domain
 open EA.Core.Domain

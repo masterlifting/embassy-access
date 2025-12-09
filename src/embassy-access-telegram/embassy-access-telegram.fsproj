@@ -5,9 +5,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="domain\Constants.fs" />
     <Compile Include="domain\Subscription.fs" />
     <Compile Include="domain\Chat.fs" />
-    <Compile Include="domain\Constants.fs" />
     <Compile Include="data_access\Subscriptions.fs" />
     <Compile Include="data_access\chat\Chat.fs" />
     <Compile Include="data_access\chat\FileSystem.fs" />
@@ -43,7 +43,7 @@
     <Compile Include="dependencies\Client.fs" />
     <Compile Include="dependencies\Request.fs" />
     <Compile Include="features\embassies\deps\Dependencies.fs" />
-    <Compile Include="features\services\deps\Services.fs" />
+    <Compile Include="features\services\deps\Dependencies.fs" />
     <Compile Include="features\services\deps\russian\Russian.fs" />
     <Compile Include="features\services\deps\russian\Midpass.fs" />
     <Compile Include="features\services\deps\russian\Kdmid.fs" />

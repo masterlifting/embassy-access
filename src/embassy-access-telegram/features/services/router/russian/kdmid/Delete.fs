@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Services.Russian.Kdmid.Delete
+﻿module EA.Telegram.Features.Services.Router.Russian.Kdmid.Delete
 
 open Infrastructure.Domain
 open EA.Core.Domain

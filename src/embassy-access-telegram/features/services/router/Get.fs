@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Services.Get
+﻿module EA.Telegram.Features.Services.Router.Get
 
 open Infrastructure.Domain
 open EA.Core.Domain

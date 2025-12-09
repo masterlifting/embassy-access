@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Features.Embassies.Query
+﻿module EA.Telegram.Features.Embassies.Services.Query
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -6,10 +6,9 @@ open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Telegram.Router
-open EA.Telegram.Features.Embassies.Dependencies
-open EA.Telegram.Features.Embassies.Router
 open EA.Telegram.Services
-open EA.Telegram.Dependencies
+open EA.Telegram.Features.Dependencies
+open EA.Telegram.Features.Embassies.Router
 open EA.Telegram.Dependencies.Services
 
 let private createButtonsGroup chatId messageId name buttons =
@@ -43,7 +42,7 @@ let private getEmbassy' embassyId firstCall =
                 node.Children
                 |> Seq.map (fun embassy ->
                     let embassyId = embassy.Id |> EmbassyId
-                    let route = EA.Telegram.Router.Router.Embassies(Method.Get(Get.Embassy embassyId))
+                    let route = Router.Embassies(Method.Get(Get.Embassy embassyId))
                     embassy.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
@@ -73,8 +72,7 @@ let private getUserEmbassy' embassyId firstCall =
                 |> Seq.filter (fun embassy -> userEmbassyIds |> Tree.NodeId.contains embassy.Id)
                 |> Seq.map (fun embassy ->
                     let embassyId = embassy.Id |> EmbassyId
-                    let route =
-                        EA.Telegram.Router.Router.Embassies(Method.Get(Get.UserEmbassy embassyId))
+                    let route = Router.Embassies(Method.Get(Get.UserEmbassy embassyId))
                     embassy.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->

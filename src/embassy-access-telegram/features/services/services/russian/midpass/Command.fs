@@ -5,7 +5,6 @@ open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Telegram.Router.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services.Domain.Midpass
 

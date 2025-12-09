@@ -1,9 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Router.Services.Russian.Kdmid.Method
+module EA.Telegram.Features.Services.Router.Russian.Kdmid.Method
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Router.Services.Russian.Kdmid
+open EA.Telegram.Features.Services.Router.Russian.Kdmid
 
 type Route =
     | Get of Get.Route

@@ -1,9 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Router.Services.Russian.Midpass.Method
+module EA.Telegram.Features.Services.Router.Russian.Midpass.Method
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Router.Services.Russian.Midpass
+open EA.Telegram.Features.Services.Router.Russian.Midpass
 
 type Route =
     | Get of Get.Route

@@ -1,17 +1,17 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Services.Russian.Russian
+module EA.Telegram.Features.Dependencies.Russian.Services
 
 open System.Threading
 open Infrastructure.Domain
 open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
+open EA.Russian.Services.Domain
+open EA.Russian.Services.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Dependencies
-open EA.Telegram.Dependencies.Services
-open EA.Russian.Services.Domain
-open EA.Russian.Services.DataAccess
+open EA.Telegram.Features.Dependencies
 
 type Dependencies = {
     ct: CancellationToken

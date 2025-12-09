@@ -1,9 +1,9 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Router.Services.Italian.Prenotami.Method
+module EA.Telegram.Features.Services.Router.Italian.Prenotami.Method
 
 open Infrastructure.Domain
 open EA.Telegram.Domain
-open EA.Telegram.Router.Services.Italian.Prenotami
+open EA.Telegram.Features.Services.Router.Italian.Prenotami
 
 type Route =
     | Get of Get.Route

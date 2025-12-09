@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Services.Russian.Kdmid.Post
+﻿module EA.Telegram.Features.Services.Router.Russian.Kdmid.Post
 
 open System
 open Infrastructure.Domain

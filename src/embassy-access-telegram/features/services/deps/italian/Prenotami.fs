@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Dependencies.Services.Italian.Prenotami
+module EA.Telegram.Features.Dependencies.Italian.Prenotami.Services
 
 open System.Threading
 open Infrastructure.Domain
@@ -7,13 +7,12 @@ open Infrastructure.Prelude
 open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Telegram.Domain
-open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
 open EA.Italian.Services.DataAccess.Prenotami
-open EA.Telegram.Dependencies
+open EA.Telegram.Domain
+open EA.Telegram.Features.Dependencies
 
 type Dependencies = {
     ct: CancellationToken
@@ -33,7 +32,7 @@ type Dependencies = {
     initRequestStorage: unit -> Result<StorageType, Error'>
 } with
 
-    static member create(deps: Italian.Dependencies) =
+    static member create(deps: Italian.Services.Dependencies) =
 
         let findRequest requestId storage =
             storage

@@ -2,16 +2,15 @@
 module EA.Telegram.Features.Embassies.Controller
 
 open Infrastructure.Prelude
+open EA.Telegram.Features.Dependencies
+open EA.Telegram.Features.Embassies.Services
 open EA.Telegram.Features.Embassies.Router
 open EA.Telegram.Dependencies
-open EA.Telegram.Features.Embassies
-
-module EmbassiesDeps = EA.Telegram.Features.Embassies.Dependencies
 
 let respond request chat =
     fun (deps: Request.Dependencies) ->
         deps
-        |> EmbassiesDeps.Dependencies.create chat
+        |> Embassies.Dependencies.create chat
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Method.Get get ->

@@ -5,11 +5,12 @@ open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
+open EA.Russian.Services.Domain.Kdmid
+open EA.Russian.Services.Router
 open EA.Telegram.Router
 open EA.Telegram.Router.Services.Russian
 open EA.Telegram.Dependencies.Services.Russian
-open EA.Russian.Services.Domain.Kdmid
-open EA.Russian.Services.Router
+open EA.Telegram.Features.
 
 [<Literal>]
 let private INPUT_LINK = "<link>"

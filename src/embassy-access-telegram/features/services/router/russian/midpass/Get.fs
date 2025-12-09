@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Services.Russian.Midpass.Get
+﻿module EA.Telegram.Features.Services.Router.Russian.Midpass.Get
 
 open Infrastructure.Domain
 open EA.Core.Domain

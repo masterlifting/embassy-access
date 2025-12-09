@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Services.Italian.Prenotami.Post
+﻿module EA.Telegram.Features.Services.Router.Italian.Prenotami.Post
 
 open Infrastructure.Domain
 open EA.Core.Domain

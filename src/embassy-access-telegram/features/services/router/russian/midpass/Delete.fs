@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Router.Services.Russian.Midpass.Delete
+﻿module EA.Telegram.Features.Services.Router.Russian.Midpass.Delete
 
 open Infrastructure.Domain
 open EA.Core.Domain

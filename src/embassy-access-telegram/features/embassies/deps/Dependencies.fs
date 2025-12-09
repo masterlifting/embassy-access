@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Features.Embassies.Dependencies
+module EA.Telegram.Features.Dependencies.Embassies
 
 open System
 open Infrastructure.Domain
