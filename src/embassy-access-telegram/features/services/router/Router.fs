@@ -1,10 +1,11 @@
-﻿module EA.Telegram.Features.Services.Router.Get
+﻿module EA.Telegram.Features.Router.Services
 
 open Infrastructure.Domain
 open EA.Core.Domain
-open EA.Telegram.Domain
+open EA.Telegram.Shared
+open EA.Telegram.Features.Services.Router
 
-type Route =
+type Get =
     | Service of EmbassyId * ServiceId
     | Services of EmbassyId
     | UserService of EmbassyId * ServiceId
@@ -36,3 +37,25 @@ type Route =
             $"'{input}' of 'Services.Get' endpoint is not supported."
             |> NotSupported
             |> Error
+
+type Route =
+    | Get of Get
+    | Russian of Russian.Method.Route
+    | Italian of Italian.Method.Route
+
+    member this.Value =
+        match this with
+        | Get r -> [ "0"; r.Value ]
+        | Russian r -> [ "1"; r.Value ]
+        | Italian r -> [ "2"; r.Value ]
+        |> String.concat Router.DELIMITER
+
+    static member parse(input: string) =
+        let parts = input.Split Router.DELIMITER
+        let remaining = parts[1..] |> String.concat Router.DELIMITER
+
+        match parts[0] with
+        | "0" -> remaining |> Get.parse |> Result.map Get
+        | "1" -> remaining |> Russian.Method.Route.parse |> Result.map Russian
+        | "2" -> remaining |> Italian.Method.Route.parse |> Result.map Italian
+        | _ -> $"'{input}' of 'Services' endpoint is not supported." |> NotSupported |> Error

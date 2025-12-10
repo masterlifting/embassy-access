@@ -1,10 +1,10 @@
 ﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Features.Embassies.Controller
+module EA.Telegram.Features.Controller.Embassies
 
 open Infrastructure.Prelude
 open EA.Telegram.Features.Dependencies
-open EA.Telegram.Features.Embassies.Services
-open EA.Telegram.Features.Embassies.Router
+open EA.Telegram.Features.Services.Embassies
+open EA.Telegram.Features.Router.Embassies
 open EA.Telegram.Dependencies
 
 let respond request chat =
@@ -13,10 +13,10 @@ let respond request chat =
         |> Embassies.Dependencies.create chat
         |> ResultAsync.wrap (fun deps ->
             match request with
-            | Method.Get get ->
+            | Get get ->
                 match get with
-                | Get.Embassy embassyId -> Query.getEmbassy embassyId
-                | Get.Embassies -> Query.getEmbassies ()
-                | Get.UserEmbassy embassyId -> Query.getUserEmbassy embassyId
-                | Get.UserEmbassies -> Query.getUserEmbassies ()
+                | Embassy embassyId -> Query.getEmbassy embassyId
+                | Embassies -> Query.getEmbassies ()
+                | UserEmbassy embassyId -> Query.getUserEmbassy embassyId
+                | UserEmbassies -> Query.getUserEmbassies ()
                 |> fun f -> deps |> f |> deps.sendMessageRes)

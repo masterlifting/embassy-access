@@ -6,9 +6,9 @@ open EA.Telegram.Dependencies
 open EA.Telegram.Features.Router.Culture
 open EA.Telegram.Features.Services.Culture
 
-let respond method entrypoint =
+let respond request entrypoint =
     fun (deps: Request.Dependencies) ->
-        match method with
+        match request with
         | Get get ->
             match get with
             | Cultures -> deps |> Query.getCultures () |> deps.sendMessage
@@ -21,14 +21,14 @@ let respond method entrypoint =
                 |> ResultAsync.bindAsync (fun _ ->
                     Route.parse callback |> ResultAsync.wrap (fun route -> deps |> entrypoint route))
 
-let apply (method: Route) callback =
+let apply (request: Route) callback =
     fun (deps: Request.Dependencies) ->
         deps.tryGetChat ()
         |> ResultAsync.bindAsync (function
             | Some chat -> deps |> callback chat
             | None ->
                 deps
-                |> Query.getCulturesCallback method.Value
+                |> Query.getCulturesCallback request.Value
                 |> deps.sendMessage
                 |> ResultAsync.mapErrorAsync (fun error ->
                     deps |> Query.getCultures () |> deps.sendMessage |> Async.map (fun _ -> error)))

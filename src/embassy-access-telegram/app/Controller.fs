@@ -1,7 +1,7 @@
 [<RequireQualifiedAccess>]
 module EA.Telegram.Controllers.Controller
 
-open EA.Telegram.Router
+open EA.Telegram.App
 open EA.Telegram.Features.Controller
 
 let rec respond request =

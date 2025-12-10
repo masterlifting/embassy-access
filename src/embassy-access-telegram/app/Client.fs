@@ -5,7 +5,7 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain.Telegram.Consumer
-open EA.Telegram.Router
+open EA.Telegram.App
 open EA.Telegram.Dependencies
 open EA.Telegram.Controllers
 

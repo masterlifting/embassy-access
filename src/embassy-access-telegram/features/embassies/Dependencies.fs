@@ -15,6 +15,8 @@ type Dependencies = {
     MessageId: int
     Request: Request.Dependencies
     getEmbassyNode: EmbassyId -> Async<Result<Tree.Node<Embassy> option, Error'>>
+    getServices: EmbassyId -> Async<Result<Message, Error'>>
+    getUserServices: EmbassyId -> Async<Result<Message, Error'>>
     sendMessageRes: Async<Result<Message, Error'>> -> Async<Result<unit, Error'>>
 } with
 
@@ -28,11 +30,20 @@ type Dependencies = {
             let sendMessageRes data =
                 data |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes
 
+            //TODO: implement these methods
+            let getServices (embassyId: EmbassyId) =
+                "getServices is not implemented" |> NotImplemented |> Error |> async.Return
+
+            let getUserServices (embassyId: EmbassyId) =
+                "getUserServices is not implemented" |> NotImplemented |> Error |> async.Return
+
             return {
                 Chat = chat
                 MessageId = deps.MessageId
                 Request = deps
                 getEmbassyNode = getEmbassyNode
+                getServices = getServices
+                getUserServices = getUserServices
                 sendMessageRes = sendMessageRes
             }
         }

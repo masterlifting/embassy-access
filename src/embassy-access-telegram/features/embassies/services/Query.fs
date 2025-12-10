@@ -25,10 +25,7 @@ let private getEmbassy' embassyId firstCall =
     fun (deps: Embassies.Dependencies) ->
         deps.getEmbassyNode embassyId
         |> ResultAsync.bindAsync (function
-            | Some(AP.Leaf _) ->
-                deps.Request
-                |> Services.Dependencies.create deps.Chat
-                |> ResultAsync.wrap (Services.Query.getServices embassyId)
+            | Some(AP.Leaf _) -> deps.getServices embassyId
             | Some(AP.Node node) ->
 
                 let messageId =
@@ -52,10 +49,7 @@ let private getUserEmbassy' embassyId firstCall =
     fun (deps: Embassies.Dependencies) ->
         deps.getEmbassyNode embassyId
         |> ResultAsync.bindAsync (function
-            | Some(AP.Leaf _) ->
-                deps.Request
-                |> Services.Dependencies.create deps.Chat
-                |> ResultAsync.wrap (Services.Query.getUserServices embassyId)
+            | Some(AP.Leaf _) -> deps.getUserServices embassyId
             | Some(AP.Node node) ->
 
                 let messageId =

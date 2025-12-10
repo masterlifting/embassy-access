@@ -1,5 +1,5 @@
 [<RequireQualifiedAccess>]
-module EA.Telegram.Router.Router
+module EA.Telegram.App.Router
 
 open Infrastructure.Domain
 open EA.Telegram.Shared
