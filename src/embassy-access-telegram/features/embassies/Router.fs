@@ -1,10 +1,10 @@
-﻿module EA.Telegram.Features.Embassies.Router.Get
+module EA.Telegram.Features.Router.Embassies
 
 open Infrastructure.Domain
+open EA.Telegram.Shared
 open EA.Core.Domain
-open EA.Telegram.Domain
 
-type Route =
+type Get =
     | Embassy of EmbassyId
     | Embassies
     | UserEmbassy of EmbassyId
@@ -30,3 +30,19 @@ type Route =
             $"'{input}' of 'Embassies.Get' endpoint is not supported."
             |> NotSupported
             |> Error
+
+type Route =
+    | Get of Get
+
+    member this.Value =
+        match this with
+        | Get r -> [ "0"; r.Value ]
+        |> String.concat Router.DELIMITER
+
+    static member parse(input: string) =
+        let parts = input.Split Router.DELIMITER
+        let remaining = parts[1..] |> String.concat Router.DELIMITER
+
+        match parts[0] with
+        | "0" -> remaining |> Get.parse |> Result.map Get
+        | _ -> $"'{input}' of 'Embassies' endpoint is not supported." |> NotSupported |> Error

@@ -5,7 +5,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="domain\Constants.fs" />
+    <Compile Include="shared\Constants.fs" />
+    <Compile Include="shared\Configuration.fs" />
     <Compile Include="domain\Subscription.fs" />
     <Compile Include="domain\Chat.fs" />
     <Compile Include="data_access\Subscriptions.fs" />
@@ -14,11 +15,19 @@
     <Compile Include="data_access\chat\InMemory.fs" />
     <Compile Include="data_access\chat\Postgre.fs" />
     <Compile Include="data_access\chat\Storage.fs" />
-    <Compile Include="features\culture\router\Get.fs" />
-    <Compile Include="features\culture\router\Post.fs" />
-    <Compile Include="features\culture\router\Method.fs" />
-    <Compile Include="features\embassies\router\Get.fs" />
-    <Compile Include="features\embassies\router\Method.fs" />
+    <Compile Include="dependencies\Persistence.fs" />
+    <Compile Include="dependencies\Web.fs" />
+    <Compile Include="dependencies\Client.fs" />
+    <Compile Include="dependencies\Request.fs" />
+    <Compile Include="features\culture\Dependencies.fs" />
+    <Compile Include="features\culture\Router.fs" />
+    <Compile Include="features\culture\services\Query.fs" />
+    <Compile Include="features\culture\services\Command.fs" />
+    <Compile Include="features\culture\Controller.fs" />
+    <Compile Include="features\embassies\Dependencies.fs" />
+    <Compile Include="features\embassies\Router.fs" />
+    <Compile Include="features\embassies\services\Query.fs" />
+    <Compile Include="features\embassies\Controller.fs" />
     <Compile Include="features\services\router\Get.fs" />
     <Compile Include="features\services\router\russian\kdmid\Get.fs" />
     <Compile Include="features\services\router\russian\kdmid\Post.fs" />
@@ -35,22 +44,12 @@
     <Compile Include="features\services\router\italian\prenotami\Method.fs" />
     <Compile Include="features\services\router\italian\Method.fs" />
     <Compile Include="features\services\router\Method.fs" />
-    <Compile Include="app\Router.fs" />
-    <Compile Include="app\Configuration.fs" />
-    <Compile Include="dependencies\Persistence.fs" />
-    <Compile Include="dependencies\Web.fs" />
-    <Compile Include="features\culture\deps\Dependencies.fs" />
-    <Compile Include="dependencies\Client.fs" />
-    <Compile Include="dependencies\Request.fs" />
-    <Compile Include="features\embassies\deps\Dependencies.fs" />
     <Compile Include="features\services\deps\Dependencies.fs" />
     <Compile Include="features\services\deps\russian\Russian.fs" />
     <Compile Include="features\services\deps\russian\Midpass.fs" />
     <Compile Include="features\services\deps\russian\Kdmid.fs" />
     <Compile Include="features\services\deps\italian\Italian.fs" />
     <Compile Include="features\services\deps\italian\Prenotami.fs" />
-    <Compile Include="features\culture\services\Query.fs" />
-    <Compile Include="features\culture\services\Command.fs" />
     <Compile Include="features\services\services\russian\kdmid\Query.fs" />
     <Compile Include="features\services\services\russian\kdmid\Command.fs" />
     <Compile Include="features\services\services\russian\midpass\Query.fs" />
@@ -60,10 +59,8 @@
     <Compile Include="features\services\services\italian\prenotami\Command.fs" />
     <Compile Include="features\services\services\italian\Query.fs" />
     <Compile Include="features\services\services\Query.fs" />
-    <Compile Include="features\embassies\services\Query.fs" />
-    <Compile Include="features\culture\Controller.fs" />
-    <Compile Include="features\embassies\Controller.fs" />
     <Compile Include="features\services\Controller.fs" />
+    <Compile Include="app\Router.fs" />
     <Compile Include="app\Controller.fs" />
     <Compile Include="app\Client.fs" />
     <Compile Include="app\Initializer.fs" />
@@ -78,6 +75,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>embassies.yml</Link>
     </Content>
+    <Folder Include="shared\" />
     <Content Include="./data/services.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Link>services.yml</Link>

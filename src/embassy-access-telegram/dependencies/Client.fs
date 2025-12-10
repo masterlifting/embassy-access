@@ -3,11 +3,9 @@ module EA.Telegram.Dependencies.Client
 
 open System.Threading
 open Infrastructure.Prelude
-open AIProvider.Services.Dependencies
 open AIProvider.Clients
 open Web.Clients
 open EA.Telegram.Dependencies
-open EA.Telegram.Features.Culture
 
 let private result = ResultBuilder()
 

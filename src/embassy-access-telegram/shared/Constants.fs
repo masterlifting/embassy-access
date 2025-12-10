@@ -1,5 +1,5 @@
 ﻿[<AutoOpen>]
-module EA.Telegram.Domain.Constants
+module EA.Telegram.Shared.Constants
 
 [<RequireQualifiedAccess>]
 module Router =

@@ -2,10 +2,7 @@
 module EA.Telegram.Controllers.Controller
 
 open EA.Telegram.Router
-
-module Culture = EA.Telegram.Features.Culture.Controller
-module Embassies = EA.Telegram.Features.Embassies.Controller
-module Services = EA.Telegram.Features.Services.Controller
+open EA.Telegram.Features.Controller
 
 let rec respond request =
 

@@ -1,5 +1,5 @@
 [<RequireQualifiedAccess>]
-module EA.Telegram.Features.Culture.Dependencies
+module EA.Telegram.Features.Dependencies.Culture
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
