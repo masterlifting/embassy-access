@@ -1,13 +1,12 @@
-﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Features.Services.Router.Russian.Method
+﻿module EA.Telegram.Features.Router.Services.Russian
 
 open Infrastructure.Domain
-open EA.Telegram.Domain
-open EA.Telegram.Features.Services.Router.Russian
+open EA.Telegram.Shared
+open EA.Telegram.Features.Router.Services.Russian
 
 type Route =
-    | Kdmid of Kdmid.Method.Route
-    | Midpass of Midpass.Method.Route
+    | Kdmid of Kdmid.Route
+    | Midpass of Midpass.Route
 
     member this.Value =
         match this with
@@ -20,8 +19,8 @@ type Route =
         let remaining = parts[1..] |> String.concat Router.DELIMITER
 
         match parts[0] with
-        | "0" -> remaining |> Kdmid.Method.Route.parse |> Result.map Kdmid
-        | "1" -> remaining |> Midpass.Method.Route.parse |> Result.map Midpass
+        | "0" -> remaining |> Kdmid.Route.parse |> Result.map Kdmid
+        | "1" -> remaining |> Midpass.Route.parse |> Result.map Midpass
         | _ ->
             $"'{input}' of 'Services.Russian' endpoint is not supported."
             |> NotSupported

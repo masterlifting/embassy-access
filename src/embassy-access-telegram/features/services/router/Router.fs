@@ -3,7 +3,7 @@
 open Infrastructure.Domain
 open EA.Core.Domain
 open EA.Telegram.Shared
-open EA.Telegram.Features.Services.Router
+open EA.Telegram.Features.Router.Services
 
 type Get =
     | Service of EmbassyId * ServiceId
@@ -40,8 +40,8 @@ type Get =
 
 type Route =
     | Get of Get
-    | Russian of Russian.Method.Route
-    | Italian of Italian.Method.Route
+    | Russian of Russian.Route
+    | Italian of Italian.Route
 
     member this.Value =
         match this with
@@ -56,6 +56,6 @@ type Route =
 
         match parts[0] with
         | "0" -> remaining |> Get.parse |> Result.map Get
-        | "1" -> remaining |> Russian.Method.Route.parse |> Result.map Russian
-        | "2" -> remaining |> Italian.Method.Route.parse |> Result.map Italian
+        | "1" -> remaining |> Russian.Route.parse |> Result.map Russian
+        | "2" -> remaining |> Italian.Route.parse |> Result.map Italian
         | _ -> $"'{input}' of 'Services' endpoint is not supported." |> NotSupported |> Error

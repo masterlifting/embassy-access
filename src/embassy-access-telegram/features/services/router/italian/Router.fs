@@ -1,12 +1,11 @@
-﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Features.Services.Router.Italian.Method
+﻿module EA.Telegram.Features.Router.Services.Italian
 
 open Infrastructure.Domain
-open EA.Telegram.Domain
-open EA.Telegram.Features.Services.Router.Italian
+open EA.Telegram.Shared
+open EA.Telegram.Features.Router.Services.Italian
 
 type Route =
-    | Prenotami of Prenotami.Method.Route
+    | Prenotami of Prenotami.Route
 
     member this.Value =
         match this with
@@ -18,7 +17,7 @@ type Route =
         let remaining = parts[1..] |> String.concat Router.DELIMITER
 
         match parts[0] with
-        | "0" -> remaining |> Prenotami.Method.Route.parse |> Result.map Prenotami
+        | "0" -> remaining |> Prenotami.Route.parse |> Result.map Prenotami
         | _ ->
             $"'{input}' of 'Services.Italian' endpoint is not supported."
             |> NotSupported

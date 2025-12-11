@@ -1,14 +1,13 @@
-﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Features.Dependencies.Russian.Midpass.Services
+﻿module EA.Telegram.Features.Dependencies.Services.Russian.Midpass
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Core.Domain
 open Web.Clients.Domain
+open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Telegram.Features.Dependencies
 open EA.Russian.Services.Domain.Midpass
 open EA.Russian.Services.DataAccess.Midpass
+open EA.Telegram.Features.Dependencies.Services
 
 type Dependencies = {
     ChatId: Telegram.ChatId
@@ -22,7 +21,7 @@ type Dependencies = {
     initRequestStorage: unit -> Result<StorageType, Error'>
 } with
 
-    static member create(deps: Russian.Services.Dependencies) =
+    static member create(deps: Russian.Dependencies) =
 
         let findRequest requestId storage =
             storage

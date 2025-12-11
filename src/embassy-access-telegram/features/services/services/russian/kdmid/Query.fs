@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Services.Russian.Kdmid.Query
+﻿module EA.Telegram.Features.Services.Russian.Kdmid.Query
 
 open System
 open Infrastructure.Prelude
@@ -7,16 +7,14 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services.Domain.Kdmid
 open EA.Russian.Services.Router
-open EA.Telegram.Router
-open EA.Telegram.Router.Services.Russian
-open EA.Telegram.Dependencies.Services.Russian
-open EA.Telegram.Features.
+open EA.Telegram.Features
+open 
+open EA.Telegram.Features.Dependencies.Services.Russian
 
 [<Literal>]
 let private INPUT_LINK = "<link>"
 
-let private createBaseRoute method =
-    Router.Services(Services.Method.Russian(Method.Kdmid method))
+let private createBaseRoute route = Router.Services.Russian route
 
 let menu (requestId: RequestId) =
     fun (deps: Kdmid.Dependencies) ->

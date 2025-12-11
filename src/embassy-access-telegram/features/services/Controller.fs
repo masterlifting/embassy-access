@@ -2,16 +2,12 @@
 module EA.Telegram.Features.Services.Controller
 
 open Infrastructure.Prelude
-open EA.Telegram.Router.Services
 open EA.Telegram.Services.Services
 open EA.Telegram.Dependencies
-open EA.Telegram.Dependencies.Services
-open EA.Telegram.Dependencies.Services.Russian
-open EA.Telegram.Dependencies.Services.Italian
+open EA.Telegram.Features.Router.Services
 
 module Russian =
-    open EA.Telegram.Router.Services.Russian
-    open EA.Telegram.Services.Services.Russian
+    open EA.Telegram.Features.Router.Services
 
     let respond method =
         fun (deps: Russian.Dependencies) ->
