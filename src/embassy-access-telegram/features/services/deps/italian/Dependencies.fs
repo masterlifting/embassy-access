@@ -1,5 +1,4 @@
-﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Features.Dependencies.Services.Italian
+﻿module EA.Telegram.Features.Dependencies.Services.Italian
 
 open System.Threading
 open Infrastructure.Domain

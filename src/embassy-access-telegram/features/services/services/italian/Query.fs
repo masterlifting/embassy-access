@@ -1,10 +1,9 @@
-﻿module EA.Telegram.Services.Services.Italian.Query
+﻿module EA.Telegram.Features.Services.Italian.Query
 
 open Infrastructure.Domain
 open EA.Core.Domain
-open EA.Telegram.Router.Services
-open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services.Router
+open EA.Telegram.Features.Dependencies.Services.Italian
 
 let private (|Prenotami|ServiceNotFound|) (serviceId: ServiceId) =
     match serviceId |> parse with
@@ -17,7 +16,7 @@ let private (|Prenotami|ServiceNotFound|) (serviceId: ServiceId) =
     | Error error -> ServiceNotFound error
 
 let getService embassyId serviceId forUser =
-    fun (deps: Italian.Dependencies) ->
+    fun (deps: Dependencies) ->
         match serviceId with
         | Prenotami op ->
             deps

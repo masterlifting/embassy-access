@@ -2,110 +2,112 @@
 module EA.Telegram.Features.Services.Controller
 
 open Infrastructure.Prelude
-open EA.Telegram.Services.Services
-open EA.Telegram.Dependencies
+open EA.Telegram.Features.Dependencies
 open EA.Telegram.Features.Router.Services
 
 module Russian =
-    open EA.Telegram.Features.Router.Services
+    open EA.Telegram.Features.Services.Russian
+    open EA.Telegram.Features.Router.Services.Russian
+    open EA.Telegram.Features.Dependencies.Services.Russian
 
-    let respond method =
-        fun (deps: Russian.Dependencies) ->
-            match method with
-            | Method.Kdmid kdmid ->
+    let respond route =
+        fun (deps: Dependencies) ->
+            match route with
+            | Kdmid request ->
                 deps
                 |> Kdmid.Dependencies.create
                 |> fun deps ->
-                    match kdmid with
-                    | Kdmid.Method.Get get ->
+                    match request with
+                    | Kdmid.Get get ->
                         match get with
-                        | Kdmid.Get.Info requestId -> Kdmid.Query.info requestId
-                        | Kdmid.Get.Menu requestId -> Kdmid.Query.menu requestId
+                        | Kdmid.Info requestId -> Kdmid.Query.info requestId
+                        | Kdmid.Menu requestId -> Kdmid.Query.menu requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-                    | Kdmid.Method.Post post ->
+                    | Kdmid.Post post ->
                         match post with
-                        | Kdmid.Post.SetManualRequest(serviceId, embassyId, link) ->
+                        | Kdmid.SetManualRequest(serviceId, embassyId, link) ->
                             Kdmid.Command.setManualRequest serviceId embassyId link
-                        | Kdmid.Post.SetAutoNotifications(serviceId, embassyId, link) ->
+                        | Kdmid.SetAutoNotifications(serviceId, embassyId, link) ->
                             Kdmid.Command.setAutoNotifications serviceId embassyId link
-                        | Kdmid.Post.SetAutoBookingFirst(serviceId, embassyId, link) ->
+                        | Kdmid.SetAutoBookingFirst(serviceId, embassyId, link) ->
                             Kdmid.Command.setAutoBookingFirst serviceId embassyId link
-                        | Kdmid.Post.SetAutoBookingLast(serviceId, embassyId, link) ->
+                        | Kdmid.SetAutoBookingLast(serviceId, embassyId, link) ->
                             Kdmid.Command.setAutoBookingLast serviceId embassyId link
-                        | Kdmid.Post.SetAutoBookingFirstInPeriod(serviceId, embassyId, start, finish, link) ->
+                        | Kdmid.SetAutoBookingFirstInPeriod(serviceId, embassyId, start, finish, link) ->
                             Kdmid.Command.setAutoBookingFirstInPeriod serviceId embassyId start finish link
-                        | Kdmid.Post.ConfirmAppointment(requestId, appointmentId) ->
+                        | Kdmid.ConfirmAppointment(requestId, appointmentId) ->
                             Kdmid.Command.confirmAppointment requestId appointmentId
-                        | Kdmid.Post.StartManualRequest requestId -> Kdmid.Command.startManualRequest requestId
+                        | Kdmid.StartManualRequest requestId -> Kdmid.Command.startManualRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-                    | Kdmid.Method.Delete delete ->
+                    | Kdmid.Delete delete ->
                         match delete with
-                        | Kdmid.Delete.Subscription requestId -> Kdmid.Command.deleteRequest requestId
+                        | Kdmid.Subscription requestId -> Kdmid.Command.deleteRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-            | Method.Midpass midpass ->
+            | Midpass request ->
                 deps
                 |> Midpass.Dependencies.create
                 |> fun deps ->
-                    match midpass with
-                    | Midpass.Method.Get get ->
+                    match request with
+                    | Midpass.Get get ->
                         match get with
-                        | Midpass.Get.Info requestId -> Midpass.Query.info requestId
-                        | Midpass.Get.Menu requestId -> Midpass.Query.menu requestId
+                        | Midpass.Info requestId -> Midpass.Query.info requestId
+                        | Midpass.Menu requestId -> Midpass.Query.menu requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-                    | Midpass.Method.Post post ->
+                    | Midpass.Post post ->
                         match post with
-                        | Midpass.Post.CheckStatus(serviceId, embassyId, number) ->
+                        | Midpass.CheckStatus(serviceId, embassyId, number) ->
                             Midpass.Command.checkStatus serviceId embassyId number
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-                    | Midpass.Method.Delete delete ->
+                    | Midpass.Delete delete ->
                         match delete with
-                        | Midpass.Delete.Subscription requestId -> Midpass.Command.deleteRequest requestId
+                        | Midpass.Subscription requestId -> Midpass.Command.deleteRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 module Italian =
-    open EA.Telegram.Router.Services.Italian
-    open EA.Telegram.Services.Services.Italian
+    open EA.Telegram.Features.Services.Italian
+    open EA.Telegram.Features.Router.Services.Italian
+    open EA.Telegram.Features.Dependencies.Services.Italian
 
-    let respond method =
-        fun (deps: Italian.Dependencies) ->
-            match method with
-            | Method.Prenotami prenotami ->
+    let respond route =
+        fun (deps: Dependencies) ->
+            match route with
+            | Prenotami prenotami ->
                 deps
                 |> Prenotami.Dependencies.create
                 |> fun deps ->
                     match prenotami with
-                    | Prenotami.Method.Get get ->
+                    | Prenotami.Get get ->
                         match get with
-                        | Prenotami.Get.Info requestId -> Prenotami.Query.print requestId
-                        | Prenotami.Get.Menu requestId -> Prenotami.Query.menu requestId
+                        | Prenotami.Info requestId -> Prenotami.Query.print requestId
+                        | Prenotami.Menu requestId -> Prenotami.Query.menu requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-                    | Prenotami.Method.Post post ->
+                    | Prenotami.Post post ->
                         match post with
-                        | Prenotami.Post.SetManualRequest(serviceId, embassyId, login, password) ->
+                        | Prenotami.SetManualRequest(serviceId, embassyId, login, password) ->
                             Prenotami.Command.setManualRequest serviceId embassyId login password
-                        | Prenotami.Post.SetAutoNotifications(serviceId, embassyId, login, password) ->
+                        | Prenotami.SetAutoNotifications(serviceId, embassyId, login, password) ->
                             Prenotami.Command.setAutoNotifications serviceId embassyId login password
-                        | Prenotami.Post.ConfirmAppointment(requestId, appointmentId) ->
+                        | Prenotami.ConfirmAppointment(requestId, appointmentId) ->
                             Prenotami.Command.confirmAppointment requestId appointmentId
-                        | Prenotami.Post.StartManualRequest requestId -> Prenotami.Command.startManualRequest requestId
+                        | Prenotami.StartManualRequest requestId -> Prenotami.Command.startManualRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-                    | Prenotami.Method.Delete delete ->
+                    | Prenotami.Delete delete ->
                         match delete with
-                        | Prenotami.Delete.Subscription requestId -> Prenotami.Command.deleteRequest requestId
+                        | Prenotami.Subscription requestId -> Prenotami.Command.deleteRequest requestId
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 let respond request chat =
-    fun (deps: Request.Dependencies) ->
+    fun (deps: Services.Dependencies) ->
         deps
         |> Services.Dependencies.create chat
         |> ResultAsync.wrap (fun deps ->
             match request with
-            | Method.Get get ->
+            | Get get ->
                 match get with
-                | Get.Services embassyId -> Query.getServices embassyId
-                | Get.Service(embassyId, serviceId) -> Query.getService embassyId serviceId
-                | Get.UserServices embassyId -> Query.getUserServices embassyId
-                | Get.UserService(embassyId, serviceId) -> Query.getUserService embassyId serviceId
+                | Services embassyId -> Query.getServices embassyId
+                | Service(embassyId, serviceId) -> Query.getService embassyId serviceId
+                | UserServices embassyId -> Query.getUserServices embassyId
+                | UserService(embassyId, serviceId) -> Query.getUserService embassyId serviceId
                 |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-            | Method.Russian russian -> deps |> Russian.Dependencies.create |> Russian.respond russian
-            | Method.Italian italian -> deps |> Italian.Dependencies.create |> Italian.respond italian)
+            | Russian russian -> deps |> Russian.Dependencies.create |> Russian.respond russian
+            | Italian italian -> deps |> Italian.Dependencies.create |> Italian.respond italian)

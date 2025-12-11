@@ -1,14 +1,15 @@
-﻿module EA.Telegram.Services.Services.Italian.Prenotami.Query
+﻿module EA.Telegram.Features.Services.Italian.Prenotami.Query
 
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Telegram.Router
-open EA.Telegram.Router.Services.Italian
-open EA.Telegram.Dependencies.Services.Italian
-open EA.Italian.Services.Domain.Prenotami
 open EA.Italian.Services.Router
+open EA.Italian.Services.Domain.Prenotami
+open EA.Telegram.Features.Router.Services
+open EA.Telegram.Features.Router.Services.Italian
+open EA.Telegram.Features.Router.Services.Italian.Prenotami
+open EA.Telegram.Features.Dependencies.Services.Italian
 
 [<Literal>]
 let private INPUT_LOGIN = "<login>"
@@ -16,25 +17,20 @@ let private INPUT_LOGIN = "<login>"
 [<Literal>]
 let private INPUT_PASSWORD = "<password>"
 
-let private createBaseRoute method =
-    Router.Services(Services.Method.Italian(Method.Prenotami method))
-
 let menu (requestId: RequestId) =
     fun (deps: Prenotami.Dependencies) ->
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
-            let startRequest =
-                Prenotami.Method.Post(Prenotami.Post.StartManualRequest r.Id) |> createBaseRoute
-            let info = Prenotami.Method.Get(Prenotami.Get.Info r.Id) |> createBaseRoute
-            let delete =
-                Prenotami.Method.Delete(Prenotami.Delete.Subscription r.Id) |> createBaseRoute
+            let start = Italian(Prenotami(Post(StartManualRequest r.Id)))
+            let info = Italian(Prenotami(Get(Info r.Id)))
+            let delete = Italian(Prenotami(Delete(Subscription r.Id)))
 
             ButtonsGroup.create {
                 Name = r.Service.Value.BuildName 1 "."
                 Columns = 1
                 Buttons =
-                    [ "Info", info.Value; "Check now", startRequest.Value; "Delete", delete.Value ]
+                    [ "Info", info.Value; "Check now", start.Value; "Delete", delete.Value ]
                     |> ButtonsGroup.createButtons
             }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
@@ -46,8 +42,8 @@ let print (requestId: RequestId) =
         |> ResultAsync.map Request.print<Payload>
         |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
 
-let private createPrenotamiInstruction chatId method =
-    let route = Prenotami.Method.Post method |> createBaseRoute
+let private createPrenotamiInstruction chatId request =
+    let route = Italian(Prenotami(Post request))
 
     $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
     + $"{String.addLines 2}Replace {INPUT_LOGIN} and {INPUT_PASSWORD} with the login and password you received from the Prenotami website after confirmation."
@@ -59,12 +55,12 @@ let private createPrenotamiInstruction chatId method =
 
 let private setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Prenotami.Dependencies) ->
-        Prenotami.Post.SetManualRequest(serviceId, embassyId, INPUT_LOGIN, INPUT_PASSWORD)
+        SetManualRequest(serviceId, embassyId, INPUT_LOGIN, INPUT_PASSWORD)
         |> createPrenotamiInstruction deps.ChatId
 
 let private setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Prenotami.Dependencies) ->
-        Prenotami.Post.SetAutoNotifications(serviceId, embassyId, INPUT_LOGIN, INPUT_PASSWORD)
+        SetAutoNotifications(serviceId, embassyId, INPUT_LOGIN, INPUT_PASSWORD)
         |> createPrenotamiInstruction deps.ChatId
 
 let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
@@ -74,7 +70,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
         |> ResultAsync.map (fun requests ->
             requests
             |> Seq.map (fun r ->
-                let route = Prenotami.Method.Get(Prenotami.Get.Menu r.Id) |> createBaseRoute
+                let route = Italian(Prenotami(Get(Menu r.Id)))
                 r.Service.Value.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {

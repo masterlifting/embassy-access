@@ -1,12 +1,13 @@
-﻿module EA.Telegram.Services.Services.Russian.Midpass.Command
+﻿module EA.Telegram.Features.Services.Russian.Midpass.Command
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services.Domain.Midpass
+open EA.Telegram.Features.Router.Services.Russian
+open EA.Telegram.Features.Dependencies.Services.Russian
 
 let handleProcessResult (_: Request<Payload>) =
     fun (_: Midpass.Dependencies) ->

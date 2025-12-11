@@ -1,16 +1,12 @@
-﻿module EA.Telegram.Services.Services.Query
+﻿module EA.Telegram.Features.Services.Query
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Telegram.Router
-open EA.Telegram.Router.Services
-open EA.Telegram.Dependencies
-open EA.Telegram.Dependencies.Services
-open EA.Telegram.Dependencies.Services.Russian
-open EA.Telegram.Dependencies.Services.Italian
+open EA.Telegram.Features.Router.Services
+open EA.Telegram.Features.Dependencies.Services
 
 let private createButtonsGroup chatId messageId name buttons =
     match buttons |> Seq.isEmpty with
@@ -43,7 +39,7 @@ let private tryCreateServiceRootId (embassyId: EmbassyId) =
     |> Result.map (fun embassyIdValue -> ServiceId.combine [ Services.ROOT_ID; embassyIdValue ])
 
 let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser =
-    fun (deps: Services.Dependencies) ->
+    fun (deps: Dependencies) ->
         match embassyId with
         | RUS _ ->
             deps
@@ -60,7 +56,7 @@ let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser 
             |> async.Return
 
 let getService embassyId serviceId =
-    fun (deps: Services.Dependencies) ->
+    fun (deps: Dependencies) ->
         deps.tryFindServiceNode serviceId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId false
@@ -68,7 +64,7 @@ let getService embassyId serviceId =
                 node.Children
                 |> Seq.map (fun service ->
                     let serviceId = service.Id |> ServiceId
-                    let route = Router.Services(Method.Get(Get.Service(embassyId, serviceId)))
+                    let route = Get(Service(embassyId, serviceId))
                     service.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
@@ -78,13 +74,13 @@ let getService embassyId serviceId =
                 |> async.Return)
 
 let getServices embassyId =
-    fun (deps: Services.Dependencies) ->
+    fun (deps: Dependencies) ->
         embassyId
         |> tryCreateServiceRootId
         |> ResultAsync.wrap (fun serviceId -> deps |> getService embassyId serviceId)
 
 let getUserService embassyId serviceId =
-    fun (deps: Services.Dependencies) ->
+    fun (deps: Dependencies) ->
         deps.tryFindServiceNode serviceId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId true
@@ -96,7 +92,7 @@ let getUserService embassyId serviceId =
                 |> Seq.filter (fun service -> userServiceIds |> Tree.NodeId.contains service.Id)
                 |> Seq.map (fun service ->
                     let serviceId = service.Id |> ServiceId
-                    let route = Router.Services(Method.Get(Get.UserService(embassyId, serviceId)))
+                    let route = Get(UserService(embassyId, serviceId))
                     service.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
@@ -106,7 +102,7 @@ let getUserService embassyId serviceId =
                 |> async.Return)
 
 let getUserServices embassyId =
-    fun (deps: Services.Dependencies) ->
+    fun (deps: Dependencies) ->
         embassyId
         |> tryCreateServiceRootId
         |> ResultAsync.wrap (fun serviceId -> deps |> getUserService embassyId serviceId)

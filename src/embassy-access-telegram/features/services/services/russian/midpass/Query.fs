@@ -1,25 +1,22 @@
-﻿module EA.Telegram.Services.Services.Russian.Midpass.Query
+﻿module EA.Telegram.Features.Services.Russian.Midpass.Query
 
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Telegram.Router
-open EA.Telegram.Router.Services.Russian
-open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services.Domain.Midpass
-
-let private createBaseRoute method =
-    Router.Services(Services.Method.Russian(Method.Midpass(method)))
+open EA.Telegram.Features.Router.Services
+open EA.Telegram.Features.Router.Services.Russian
+open EA.Telegram.Features.Router.Services.Russian.Midpass
+open EA.Telegram.Features.Dependencies.Services.Russian
 
 let menu (requestId: RequestId) =
     fun (deps: Midpass.Dependencies) ->
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
-            let info = Midpass.Method.Get(Midpass.Get.Info r.Id) |> createBaseRoute
-            let delete =
-                Midpass.Method.Delete(Midpass.Delete.Subscription(r.Id)) |> createBaseRoute
+            let info = Russian(Midpass(Get(Info r.Id)))
+            let delete = Russian(Midpass(Delete(Subscription r.Id)))
 
             ButtonsGroup.create {
                 Name = r.Service.Value.BuildName 1 "."
@@ -38,8 +35,8 @@ let info (requestId: RequestId) =
 [<Literal>]
 let private INPUT_NUMBER = "<number>"
 
-let private createMidpassInstruction chatId method =
-    let route = Midpass.Method.Post(method) |> createBaseRoute
+let private createMidpassInstruction chatId request =
+    let route = Russian(Midpass(Post request))
 
     $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
     + $"{String.addLines 2}Replace {INPUT_NUMBER} with the number you received from the Russian embassy."
@@ -51,7 +48,7 @@ let private createMidpassInstruction chatId method =
 
 let private checkStatus (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Midpass.Dependencies) ->
-        Midpass.Post.CheckStatus(serviceId, embassyId, INPUT_NUMBER)
+        CheckStatus(serviceId, embassyId, INPUT_NUMBER)
         |> createMidpassInstruction deps.ChatId
 
 let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
@@ -61,7 +58,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
         |> ResultAsync.map (fun requests ->
             requests
             |> Seq.map (fun r ->
-                let route = Midpass.Method.Get(Midpass.Get.Menu r.Id) |> createBaseRoute
+                let route = Russian(Midpass(Get(Menu r.Id)))
                 r.Service.Value.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {

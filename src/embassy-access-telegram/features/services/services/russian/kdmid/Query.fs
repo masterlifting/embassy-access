@@ -7,30 +7,28 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services.Domain.Kdmid
 open EA.Russian.Services.Router
-open EA.Telegram.Features
-open 
+open EA.Telegram.Features.Router.Services
+open EA.Telegram.Features.Router.Services.Russian
+open EA.Telegram.Features.Router.Services.Russian.Kdmid
 open EA.Telegram.Features.Dependencies.Services.Russian
 
 [<Literal>]
 let private INPUT_LINK = "<link>"
-
-let private createBaseRoute route = Router.Services.Russian route
 
 let menu (requestId: RequestId) =
     fun (deps: Kdmid.Dependencies) ->
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
-            let startRequest =
-                Kdmid.Method.Post(Kdmid.Post.StartManualRequest r.Id) |> createBaseRoute
-            let info = Kdmid.Method.Get(Kdmid.Get.Info r.Id) |> createBaseRoute
-            let delete = Kdmid.Method.Delete(Kdmid.Delete.Subscription(r.Id)) |> createBaseRoute
+            let start = Russian(Kdmid(Post(StartManualRequest r.Id)))
+            let info = Russian(Kdmid(Get(Info r.Id)))
+            let delete = Russian(Kdmid(Delete(Subscription r.Id)))
 
             ButtonsGroup.create {
                 Name = r.Service.Value.BuildName 1 "."
                 Columns = 1
                 Buttons =
-                    [ "Info", info.Value; "Check now", startRequest.Value; "Delete", delete.Value ]
+                    [ "Info", info.Value; "Check now", start.Value; "Delete", delete.Value ]
                     |> ButtonsGroup.createButtons
             }
             |> Message.tryReplace (Some deps.MessageId) deps.ChatId)
@@ -43,7 +41,7 @@ let info (requestId: RequestId) =
         |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
 
 let private createKdmidInstruction chatId method =
-    let route = Kdmid.Method.Post method |> createBaseRoute
+    let route = Russian(Kdmid(Post method))
 
     $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
     + $"{String.addLines 2}Replace {INPUT_LINK} with the link you received from the KDMID website after confirmation."
@@ -55,27 +53,27 @@ let private createKdmidInstruction chatId method =
 
 let private setManualRequest (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.SetManualRequest(serviceId, embassyId, INPUT_LINK)
+        SetManualRequest(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
 let private setAutoNotifications (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.SetAutoNotifications(serviceId, embassyId, INPUT_LINK)
+        SetAutoNotifications(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
 let private setAutoBookingFirst (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.SetAutoBookingFirst(serviceId, embassyId, INPUT_LINK)
+        SetAutoBookingFirst(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
 let private setAutoBookingFirstInPeriod (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.SetAutoBookingFirstInPeriod(serviceId, embassyId, DateTime.UtcNow, DateTime.UtcNow, INPUT_LINK)
+        SetAutoBookingFirstInPeriod(serviceId, embassyId, DateTime.UtcNow, DateTime.UtcNow, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
 let private setAutoBookingLast (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Kdmid.Dependencies) ->
-        Kdmid.Post.SetAutoBookingLast(serviceId, embassyId, INPUT_LINK)
+        SetAutoBookingLast(serviceId, embassyId, INPUT_LINK)
         |> createKdmidInstruction deps.ChatId
 
 let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
@@ -85,7 +83,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
         |> ResultAsync.map (fun requests ->
             requests
             |> Seq.map (fun r ->
-                let route = Kdmid.Method.Get(Kdmid.Get.Menu r.Id) |> createBaseRoute
+                let route = Russian(Kdmid(Get(Menu r.Id)))
                 r.Service.Value.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {

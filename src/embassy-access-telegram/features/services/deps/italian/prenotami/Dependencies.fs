@@ -1,5 +1,4 @@
-﻿[<RequireQualifiedAccess>]
-module EA.Telegram.Features.Dependencies.Services.Italian.Prenotami
+﻿module EA.Telegram.Features.Dependencies.Services.Italian.Prenotami
 
 open System.Threading
 open Infrastructure.Domain

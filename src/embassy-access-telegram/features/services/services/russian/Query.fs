@@ -1,10 +1,10 @@
-﻿module EA.Telegram.Services.Services.Russian.Query
+﻿module EA.Telegram.Features.Services.Russian.Query
 
 open Infrastructure.Domain
 open EA.Core.Domain
-open EA.Telegram.Router.Services
-open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services.Router
+open EA.Telegram.Features.Services.Russian
+open EA.Telegram.Features.Dependencies.Services.Russian
 
 let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
     match serviceId.NodeId.Values |> List.skip 2 |> ServiceId.combine |> parse with
@@ -48,7 +48,7 @@ let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
     | Error error -> ServiceNotFound error
 
 let getService embassyId serviceId forUser =
-    fun (deps: Russian.Dependencies) ->
+    fun (deps: Dependencies) ->
         match serviceId with
         | Kdmid op ->
             deps

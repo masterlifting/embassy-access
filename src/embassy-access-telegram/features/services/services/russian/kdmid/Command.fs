@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Services.Russian.Kdmid.Command
+﻿module EA.Telegram.Features.Services.Russian.Kdmid.Command
 
 open System
 open Infrastructure.Domain
@@ -7,11 +7,12 @@ open Infrastructure.Logging
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Telegram.Router
-open EA.Telegram.Router.Services.Russian
-open EA.Telegram.Dependencies.Services.Russian
 open EA.Russian.Services
 open EA.Russian.Services.Domain.Kdmid
+open EA.Telegram.Features.Router.Services
+open EA.Telegram.Features.Router.Services.Russian
+open EA.Telegram.Features.Router.Services.Russian.Kdmid
+open EA.Telegram.Features.Dependencies.Services.Russian
 
 let private resultAsync = ResultAsyncBuilder()
 
@@ -50,16 +51,7 @@ let handleProcessResult (request: Request<Payload>) =
             let inline createMessage chatId =
                 appointments
                 |> Seq.map (fun a ->
-                    let route =
-                        Router.Services(
-                            Services.Method.Russian(
-                                Services.Russian.Method.Kdmid(
-                                    Services.Russian.Kdmid.Method.Post(
-                                        Services.Russian.Kdmid.Post.ConfirmAppointment(request.Id, a.Id)
-                                    )
-                                )
-                            )
-                        )
+                    let route = Russian(Kdmid(Post(ConfirmAppointment(request.Id, a.Id))))
                     a |> Appointment.print, route.Value)
                 |> fun buttons ->
                     let serviceName = request.Service.Value.BuildName 1 "."
@@ -144,16 +136,7 @@ let private handleRequestResult chatId (request: Request<Payload>) =
         | HasAppointments appointments ->
             appointments
             |> Seq.map (fun a ->
-                let route =
-                    Router.Services(
-                        Services.Method.Russian(
-                            Services.Russian.Method.Kdmid(
-                                Services.Russian.Kdmid.Method.Post(
-                                    Services.Russian.Kdmid.Post.ConfirmAppointment(request.Id, a.Id)
-                                )
-                            )
-                        )
-                    )
+                let route = Russian(Kdmid(Post(ConfirmAppointment(request.Id, a.Id))))
                 a |> Appointment.print, route.Value)
             |> fun buttons ->
                 let serviceName = request.Service.Value.BuildName 1 "."

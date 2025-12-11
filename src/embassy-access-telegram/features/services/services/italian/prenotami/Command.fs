@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Services.Services.Italian.Prenotami.Command
+﻿module EA.Telegram.Features.Services.Italian.Prenotami.Command
 
 open System
 open Infrastructure.Domain
@@ -6,11 +6,12 @@ open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Telegram.Router
-open EA.Telegram.Router.Services.Italian
-open EA.Telegram.Dependencies.Services.Italian
 open EA.Italian.Services
 open EA.Italian.Services.Domain.Prenotami
+open EA.Telegram.Features.Router.Services
+open EA.Telegram.Features.Router.Services.Italian
+open EA.Telegram.Features.Router.Services.Italian.Prenotami
+open EA.Telegram.Features.Dependencies.Services.Italian
 
 let private resultAsync = ResultAsyncBuilder()
 
@@ -37,16 +38,7 @@ let handleProcessResult (request: Request<Payload>) =
             let inline createMessage chatId =
                 appointments
                 |> Seq.map (fun a ->
-                    let route =
-                        Router.Services(
-                            Services.Method.Italian(
-                                Services.Italian.Method.Prenotami(
-                                    Services.Italian.Prenotami.Method.Post(
-                                        Services.Italian.Prenotami.Post.ConfirmAppointment(request.Id, a.Id)
-                                    )
-                                )
-                            )
-                        )
+                    let route = Italian(Prenotami(Post(ConfirmAppointment(request.Id, a.Id))))
                     a |> Appointment.print, route.Value)
                 |> fun buttons ->
                     let serviceName = request.Service.Value.BuildName 1 "."
@@ -76,7 +68,7 @@ let handleProcessResult (request: Request<Payload>) =
         | Failed error -> spreadFailure error
         | Completed _ ->
             match request.Payload.State with
-            | NoAppointments msg -> Ok() |> async.Return
+            | NoAppointments _ -> Ok() |> async.Return
             | HasAppointments appointments ->
 
                 let embassyId = request.Embassy.Id |> EmbassyId
@@ -107,16 +99,7 @@ let private handleRequestResult chatId (request: Request<Payload>) =
         | HasAppointments appointments ->
             appointments
             |> Seq.map (fun a ->
-                let route =
-                    Router.Services(
-                        Services.Method.Italian(
-                            Services.Italian.Method.Prenotami(
-                                Services.Italian.Prenotami.Method.Post(
-                                    Services.Italian.Prenotami.Post.ConfirmAppointment(request.Id, a.Id)
-                                )
-                            )
-                        )
-                    )
+                let route = Italian(Prenotami(Post(ConfirmAppointment(request.Id, a.Id))))
                 a |> Appointment.print, route.Value)
             |> fun buttons ->
                 let serviceName = request.Service.Value.BuildName 1 "."
