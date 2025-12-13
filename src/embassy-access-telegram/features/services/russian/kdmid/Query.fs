@@ -7,10 +7,10 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services.Domain.Kdmid
 open EA.Russian.Services.Router
-open EA.Telegram.Features.Router.Services
-open EA.Telegram.Features.Router.Services.Russian
-open EA.Telegram.Features.Router.Services.Russian.Kdmid
-open EA.Telegram.Features.Dependencies.Services.Russian
+open EA.Telegram.Features.Services.Router
+open EA.Telegram.Features.Services.Router.Russian
+open EA.Telegram.Features.Services.Router.Russian.Kdmid
+open EA.Telegram.Features.Services.Dependencies.Russian
 
 [<Literal>]
 let private INPUT_LINK = "<link>"
