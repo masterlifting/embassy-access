@@ -1,5 +1,5 @@
 [<RequireQualifiedAccess>]
-module EA.Telegram.Features.Services.Controller
+module EA.Telegram.Features.Controller.Services
 
 open Infrastructure.Prelude
 open EA.Telegram.Features.Dependencies
@@ -97,17 +97,17 @@ module Italian =
                         |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
 
 let respond request chat =
-    fun (deps: Services.Dependencies) ->
+    fun (deps: EA.Telegram.Dependencies.Request.Dependencies) ->
         deps
         |> Services.Dependencies.create chat
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Get get ->
                 match get with
-                | Services embassyId -> Query.getServices embassyId
-                | Service(embassyId, serviceId) -> Query.getService embassyId serviceId
-                | UserServices embassyId -> Query.getUserServices embassyId
-                | UserService(embassyId, serviceId) -> Query.getUserService embassyId serviceId
+                | Services embassyId -> EA.Telegram.Features.Services.Query.getServices embassyId
+                | Service(embassyId, serviceId) -> EA.Telegram.Features.Services.Query.getService embassyId serviceId
+                | UserServices embassyId -> EA.Telegram.Features.Services.Query.getUserServices embassyId
+                | UserService(embassyId, serviceId) -> EA.Telegram.Features.Services.Query.getUserService embassyId serviceId
                 |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-            | Russian russian -> deps |> Russian.Dependencies.create |> Russian.respond russian
-            | Italian italian -> deps |> Italian.Dependencies.create |> Italian.respond italian)
+            | Russian russian -> deps |> Services.Russian.Dependencies.create |> Russian.respond russian
+            | Italian italian -> deps |> Services.Italian.Dependencies.create |> Italian.respond italian)

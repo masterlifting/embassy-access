@@ -4,6 +4,7 @@ module EA.Telegram.Dependencies.Request
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open AIProvider.Services.Dependencies
 open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
@@ -16,14 +17,14 @@ type Dependencies = {
     ChatId: Telegram.ChatId
     MessageId: int
     Persistence: Persistence.Dependencies
+    Culture: Culture.Dependencies
     tryGetChat: unit -> Async<Result<Chat option, Error'>>
     getEmbassyTree: unit -> Async<Result<Tree.Node<Embassy>, Error'>>
     getServiceTree: unit -> Async<Result<Tree.Node<Service>, Error'>>
     sendMessage: Telegram.Producer.Message -> Async<Result<unit, Error'>>
     sendMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-    translateMessageRes:
-        Culture -> Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<Telegram.Producer.Message, Error'>>
-    getAvailableCultures: unit -> Map<Culture, string>
+    //translateMessageRes: Culture -> Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<Telegram.Producer.Message, Error'>>
+    // getAvailableCultures: unit -> Map<Culture, string>
     setCulture: Culture -> Async<Result<unit, Error'>>
 } with
 
@@ -54,13 +55,14 @@ type Dependencies = {
                     ChatId = payload.ChatId
                     MessageId = payload.MessageId
                     Persistence = deps.Persistence
+                    Culture = deps.Culture
                     tryGetChat = tryGetChat
                     getEmbassyTree = getEmbassyTree
                     getServiceTree = getServiceTree
                     sendMessage = deps.Web.Telegram.sendMessage
                     sendMessageRes = sendMessageRes
-                    translateMessageRes = deps.Culture.translateRes
-                    getAvailableCultures = deps.Culture.getAvailable
+                    //translateMessageRes = deps.Culture.translateRes
+                    //getAvailableCultures = deps.Culture.getAvailable
                     setCulture = setCulture
                 }
             }

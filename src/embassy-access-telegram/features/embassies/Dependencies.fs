@@ -9,6 +9,7 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.Dependencies
+open EA.Telegram.Features.Dependencies
 
 type Dependencies = {
     Chat: Chat
@@ -27,8 +28,10 @@ type Dependencies = {
             let getEmbassyNode (embassyId: EmbassyId) =
                 deps.getEmbassyTree () |> ResultAsync.map (Tree.findNode embassyId.NodeId)
 
+            let culture = deps.Culture |> Culture.Dependencies.create deps.ct 
+
             let sendMessageRes data =
-                data |> deps.translateMessageRes chat.Culture |> deps.sendMessageRes
+                data |> culture.translateRes chat.Culture |> deps.sendMessageRes
 
             //TODO: implement these methods
             let getServices (embassyId: EmbassyId) =

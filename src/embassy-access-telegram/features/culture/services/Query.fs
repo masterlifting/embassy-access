@@ -3,6 +3,7 @@
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Telegram.Dependencies
+open EA.Telegram.Features.Dependencies
 open EA.Telegram.Features.Router.Culture
 
 let private createMessage chatId msgIdOpt nameOpt buttons =
@@ -20,7 +21,9 @@ let private createMessage chatId msgIdOpt nameOpt buttons =
 
 let getCultures () =
     fun (deps: Request.Dependencies) ->
-        deps.getAvailableCultures ()
+        let culture = deps.Culture |> Culture.Dependencies.create deps.ct 
+
+        culture.getAvailable ()
         |> Seq.map (fun culture ->
             let method = Post(SetCulture culture.Key)
             let name = culture.Value
@@ -29,7 +32,9 @@ let getCultures () =
 
 let getCulturesCallback callback =
     fun (deps: Request.Dependencies) ->
-        deps.getAvailableCultures ()
+        let culture = deps.Culture |> Culture.Dependencies.create deps.ct 
+
+        culture.getAvailable ()
         |> Seq.map (fun culture ->
             let method = Post(SetCultureCallback(callback, culture.Key))
             let name = culture.Value

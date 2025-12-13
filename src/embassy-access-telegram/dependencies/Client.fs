@@ -4,6 +4,7 @@ module EA.Telegram.Dependencies.Client
 open System.Threading
 open Infrastructure.Prelude
 open AIProvider.Clients
+open AIProvider.Services.Dependencies
 open Web.Clients
 open EA.Telegram.Dependencies
 
@@ -12,7 +13,7 @@ let private result = ResultBuilder()
 type Dependencies = {
     ct: CancellationToken
     Web: Web.Dependencies
-    Culture: EA.Telegram.Features.Culture.Dependencies.Dependencies
+    Culture: Culture.Dependencies
     Persistence: Persistence.Dependencies
 } with
 
@@ -36,9 +37,9 @@ type Dependencies = {
             let! cultureDeps =
                 persistenceDeps.initCultureStorage ()
                 |> Result.map (fun storage ->
-                    EA.Telegram.Features.Culture.Dependencies.Dependencies.create ct {
-                        Provider = AIProvider.Client.OpenAI openApiClient
-                        Storage = storage
+                    {
+                        Culture.Dependencies.Provider = AIProvider.Client.OpenAI openApiClient
+                        Culture.Dependencies.Storage = storage
                     })
 
             return {

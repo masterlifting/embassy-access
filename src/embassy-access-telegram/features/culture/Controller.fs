@@ -21,14 +21,14 @@ let respond request entrypoint =
                 |> ResultAsync.bindAsync (fun _ ->
                     Route.parse callback |> ResultAsync.wrap (fun route -> deps |> entrypoint route))
 
-let apply (request: Route) callback =
+let apply request callback =
     fun (deps: Request.Dependencies) ->
         deps.tryGetChat ()
         |> ResultAsync.bindAsync (function
             | Some chat -> deps |> callback chat
             | None ->
                 deps
-                |> Query.getCulturesCallback request.Value
+                |> Query.getCulturesCallback request
                 |> deps.sendMessage
                 |> ResultAsync.mapErrorAsync (fun error ->
                     deps |> Query.getCultures () |> deps.sendMessage |> Async.map (fun _ -> error)))

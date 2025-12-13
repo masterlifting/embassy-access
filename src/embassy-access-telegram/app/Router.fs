@@ -3,12 +3,11 @@ module EA.Telegram.App.Router
 
 open Infrastructure.Domain
 open EA.Telegram.Shared
-open EA.Telegram.Features
 open EA.Telegram.Features.Router
 
 type Route =
     | Culture of Culture.Route
-    | Services of Services.Router.Method.Route
+    | Services of Services.Route
     | Embassies of Embassies.Route
 
     member this.Value =
@@ -24,7 +23,7 @@ let parse (input: string) =
 
     match parts[0] with
     | "0" -> remaining |> Culture.Route.parse |> Result.map Culture
-    | "1" -> remaining |> Method.parse |> Result.map Services
+    | "1" -> remaining |> Services.Route.parse |> Result.map Services
     | "2" -> remaining |> Embassies.Route.parse |> Result.map Embassies
     | "/culture" -> Culture.Get Culture.Cultures |> Ok |> Result.map Culture
     | "/start" -> Embassies.Get Embassies.Embassies |> Ok |> Result.map Embassies

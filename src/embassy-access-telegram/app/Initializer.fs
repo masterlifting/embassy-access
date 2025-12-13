@@ -3,7 +3,6 @@ module EA.Telegram.Initializer
 open Infrastructure.Prelude
 open AIProvider.Services.DataAccess
 open EA.Core.DataAccess
-open EA.Telegram.Dependencies
 open EA.Telegram.DataAccess
 
 let private resultAsync = ResultAsyncBuilder()
