@@ -47,7 +47,7 @@ type Dependencies = {
                     | Some node -> node |> Ok
                     | None -> $"Embassy '{embassyId}' not found." |> NotFound |> Error)
 
-            let culture = deps.Culture |> Culture.Dependencies.create deps.ct 
+            let culture = deps.Culture |> Culture.Dependencies.create deps.ct
 
             let sendTranslatedMessageRes msg =
                 msg |> culture.translateRes chat.Culture |> deps.sendMessageRes

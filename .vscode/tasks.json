@@ -11,7 +11,13 @@
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": false
+            }
         },
         {
             "label": "build-release",
@@ -25,7 +31,13 @@
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": false
+            }
         },
         {
             "label": "publish-telegram",
@@ -39,7 +51,13 @@
                 "--output",
                 "${workspaceFolder}/publish/telegram"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": false
+            }
         },
         {
             "label": "publish-worker",
@@ -53,7 +71,13 @@
                 "--output",
                 "${workspaceFolder}/publish/worker"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": false
+            }
         },
         {
             "label": "publish-all",
@@ -73,7 +97,13 @@
                 "--project",
                 "${workspaceFolder}/src/embassy-access-telegram/embassy-access-telegram.fsproj"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": false
+            }
         }
     ]
 }
