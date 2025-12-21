@@ -7,7 +7,6 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services.Domain.Kdmid
 open EA.Russian.Services.Router
-open EA.Telegram.Features.Router.Services.Root
 open EA.Telegram.Features.Router.Services.Russian.Root
 open EA.Telegram.Features.Router.Services.Russian.Kdmid
 open EA.Telegram.Features.Dependencies.Services.Russian
@@ -20,9 +19,9 @@ let menu (requestId: RequestId) =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
-            let start = Russian(Kdmid(Post(StartManualRequest r.Id)))
-            let info = Russian(Kdmid(Get(Info r.Id)))
-            let delete = Russian(Kdmid(Delete(Subscription r.Id)))
+            let start = Kdmid(Post(StartManualRequest r.Id))
+            let info = Kdmid(Get(Info r.Id))
+            let delete = Kdmid(Delete(Subscription r.Id))
 
             ButtonsGroup.create {
                 Name = r.Service.Value.BuildName 1 "."
@@ -41,7 +40,7 @@ let info (requestId: RequestId) =
         |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
 
 let private createKdmidInstruction chatId method =
-    let route = Russian(Kdmid(Post method))
+    let route = Kdmid(Post method)
 
     $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
     + $"{String.addLines 2}Replace {INPUT_LINK} with the link you received from the KDMID website after confirmation."
@@ -83,7 +82,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
         |> ResultAsync.map (fun requests ->
             requests
             |> Seq.map (fun r ->
-                let route = Russian(Kdmid(Get(Menu r.Id)))
+                let route = Kdmid(Get(Menu r.Id))
                 r.Service.Value.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {

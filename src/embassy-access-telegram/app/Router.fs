@@ -22,9 +22,9 @@ let parse (input: string) =
     let remaining = parts[1..] |> String.concat Router.DELIMITER
 
     match parts[0] with
-    | Culture.ROOT -> remaining |> Culture.Route.parse |> Result.map Culture
-    | Services.Root.ROOT -> remaining |> Services.Root.Route.parse |> Result.map Services
-    | Embassies.ROOT -> remaining |> Embassies.Route.parse |> Result.map Embassies
+    | "0" -> remaining |> Culture.Route.parse |> Result.map Culture
+    | "1" -> remaining |> Services.Root.Route.parse |> Result.map Services
+    | "2" -> remaining |> Embassies.Route.parse |> Result.map Embassies
     | "/culture" -> Culture.Get Culture.Cultures |> Ok |> Result.map Culture
     | "/start" -> Embassies.Get Embassies.Embassies |> Ok |> Result.map Embassies
     | "/mine" -> Embassies.Get Embassies.UserEmbassies |> Ok |> Result.map Embassies

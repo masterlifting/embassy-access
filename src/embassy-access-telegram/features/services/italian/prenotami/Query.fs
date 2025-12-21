@@ -6,7 +6,6 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
-open EA.Telegram.Features.Router.Services.Root
 open EA.Telegram.Features.Router.Services.Italian.Root
 open EA.Telegram.Features.Router.Services.Italian.Prenotami
 open EA.Telegram.Features.Dependencies.Services.Italian
@@ -22,9 +21,9 @@ let menu (requestId: RequestId) =
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
-            let start = Italian(Prenotami(Post(StartManualRequest r.Id)))
-            let info = Italian(Prenotami(Get(Info r.Id)))
-            let delete = Italian(Prenotami(Delete(Subscription r.Id)))
+            let start = Prenotami(Post(StartManualRequest r.Id))
+            let info = Prenotami(Get(Info r.Id))
+            let delete = Prenotami(Delete(Subscription r.Id))
 
             ButtonsGroup.create {
                 Name = r.Service.Value.BuildName 1 "."
@@ -43,7 +42,7 @@ let print (requestId: RequestId) =
         |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
 
 let private createPrenotamiInstruction chatId request =
-    let route = Italian(Prenotami(Post request))
+    let route = Prenotami(Post request)
 
     $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
     + $"{String.addLines 2}Replace {INPUT_LOGIN} and {INPUT_PASSWORD} with the login and password you received from the Prenotami website after confirmation."
@@ -70,7 +69,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
         |> ResultAsync.map (fun requests ->
             requests
             |> Seq.map (fun r ->
-                let route = Italian(Prenotami(Get(Menu r.Id)))
+                let route = Prenotami(Get(Menu r.Id))
                 r.Service.Value.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {

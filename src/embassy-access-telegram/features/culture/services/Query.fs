@@ -21,7 +21,7 @@ let private createMessage chatId msgIdOpt nameOpt buttons =
 
 let getCultures () =
     fun (deps: Request.Dependencies) ->
-        let culture = deps.Culture |> Culture.Dependencies.create deps.ct 
+        let culture = deps.Culture |> Culture.Dependencies.create deps.ct
 
         culture.getAvailable ()
         |> Seq.map (fun culture ->
@@ -32,7 +32,7 @@ let getCultures () =
 
 let getCulturesCallback callback =
     fun (deps: Request.Dependencies) ->
-        let culture = deps.Culture |> Culture.Dependencies.create deps.ct 
+        let culture = deps.Culture |> Culture.Dependencies.create deps.ct
 
         culture.getAvailable ()
         |> Seq.map (fun culture ->

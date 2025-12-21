@@ -1,8 +1,7 @@
-﻿module EA.Telegram.Features.Router.Services.Italian
+﻿module EA.Telegram.Features.Router.Services.Italian.Root
 
 open Infrastructure.Domain
 open EA.Telegram.Shared
-open EA.Telegram.Features.Router.Services.Italian
 
 type Route =
     | Prenotami of Prenotami.Route

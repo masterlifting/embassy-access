@@ -9,7 +9,6 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services
 open EA.Russian.Services.Domain.Kdmid
-open EA.Telegram.Features.Router.Services.Root
 open EA.Telegram.Features.Router.Services.Russian.Root
 open EA.Telegram.Features.Router.Services.Russian.Kdmid
 open EA.Telegram.Features.Dependencies.Services.Russian
@@ -51,7 +50,7 @@ let handleProcessResult (request: Request<Payload>) =
             let inline createMessage chatId =
                 appointments
                 |> Seq.map (fun a ->
-                    let route = Russian(Kdmid(Post(ConfirmAppointment(request.Id, a.Id))))
+                    let route = Kdmid(Post(ConfirmAppointment(request.Id, a.Id)))
                     a |> Appointment.print, route.Value)
                 |> fun buttons ->
                     let serviceName = request.Service.Value.BuildName 1 "."
@@ -136,7 +135,7 @@ let private handleRequestResult chatId (request: Request<Payload>) =
         | HasAppointments appointments ->
             appointments
             |> Seq.map (fun a ->
-                let route = Russian(Kdmid(Post(ConfirmAppointment(request.Id, a.Id))))
+                let route = Kdmid(Post(ConfirmAppointment(request.Id, a.Id)))
                 a |> Appointment.print, route.Value)
             |> fun buttons ->
                 let serviceName = request.Service.Value.BuildName 1 "."
