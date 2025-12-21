@@ -5,6 +5,9 @@ open EA.Core.Domain
 open EA.Telegram.Shared
 open EA.Telegram.Features.Router.Services
 
+[<Literal>]
+let ROOT = "services"
+
 type Get =
     | Service of EmbassyId * ServiceId
     | Services of EmbassyId
@@ -45,9 +48,9 @@ type Route =
 
     member this.Value =
         match this with
-        | Get r -> [ "0"; r.Value ]
-        | Russian r -> [ "1"; r.Value ]
-        | Italian r -> [ "2"; r.Value ]
+        | Get r -> [ ROOT; "0"; r.Value ]
+        | Russian r -> [ ROOT; "1"; r.Value ]
+        | Italian r -> [ ROOT; "2"; r.Value ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =

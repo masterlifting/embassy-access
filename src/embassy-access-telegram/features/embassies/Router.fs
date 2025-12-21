@@ -4,6 +4,9 @@ open Infrastructure.Domain
 open EA.Telegram.Shared
 open EA.Core.Domain
 
+[<Literal>]
+let ROOT = "embassies"
+
 type Get =
     | Embassy of EmbassyId
     | Embassies
@@ -36,7 +39,7 @@ type Route =
 
     member this.Value =
         match this with
-        | Get r -> [ "0"; r.Value ]
+        | Get r -> [ ROOT; "0"; r.Value ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =

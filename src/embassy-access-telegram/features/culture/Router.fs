@@ -3,6 +3,9 @@ module EA.Telegram.Features.Router.Culture
 open Infrastructure.Domain
 open EA.Telegram.Shared
 
+[<Literal>]
+let ROOT = "culture"
+
 type Get =
     | Cultures
 
@@ -48,8 +51,8 @@ type Route =
 
     member this.Value =
         match this with
-        | Get r -> [ "0"; r.Value ]
-        | Post r -> [ "1"; r.Value ]
+        | Get r -> [ ROOT; "0"; r.Value ]
+        | Post r -> [ ROOT; "1"; r.Value ]
         |> String.concat Router.DELIMITER
 
     static member parse(input: string) =

@@ -23,8 +23,6 @@ type Dependencies = {
     getServiceTree: unit -> Async<Result<Tree.Node<Service>, Error'>>
     sendMessage: Telegram.Producer.Message -> Async<Result<unit, Error'>>
     sendMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
-    //translateMessageRes: Culture -> Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<Telegram.Producer.Message, Error'>>
-    // getAvailableCultures: unit -> Map<Culture, string>
     setCulture: Culture -> Async<Result<unit, Error'>>
 } with
 
@@ -61,8 +59,6 @@ type Dependencies = {
                     getServiceTree = getServiceTree
                     sendMessage = deps.Web.Telegram.sendMessage
                     sendMessageRes = sendMessageRes
-                    //translateMessageRes = deps.Culture.translateRes
-                    //getAvailableCultures = deps.Culture.getAvailable
                     setCulture = setCulture
                 }
             }
