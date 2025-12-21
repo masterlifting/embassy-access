@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Features.Dependencies.Services
+﻿module EA.Telegram.Features.Dependencies.Services.Root
 
 open System.Threading
 open Infrastructure.Domain
@@ -47,7 +47,9 @@ type Dependencies = {
                     | Some node -> node |> Ok
                     | None -> $"Embassy '{embassyId}' not found." |> NotFound |> Error)
 
-            let culture = deps.Culture |> Culture.Dependencies.create deps.ct
+            let culture =
+                deps.Culture
+                |> EA.Telegram.Features.Dependencies.Culture.Dependencies.create deps.ct
 
             let sendTranslatedMessageRes msg =
                 msg |> culture.translateRes chat.Culture |> deps.sendMessageRes

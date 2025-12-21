@@ -9,8 +9,8 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services
 open EA.Russian.Services.Domain.Kdmid
-open EA.Telegram.Features.Router.Services
-open EA.Telegram.Features.Router.Services.Russian
+open EA.Telegram.Features.Router.Services.Root
+open EA.Telegram.Features.Router.Services.Russian.Root
 open EA.Telegram.Features.Router.Services.Russian.Kdmid
 open EA.Telegram.Features.Dependencies.Services.Russian
 

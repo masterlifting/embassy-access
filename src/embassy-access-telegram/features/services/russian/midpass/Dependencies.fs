@@ -21,7 +21,7 @@ type Dependencies = {
     initRequestStorage: unit -> Result<StorageType, Error'>
 } with
 
-    static member create(deps: Russian.Dependencies) =
+    static member create(deps: Russian.Root.Dependencies) =
 
         let findRequest requestId storage =
             storage

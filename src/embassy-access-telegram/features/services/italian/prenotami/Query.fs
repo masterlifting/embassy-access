@@ -6,8 +6,8 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
-open EA.Telegram.Features.Router.Services
-open EA.Telegram.Features.Router.Services.Italian
+open EA.Telegram.Features.Router.Services.Root
+open EA.Telegram.Features.Router.Services.Italian.Root
 open EA.Telegram.Features.Router.Services.Italian.Prenotami
 open EA.Telegram.Features.Dependencies.Services.Italian
 

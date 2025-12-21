@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Features.Dependencies.Services.Russian
+﻿module EA.Telegram.Features.Dependencies.Services.Russian.Root
 
 open System.Threading
 open Infrastructure.Domain
@@ -28,7 +28,7 @@ type Dependencies = {
     sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
 } with
 
-    static member create(deps: Services.Dependencies) = {
+    static member create(deps: Services.Root.Dependencies) = {
         ct = deps.ct
         Chat = deps.Chat
         MessageId = deps.MessageId

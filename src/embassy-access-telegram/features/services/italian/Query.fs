@@ -16,7 +16,7 @@ let private (|Prenotami|ServiceNotFound|) (serviceId: ServiceId) =
     | Error error -> ServiceNotFound error
 
 let getService embassyId serviceId forUser =
-    fun (deps: Dependencies) ->
+    fun (deps: Root.Dependencies) ->
         match serviceId with
         | Prenotami op ->
             deps

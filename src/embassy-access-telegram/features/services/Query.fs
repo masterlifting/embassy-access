@@ -5,7 +5,7 @@ open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Telegram.Features.Router.Services
+open EA.Telegram.Features.Router.Services.Root
 open EA.Telegram.Features.Dependencies.Services
 
 let private createButtonsGroup chatId messageId name buttons =
@@ -39,15 +39,15 @@ let private tryCreateServiceRootId (embassyId: EmbassyId) =
     |> Result.map (fun embassyIdValue -> ServiceId.combine [ Services.ROOT_ID; embassyIdValue ])
 
 let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser =
-    fun (deps: Dependencies) ->
+    fun (deps: Root.Dependencies) ->
         match embassyId with
         | RUS _ ->
             deps
-            |> Russian.Dependencies.create
+            |> Russian.Root.Dependencies.create
             |> Russian.Query.getService embassyId serviceId forUser
         | ITA _ ->
             deps
-            |> Italian.Dependencies.create
+            |> Italian.Root.Dependencies.create
             |> Italian.Query.getService embassyId serviceId forUser
         | EmbassyNotFound ->
             $"Service '%s{serviceId.Value}' is not implemented. " + NOT_IMPLEMENTED
@@ -56,7 +56,7 @@ let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser 
             |> async.Return
 
 let getService embassyId serviceId =
-    fun (deps: Dependencies) ->
+    fun (deps: Root.Dependencies) ->
         deps.tryFindServiceNode serviceId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId false
@@ -74,13 +74,13 @@ let getService embassyId serviceId =
                 |> async.Return)
 
 let getServices embassyId =
-    fun (deps: Dependencies) ->
+    fun (deps: Root.Dependencies) ->
         embassyId
         |> tryCreateServiceRootId
         |> ResultAsync.wrap (fun serviceId -> deps |> getService embassyId serviceId)
 
 let getUserService embassyId serviceId =
-    fun (deps: Dependencies) ->
+    fun (deps: Root.Dependencies) ->
         deps.tryFindServiceNode serviceId
         |> ResultAsync.bindAsync (function
             | Some(AP.Leaf _) -> deps |> tryGetService embassyId serviceId true
@@ -102,7 +102,7 @@ let getUserService embassyId serviceId =
                 |> async.Return)
 
 let getUserServices embassyId =
-    fun (deps: Dependencies) ->
+    fun (deps: Root.Dependencies) ->
         embassyId
         |> tryCreateServiceRootId
         |> ResultAsync.wrap (fun serviceId -> deps |> getUserService embassyId serviceId)

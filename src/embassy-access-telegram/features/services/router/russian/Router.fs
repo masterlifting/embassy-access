@@ -1,8 +1,7 @@
-﻿module EA.Telegram.Features.Router.Services.Russian
+﻿module EA.Telegram.Features.Router.Services.Russian.Root
 
 open Infrastructure.Domain
 open EA.Telegram.Shared
-open EA.Telegram.Features.Router.Services.Russian
 
 type Route =
     | Kdmid of Kdmid.Route

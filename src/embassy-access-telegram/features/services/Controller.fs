@@ -3,15 +3,16 @@ module EA.Telegram.Features.Controller.Services
 
 open Infrastructure.Prelude
 open EA.Telegram.Features.Dependencies
-open EA.Telegram.Features.Router.Services
+open EA.Telegram.Features.Router.Services.Root
 
 module Russian =
     open EA.Telegram.Features.Services.Russian
     open EA.Telegram.Features.Router.Services.Russian
+    open EA.Telegram.Features.Router.Services.Russian.Root
     open EA.Telegram.Features.Dependencies.Services.Russian
 
     let respond route =
-        fun (deps: Dependencies) ->
+        fun (deps: Root.Dependencies) ->
             match route with
             | Kdmid request ->
                 deps
@@ -66,10 +67,11 @@ module Russian =
 module Italian =
     open EA.Telegram.Features.Services.Italian
     open EA.Telegram.Features.Router.Services.Italian
+    open EA.Telegram.Features.Router.Services.Italian.Root
     open EA.Telegram.Features.Dependencies.Services.Italian
 
     let respond route =
-        fun (deps: Dependencies) ->
+        fun (deps: Root.Dependencies) ->
             match route with
             | Prenotami prenotami ->
                 deps
@@ -99,7 +101,7 @@ module Italian =
 let respond (request: Route) chat =
     fun (deps: EA.Telegram.Dependencies.Request.Dependencies) ->
         deps
-        |> Services.Dependencies.create chat
+        |> Services.Root.Dependencies.create chat
         |> ResultAsync.wrap (fun deps ->
             match request with
             | Get get ->
@@ -110,5 +112,5 @@ let respond (request: Route) chat =
                 | UserService(embassyId, serviceId) ->
                     EA.Telegram.Features.Services.Query.getUserService embassyId serviceId
                 |> fun f -> deps |> f |> deps.sendTranslatedMessageRes
-            | Russian russian -> deps |> Services.Russian.Dependencies.create |> Russian.respond russian
-            | Italian italian -> deps |> Services.Italian.Dependencies.create |> Italian.respond italian)
+            | Russian russian -> deps |> Services.Russian.Root.Dependencies.create |> Russian.respond russian
+            | Italian italian -> deps |> Services.Italian.Root.Dependencies.create |> Italian.respond italian)
