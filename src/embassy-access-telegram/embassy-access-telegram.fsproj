@@ -19,13 +19,13 @@
     <Compile Include="dependencies\Web.fs" />
     <Compile Include="dependencies\Client.fs" />
     <Compile Include="dependencies\Request.fs" />
-    <Compile Include="features\culture\Dependencies.fs" />
     <Compile Include="features\culture\Router.fs" />
+    <Compile Include="features\culture\Dependencies.fs" />
     <Compile Include="features\culture\services\Query.fs" />
     <Compile Include="features\culture\services\Command.fs" />
     <Compile Include="features\culture\Controller.fs" />
-    <Compile Include="features\embassies\Dependencies.fs" />
     <Compile Include="features\embassies\Router.fs" />
+    <Compile Include="features\embassies\Dependencies.fs" />
     <Compile Include="features\embassies\services\Query.fs" />
     <Compile Include="features\embassies\Controller.fs" />
     <Compile Include="features\services\russian\kdmid\Router.fs" />
