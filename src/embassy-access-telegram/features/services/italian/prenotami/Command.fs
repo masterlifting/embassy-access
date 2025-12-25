@@ -8,9 +8,13 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Italian.Services
 open EA.Italian.Services.Domain.Prenotami
-open EA.Telegram.Features.Router.Services.Italian.Root
-open EA.Telegram.Features.Router.Services.Italian.Prenotami
+open EA.Telegram.Router.Services
+open EA.Telegram.Router.Services.Italian
+open EA.Telegram.Router.Services.Italian.Prenotami
 open EA.Telegram.Features.Dependencies.Services.Italian
+
+let private buildRoute route =
+    EA.Telegram.Router.Route.Services(Italian(Prenotami route))
 
 let private resultAsync = ResultAsyncBuilder()
 
@@ -37,7 +41,7 @@ let handleProcessResult (request: Request<Payload>) =
             let inline createMessage chatId =
                 appointments
                 |> Seq.map (fun a ->
-                    let route = Prenotami(Post(ConfirmAppointment(request.Id, a.Id)))
+                    let route = Post(ConfirmAppointment(request.Id, a.Id)) |> buildRoute
                     a |> Appointment.print, route.Value)
                 |> fun buttons ->
                     let serviceName = request.Service.Value.BuildName 1 "."
@@ -98,7 +102,7 @@ let private handleRequestResult chatId (request: Request<Payload>) =
         | HasAppointments appointments ->
             appointments
             |> Seq.map (fun a ->
-                let route = Prenotami(Post(ConfirmAppointment(request.Id, a.Id)))
+                let route = Post(ConfirmAppointment(request.Id, a.Id)) |> buildRoute
                 a |> Appointment.print, route.Value)
             |> fun buttons ->
                 let serviceName = request.Service.Value.BuildName 1 "."

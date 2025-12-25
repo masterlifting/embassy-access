@@ -6,7 +6,7 @@ open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services.Domain.Midpass
-open EA.Telegram.Features.Router.Services.Russian
+open EA.Telegram.Router.Services.Russian
 open EA.Telegram.Features.Dependencies.Services.Russian
 
 let handleProcessResult (_: Request<Payload>) =

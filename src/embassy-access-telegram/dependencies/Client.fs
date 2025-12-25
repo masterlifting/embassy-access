@@ -36,11 +36,10 @@ type Dependencies = {
 
             let! cultureDeps =
                 persistenceDeps.initCultureStorage ()
-                |> Result.map (fun storage ->
-                    {
-                        Culture.Dependencies.Provider = AIProvider.Client.OpenAI openApiClient
-                        Culture.Dependencies.Storage = storage
-                    })
+                |> Result.map (fun storage -> {
+                    Culture.Dependencies.Provider = AIProvider.Client.OpenAI openApiClient
+                    Culture.Dependencies.Storage = storage
+                })
 
             return {
                 ct = ct

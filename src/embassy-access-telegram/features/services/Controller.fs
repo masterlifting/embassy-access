@@ -3,12 +3,11 @@ module EA.Telegram.Features.Controller.Services
 
 open Infrastructure.Prelude
 open EA.Telegram.Features.Dependencies
-open EA.Telegram.Features.Router.Services.Root
+open EA.Telegram.Router.Services
 
 module Russian =
     open EA.Telegram.Features.Services.Russian
-    open EA.Telegram.Features.Router.Services.Russian
-    open EA.Telegram.Features.Router.Services.Russian.Root
+    open EA.Telegram.Router.Services.Russian
     open EA.Telegram.Features.Dependencies.Services.Russian
 
     let respond route =
@@ -66,8 +65,7 @@ module Russian =
 
 module Italian =
     open EA.Telegram.Features.Services.Italian
-    open EA.Telegram.Features.Router.Services.Italian
-    open EA.Telegram.Features.Router.Services.Italian.Root
+    open EA.Telegram.Router.Services.Italian
     open EA.Telegram.Features.Dependencies.Services.Italian
 
     let respond route =

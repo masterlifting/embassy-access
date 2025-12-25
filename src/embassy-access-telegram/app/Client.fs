@@ -5,7 +5,7 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Domain.Telegram.Consumer
-open EA.Telegram.App
+open EA.Telegram.Router
 open EA.Telegram.Dependencies
 open EA.Telegram.Controllers
 
@@ -14,7 +14,7 @@ let private respond payload =
         deps
         |> Request.Dependencies.create payload
         |> ResultAsync.wrap (fun deps ->
-            Router.parse payload.Value
+            Route.parse payload.Value
             |> ResultAsync.wrap (fun request -> deps |> Controller.respond request))
 
 let private processData data =

@@ -6,7 +6,10 @@ open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Telegram.Features.Dependencies
-open EA.Telegram.Features.Router.Embassies
+open EA.Telegram.Router.Embassies
+
+let private buildRoute route =
+    EA.Telegram.Router.Route.Embassies route
 
 let private createButtonsGroup chatId messageId name buttons =
     match buttons |> Seq.isEmpty with
@@ -36,8 +39,8 @@ let private getEmbassy' embassyId firstCall =
                 node.Children
                 |> Seq.map (fun embassy ->
                     let embassyId = embassy.Id |> EmbassyId
-                    let method = Get(Embassy embassyId)
-                    embassy.Value.LastName, method.Value)
+                    let route = Get(Embassy embassyId) |> buildRoute
+                    embassy.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"Embassy '%s{embassyId.Value}' is not implemented. " + NOT_IMPLEMENTED
@@ -63,8 +66,8 @@ let private getUserEmbassy' embassyId firstCall =
                 |> Seq.filter (fun embassy -> userEmbassyIds |> Tree.NodeId.contains embassy.Id)
                 |> Seq.map (fun embassy ->
                     let embassyId = embassy.Id |> EmbassyId
-                    let method = Get(UserEmbassy embassyId)
-                    embassy.Value.LastName, method.Value)
+                    let route = Get(UserEmbassy embassyId) |> buildRoute
+                    embassy.Value.LastName, route.Value)
                 |> createButtonsGroup deps.Chat.Id messageId node.Value.Description
             | None ->
                 $"You have no embassies available for '%s{embassyId.Value}'."

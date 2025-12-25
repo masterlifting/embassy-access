@@ -6,8 +6,9 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Italian.Services.Router
 open EA.Italian.Services.Domain.Prenotami
-open EA.Telegram.Features.Router.Services.Italian.Root
-open EA.Telegram.Features.Router.Services.Italian.Prenotami
+open EA.Telegram.Router.Services
+open EA.Telegram.Router.Services.Italian
+open EA.Telegram.Router.Services.Italian.Prenotami
 open EA.Telegram.Features.Dependencies.Services.Italian
 
 [<Literal>]
@@ -16,14 +17,17 @@ let private INPUT_LOGIN = "<login>"
 [<Literal>]
 let private INPUT_PASSWORD = "<password>"
 
+let private buildRoute route =
+    EA.Telegram.Router.Route.Services(Italian(Prenotami route))
+
 let menu (requestId: RequestId) =
     fun (deps: Prenotami.Dependencies) ->
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
-            let start = Prenotami(Post(StartManualRequest r.Id))
-            let info = Prenotami(Get(Info r.Id))
-            let delete = Prenotami(Delete(Subscription r.Id))
+            let start = Post(StartManualRequest r.Id) |> buildRoute
+            let info = Get(Info r.Id) |> buildRoute
+            let delete = Delete(Subscription r.Id) |> buildRoute
 
             ButtonsGroup.create {
                 Name = r.Service.Value.BuildName 1 "."
@@ -42,7 +46,7 @@ let print (requestId: RequestId) =
         |> ResultAsync.map (Text.create >> Message.createNew deps.ChatId)
 
 let private createPrenotamiInstruction chatId request =
-    let route = Prenotami(Post request)
+    let route = Post request |> buildRoute
 
     $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
     + $"{String.addLines 2}Replace {INPUT_LOGIN} and {INPUT_PASSWORD} with the login and password you received from the Prenotami website after confirmation."
@@ -69,7 +73,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
         |> ResultAsync.map (fun requests ->
             requests
             |> Seq.map (fun r ->
-                let route = Prenotami(Get(Menu r.Id))
+                let route = Get(Menu r.Id) |> buildRoute
                 r.Service.Value.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {

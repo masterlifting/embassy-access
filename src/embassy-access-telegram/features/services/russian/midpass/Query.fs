@@ -5,17 +5,21 @@ open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services.Domain.Midpass
-open EA.Telegram.Features.Router.Services.Russian.Root
-open EA.Telegram.Features.Router.Services.Russian.Midpass
+open EA.Telegram.Router.Services
+open EA.Telegram.Router.Services.Russian
+open EA.Telegram.Router.Services.Russian.Midpass
 open EA.Telegram.Features.Dependencies.Services.Russian
+
+let private buildRoute route =
+    EA.Telegram.Router.Route.Services(Russian(Midpass route))
 
 let menu (requestId: RequestId) =
     fun (deps: Midpass.Dependencies) ->
         deps.initRequestStorage ()
         |> ResultAsync.wrap (deps.findRequest requestId)
         |> ResultAsync.map (fun r ->
-            let info = Midpass(Get(Info r.Id))
-            let delete = Midpass(Delete(Subscription r.Id))
+            let info = Get(Info r.Id) |> buildRoute
+            let delete = Delete(Subscription r.Id) |> buildRoute
 
             ButtonsGroup.create {
                 Name = r.Service.Value.BuildName 1 "."
@@ -34,21 +38,17 @@ let info (requestId: RequestId) =
 [<Literal>]
 let private INPUT_NUMBER = "<number>"
 
-let private createMidpassInstruction chatId request =
-    let route = Midpass(Post request)
-
-    $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
-    + $"{String.addLines 2}Replace {INPUT_NUMBER} with the number you received from the Russian embassy."
-    + $"{String.addLines 1}Send the command without apostrophes, please."
-    |> Text.create
-    |> Message.createNew chatId
-    |> Ok
-    |> async.Return
-
 let private checkStatus (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Midpass.Dependencies) ->
-        CheckStatus(serviceId, embassyId, INPUT_NUMBER)
-        |> createMidpassInstruction deps.ChatId
+        let route = Post(CheckStatus(serviceId, embassyId, INPUT_NUMBER)) |> buildRoute
+
+        $"To use this service, please send the following command back to the bot:{String.addLines 2}'{route.Value}'"
+        + $"{String.addLines 2}Replace {INPUT_NUMBER} with the number you received from the Russian embassy."
+        + $"{String.addLines 1}Send the command without apostrophes, please."
+        |> Text.create
+        |> Message.createNew deps.ChatId
+        |> Ok
+        |> async.Return
 
 let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
     fun (deps: Midpass.Dependencies) ->
@@ -57,7 +57,7 @@ let private getUserSubscriptions (serviceId: ServiceId) (embassyId: EmbassyId) =
         |> ResultAsync.map (fun requests ->
             requests
             |> Seq.map (fun r ->
-                let route = Midpass(Get(Menu r.Id))
+                let route = Get(Menu r.Id) |> buildRoute
                 r.Service.Value.BuildName 1 ".", route.Value)
             |> fun buttons ->
                 ButtonsGroup.create {

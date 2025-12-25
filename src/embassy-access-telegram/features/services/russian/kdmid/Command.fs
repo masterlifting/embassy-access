@@ -9,11 +9,15 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services
 open EA.Russian.Services.Domain.Kdmid
-open EA.Telegram.Features.Router.Services.Russian.Root
-open EA.Telegram.Features.Router.Services.Russian.Kdmid
+open EA.Telegram.Router.Services
+open EA.Telegram.Router.Services.Russian
+open EA.Telegram.Router.Services.Russian.Kdmid
 open EA.Telegram.Features.Dependencies.Services.Russian
 
 let private resultAsync = ResultAsyncBuilder()
+
+let private buildRoute route =
+    EA.Telegram.Router.Route.Services(Russian(Kdmid route))
 
 let handleProcessResult (request: Request<Payload>) =
     fun (deps: Kdmid.ProcessResult.Dependencies) ->
@@ -50,7 +54,7 @@ let handleProcessResult (request: Request<Payload>) =
             let inline createMessage chatId =
                 appointments
                 |> Seq.map (fun a ->
-                    let route = Kdmid(Post(ConfirmAppointment(request.Id, a.Id)))
+                    let route = Post(ConfirmAppointment(request.Id, a.Id)) |> buildRoute
                     a |> Appointment.print, route.Value)
                 |> fun buttons ->
                     let serviceName = request.Service.Value.BuildName 1 "."
@@ -135,7 +139,7 @@ let private handleRequestResult chatId (request: Request<Payload>) =
         | HasAppointments appointments ->
             appointments
             |> Seq.map (fun a ->
-                let route = Kdmid(Post(ConfirmAppointment(request.Id, a.Id)))
+                let route = Post(ConfirmAppointment(request.Id, a.Id)) |> buildRoute
                 a |> Appointment.print, route.Value)
             |> fun buttons ->
                 let serviceName = request.Service.Value.BuildName 1 "."

@@ -4,7 +4,7 @@ module EA.Telegram.Features.Controller.Embassies
 open Infrastructure.Prelude
 open EA.Telegram.Features.Dependencies
 open EA.Telegram.Features.Services.Embassies
-open EA.Telegram.Features.Router.Embassies
+open EA.Telegram.Router.Embassies
 open EA.Telegram.Dependencies
 
 let respond request chat =

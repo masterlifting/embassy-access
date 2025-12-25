@@ -1,16 +1,14 @@
 [<RequireQualifiedAccess>]
 module EA.Telegram.Controllers.Controller
 
-open EA.Telegram.App
+open EA.Telegram.Router
 open EA.Telegram.Features.Controller
 
-let rec respond (request: Router.Route) =
+let rec respond (request: Route) =
 
-    let useCulture = request.Value |> Culture.apply
+    let useCulture = request |> Culture.apply
 
     match request with
-    | Router.Culture value ->
-        let entripoint = fun value deps -> deps |> respond (Router.Culture value)
-        Culture.respond value entripoint
-    | Router.Embassies value -> value |> Embassies.respond |> useCulture
-    | Router.Services value -> value |> Services.respond |> useCulture
+    | Culture value -> Culture.respond value respond
+    | Embassies value -> value |> Embassies.respond |> useCulture
+    | Services value -> value |> Services.respond |> useCulture

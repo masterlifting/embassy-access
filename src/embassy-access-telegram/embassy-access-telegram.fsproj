@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="shared\Constants.fs" />
     <Compile Include="shared\Configuration.fs" />
+    <Compile Include="shared\Router.fs" />
     <Compile Include="domain\Subscription.fs" />
     <Compile Include="domain\Chat.fs" />
     <Compile Include="data_access\Subscriptions.fs" />
@@ -19,21 +20,13 @@
     <Compile Include="dependencies\Web.fs" />
     <Compile Include="dependencies\Client.fs" />
     <Compile Include="dependencies\Request.fs" />
-    <Compile Include="features\culture\Router.fs" />
     <Compile Include="features\culture\Dependencies.fs" />
     <Compile Include="features\culture\services\Query.fs" />
     <Compile Include="features\culture\services\Command.fs" />
     <Compile Include="features\culture\Controller.fs" />
-    <Compile Include="features\embassies\Router.fs" />
     <Compile Include="features\embassies\Dependencies.fs" />
     <Compile Include="features\embassies\services\Query.fs" />
     <Compile Include="features\embassies\Controller.fs" />
-    <Compile Include="features\services\russian\kdmid\Router.fs" />
-    <Compile Include="features\services\russian\midpass\Router.fs" />
-    <Compile Include="features\services\russian\Router.fs" />
-    <Compile Include="features\services\italian\prenotami\Router.fs" />
-    <Compile Include="features\services\italian\Router.fs" />
-    <Compile Include="features\services\Router.fs" />
     <Compile Include="features\services\Dependencies.fs" />
     <Compile Include="features\services\russian\Dependencies.fs" />
     <Compile Include="features\services\russian\kdmid\Dependencies.fs" />
@@ -50,7 +43,6 @@
     <Compile Include="features\services\italian\Query.fs" />
     <Compile Include="features\services\Query.fs" />
     <Compile Include="features\services\Controller.fs" />
-    <Compile Include="app\Router.fs" />
     <Compile Include="app\Controller.fs" />
     <Compile Include="app\Client.fs" />
     <Compile Include="app\Initializer.fs" />
