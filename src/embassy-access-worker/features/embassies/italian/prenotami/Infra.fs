@@ -1,4 +1,4 @@
-module internal EA.Worker.Embassies.Italian.Prenotami.Infra
+module internal EA.Worker.Features.Embassies.Italian.Prenotami.Infra
 
 open Persistence.Domain
 open EA.Italian.Services.Domain.Prenotami

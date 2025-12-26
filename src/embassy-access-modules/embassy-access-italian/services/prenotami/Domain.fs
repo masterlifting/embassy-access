@@ -56,8 +56,8 @@ type PayloadState =
     | NoAppointments of string
     | HasAppointments of Set<Appointment>
 
-    static member print(payloadState: PayloadState) =
-        match payloadState with
+    member this.Print() =
+        match this with
         | NoAppointments message -> message
         | HasAppointments appointments -> appointments |> Seq.map Appointment.print |> String.concat "\n "
 

@@ -96,8 +96,8 @@ type PayloadState =
     | HasAppointments of Set<Appointment>
     | HasConfirmation of string * Appointment
 
-    static member print(payloadState: PayloadState) =
-        match payloadState with
+    member this.Print() =
+        match this with
         | NoAppointments -> "No appointments found."
         | HasAppointments appointments -> appointments |> Seq.map Appointment.print |> String.concat "\n "
         | HasConfirmation(message, appointment) -> (appointment |> Appointment.print) + $"Confirmed: %s{message}"

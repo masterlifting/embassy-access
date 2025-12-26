@@ -1,4 +1,4 @@
-module internal EA.Worker.Embassies.Russian.Kdmid.Service
+module internal EA.Worker.Features.Embassies.Russian.Kdmid.Service
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -9,7 +9,7 @@ open EA.Russian.Services
 open EA.Russian.Services.Router
 open EA.Russian.Services.Domain.Kdmid
 open EA.Worker.Shared
-open EA.Worker.Embassies.Russian.Kdmid.Infra
+open EA.Worker.Features.Embassies.Russian.Kdmid.Infra
 
 type private Dependencies = {
     TaskName: string
@@ -27,7 +27,7 @@ type private Dependencies = {
 
             let rec handleProcessResult (result: Result<Request<Payload>, Error'>) =
                 result
-                |> ResultAsync.wrap (fun r -> Ok() |> async.Return) //TODO: add result handling
+                |> ResultAsync.wrap (fun r -> r.Payload.State.Print() |> Log.scs |> Ok |> async.Return)
                 |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                 |> Async.Ignore
 

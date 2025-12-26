@@ -9,12 +9,13 @@
     <Compile Include="shared\Configuration.fs" />
     <Compile Include="shared\Worker.fs" />
     <Compile Include="shared\Embassies.fs" />
+    <Compile Include="features\" />
     <!-- embassies: russian -->
-    <Compile Include="embassies\russian\kdmid\Infra.fs" />
-    <Compile Include="embassies\russian\kdmid\Service.fs" />
+    <Compile Include="features\embassies\russian\kdmid\Infra.fs" />
+    <Compile Include="features\embassies\russian\kdmid\Service.fs" />
     <!-- embassies: italian -->
-    <Compile Include="embassies\italian\prenotami\Infra.fs" />
-    <Compile Include="embassies\italian\prenotami\Service.fs" />
+    <Compile Include="features\embassies\italian\prenotami\Infra.fs" />
+    <Compile Include="features\embassies\italian\prenotami\Service.fs" />
     <!-- app composition -->
     <Compile Include="app\Initializer.fs" />
     <Compile Include="app\Handlers.fs" />

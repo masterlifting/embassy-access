@@ -2,7 +2,7 @@ module internal EA.Worker.Handlers
 
 open Infrastructure.Domain
 open Infrastructure.Prelude.Tree.Builder
-open EA.Worker.Embassies
+open EA.Worker.Features.Embassies
 open EA.Worker
 
 let register () =

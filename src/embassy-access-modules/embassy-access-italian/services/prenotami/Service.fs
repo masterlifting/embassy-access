@@ -18,7 +18,7 @@ let private setFinalProcessState (request: Request<Payload>) =
                 updateRequest {
                     r.UpdateLimits() with
                         Modified = DateTime.UtcNow
-                        ProcessState = r.Payload.State |> PayloadState.print |> Completed
+                        ProcessState = r.Payload.State.Print() |> Completed
                 }
             | Error error ->
                 match error with
