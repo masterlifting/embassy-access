@@ -5,7 +5,7 @@
       context: ../
       dockerfile: ./src/embassy-access-worker/Dockerfile
     environment:
-      - LOG_LEVEL=info
+      - LOG_LEVEL=warn
       - ANTICAPTCHA_KEY=${ANTICAPTCHA_KEY}
       - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
       - BROWSER_WEBAPI_URL=${BROWSER_WEBAPI_URL}
@@ -20,7 +20,7 @@
       context: ../
       dockerfile: ./src/embassy-access-telegram/Dockerfile
     environment:
-      - LOG_LEVEL=info
+      - LOG_LEVEL=warn
       - OPENAI_KEY=${OPENAI_KEY}
       - ANTICAPTCHA_KEY=${ANTICAPTCHA_KEY}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
