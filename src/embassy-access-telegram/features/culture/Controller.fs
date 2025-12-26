@@ -4,7 +4,7 @@ module EA.Telegram.Features.Controller.Culture
 open Infrastructure.Prelude
 open EA.Telegram.Dependencies
 open EA.Telegram.Router.Culture
-open EA.Telegram.Features.Services.Culture
+open EA.Telegram.Features.Embassies.Culture
 
 let respond request entrypoint =
     fun (deps: Request.Dependencies) ->

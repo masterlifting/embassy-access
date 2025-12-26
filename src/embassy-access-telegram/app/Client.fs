@@ -7,7 +7,6 @@ open Infrastructure.Prelude
 open Web.Clients.Domain.Telegram.Consumer
 open EA.Telegram.Router
 open EA.Telegram.Dependencies
-open EA.Telegram.Controllers
 
 let private respond payload =
     fun deps ->

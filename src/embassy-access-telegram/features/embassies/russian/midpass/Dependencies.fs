@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Features.Dependencies.Services.Russian.Midpass
+﻿module EA.Telegram.Features.Dependencies.Embassies.Russian.Midpass
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
@@ -7,14 +7,14 @@ open EA.Core.Domain
 open EA.Core.DataAccess
 open EA.Russian.Services.Domain.Midpass
 open EA.Russian.Services.DataAccess.Midpass
-open EA.Telegram.Features.Dependencies.Services
+open EA.Telegram.Features.Dependencies.Embassies
 
 type Dependencies = {
     ChatId: Telegram.ChatId
     MessageId: int
     tryFindServiceNode: ServiceId -> Async<Result<Tree.Node<Service> option, Error'>>
     tryFindEmbassyNode: EmbassyId -> Async<Result<Tree.Node<Embassy> option, Error'>>
-    sendTranslatedMessageRes: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
+    sendMessage: Async<Result<Telegram.Producer.Message, Error'>> -> Async<Result<unit, Error'>>
     findRequest: RequestId -> StorageType -> Async<Result<Request<Payload>, Error'>>
     findRequests: EmbassyId -> ServiceId -> StorageType -> Async<Result<Request<Payload> list, Error'>>
     deleteRequest: RequestId -> StorageType -> Async<Result<unit, Error'>>
@@ -44,7 +44,7 @@ type Dependencies = {
             MessageId = deps.MessageId
             tryFindServiceNode = deps.tryFindServiceNode
             tryFindEmbassyNode = deps.tryFindEmbassyNode
-            sendTranslatedMessageRes = deps.sendTranslatedMessageRes
+            sendMessage = deps.sendMessage
             findRequest = findRequest
             findRequests = findRequests
             deleteRequest = deleteRequest

@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Features.Services.Culture.Command
+﻿module EA.Telegram.Features.Embassies.Culture.Command
 
 open Infrastructure.Domain
 open Infrastructure.Prelude

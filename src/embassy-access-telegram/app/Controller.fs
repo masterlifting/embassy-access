@@ -1,5 +1,5 @@
 [<RequireQualifiedAccess>]
-module EA.Telegram.Controllers.Controller
+module EA.Telegram.Controller
 
 open EA.Telegram.Router
 open EA.Telegram.Features.Controller
@@ -11,4 +11,3 @@ let rec respond (request: Route) =
     match request with
     | Culture value -> Culture.respond value respond
     | Embassies value -> value |> Embassies.respond |> useCulture
-    | Services value -> value |> Services.respond |> useCulture

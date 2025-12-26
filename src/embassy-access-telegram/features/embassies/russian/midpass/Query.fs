@@ -1,17 +1,17 @@
-﻿module EA.Telegram.Features.Services.Russian.Midpass.Query
+﻿module EA.Telegram.Features.Embassies.Russian.Midpass.Query
 
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services.Domain.Midpass
-open EA.Telegram.Router.Services
-open EA.Telegram.Router.Services.Russian
-open EA.Telegram.Router.Services.Russian.Midpass
-open EA.Telegram.Features.Dependencies.Services.Russian
+open EA.Telegram.Router.Embassies
+open EA.Telegram.Router.Embassies.Russian
+open EA.Telegram.Router.Embassies.Russian.Midpass
+open EA.Telegram.Features.Dependencies.Embassies.Russian
 
 let private buildRoute route =
-    EA.Telegram.Router.Route.Services(Russian(Midpass route))
+    EA.Telegram.Router.Route.Embassies(Russian(Midpass route))
 
 let menu (requestId: RequestId) =
     fun (deps: Midpass.Dependencies) ->

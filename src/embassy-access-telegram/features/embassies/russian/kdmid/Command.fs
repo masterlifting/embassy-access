@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Features.Services.Russian.Kdmid.Command
+﻿module EA.Telegram.Features.Embassies.Russian.Kdmid.Command
 
 open System
 open Infrastructure.Domain
@@ -9,15 +9,15 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services
 open EA.Russian.Services.Domain.Kdmid
-open EA.Telegram.Router.Services
-open EA.Telegram.Router.Services.Russian
-open EA.Telegram.Router.Services.Russian.Kdmid
-open EA.Telegram.Features.Dependencies.Services.Russian
+open EA.Telegram.Router.Embassies
+open EA.Telegram.Router.Embassies.Russian
+open EA.Telegram.Router.Embassies.Russian.Kdmid
+open EA.Telegram.Features.Dependencies.Embassies.Russian
 
 let private resultAsync = ResultAsyncBuilder()
 
 let private buildRoute route =
-    EA.Telegram.Router.Route.Services(Russian(Kdmid route))
+    EA.Telegram.Router.Route.Embassies(Russian(Kdmid route))
 
 let handleProcessResult (request: Request<Payload>) =
     fun (deps: Kdmid.ProcessResult.Dependencies) ->
@@ -36,7 +36,7 @@ let handleProcessResult (request: Request<Payload>) =
             |> ResultAsync.map (
                 Seq.choose (fun chat -> createMessage chat.Id |> Option.map (fun message -> chat.Culture, message))
             )
-            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
+            |> ResultAsync.bindAsync deps.spreadMessages
 
         let inline spreadConfirmation confirmation =
             let inline createMessage chatId =
@@ -48,7 +48,7 @@ let handleProcessResult (request: Request<Payload>) =
             deps.getRequests embassyId serviceId
             |> ResultAsync.bindAsync (Seq.map _.Id >> deps.getChats)
             |> ResultAsync.map (Seq.map (fun chat -> createMessage chat.Id |> fun message -> chat.Culture, message))
-            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
+            |> ResultAsync.bindAsync deps.spreadMessages
 
         let inline spreadAppointments (appointments: Set<Appointment>) (requests: Request<Payload> seq) =
             let inline createMessage chatId =
@@ -76,7 +76,7 @@ let handleProcessResult (request: Request<Payload>) =
             |> deps.updateRequests
             |> ResultAsync.bindAsync (Seq.map _.Id >> deps.getChats)
             |> ResultAsync.map (Seq.map (fun chat -> createMessage chat.Id |> fun message -> chat.Culture, message))
-            |> ResultAsync.bindAsync deps.spreadTranslatedMessages
+            |> ResultAsync.bindAsync deps.spreadMessages
 
         match request.ProcessState with
         | InProcess -> Ok() |> async.Return

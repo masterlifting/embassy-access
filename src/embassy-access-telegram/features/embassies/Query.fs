@@ -1,16 +1,17 @@
-﻿module EA.Telegram.Features.Services.Query
+﻿module EA.Telegram.Features.Embassies.Query
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Telegram.Router.Services
-open EA.Telegram.Features.Dependencies.Services
+open EA.Telegram.Router.Embassies
+open EA.Telegram.Features.Dependencies.Embassies
 
-let private buildRoute route = EA.Telegram.Router.Route.Services route
+let private buildRoute route =
+    EA.Telegram.Router.Route.Embassies route
 
-let private createButtonsGroup chatId messageId name buttons =
+let private createServiceButtonsGroup chatId messageId name buttons =
     match buttons |> Seq.isEmpty with
     | true -> "No services are available for you here." |> Text.create
     | false ->
@@ -20,6 +21,19 @@ let private createButtonsGroup chatId messageId name buttons =
             Buttons = buttons |> Seq.sortBy fst |> ButtonsGroup.createButtons
         }
     |> Message.tryReplace (Some messageId) chatId
+    |> Ok
+    |> async.Return
+
+let private createEmbassyButtonsGroup chatId messageId name buttons =
+    match buttons |> Seq.isEmpty with
+    | true -> "No embassies are available for you here." |> Text.create
+    | false ->
+        ButtonsGroup.create {
+            Name = name |> Option.defaultValue "Choose the embassy you want to visit"
+            Columns = 3
+            Buttons = buttons |> Seq.sortBy fst |> ButtonsGroup.createButtons
+        }
+    |> Message.tryReplace messageId chatId
     |> Ok
     |> async.Return
 
@@ -57,6 +71,7 @@ let private tryGetService (embassyId: EmbassyId) (serviceId: ServiceId) forUser 
             |> Error
             |> async.Return
 
+// Service API
 let getService embassyId serviceId =
     fun (deps: Root.Dependencies) ->
         deps.tryFindServiceNode serviceId
@@ -68,7 +83,7 @@ let getService embassyId serviceId =
                     let serviceId = service.Id |> ServiceId
                     let route = Get(Service(embassyId, serviceId)) |> buildRoute
                     service.Value.LastName, route.Value)
-                |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
+                |> createServiceButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"Service '%s{serviceId.Value}' is not implemented. " + NOT_IMPLEMENTED
                 |> NotImplemented
@@ -96,7 +111,7 @@ let getUserService embassyId serviceId =
                     let serviceId = service.Id |> ServiceId
                     let route = Get(UserService(embassyId, serviceId)) |> buildRoute
                     service.Value.LastName, route.Value)
-                |> createButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
+                |> createServiceButtonsGroup deps.Chat.Id deps.MessageId node.Value.Description
             | None ->
                 $"You have no services available for '%s{serviceId.Value}'."
                 |> NotFound
@@ -108,3 +123,73 @@ let getUserServices embassyId =
         embassyId
         |> tryCreateServiceRootId
         |> ResultAsync.wrap (fun serviceId -> deps |> getUserService embassyId serviceId)
+
+let private getEmbassy' embassyId firstCall =
+    fun (deps: Root.Dependencies) ->
+        deps.tryFindEmbassyNode embassyId
+        |> ResultAsync.bindAsync (function
+            | Some(AP.Leaf _) -> deps |> getServices embassyId
+            | Some(AP.Node node) ->
+
+                let messageId =
+                    match firstCall with
+                    | true -> None
+                    | false -> deps.MessageId |> Some
+
+                node.Children
+                |> Seq.map (fun embassy ->
+                    let embassyId = embassy.Id |> EmbassyId
+                    let route = Get(Embassy embassyId) |> buildRoute
+                    embassy.Value.LastName, route.Value)
+                |> createEmbassyButtonsGroup deps.Chat.Id messageId node.Value.Description
+            | None ->
+                $"Embassy '%s{embassyId.Value}' is not implemented. " + NOT_IMPLEMENTED
+                |> NotImplemented
+                |> Error
+                |> async.Return)
+
+let private getUserEmbassy' embassyId firstCall =
+    fun (deps: Root.Dependencies) ->
+        deps.tryFindEmbassyNode embassyId
+        |> ResultAsync.bindAsync (function
+            | Some(AP.Leaf _) -> deps |> getUserServices embassyId
+            | Some(AP.Node node) ->
+
+                let messageId =
+                    match firstCall with
+                    | true -> None
+                    | false -> deps.MessageId |> Some
+
+                let userEmbassyIds = deps.Chat.Subscriptions |> Seq.map _.EmbassyId.NodeId
+
+                node.Children
+                |> Seq.filter (fun embassy -> userEmbassyIds |> Tree.NodeId.contains embassy.Id)
+                |> Seq.map (fun embassy ->
+                    let embassyId = embassy.Id |> EmbassyId
+                    let route = Get(UserEmbassy embassyId) |> buildRoute
+                    embassy.Value.LastName, route.Value)
+                |> createEmbassyButtonsGroup deps.Chat.Id messageId node.Value.Description
+            | None ->
+                $"You have no embassies available for '%s{embassyId.Value}'."
+                |> NotFound
+                |> Error
+                |> async.Return)
+
+// Embassy API
+let getEmbassy embassyId =
+    fun (deps: Root.Dependencies) -> deps |> getEmbassy' embassyId false
+
+let getEmbassies () =
+    fun (deps: Root.Dependencies) ->
+        Embassies.ROOT_ID
+        |> EmbassyId.create
+        |> ResultAsync.wrap (fun embassyId -> deps |> getEmbassy' embassyId true)
+
+let getUserEmbassy embassyId =
+    fun (deps: Root.Dependencies) -> deps |> getUserEmbassy' embassyId false
+
+let getUserEmbassies () =
+    fun (deps: Root.Dependencies) ->
+        Embassies.ROOT_ID
+        |> EmbassyId.create
+        |> ResultAsync.wrap (fun embassyId -> deps |> getUserEmbassy' embassyId true)

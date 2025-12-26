@@ -4,16 +4,16 @@ open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
-open EA.Telegram.Shared
 
 [<AutoOpen>]
 module private Helpers =
-    let inline join parts = parts |> String.concat Router.DELIMITER
-    let inline split (input: string) = input.Split Router.DELIMITER
+    [<Literal>]
+    let private DELIMITER = "|"
+    let inline join parts = parts |> String.concat DELIMITER
+    let inline split (input: string) = input.Split DELIMITER
     let inline remaining parts = parts |> Array.skip 1 |> join
     let inline notSupported endpoint input =
         $"'{input}' of '{endpoint}' endpoint is not supported." |> NotSupported |> Error
-
     let inline parseRequestId value = value |> UUID16 |> RequestId
     let inline parseServiceId value =
         value |> Tree.NodeId.create |> ServiceId
@@ -66,42 +66,6 @@ module Culture =
             | _ -> notSupported "Culture" input
 
 module Embassies =
-
-    type Get =
-        | Embassy of EmbassyId
-        | Embassies
-        | UserEmbassy of EmbassyId
-        | UserEmbassies
-
-        member this.Value =
-            match this with
-            | Embassy id -> [ "0"; id.Value ]
-            | Embassies -> [ "1" ]
-            | UserEmbassy id -> [ "2"; id.Value ]
-            | UserEmbassies -> [ "3" ]
-            |> join
-        static member parse(input: string) =
-            match split input with
-            | [| "0"; id |] -> id |> EmbassyId.create |> Result.map Embassy
-            | [| "1" |] -> Embassies |> Ok
-            | [| "2"; id |] -> id |> EmbassyId.create |> Result.map UserEmbassy
-            | [| "3" |] -> UserEmbassies |> Ok
-            | _ -> notSupported "Embassies.Get" input
-
-    type Route =
-        | Get of Get
-
-        member this.Value =
-            (match this with
-             | Get r -> [ "0"; r.Value ])
-            |> join
-        static member parse(input: string) =
-            let parts = split input
-            match parts[0] with
-            | "0" -> remaining parts |> Get.parse |> Result.map Get
-            | _ -> notSupported "Embassies" input
-
-module Services =
 
     module Russian =
 
@@ -356,24 +320,36 @@ module Services =
                 | _ -> notSupported "Services.Italian" input
 
     type Get =
-        | Service of EmbassyId * ServiceId
+        | Embassies
+        | UserEmbassies
+        | Embassy of EmbassyId
+        | UserEmbassy of EmbassyId
         | Services of EmbassyId
-        | UserService of EmbassyId * ServiceId
         | UserServices of EmbassyId
+        | Service of EmbassyId * ServiceId
+        | UserService of EmbassyId * ServiceId
 
         member this.Value =
             match this with
-            | Service(e, s) -> [ "0"; e.Value; s.Value ]
-            | Services e -> [ "1"; e.Value ]
-            | UserService(e, s) -> [ "2"; e.Value; s.Value ]
-            | UserServices e -> [ "3"; e.Value ]
+            | Embassies -> [ "0" ]
+            | UserEmbassies -> [ "1" ]
+            | Embassy e -> [ "2"; e.Value ]
+            | UserEmbassy e -> [ "3"; e.Value ]
+            | Services e -> [ "4"; e.Value ]
+            | UserServices e -> [ "5"; e.Value ]
+            | Service(e, s) -> [ "6"; e.Value; s.Value ]
+            | UserService(e, s) -> [ "7"; e.Value; s.Value ]
             |> join
         static member parse(input: string) =
             match split input with
-            | [| "0"; e; s |] -> (parseEmbassyId e, parseServiceId s) |> Service |> Ok
-            | [| "1"; e |] -> parseEmbassyId e |> Services |> Ok
-            | [| "2"; e; s |] -> (parseEmbassyId e, parseServiceId s) |> UserService |> Ok
-            | [| "3"; e |] -> parseEmbassyId e |> UserServices |> Ok
+            | [| "0" |] -> Embassies |> Ok
+            | [| "1" |] -> UserEmbassies |> Ok
+            | [| "2"; e |] -> parseEmbassyId e |> Embassy |> Ok
+            | [| "3"; e |] -> parseEmbassyId e |> UserEmbassy |> Ok
+            | [| "4"; e |] -> parseEmbassyId e |> Services |> Ok
+            | [| "5"; e |] -> parseEmbassyId e |> UserServices |> Ok
+            | [| "6"; e; s |] -> (parseEmbassyId e, parseServiceId s) |> Service |> Ok
+            | [| "7"; e; s |] -> (parseEmbassyId e, parseServiceId s) |> UserService |> Ok
             | _ -> notSupported "Services.Get" input
 
     type Route =
@@ -397,21 +373,18 @@ module Services =
 
 type Route =
     | Culture of Culture.Route
-    | Services of Services.Route
     | Embassies of Embassies.Route
 
     member this.Value =
         (match this with
          | Culture r -> [ "0"; r.Value ]
-         | Services r -> [ "1"; r.Value ]
-         | Embassies r -> [ "2"; r.Value ])
+         | Embassies r -> [ "1"; r.Value ])
         |> join
     static member parse(input: string) =
         let parts = split input
         match parts[0] with
         | "0" -> remaining parts |> Culture.Route.parse |> Result.map Culture
-        | "1" -> remaining parts |> Services.Route.parse |> Result.map Services
-        | "2" -> remaining parts |> Embassies.Route.parse |> Result.map Embassies
+        | "1" -> remaining parts |> Embassies.Route.parse |> Result.map Embassies
         | "/culture" -> Culture.Get Culture.Cultures |> Ok |> Result.map Culture
         | "/start" -> Embassies.Get Embassies.Embassies |> Ok |> Result.map Embassies
         | "/mine" -> Embassies.Get Embassies.UserEmbassies |> Ok |> Result.map Embassies

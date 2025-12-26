@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Features.Services.Italian.Prenotami.Command
+﻿module EA.Telegram.Features.Embassies.Italian.Prenotami.Command
 
 open System
 open Infrastructure.Domain
@@ -8,13 +8,13 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Italian.Services
 open EA.Italian.Services.Domain.Prenotami
-open EA.Telegram.Router.Services
-open EA.Telegram.Router.Services.Italian
-open EA.Telegram.Router.Services.Italian.Prenotami
-open EA.Telegram.Features.Dependencies.Services.Italian
+open EA.Telegram.Router.Embassies
+open EA.Telegram.Router.Embassies.Italian
+open EA.Telegram.Router.Embassies.Italian.Prenotami
+open EA.Telegram.Features.Dependencies.Embassies.Italian
 
 let private buildRoute route =
-    EA.Telegram.Router.Route.Services(Italian(Prenotami route))
+    EA.Telegram.Router.Route.Embassies(Italian(Prenotami route))
 
 let private resultAsync = ResultAsyncBuilder()
 

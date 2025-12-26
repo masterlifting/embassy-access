@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Features.Services.Russian.Kdmid.Query
+﻿module EA.Telegram.Features.Embassies.Russian.Kdmid.Query
 
 open System
 open Infrastructure.Prelude
@@ -7,16 +7,16 @@ open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
 open EA.Russian.Services.Domain.Kdmid
 open EA.Russian.Services.Router
-open EA.Telegram.Router.Services.Russian
-open EA.Telegram.Router.Services.Russian.Kdmid
-open EA.Telegram.Features.Dependencies.Services.Russian
-open EA.Telegram.Router.Services
+open EA.Telegram.Router.Embassies.Russian
+open EA.Telegram.Router.Embassies.Russian.Kdmid
+open EA.Telegram.Features.Dependencies.Embassies.Russian
+open EA.Telegram.Router.Embassies
 
 [<Literal>]
 let private INPUT_LINK = "<link>"
 
 let private buildRoute route =
-    EA.Telegram.Router.Route.Services(Russian(Kdmid route))
+    EA.Telegram.Router.Route.Embassies(Russian(Kdmid route))
 
 let menu (requestId: RequestId) =
     fun (deps: Kdmid.Dependencies) ->

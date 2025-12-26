@@ -1,4 +1,4 @@
-﻿module EA.Telegram.Features.Services.Culture.Query
+﻿module EA.Telegram.Features.Embassies.Culture.Query
 
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
