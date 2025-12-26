@@ -3,7 +3,6 @@
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open Persistence.DataAccess
 open EA.Core.Domain
 
 [<Literal>]
