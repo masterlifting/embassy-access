@@ -8,15 +8,34 @@ Embassy Access is a project designed to facilitate the process of finding and bo
 
 ## Project Structure
 
-The project is structured into several components, including core functionality, web APIs, worker services, and submodules for infrastructure, persistence, and web functionalities.
+The project is organized into a main application with multiple submodules providing foundational libraries.
+
+### Architecture Overview
+
+```
+embassy-access (main repo)
+├── src/
+│   ├── embassy-access-core         # Domain models & data access abstractions
+│   ├── embassy-access-modules/
+│   │   ├── embassy-access-russian  # Russian embassy services (KDMID, MIDPass)
+│   │   └── embassy-access-italian  # Italian embassy services (Prenotami)
+│   ├── embassy-access-worker       # Main worker service (entry point)
+│   └── embassy-access-telegram     # Telegram bot interface (optional)
+└── submodules/
+    ├── fsharp-infrastructure       # Configuration, logging, utilities
+    ├── fsharp-persistence          # Storage abstractions (PostgreSQL, FileSystem, etc.)
+    ├── fsharp-worker              # Task scheduling & execution engine
+    ├── fsharp-web                 # HTTP, Telegram, Browser clients
+    └── fsharp-ai-provider         # AI services (OpenAI, translations)
+```
 
 ### Solution Structure
 
 - **Submodules**
 
-  - `fsharp-infrastructure`: Provides foundational infrastructure services.
-  - `fsharp-persistence`: Handles data persistence.
-  - `fsharp-worker`: Manages background tasks and processing.
+  - `fsharp-infrastructure`: Foundational infrastructure services including configuration management (YAML/JSON), logging (console/file), utility functions (async, result, tree, string helpers), and serialization.
+  - `fsharp-persistence`: Data persistence layer with storage abstractions supporting PostgreSQL, FileSystem, InMemory, and Configuration-based storage.
+  - `fsharp-worker`: Task scheduling and execution engine with hierarchical workflows, per-node scheduling, recursion, and parallel/sequential execution support.
 <!-- WORKER_DOC_START -->
 # F# Worker (Updated)
 
@@ -34,17 +53,17 @@ Program.fs constructs Worker.Client.start with: Name, RootTaskId ("WRK"), Storag
 
 See submodules/fsharp-worker/src for full implementation details.
 <!-- WORKER_DOC_END -->
-  - `fsharp-web`: Web-related functionalities.
-  - `fharp-ai-provider`: Provides AI clients and services.
+  - `fsharp-web`: Web-related functionalities (HTTP client, Telegram bot client, Browser WebAPI, AntiCaptcha service).
+  - `fsharp-ai-provider`: Provides AI clients and services (OpenAI integration, culture/translation features).
 
 - **Sources**
 
   - **embassy-access-modules**
-    - `embassy-access-russian`: Logic for the Russian embassy.
-    - `embassy-access-russian-tests`: Tests for the Russian embassy module.
-  - `embassy-access-core`: Common code for any embassy.
-  - `embassy-access-telegram`: Telegram bot for interacting with users.
-  - `embassy-access-worker`: Background services for processing tasks for any embassy.
+    - `embassy-access-russian`: Logic for Russian embassy appointment services (KDMID and MIDPass).
+    - `embassy-access-italian`: Logic for Italian embassy appointment services (Prenotami).
+  - `embassy-access-core`: Common domain models and data access abstractions for all embassies.
+  - `embassy-access-telegram`: Telegram bot application for interacting with users (optional entry point).
+  - `embassy-access-worker`: Main background worker service for processing embassy appointment tasks.
 
 ## Getting Started
 
@@ -68,15 +87,33 @@ dotnet build
 
 ### Running the Application
 
-Now the `embassy-access-worker` is a single entry point for the application. 
-It can be run using the following command:
+The application provides two entry points:
 
-You should configure the settings in the `appsettings.yaml` file before running the application.
-Use the `appsettings.yaml` file as a template.
+#### 1. Worker Service (Main Entry Point)
+
+The `embassy-access-worker` is the primary entry point for automated embassy appointment processing. 
+It runs as a background service that executes tasks based on configured schedules.
+
+Configure the settings in the `appsettings.yml` file before running:
 
 ```bash
 cd src/embassy-access-worker
 dotnet run
+# Or with environment variables:
+dotenv -e .env -- dotnet run
+```
+
+#### 2. Telegram Bot (Optional)
+
+The `embassy-access-telegram` provides an interactive Telegram bot interface for users.
+This is an optional component that can be run separately.
+
+Configure the settings in the `appsettings.yml`, `embassies.yml`, and `services.yml` files:
+
+```bash
+cd src/embassy-access-telegram
+dotnet run
+# Or with environment variables:
 dotenv -e .env -- dotnet run
 ```
 
