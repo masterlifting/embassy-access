@@ -27,5 +27,7 @@ jobs:
             cd /usr/src/embassy-access/
             git stash
             git pull origin main --recurse-submodules
-            chmod +x /usr/src/embassy-access/.github/workflows/deploy.sh
-            /usr/src/embassy-access/.github/workflows/deploy.sh
+            docker-compose -f .devops/docker-compose.yaml build --project-name embassy-access
+            docker-compose -f .devops/docker-compose.yaml up -d
+            docker container prune -f
+            docker image prune -f
