@@ -1,7 +1,7 @@
 module EA.Telegram.Initializer
 
 open Infrastructure.Prelude
-open AIProvider.Services.DataAccess
+open AIProvider.Features.DataAccess
 open EA.Core.DataAccess
 open EA.Telegram.DataAccess
 

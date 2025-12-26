@@ -4,7 +4,7 @@ module EA.Telegram.Dependencies.Persistence
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Persistence.Domain
-open AIProvider.Services.DataAccess
+open AIProvider.Features.DataAccess
 open EA.Core.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess

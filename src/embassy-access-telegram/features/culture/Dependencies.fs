@@ -3,7 +3,8 @@ module EA.Telegram.Features.Dependencies.Culture
 
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open AIProvider.Services.Domain
+open AIProvider.Features.Domain
+open AIProvider.Features.Dependencies
 open Web.Clients.Domain.Telegram.Producer
 
 module private Payload =
@@ -99,7 +100,7 @@ type Dependencies = {
 } with
 
     static member create ct =
-        fun (deps: AIProvider.Services.Dependencies.Culture.Dependencies) ->
+        fun (deps: Culture.Dependencies) ->
 
             let getAvailable () =
                 [
@@ -119,12 +120,12 @@ type Dependencies = {
                 |> Map
 
             let setContext () =
-                deps |> AIProvider.Services.Culture.setContext ct
+                deps |> AIProvider.Features.Culture.setContext ct
 
             let shield = Shield.create ''' '''
 
             let translate request =
-                deps |> AIProvider.Services.Culture.translate request ct
+                deps |> AIProvider.Features.Culture.translate request ct
 
             let translateError culture error =
                 (translate, shield)

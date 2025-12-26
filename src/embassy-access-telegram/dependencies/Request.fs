@@ -4,7 +4,7 @@ module EA.Telegram.Dependencies.Request
 open System.Threading
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open AIProvider.Services.Dependencies
+open AIProvider.Features.Dependencies
 open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
