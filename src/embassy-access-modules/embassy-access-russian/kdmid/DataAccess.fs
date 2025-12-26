@@ -1,4 +1,4 @@
-﻿module EA.Russian.Services.DataAccess.Kdmid
+﻿module EA.Russian.DataAccess.Kdmid
 
 open System
 open Infrastructure.Domain
@@ -6,7 +6,7 @@ open Infrastructure.Prelude
 open EA.Core.Domain
 open EA.Core.DataAccess.Appointment
 open EA.Core.DataAccess.Confirmation
-open EA.Russian.Services.Domain.Kdmid
+open EA.Russian.Domain.Kdmid
 
 let private result = ResultBuilder()
 

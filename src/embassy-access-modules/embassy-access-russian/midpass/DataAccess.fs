@@ -1,9 +1,9 @@
-﻿module EA.Russian.Services.DataAccess.Midpass
+﻿module EA.Russian.DataAccess.Midpass
 
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Russian.Services.Domain.Midpass
+open EA.Russian.Domain.Midpass
 
 let private result = ResultBuilder()
 

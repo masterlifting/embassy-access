@@ -1,11 +1,11 @@
 module internal EA.Worker.Features.Embassies.Russian.Kdmid.Infra
 
 open Persistence.Domain
-open EA.Russian.Services.Domain.Kdmid
+open EA.Russian.Domain.Kdmid
 
 module RequestStorage =
     open EA.Core.DataAccess
-    open EA.Russian.Services.DataAccess.Kdmid
+    open EA.Russian.DataAccess.Kdmid
 
     let init connectionString =
         Storage.Request.Postgre {

@@ -1,4 +1,4 @@
-﻿module EA.Italian.Services.Domain.Prenotami
+﻿module EA.Italian.Domain.Prenotami
 
 open System
 open Infrastructure.Domain

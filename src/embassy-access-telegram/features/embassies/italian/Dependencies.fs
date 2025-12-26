@@ -5,8 +5,8 @@ open Infrastructure.Domain
 open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Italian.Services.Domain
-open EA.Italian.Services.DataAccess
+open EA.Italian.Domain
+open EA.Italian.DataAccess
 open EA.Telegram.Domain
 open EA.Telegram.DataAccess
 open EA.Telegram.Features.Dependencies

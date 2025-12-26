@@ -1,13 +1,13 @@
-﻿module EA.Russian.Services.Kdmid.Web.Html.ConfirmationPage
+﻿module EA.Russian.Kdmid.Web.Html.ConfirmationPage
 
 open System
-open EA.Russian.Services.Domain.Kdmid
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients
 open Web.Clients.Domain.Http
 open EA.Core.Domain
-open EA.Russian.Services.Kdmid.Web
+open EA.Russian.Kdmid.Web
+open EA.Russian.Domain.Kdmid
 
 let private handleRequestConfirmation (request: Request<Payload>) =
     match request.Payload.State with

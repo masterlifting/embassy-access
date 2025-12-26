@@ -4,8 +4,8 @@ open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Italian.Services.Router
-open EA.Italian.Services.Domain.Prenotami
+open EA.Italian.Router
+open EA.Italian.Domain.Prenotami
 open EA.Telegram.Router.Embassies
 open EA.Telegram.Router.Embassies.Italian
 open EA.Telegram.Router.Embassies.Italian.Prenotami

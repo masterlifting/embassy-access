@@ -4,12 +4,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="services\Router.fs" />
-    <Compile Include="services\prenotami\Domain.fs" />
-    <Compile Include="services\prenotami\DataAccess.fs" />
-    <Compile Include="services\prenotami\Client.fs" />
-    <Compile Include="services\prenotami\Web.BrowserWebApi.fs" />
-    <Compile Include="services\prenotami\Service.fs" />
+    <Compile Include="Router.fs" />
+    <Compile Include="prenotami\Domain.fs" />
+    <Compile Include="prenotami\DataAccess.fs" />
+    <Compile Include="prenotami\Client.fs" />
+    <Compile Include="prenotami\Web.BrowserWebApi.fs" />
+    <Compile Include="prenotami\Service.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\submodules\fsharp-web\src\fsharp-web.fsproj" />

@@ -1,4 +1,4 @@
-﻿module EA.Russian.Services.Router
+﻿module EA.Russian.Router
 
 open EA.Core.Domain
 open Infrastructure.Domain

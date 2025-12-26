@@ -5,9 +5,9 @@ open Infrastructure.Prelude
 open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Russian.Services
-open EA.Russian.Services.Domain.Kdmid
-open EA.Russian.Services.DataAccess.Kdmid
+open EA.Russian
+open EA.Russian.Domain.Kdmid
+open EA.Russian.DataAccess.Kdmid
 open EA.Telegram.Domain
 open EA.Telegram.Features.Dependencies.Embassies
 

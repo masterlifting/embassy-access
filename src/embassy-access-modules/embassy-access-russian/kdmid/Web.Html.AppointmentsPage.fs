@@ -1,4 +1,4 @@
-﻿module EA.Russian.Services.Kdmid.Web.Html.AppointmentsPage
+﻿module EA.Russian.Kdmid.Web.Html.AppointmentsPage
 
 open System
 open Infrastructure.Domain
@@ -6,8 +6,8 @@ open Infrastructure.Prelude
 open Web.Clients.Domain.Http
 open Web.Clients
 open EA.Core.Domain
-open EA.Russian.Services.Kdmid.Web
-open EA.Russian.Services.Domain.Kdmid
+open EA.Russian.Kdmid.Web
+open EA.Russian.Domain.Kdmid
 
 let private createHttpRequest queryParams formData =
 

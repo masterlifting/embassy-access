@@ -5,9 +5,9 @@ open Infrastructure.Prelude
 open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
-open EA.Italian.Services
-open EA.Italian.Services.Router
-open EA.Italian.Services.Domain.Prenotami
+open EA.Italian
+open EA.Italian.Router
+open EA.Italian.Domain.Prenotami
 open EA.Worker.Shared
 open EA.Worker.Features.Embassies.Italian.Prenotami.Infra
 

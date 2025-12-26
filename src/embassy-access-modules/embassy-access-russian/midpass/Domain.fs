@@ -1,4 +1,4 @@
-﻿module EA.Russian.Services.Domain.Midpass
+﻿module EA.Russian.Domain.Midpass
 
 open System
 open Infrastructure.Domain

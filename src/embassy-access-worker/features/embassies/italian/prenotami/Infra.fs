@@ -1,11 +1,11 @@
 module internal EA.Worker.Features.Embassies.Italian.Prenotami.Infra
 
 open Persistence.Domain
-open EA.Italian.Services.Domain.Prenotami
+open EA.Italian.Domain.Prenotami
 
 module RequestStorage =
     open EA.Core.DataAccess
-    open EA.Italian.Services.DataAccess.Prenotami
+    open EA.Italian.DataAccess.Prenotami
 
     let init connectionString encryptionKey =
         Storage.Request.Postgre {

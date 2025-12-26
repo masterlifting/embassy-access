@@ -1,11 +1,11 @@
-﻿module EA.Russian.Services.Kdmid.Web.Html.Common
+﻿module EA.Russian.Kdmid.Web.Html.Common
 
 open System
 open System.Text.RegularExpressions
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open Web.Clients
-open EA.Russian.Services.Domain.Kdmid
+open EA.Russian.Domain.Kdmid
 
 let pageHasError page =
     page

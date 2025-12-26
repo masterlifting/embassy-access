@@ -1,11 +1,11 @@
-﻿module EA.Italian.Services.Prenotami.Service
+﻿module EA.Italian.Prenotami.Service
 
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
-open EA.Italian.Services.Domain.Prenotami
-open EA.Italian.Services.Prenotami.Client
+open EA.Italian.Domain.Prenotami
+open EA.Italian.Prenotami.Client
 
 let private validate (request: Request<Payload>) =
     request.ValidateLimits()

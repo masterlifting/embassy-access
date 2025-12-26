@@ -5,9 +5,9 @@ open Infrastructure.Prelude
 open Infrastructure.Logging
 open Worker.Domain
 open EA.Core.Domain
-open EA.Russian.Services
-open EA.Russian.Services.Router
-open EA.Russian.Services.Domain.Kdmid
+open EA.Russian
+open EA.Russian.Router
+open EA.Russian.Domain.Kdmid
 open EA.Worker.Shared
 open EA.Worker.Features.Embassies.Russian.Kdmid.Infra
 

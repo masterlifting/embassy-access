@@ -1,12 +1,12 @@
-﻿module EA.Russian.Services.Midpass.Client
+﻿module EA.Russian.Midpass.Client
 
 open System.Threading
 open Web.Clients
 open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Russian.Services.Domain.Midpass
-open EA.Russian.Services.DataAccess.Midpass
+open EA.Russian.Domain.Midpass
+open EA.Russian.DataAccess.Midpass
 
 type Dependencies = {
     ct: CancellationToken

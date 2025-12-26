@@ -5,8 +5,8 @@ open Infrastructure.Prelude
 open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Russian.Services.Domain.Midpass
-open EA.Russian.Services.DataAccess.Midpass
+open EA.Russian.Domain.Midpass
+open EA.Russian.DataAccess.Midpass
 open EA.Telegram.Features.Dependencies.Embassies
 
 type Dependencies = {

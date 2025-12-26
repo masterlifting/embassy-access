@@ -1,4 +1,4 @@
-﻿module EA.Italian.Services.Router
+﻿module EA.Italian.Router
 
 open EA.Core.Domain
 open Infrastructure.Domain

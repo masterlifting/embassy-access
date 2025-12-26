@@ -1,10 +1,10 @@
-﻿module EA.Russian.Services.Kdmid.Web.Http
+﻿module EA.Russian.Kdmid.Web.Http
 
 open System
 open Infrastructure.Domain
 open Web.Clients
 open Web.Clients.Domain.Http
-open EA.Russian.Services.Domain.Kdmid
+open EA.Russian.Domain.Kdmid
 
 let createQueryParams (credentials: Credentials) =
     match credentials.Ems with

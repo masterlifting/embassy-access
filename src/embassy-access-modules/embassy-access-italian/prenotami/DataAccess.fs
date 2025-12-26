@@ -1,10 +1,10 @@
-﻿module EA.Italian.Services.DataAccess.Prenotami
+﻿module EA.Italian.DataAccess.Prenotami
 
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.DataAccess.Appointment
-open EA.Italian.Services.Domain.Prenotami
+open EA.Italian.Domain.Prenotami
 
 let private result = ResultBuilder()
 

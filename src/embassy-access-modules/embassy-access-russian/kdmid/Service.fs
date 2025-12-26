@@ -1,11 +1,11 @@
-﻿module EA.Russian.Services.Kdmid.Service
+﻿module EA.Russian.Kdmid.Service
 
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
 open EA.Core.Domain
-open EA.Russian.Services.Kdmid.Web
-open EA.Russian.Services.Domain.Kdmid
+open EA.Russian.Kdmid.Web
+open EA.Russian.Domain.Kdmid
 
 let private validate (request: Request<Payload>) =
     request.ValidateLimits()

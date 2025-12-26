@@ -12,10 +12,10 @@ open EA.Telegram.DataAccess
 let private result = ResultBuilder()
 
 module Russian =
-    open EA.Russian.Services.Domain
-    open EA.Russian.Services.DataAccess
-    open EA.Russian.Services.DataAccess.Kdmid
-    open EA.Russian.Services.DataAccess.Midpass
+    open EA.Russian.Domain
+    open EA.Russian.DataAccess
+    open EA.Russian.DataAccess.Kdmid
+    open EA.Russian.DataAccess.Midpass
 
     type Dependencies = {
         initKdmidRequestStorage: unit -> Result<Kdmid.StorageType, Error'>
@@ -49,9 +49,9 @@ module Russian =
             }
 
 module Italian =
-    open EA.Italian.Services.Domain
-    open EA.Italian.Services.DataAccess
-    open EA.Italian.Services.DataAccess.Prenotami
+    open EA.Italian.Domain
+    open EA.Italian.DataAccess
+    open EA.Italian.DataAccess.Prenotami
 
     type Dependencies = {
         initPrenotamiRequestStorage: unit -> Result<Prenotami.StorageType, Error'>

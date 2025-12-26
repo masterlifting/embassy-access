@@ -2,7 +2,7 @@
 
 open Infrastructure.Domain
 open EA.Core.Domain
-open EA.Italian.Services.Router
+open EA.Italian.Router
 open EA.Telegram.Features.Dependencies.Embassies.Italian
 
 let private (|Prenotami|ServiceNotFound|) (serviceId: ServiceId) =

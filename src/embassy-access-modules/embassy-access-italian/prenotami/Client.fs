@@ -1,4 +1,4 @@
-﻿module EA.Italian.Services.Prenotami.Client
+﻿module EA.Italian.Prenotami.Client
 
 open System
 open System.Threading
@@ -8,8 +8,8 @@ open Web.Clients.Domain
 open Web.Clients.Domain.BrowserWebApi
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Italian.Services.Domain.Prenotami
-open EA.Italian.Services.DataAccess.Prenotami
+open EA.Italian.Domain.Prenotami
+open EA.Italian.DataAccess.Prenotami
 
 type Dependencies = {
     ct: CancellationToken

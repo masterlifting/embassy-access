@@ -5,8 +5,8 @@ open Infrastructure.Prelude
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Russian.Services.Domain.Kdmid
-open EA.Russian.Services.Router
+open EA.Russian.Domain.Kdmid
+open EA.Russian.Router
 open EA.Telegram.Router.Embassies.Russian
 open EA.Telegram.Router.Embassies.Russian.Kdmid
 open EA.Telegram.Features.Dependencies.Embassies.Russian

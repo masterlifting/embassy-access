@@ -1,12 +1,12 @@
-﻿module EA.Italian.Services.Prenotami.Web.BrowserWebApi
+﻿module EA.Italian.Prenotami.Web.BrowserWebApi
 
 open System
 open Infrastructure.Domain
 open Infrastructure.Prelude
-open EA.Italian.Services
-open EA.Italian.Services.Router
-open EA.Italian.Services.Domain.Prenotami
-open EA.Italian.Services.Prenotami.Client
+open EA.Italian
+open EA.Italian.Router
+open EA.Italian.Domain.Prenotami
+open EA.Italian.Prenotami.Client
 open Web.Clients.Domain.BrowserWebApi
 
 let private getBookAppointmentSelector serviceId =

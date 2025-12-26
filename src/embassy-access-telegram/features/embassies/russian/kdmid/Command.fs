@@ -7,8 +7,8 @@ open Infrastructure.Logging
 open Web.Clients.Telegram.Producer
 open Web.Clients.Domain.Telegram.Producer
 open EA.Core.Domain
-open EA.Russian.Services
-open EA.Russian.Services.Domain.Kdmid
+open EA.Russian
+open EA.Russian.Domain.Kdmid
 open EA.Telegram.Router.Embassies
 open EA.Telegram.Router.Embassies.Russian
 open EA.Telegram.Router.Embassies.Russian.Kdmid

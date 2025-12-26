@@ -1,4 +1,4 @@
-﻿module EA.Russian.Services.Domain.Kdmid
+﻿module EA.Russian.Domain.Kdmid
 
 open System
 open Infrastructure.Domain

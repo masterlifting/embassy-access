@@ -2,7 +2,7 @@
 
 open Infrastructure.Domain
 open EA.Core.Domain
-open EA.Russian.Services.Router
+open EA.Russian.Router
 open EA.Telegram.Features.Embassies.Russian
 open EA.Telegram.Features.Dependencies.Embassies.Russian
 

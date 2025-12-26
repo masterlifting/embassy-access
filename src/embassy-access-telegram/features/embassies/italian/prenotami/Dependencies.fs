@@ -6,10 +6,10 @@ open Infrastructure.Prelude
 open Web.Clients.Domain
 open EA.Core.Domain
 open EA.Core.DataAccess
-open EA.Italian.Services
-open EA.Italian.Services.Router
-open EA.Italian.Services.Domain.Prenotami
-open EA.Italian.Services.DataAccess.Prenotami
+open EA.Italian
+open EA.Italian.Router
+open EA.Italian.Domain.Prenotami
+open EA.Italian.DataAccess.Prenotami
 open EA.Telegram.Domain
 open EA.Telegram.Features.Dependencies.Embassies
 
