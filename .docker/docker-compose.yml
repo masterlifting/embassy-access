@@ -33,5 +33,5 @@
 
 networks:
   embassy-access-network:
-    name: embassy-access_embassy-access-network
+    name: embassy-access-network
     external: true
