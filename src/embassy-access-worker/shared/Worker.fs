@@ -38,9 +38,9 @@ module internal Dependencies =
         resultAsync {
 
             let! tasks =
-                TasksTree.Postgre {
-                    String = Configuration.ENVIRONMENTS.PostgresConnection
-                    Lifetime = Transient
+                TasksTree.Configuration {
+                    Provider = configuration
+                    Section = "Worker"
                 }
                 |> TasksTree.init
                 |> ResultAsync.wrap (fun storage ->
