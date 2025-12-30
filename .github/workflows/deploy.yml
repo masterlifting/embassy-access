@@ -1,0 +1,61 @@
+name: Deploy to host
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || 22 }}
+      DEPLOY_DIR: ${{ secrets.DEPLOY_DIR }}
+      COMPOSE_PROJECT: embassy-access
+
+    steps:
+      - name: Deploy and verify via SSH
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ env.DEPLOY_HOST }}
+          username: ${{ env.DEPLOY_USER }}
+          key: ${{ env.DEPLOY_KEY }}
+          port: ${{ env.DEPLOY_PORT }}
+          envs: DEPLOY_DIR,COMPOSE_PROJECT
+          script: |
+            set -eux
+
+            if [ -z "$DEPLOY_DIR" ]; then
+              echo "ERROR: DEPLOY_DIR secret is not set. Set it to the path where the repo should live on the target host." >&2
+              exit 1
+            fi
+
+            # Assume repository already exists on the host; pull latest changes
+            if [ ! -d "$DEPLOY_DIR/.git" ]; then
+              echo "ERROR: Repository not found at $DEPLOY_DIR. Expected existing repo; aborting." >&2
+              exit 1
+            fi
+
+            cd "$DEPLOY_DIR"
+            git fetch --all --prune
+            git reset --hard origin/main
+
+            # Ensure submodules are in sync and initialized
+            git submodule sync --recursive || true
+            git submodule update --init --recursive --force || true
+
+            # Switch into .docker and bring compose stack up
+            cd .docker
+
+            # Pull images and start containers
+            docker compose --project-name "$COMPOSE_PROJECT" pull --ignore-pull-failures || true
+            docker compose --project-name "$COMPOSE_PROJECT" up -d --build --remove-orphans
+
+            # Prune all dangling and unused docker data (images, containers, volumes)
+            docker system prune -af --volumes || true
+            docker compose --project-name "$COMPOSE_PROJECT" ps
