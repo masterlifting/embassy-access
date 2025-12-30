@@ -56,8 +56,9 @@ jobs:
 
             # Pull images and start containers
             docker compose --project-name "$COMPOSE_PROJECT" pull --ignore-pull-failures || true
-            docker compose --project-name "$COMPOSE_PROJECT" up -d --build --remove-orphans
+            docker compose --project-name "$COMPOSE_PROJECT" up -d --build
 
-            # Prune all dangling and unused docker data (images, containers, volumes)
-            docker system prune -af --volumes || true
+            # Clean up dangling images and build cache (keeps volumes and running containers)
+            docker image prune -f || true
+            docker builder prune -f || true
             docker compose --project-name "$COMPOSE_PROJECT" ps
