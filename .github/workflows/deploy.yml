@@ -11,10 +11,11 @@ jobs:
     name: Deploy via SSH
     runs-on: ubuntu-latest
     env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || 22 }}
+      DEPLOY_HOST: ${{ secrets.VPS_HOST }}
+      DEPLOY_USER: ${{ secrets.VPS_USERNAME }}
+      DEPLOY_KEY: ${{ secrets.VPS_SSH }}
+      DEPLOY_PASSPHRASE: ${{ secrets.VPS_PASSPHRASE }}
+      DEPLOY_PORT: ${{ secrets.VPS_PORT || 22 }}
       DEPLOY_DIR: ${{ secrets.DEPLOY_DIR }}
       COMPOSE_PROJECT: embassy-access
 
@@ -25,6 +26,7 @@ jobs:
           host: ${{ env.DEPLOY_HOST }}
           username: ${{ env.DEPLOY_USER }}
           key: ${{ env.DEPLOY_KEY }}
+          passphrase: ${{ env.DEPLOY_PASSPHRASE }}
           port: ${{ env.DEPLOY_PORT }}
           envs: DEPLOY_DIR,COMPOSE_PROJECT
           script: |
