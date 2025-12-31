@@ -26,7 +26,7 @@ module Russian =
             let initKdmidRequestStorage () =
                 Storage.Request.Postgre {
                     String = pgConnectionString
-                    Lifetime = Transient
+                    Lifetime = Singleton
                 }
                 |> Storage.Request.init {
                     toDomain = Kdmid.Payload.toDomain
@@ -36,7 +36,7 @@ module Russian =
             let initMidpassRequestStorage () =
                 Storage.Request.Postgre {
                     String = pgConnectionString
-                    Lifetime = Transient
+                    Lifetime = Singleton
                 }
                 |> Storage.Request.init {
                     toDomain = Midpass.Payload.toDomain
@@ -61,7 +61,7 @@ module Italian =
             let initPrenotamiRequestStorage () =
                 Storage.Request.Postgre {
                     String = pgConnectionString
-                    Lifetime = Transient
+                    Lifetime = Singleton
                 }
                 |> Storage.Request.init {
                     toDomain = Prenotami.Payload.toDomain fileStorageKey
@@ -86,14 +86,14 @@ type Dependencies = {
         let initChatStorage () =
             Storage.Chat.Postgre {
                 String = EA.Telegram.Shared.Configuration.ENVIRONMENTS.PostgresConnection
-                Lifetime = Transient
+                Lifetime = Singleton
             }
             |> Storage.Chat.init
 
         let initCultureStorage () =
             Storage.Culture.Postgre {
                 String = EA.Telegram.Shared.Configuration.ENVIRONMENTS.PostgresConnection
-                Lifetime = Transient
+                Lifetime = Singleton
             }
             |> Storage.Culture.init
 

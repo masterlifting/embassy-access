@@ -41,7 +41,7 @@ type Credentials = {
 
     static member parse(payload: string) =
         result {
-            let! uri = payload |> Web.Clients.Http.Route.toUri
+            let! uri = payload |> Http.Route.toUri
 
             let! hostParts =
                 match uri.Host.Split '.' with
