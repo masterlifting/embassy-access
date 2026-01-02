@@ -13,7 +13,7 @@ let getRequests (serviceId: ServiceId) (taskDuration: TimeSpan) =
         |> ResultAsync.map (
             List.filter (fun request ->
                 request.Service.Id.Values
-                |> List.skip 2 // Skip country and embassy level
+                |> List.skip 2 // Take service type
                 |> ServiceId.combine
                 |> hasRequiredService
                 && (request.ProcessState <> InProcess
