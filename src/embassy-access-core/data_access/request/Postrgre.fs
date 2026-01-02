@@ -297,8 +297,8 @@ module Migrations =
                         payload JSONB NOT NULL,
                         process_state JSONB NOT NULL,
                         limits JSONB NOT NULL,
-                        created TIMESTAMPTZ NOT NULL,
-                        modified TIMESTAMPTZ NOT NULL
+                        created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+                        modified TIMESTAMP WITHOUT TIME ZONE NOT NULL
                     )
                 """
                 Params = None
