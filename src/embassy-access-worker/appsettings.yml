@@ -81,11 +81,11 @@ Worker:
           Tasks:
             - Id: SA
               Enabled: true
-              Recursively: 00:02:00
               Duration: 00:03:00
               Description: Search for appointments at the Russian embassy in Serbia
               Schedule:
                 Name: Russian Embassy Serbia Schedule
+                Recursively: 00:02:00
                 StartTime: 00:01:00
                 StopTime: 23:55:20
                 TimeZone: 2
@@ -226,11 +226,11 @@ Worker:
           Tasks:
             - Id: SA
               Enabled: false
-              Recursively: 00:02:00
               Duration: 00:03:00
               Description: Search for appointments at the Italian embassy in Serbia
               Schedule:
                 Name: Italian Embassy Serbia Schedule
+                Recursively: 00:02:00
                 StartTime: 00:55:00
                 StopTime: 23:55:20
                 TimeZone: 2
