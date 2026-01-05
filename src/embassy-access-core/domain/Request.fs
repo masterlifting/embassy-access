@@ -52,8 +52,8 @@ type Request<'payload> = {
         $"[Subscription] '%s{request.Id.Value}'"
         + $"\n[Embassy] %s{embassyName}"
         + $"\n[Service] %s{serviceName}"
-        + $"\n[Created] '%s{request.Created.AddHours request.Embassy.Value.TimeZone |> String.fromDateTime}'"
-        + $"\n[Modified] '%s{request.Modified.AddHours request.Embassy.Value.TimeZone |> String.fromDateTime}'"
+        + $"\n[Created] '%s{request.Created |> String.fromDateTime}'"
+        + $"\n[Modified] '%s{request.Modified |> String.fromDateTime}'"
         + $"\n[Last state] %s{state}"
         + $"\n[Limits] %s{limits}"
 

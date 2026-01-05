@@ -15,7 +15,6 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2
     - Id: GBR
       Name: British
       Description: In which country is the British embassy located?
@@ -26,7 +25,6 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2
     - Id: USA
       Name: American
       Description: In which country is the American embassy located?
@@ -37,7 +35,6 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2
     - Id: DEU
       Name: German
       Description: In which country is the German embassy located?
@@ -48,7 +45,6 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2
     - Id: RUS
       Name: Russian
       Description: In which country is the Russian embassy located?
@@ -59,91 +55,78 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2
         - Id: HUN
           Name: Hungary
           Description: In which city in Hungary is the Russian embassy located?
           Children:
             - Id: BUD
               Name: Budapest
-              TimeZone: 2
         - Id: BIH
           Name: Bosnia and Herzegovina
           Description: In which city in Bosnia and Herzegovina is the Russian embassy located?
           Children:
             - Id: SJJ
               Name: Sarajevo
-              TimeZone: 2
         - Id: DEU
           Name: Germany
           Description: In which city in Germany is the Russian embassy located?
           Children:
             - Id: BER
               Name: Berlin
-              TimeZone: 2
         - Id: MNE
           Name: Montenegro
           Description: In which city in Montenegro is the Russian embassy located?
           Children:
             - Id: TGD
               Name: Podgorica
-              TimeZone: 2
         - Id: ALB
           Name: Albania
           Description: In which city in Albania is the Russian embassy located?
           Children:
             - Id: TIA
               Name: Tirana
-              TimeZone: 2
         - Id: FRA
           Name: France
           Description: In which city in France is the Russian embassy located?
           Children:
             - Id: PAR
               Name: Paris
-              TimeZone: 2
         - Id: ITA
           Name: Italy
           Description: In which city in Italy is the Russian embassy located?
           Children:
             - Id: ROM
               Name: Rome
-              TimeZone: 2
         - Id: IRL
           Name: Ireland
           Description: In which city in Ireland is the Russian embassy located?
           Children:
             - Id: DUB
               Name: Dublin
-              TimeZone: 1
         - Id: CHE
           Name: Switzerland
           Description: In which city in Switzerland is the Russian embassy located?
           Children:
             - Id: BRN
               Name: Bern
-              TimeZone: 2
         - Id: FIN
           Name: Finland
           Description: In which city in Finland is the Russian embassy located?
           Children:
             - Id: HEL
               Name: Helsinki
-              TimeZone: 3
         - Id: NLD
           Name: Netherlands
           Description: In which city in the Netherlands is the Russian embassy located?
           Children:
             - Id: HAG
               Name: The Hague
-              TimeZone: 2
         - Id: SVN
           Name: Slovenia
           Description: In which city in Slovenia is the Russian embassy located?
           Children:
             - Id: LJU
               Name: Ljubljana
-              TimeZone: 2
     - Id: CHN
       Name: Chinese
       Description: In which country is the Chinese embassy located?
@@ -154,7 +137,6 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2
     - Id: GRC
       Name: Greek
       Description: In which country is the Greek embassy located?
@@ -165,7 +147,6 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2
     - Id: ITA
       Name: Italian
       Description: In which country is the Italian embassy located?
@@ -176,7 +157,6 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2
     - Id: ESP
       Name: Spanish
       Description: In which country is the Spanish embassy located?
@@ -187,7 +167,6 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2
     - Id: NLD
       Name: Dutch
       Description: In which country is the Dutch embassy located?
@@ -198,4 +177,3 @@ Embassies:
           Children:
             - Id: BEG
               Name: Belgrade
-              TimeZone: 2

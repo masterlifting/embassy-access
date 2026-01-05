@@ -28,7 +28,6 @@ type Entity() =
     member val EmbassyId = String.Empty with get, set
     member val EmbassyName = Array.empty with get, set
     member val EmbassyDescription: string | null = null with get, set
-    member val EmbassyTimeZone: float = 0. with get, set
     member val Payload = String.Empty with get, set
     member val ProcessState = String.Empty with get, set
     member val Limits = String.Empty with get, set
@@ -69,7 +68,6 @@ type Entity() =
                         {
                             NameParts = this.EmbassyName |> Array.toList
                             Description = this.EmbassyDescription |> Option.ofObj
-                            TimeZone = this.EmbassyTimeZone
                         }
                     )
                 Payload = payload
@@ -96,7 +94,6 @@ type private Request<'a> with
                     EmbassyId = this.Embassy.Id.Value,
                     EmbassyName = (this.Embassy.Value.NameParts |> Array.ofList),
                     EmbassyDescription = (this.Embassy.Value.Description |> Option.toObj),
-                    EmbassyTimeZone = this.Embassy.Value.TimeZone,
                     Payload = payload,
                     ProcessState = processState,
                     Limits = limits,

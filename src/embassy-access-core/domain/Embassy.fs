@@ -25,7 +25,6 @@ type EmbassyId =
 type Embassy = {
     NameParts: string list
     Description: string option
-    TimeZone: float
 } with
 
     member this.BuildName startWith delimiter =
