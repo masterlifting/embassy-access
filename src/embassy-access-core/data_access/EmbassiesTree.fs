@@ -16,7 +16,6 @@ type EmbassiesTreeEntity() =
     member val Id = String.Empty with get, set
     member val Name = String.Empty with get, set
     member val Description: string option = None with get, set
-    member val TimeZone: float option = None with get, set
     member val Children: EmbassiesTreeEntity[] | null = [||] with get, set
 
     member this.ToDomain() =
@@ -25,9 +24,8 @@ type EmbassiesTreeEntity() =
                 Tree.Node.create (
                     e.Id,
                     {
-                        NameParts = names
-                        Description = e.Description
-                        TimeZone = e.TimeZone |> Option.defaultValue 0.
+                        Embassy.NameParts = names
+                        Embassy.Description = e.Description
                     }
                 )
 

@@ -24,8 +24,8 @@ type ServicesTreeEntity() =
                 Tree.Node.create (
                     e.Id,
                     {
-                        NameParts = names
-                        Description = e.Description
+                        Service.NameParts = names
+                        Service.Description = e.Description
                     }
                 )
 
