@@ -13,7 +13,7 @@ open EA.Worker.Features.Embassies.Russian.Kdmid.Infra
 
 type private Dependencies = {
     TaskName: string
-    tryProcessFirst: Request<Payload> seq -> Async<Result<Request<Payload>, Error'>>
+    tryProcessFirst: Request<Payload> seq -> Async<unit>
     getRequests: ServiceId -> Async<Result<Request<Payload> list, Error'>>
     cleanupResources: unit option -> Result<unit, Error'>
 } with
@@ -25,9 +25,18 @@ type private Dependencies = {
         result {
             let! requestStorage = RequestStorage.init deps.Persistence.ConnectionString
 
-            let rec handleProcessResult (result: Result<Request<Payload>, Error'>) =
+            let handleProcessResult (result: Result<Request<Payload>, Error'>) =
                 result
-                |> ResultAsync.wrap (fun r -> r.Payload.State.Print() |> Log.scs |> Ok |> async.Return)
+                |> ResultAsync.wrap (fun r ->
+                    match r.Payload.State with
+                    | NoAppointments -> taskName + "No appointments found." |> Log.dbg
+                    | HasAppointments appointments ->
+                        taskName + $"Appointments found: %i{appointments.Count}" |> Log.scs
+                    | HasConfirmation(msg, appointment) ->
+                        taskName + $"Confirmation found: %s{msg}. %s{Appointment.print appointment}"
+                        |> Log.scs
+                    |> Ok
+                    |> async.Return)
                 |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                 |> Async.Ignore
 
@@ -59,15 +68,15 @@ type private Dependencies = {
                         | HasConfirmation _ -> false)
                 )
 
-            let tryProcessFirst requests =
-
+            let! kdmidClient =
                 Kdmid.Client.init {
                     ct = ct
                     AntiCaptchaApiKey = Configuration.ENVIRONMENTS.AntiCaptchaKey
                     RequestStorage = requestStorage
                 }
-                |> Result.map (fun client -> client, handleProcessResult)
-                |> ResultAsync.wrap (Kdmid.Service.tryProcessFirst requests)
+
+            let tryProcessFirst requests =
+                (kdmidClient, handleProcessResult) |> Kdmid.Service.tryProcessFirst requests
 
             let cleanupResources _ =
                 requestStorage |> RequestStorage.dispose
@@ -80,21 +89,8 @@ type private Dependencies = {
             }
         }
 
-let private processGroup requests =
-    fun (deps: Dependencies) ->
-        deps.tryProcessFirst requests
-        |> ResultAsync.map (fun request ->
-            match request.Payload.State with
-            | NoAppointments -> deps.TaskName + " No appointments found." |> Log.dbg
-            | HasAppointments appointments -> deps.TaskName + $" Appointments found: %i{appointments.Count}" |> Log.scs
-            | HasConfirmation(msg, appointment) ->
-                deps.TaskName
-                + $" Confirmation found: %s{msg}. %s{Appointment.print appointment}"
-                |> Log.scs)
-
 let private start =
     fun (deps: Dependencies) ->
-        let inline processGroup requests = deps |> processGroup requests
 
         [ Services.ROOT_ID; Embassies.RUS ]
         |> ServiceId.combine
@@ -102,19 +98,15 @@ let private start =
         |> ResultAsync.map (fun requests ->
             requests
             |> Seq.groupBy _.Service.Id
-            |> Seq.map (fun (_, requests) ->
-                requests
+            |> Seq.map (fun (_, group) ->
+                group
                 |> Seq.sortByDescending _.Modified
                 |> Seq.truncate 5
-                |> Seq.toList
-                |> processGroup))
-        |> ResultAsync.map (Async.Sequential >> Async.map Result.unzip)
+                |> deps.tryProcessFirst))
+        |> ResultAsync.map Async.Sequential
         |> Async.bind (function
             | Error error -> Error error |> async.Return
-            | Ok results ->
-                results
-                |> Async.map (fun (_, errors) ->
-                    errors |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt) |> Ok))
+            | Ok results -> results |> Async.map (fun _ -> Ok()))
         |> ResultAsync.apply deps.cleanupResources
 
 let searchAppointments (task, deps, ct) =

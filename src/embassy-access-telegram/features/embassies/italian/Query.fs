@@ -6,7 +6,7 @@ open EA.Italian.Router
 open EA.Telegram.Features.Dependencies.Embassies.Italian
 
 let private (|Prenotami|ServiceNotFound|) (serviceId: ServiceId) =
-    match serviceId.NodeId.Values |> List.skip 2 |> ServiceId.combine |> parse with
+    match serviceId |> parse with
     | Ok route ->
         match route with
         | Visa route ->

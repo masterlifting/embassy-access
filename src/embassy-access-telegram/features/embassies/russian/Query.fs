@@ -7,7 +7,7 @@ open EA.Telegram.Features.Embassies.Russian
 open EA.Telegram.Features.Dependencies.Embassies.Russian
 
 let private (|Kdmid|Midpass|ServiceNotFound|) (serviceId: ServiceId) =
-    match serviceId.NodeId.Values |> List.skip 2 |> ServiceId.combine |> parse with
+    match serviceId |> parse with
     | Ok route ->
         match route with
         | Passport route ->

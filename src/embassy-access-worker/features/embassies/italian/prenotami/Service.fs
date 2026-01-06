@@ -13,9 +13,9 @@ open EA.Worker.Features.Embassies.Italian.Prenotami.Infra
 
 type private Dependencies = {
     TaskName: string
-    tryProcessFirst: Request<Payload> seq -> Async<Result<Request<Payload>, Error'>>
+    tryProcessFirst: Request<Payload> seq -> Async<unit>
     getRequests: ServiceId -> Async<Result<Request<Payload> list, Error'>>
-    cleanResources: unit option -> Result<unit, Error'>
+    cleanupResources: unit option -> Result<unit, Error'>
 } with
 
     static member create task (deps: Worker.Task.Dependencies) ct =
@@ -27,7 +27,13 @@ type private Dependencies = {
 
             let handleProcessResult (result: Result<Request<Payload>, Error'>) =
                 result
-                |> ResultAsync.wrap (fun r -> r.Payload.State.Print() |> Log.scs |> Ok |> async.Return)
+                |> ResultAsync.wrap (fun r ->
+                    match r.Payload.State with
+                    | NoAppointments msg -> taskName + msg |> Log.dbg
+                    | HasAppointments appointments ->
+                        taskName + $"Appointments found: %i{appointments.Count}" |> Log.scs
+                    |> Ok
+                    |> async.Return)
                 |> ResultAsync.mapError (fun error -> taskName + error.Message |> Log.crt)
                 |> Async.Ignore
 
@@ -46,13 +52,15 @@ type private Dependencies = {
                 (requestStorage, hasRequiredService)
                 |> Embassies.getRequests serviceId task.Duration
 
-            let tryProcessFirst requests =
+            let prenotamiClient =
                 Prenotami.Client.init {
                     ct = ct
                     BrowserWebApiUrl = Configuration.ENVIRONMENTS.BrowserWebApiUrl
                     RequestStorage = requestStorage
                 }
-                |> fun client -> client, handleProcessResult
+
+            let tryProcessFirst requests =
+                (prenotamiClient, handleProcessResult)
                 |> Prenotami.Service.tryProcessFirst requests
 
             let cleanResources _ =
@@ -62,21 +70,12 @@ type private Dependencies = {
                 TaskName = taskName
                 getRequests = getRequests
                 tryProcessFirst = tryProcessFirst
-                cleanResources = cleanResources
+                cleanupResources = cleanResources
             }
         }
 
-let private processGroup requests =
-    fun (deps: Dependencies) ->
-        deps.tryProcessFirst requests
-        |> ResultAsync.map (fun request ->
-            match request.Payload.State with
-            | NoAppointments msg -> deps.TaskName + $" {msg}." |> Log.dbg
-            | HasAppointments appointments -> deps.TaskName + $" Appointments found: %i{appointments.Count}" |> Log.scs)
-
 let private start =
     fun (deps: Dependencies) ->
-        let inline processGroup requests = deps |> processGroup requests
 
         [ Services.ROOT_ID; Embassies.ITA ]
         |> ServiceId.combine
@@ -88,16 +87,12 @@ let private start =
                 requests
                 |> Seq.sortByDescending _.Modified
                 |> Seq.truncate 5
-                |> Seq.toList
-                |> processGroup))
-        |> ResultAsync.map (Async.Sequential >> Async.map Result.unzip)
+                |> deps.tryProcessFirst))
+        |> ResultAsync.map Async.Sequential
         |> Async.bind (function
             | Error error -> Error error |> async.Return
-            | Ok results ->
-                results
-                |> Async.map (fun (_, errors) ->
-                    errors |> Seq.iter (fun error -> deps.TaskName + error.Message |> Log.crt) |> Ok))
-        |> ResultAsync.apply deps.cleanResources
+            | Ok results -> results |> Async.map (fun _ -> Ok()))
+        |> ResultAsync.apply deps.cleanupResources
 
 let searchAppointments (task, deps, ct) =
     Dependencies.create task deps ct |> ResultAsync.wrap start
