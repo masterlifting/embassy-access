@@ -5,7 +5,7 @@
       context: ../
       dockerfile: ./src/embassy-access-worker/Dockerfile
     environment:
-      - LOG_LEVEL=warn
+      - LOG_LEVEL=debug
       - ANTICAPTCHA_KEY=${ANTICAPTCHA_KEY}
       - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
       - BROWSER_WEBAPI_URL=${BROWSER_WEBAPI_URL}
