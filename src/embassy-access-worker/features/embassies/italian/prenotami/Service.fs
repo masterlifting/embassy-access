@@ -29,7 +29,7 @@ type private Dependencies = {
                 result
                 |> ResultAsync.wrap (fun r ->
                     match r.Payload.State with
-                    | NoAppointments msg -> taskName + msg |> Log.dbg
+                    | NoAppointments msg -> taskName + msg |> Log.wrn
                     | HasAppointments appointments ->
                         taskName + $"Appointments found: %i{appointments.Count}" |> Log.scs
                     |> Ok
