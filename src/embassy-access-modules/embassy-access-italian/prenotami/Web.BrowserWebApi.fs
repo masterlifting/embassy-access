@@ -86,35 +86,21 @@ let private closeTab tabId api httpClient = httpClient |> api.closeTab tabId
 
 let processWebSite credentials serviceId =
     fun (api: BrowserWebApi) ->
-        let doFirstStep () =
-            resultAsync {
-                let! httpClient = api.init () |> async.Return
-                let! tabId = httpClient |> openHomePage api
-                return (httpClient, tabId) |> Ok |> async.Return
-            }
-
-        let doCredentialsStep (httpClient, tabId) =
-            resultAsync {
-                do! httpClient |> submitCaptcha tabId api
-                do! httpClient |> submitCredentials tabId api
-                return (httpClient, tabId) |> Ok |> async.Return
-            }
-
-        let doLastStep (httpClient, tabId) =
-            resultAsync {
-                do! httpClient |> clickBookService tabId api
-                do! httpClient |> clickBookAppointment tabId serviceId api
-                let! result = httpClient |> extractResult tabId api
-                do! httpClient |> closeTab tabId api
-                return result |> Ok |> async.Return
-            }
-
-        async {
-            match! doFirstStep () with
-            | Error e -> return Error e
-            | Ok(httpClient, tabId) ->
-                match! httpClient |> fillCredentials tabId credentials api with
-                | Ok() -> return! (httpClient, tabId) |> doCredentialsStep |> ResultAsync.bindAsync doLastStep
-                | Error e when e.Message.Contains "#login-email" -> return! (httpClient, tabId) |> doLastStep
-                | Error e -> return Error e
+        let wait s = Async.Sleep(s * 1000) |> Async.map Ok
+        resultAsync {
+            let! httpClient = api.init () |> async.Return
+            let! tabId = httpClient |> openHomePage api
+            do! wait 2
+            do! httpClient |> fillCredentials tabId credentials api
+            do! httpClient |> submitCaptcha tabId api
+            do! wait 2
+            do! httpClient |> submitCredentials tabId api
+            do! wait 2
+            do! httpClient |> clickBookService tabId api
+            do! wait 2
+            do! httpClient |> clickBookAppointment tabId serviceId api
+            do! wait 2
+            let! result = httpClient |> extractResult tabId api
+            do! httpClient |> closeTab tabId api
+            return result |> Ok |> async.Return
         }
