@@ -15,8 +15,6 @@ jobs:
       DEPLOY_USER: ${{ secrets.VPS_USERNAME }}
       DEPLOY_KEY: ${{ secrets.VPS_SSH }}
       DEPLOY_PASSPHRASE: ${{ secrets.VPS_PASSPHRASE }}
-      DEPLOY_PORT: ${{ secrets.VPS_PORT || 22 }}
-      DEPLOY_DIR: ${{ secrets.DEPLOY_DIR }}
       COMPOSE_PROJECT: embassy-access
 
     steps:
@@ -27,23 +25,20 @@ jobs:
           username: ${{ env.DEPLOY_USER }}
           key: ${{ env.DEPLOY_KEY }}
           passphrase: ${{ env.DEPLOY_PASSPHRASE }}
-          port: ${{ env.DEPLOY_PORT }}
-          envs: DEPLOY_DIR,COMPOSE_PROJECT
+          envs: COMPOSE_PROJECT
           script: |
-            set -eux
+            set -eu
 
-            if [ -z "$DEPLOY_DIR" ]; then
-              echo "ERROR: DEPLOY_DIR secret is not set. Set it to the path where the repo should live on the target host." >&2
-              exit 1
-            fi
+            # Standardize: this repo lives at /usr/src/embassy-access on the target host.
+            TARGET_DIR="/usr/src/embassy-access"
 
             # Assume repository already exists on the host; pull latest changes
-            if [ ! -d "$DEPLOY_DIR/.git" ]; then
-              echo "ERROR: Repository not found at $DEPLOY_DIR. Expected existing repo; aborting." >&2
+            if [ ! -d "$TARGET_DIR/.git" ]; then
+              echo "ERROR: Repository not found at $TARGET_DIR. Expected existing repo; aborting." >&2
               exit 1
             fi
 
-            cd "$DEPLOY_DIR"
+            cd "$TARGET_DIR"
             git fetch --all --prune
             git reset --hard origin/main
 
@@ -53,6 +48,9 @@ jobs:
 
             # Switch into .docker and bring compose stack up
             cd .docker
+
+            # Compose expects an external bridge network.
+            docker network inspect embassy-access-network >/dev/null 2>&1 || docker network create --driver bridge embassy-access-network
 
             # Pull images and start containers
             docker compose --project-name "$COMPOSE_PROJECT" pull --ignore-pull-failures || true

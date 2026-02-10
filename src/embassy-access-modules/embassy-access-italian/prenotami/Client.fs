@@ -3,6 +3,7 @@
 open System
 open System.Threading
 open Infrastructure.Domain
+open Infrastructure.Prelude
 open Web.Clients
 open Web.Clients.Domain
 open Web.Clients.Domain.BrowserWebApi
@@ -46,11 +47,26 @@ let init (deps: Dependencies) = {
         init = fun () -> BrowserWebApi.Client.init { BaseUrl = deps.BrowserWebApiUrl }
         openTab = fun dto client -> client |> BrowserWebApi.Request.Tab.open' dto deps.ct
         fillCredentials = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.fill tabId dto deps.ct
-        submitCaptcha = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.execute tabId dto deps.ct
-        submitCredentials = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
-        clickBookService = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+        submitCaptcha =
+            fun tabId dto client ->
+                client
+                |> BrowserWebApi.Request.Tab.Element.execute tabId dto deps.ct
+                |> ResultAsync.map ignore
+        submitCredentials =
+            fun tabId dto client ->
+                client
+                |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+                |> ResultAsync.map ignore
+        clickBookService =
+            fun tabId dto client ->
+                client
+                |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+                |> ResultAsync.map ignore
         clickBookAppointment =
-            fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+            fun tabId dto client ->
+                client
+                |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+                |> ResultAsync.map ignore
         extractResult = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.extract tabId dto deps.ct
         closeTab = fun tabId client -> client |> BrowserWebApi.Request.Tab.close tabId deps.ct
     }
