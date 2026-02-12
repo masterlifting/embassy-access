@@ -458,4 +458,5 @@ Scripts/
 
 .env
 .serena
+.workflow
 AGENTS.md
