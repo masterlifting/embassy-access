@@ -25,6 +25,7 @@ type Persistence = {
 type BrowserWebApi = {
     init: unit -> Result<Http.Client, Error'>
     openTab: Dto.Open -> Http.Client -> Async<Result<string, Error'>>
+    screenshot: string -> Http.Client -> Async<Result<byte[], Error'>>
     fillCredentials: string -> Dto.Fill -> Http.Client -> Async<Result<unit, Error'>>
     submitCaptcha: string -> Dto.Execute -> Http.Client -> Async<Result<unit, Error'>>
     submitCredentials: string -> Dto.Click -> Http.Client -> Async<Result<unit, Error'>>
@@ -46,6 +47,7 @@ let init (deps: Dependencies) = {
     BrowserWebApi = {
         init = fun () -> BrowserWebApi.Client.init { BaseUrl = deps.BrowserWebApiUrl }
         openTab = fun dto client -> client |> BrowserWebApi.Request.Tab.open' dto deps.ct
+        screenshot = fun tabId client -> client |> BrowserWebApi.Request.Tab.screenshot tabId deps.ct
         fillCredentials = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.fill tabId dto deps.ct
         submitCaptcha =
             fun tabId dto client ->

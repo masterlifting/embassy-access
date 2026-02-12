@@ -1,8 +1,10 @@
 ﻿module EA.Italian.Prenotami.Web.BrowserWebApi
 
 open System
+open System.IO
 open Infrastructure.Domain
 open Infrastructure.Prelude
+open Infrastructure.Logging
 open EA.Italian
 open EA.Italian.Router
 open EA.Italian.Domain.Prenotami
@@ -90,17 +92,38 @@ let processWebSite credentials serviceId =
         resultAsync {
             let! httpClient = api.init () |> async.Return
             let! tabId = httpClient |> openHomePage api
-            do! wait 2
-            do! httpClient |> fillCredentials tabId credentials api
-            do! httpClient |> submitCaptcha tabId api
-            do! wait 2
-            do! httpClient |> submitCredentials tabId api
-            do! wait 2
-            do! httpClient |> clickBookService tabId api
-            do! wait 2
-            do! httpClient |> clickBookAppointment tabId serviceId api
-            do! wait 2
-            let! result = httpClient |> extractResult tabId api
+            let! result =
+                resultAsync {
+                    do! wait 2
+                    do! httpClient |> fillCredentials tabId credentials api
+                    do! httpClient |> submitCaptcha tabId api
+                    do! wait 2
+                    do! httpClient |> submitCredentials tabId api
+                    do! wait 2
+                    do! httpClient |> clickBookService tabId api
+                    do! wait 2
+                    do! httpClient |> clickBookAppointment tabId serviceId api
+                    do! wait 2
+                    return httpClient |> extractResult tabId api
+                }
+                |> ResultAsync.mapErrorAsync (fun error ->
+                    async {
+                        match! httpClient |> api.screenshot tabId with
+                        | Ok screenshot ->
+                            try
+                                let debugDirectory = Path.Combine(Environment.CurrentDirectory, "debug")
+                                debugDirectory |> Directory.CreateDirectory |> ignore
+
+                                let timestamp = DateTime.UtcNow.ToString "dd_MM-HH_mm_ss"
+                                let filePath = Path.Combine(debugDirectory, $"%s{timestamp}.png")
+
+                                File.WriteAllBytes(filePath, screenshot)
+                            with e ->
+                                Log.crt $"Failed to write debug screenshot: %s{e.Message}"
+                        | Error e -> Log.crt $"Failed to capture debug screenshot: %s{e.Message}"
+
+                        return error
+                    })
             do! httpClient |> closeTab tabId api
             return result |> Ok |> async.Return
         }
