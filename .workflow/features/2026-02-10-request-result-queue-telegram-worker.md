@@ -50,6 +50,36 @@ Brief summary: Add a PostgreSQL-backed queue table for request processing result
   - Sends messages through the existing Telegram producer/client abstractions.
   - Handle events by batch
 
+## Schema Decision (Task 1)
+- Table name: `request_result_events`.
+- Columns:
+  - `id TEXT PRIMARY KEY`
+  - `service_id TEXT NOT NULL`
+  - `event_type TEXT NOT NULL` (`NoAppointments`, `HasAppointments`, `HasConfirmation`, `Failed`, ...)
+  - `message TEXT NOT NULL`
+  - `deduplication_key TEXT NOT NULL UNIQUE`
+  - `state TEXT NOT NULL` (`Ready`, `Processing`, `Sent`, `Failed`)
+  - `attempts INTEGER NOT NULL DEFAULT 0`
+  - `next_attempt_at TIMESTAMP WITHOUT TIME ZONE NOT NULL`
+  - `processing_started_at TIMESTAMP WITHOUT TIME ZONE`
+  - `sent_at TIMESTAMP WITHOUT TIME ZONE`
+  - `last_error TEXT`
+  - `created TIMESTAMP WITHOUT TIME ZONE NOT NULL`
+  - `modified TIMESTAMP WITHOUT TIME ZONE NOT NULL`
+- Indexes:
+  - `idx_request_result_events_poll` on `(state, next_attempt_at, created)`
+  - `idx_request_result_events_service_id` on `(service_id)`
+- Processing semantics:
+  - Claiming is done via state transition `Ready/Failed -> Processing`.
+  - Success transition `Processing -> Sent`.
+  - Error transition `Processing -> Failed` with `attempts`, `last_error`, and `next_attempt_at` updated for retry.
+- Idempotency strategy:
+  - Producer-level dedupe via `deduplication_key` unique constraint.
+  - Consumer-level safety via explicit state machine and retry metadata (no delete-on-send).
+- Migration approach:
+  - Add `Migrations.initial` in the new core Postgre data-access module using inline SQL `CREATE TABLE IF NOT EXISTS` + `CREATE INDEX IF NOT EXISTS`.
+  - Keep migration additive and idempotent; wire through the module's `Migrations.apply` pattern used in existing `Postgre.fs` modules.
+
 ## Acceptance Criteria
 - When Italian Prenotami worker processes a request and determines `NoAppointments` or `HasAppointments`, a queue row is inserted.
 - When Russian Kdmid worker processes a request and determines `NoAppointments`, `HasAppointments`, `HasConfirmation`, or `Failed`, a queue row is inserted.
@@ -63,8 +93,11 @@ Brief summary: Add a PostgreSQL-backed queue table for request processing result
 ## Tasks
 0. [x] Prepare specific branches for core, worker, and telegram changes in the `embassy-access` repo:
   - `features/request-result-queue`
-1. [ ] Define the queue table schema + migration approach
+1. [x] Define the queue table schema + migration approach
   Done:
+  - Defined queue table name (`request_result_events`), columns, indexes, state model, and retry metadata.
+  - Chosen idempotent inline migration approach (`CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`) in core Postgre data-access module.
+  - Defined idempotency/retry strategy: unique `deduplication_key` + explicit state transitions (`Ready/Failed -> Processing -> Sent`, error -> `Failed`).
 2. [ ] Add core domain model for a "request result event" queue item
   Done:
 3. [ ] Add core data-access module for the queue table
