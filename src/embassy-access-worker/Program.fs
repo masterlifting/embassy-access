@@ -24,10 +24,10 @@ let main _ =
             |> Configuration.Client.getValue "VERSION"
             |> Option.defaultValue "unknown"
 
-        Logging.Log.inf $"EA.Worker version: %s{version}"
-
         let workerHandlers = EA.Worker.Handlers.register ()
         let! workerDeps = Worker.Dependencies.create workerHandlers configuration
+
+        Logging.Log.inf $"'{workerDeps.Name}'. Version: %s{version}"
 
         return workerDeps |> Worker.Client.start |> Async.map (fun _ -> 0 |> Ok)
     }
