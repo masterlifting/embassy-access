@@ -50,24 +50,24 @@ let init (deps: Dependencies) = {
         submitCaptcha =
             fun tabId dto client ->
                 client
-                |> BrowserWebApi.Request.Tab.Element.execute tabId dto deps.ct
+                |> BrowserWebApi.Request.Tab.execute tabId dto deps.ct
                 |> ResultAsync.map ignore
         submitCredentials =
             fun tabId dto client ->
                 client
-                |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+                |> BrowserWebApi.Request.Tab.click tabId dto deps.ct
                 |> ResultAsync.map ignore
         clickBookService =
             fun tabId dto client ->
                 client
-                |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+                |> BrowserWebApi.Request.Tab.click tabId dto deps.ct
                 |> ResultAsync.map ignore
         clickBookAppointment =
             fun tabId dto client ->
                 client
-                |> BrowserWebApi.Request.Tab.Element.click tabId dto deps.ct
+                |> BrowserWebApi.Request.Tab.click tabId dto deps.ct
                 |> ResultAsync.map ignore
-        extractResult = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.Element.extract tabId dto deps.ct
+        extractResult = fun tabId dto client -> client |> BrowserWebApi.Request.Tab.extract tabId dto deps.ct
         closeTab = fun tabId client -> client |> BrowserWebApi.Request.Tab.close tabId deps.ct
     }
 }
