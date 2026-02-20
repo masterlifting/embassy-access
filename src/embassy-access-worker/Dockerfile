@@ -13,6 +13,10 @@ COPY ./src/embassy-access-worker/*.fsproj ./src/embassy-access-worker/
 # Copy submodule project files
 COPY ./submodules ./submodules
 
+# Restore dependencies as a separate layer for better cache reuse
+WORKDIR /app/src/embassy-access-worker
+RUN dotnet restore
+
 # Copy source code
 WORKDIR /app
 COPY ./src/embassy-access-core ./src/embassy-access-core
@@ -21,7 +25,7 @@ COPY ./src/embassy-access-worker ./src/embassy-access-worker
 
 # Build and publish
 WORKDIR /app/src/embassy-access-worker
-RUN dotnet publish -c Release -r linux-x64 --self-contained true -o /app/publish
+RUN dotnet publish -c Release --no-restore -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 

@@ -1,0 +1,26 @@
+# Source control and CI metadata
+.git
+.gitmodules
+.github
+.idea
+.serena
+.vscode
+.workflow
+
+# Local env/config not needed in image builds
+.env
+.docker
+.codex
+.tasks
+AGENTS.md
+README.md
+
+# Build outputs and tooling caches
+**/bin
+**/obj
+**/TestResults
+**/node_modules
+**/.vs
+
+# Nested git metadata from submodules/worktrees
+**/.git

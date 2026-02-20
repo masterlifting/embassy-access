@@ -10,6 +10,7 @@ jobs:
   deploy:
     name: Deploy via SSH
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       DEPLOY_HOST: ${{ secrets.VPS_HOST }}
       DEPLOY_USER: ${{ secrets.VPS_USERNAME }}
@@ -25,6 +26,7 @@ jobs:
           username: ${{ env.DEPLOY_USER }}
           key: ${{ env.DEPLOY_KEY }}
           passphrase: ${{ env.DEPLOY_PASSPHRASE }}
+          command_timeout: 40m
           envs: COMPOSE_PROJECT
           script: |
             set -eu
@@ -52,11 +54,15 @@ jobs:
             # Compose expects an external bridge network.
             docker network inspect embassy-access-network >/dev/null 2>&1 || docker network create --driver bridge embassy-access-network
 
+            # Use BuildKit for faster and more cache-efficient docker builds.
+            export DOCKER_BUILDKIT=1
+            export COMPOSE_BAKE=true
+
             # Pull images and start containers
             docker compose --project-name "$COMPOSE_PROJECT" pull --ignore-pull-failures || true
-            docker compose --project-name "$COMPOSE_PROJECT" up -d --build
-
-            # Clean up dangling images and build cache (keeps volumes and running containers)
-            docker image prune -f || true
-            docker builder prune -f || true
+            docker compose --project-name "$COMPOSE_PROJECT" build --pull
+            docker compose --project-name "$COMPOSE_PROJECT" up -d --no-build --remove-orphans
             docker compose --project-name "$COMPOSE_PROJECT" ps
+
+            # Optional cleanup: remove only dangling images.
+            docker image prune -f || true

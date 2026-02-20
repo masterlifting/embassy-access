@@ -1,5 +1,15 @@
 # Repository Guidelines
 
+## Workspace Configuration Provider
+
+- Primary workspace configuration source: `.codex/README.md`.
+- Treat `.codex/README.md` and its referenced documents as authoritative for:
+  - style conventions
+  - folder structure
+  - architecture patterns
+  - tool/skill references
+- Enforce feature-slice architecture and shared-infrastructure placement rules from `.codex/ARCHITECTURE.md` and `.codex/FOLDER-STRUCTURE.md`.
+
 ## Project Structure & Module Organization
 
 - `src/`
@@ -15,9 +25,9 @@
 - `dotnet build`: build the full solution.
 - `dotnet test`: run all tests (notably Expecto tests in submodules).
 - Worker (local):
-  - `cd src/embassy-access-worker; dotnet run`
+  - `cd src/embassy-access-worker; dotenv -e .env -- dotnet run`
 - Telegram bot (local):
-  - `cd src/embassy-access-telegram; dotnet run`
+  - `cd src/embassy-access-telegram; dotenv -e .env -- dotnet run`
 - Format (Fantomas tool manifest in `.config/dotnet-tools.json`):
   - `dotnet tool restore`
   - `dotnet fantomas .`
@@ -46,8 +56,25 @@
   - How to run/verify (exact commands).
   - Any config/env var changes (and defaults/notes).
 
+## Task Tracking
+
+- For task tracking workflow, naming, structure, and completion rules, follow the global task skill:
+  - `$HOME/.codex/skills/task/SKILL.md`
+
+## Codex Skills & Instructions
+
+- Common reusable skills belong to global `$HOME/.codex/skills`.
+- Repository-specific rules/skills belong to local `.codex/` in this repository.
+- This repository currently uses the global `task` skill (no local task skill).
+- Use `.codex/README.md` as the index for workspace-local configuration references.
+
+## Instruction References Policy
+
+- For new instructions, prefer references to global/local skills or tools instead of duplicating full procedures in `AGENTS.md`.
+- Keep `AGENTS.md` concise and use path references as the source of truth when possible.
+
 ## Security & Configuration Tips
 
-- Do not commit secrets. Use environment variables or local `.env` files.
+- Do not commit secrets. Use environment variables or local `.env` files but don't read them.
 - Common required vars (see `.docker/docker-compose.yml`): `POSTGRES_CONNECTION`, `DATA_ENCRYPTION_KEY`, `BROWSER_WEBAPI_URL`, `ANTICAPTCHA_KEY`, `OPENAI_KEY`, `TELEGRAM_BOT_TOKEN`.
 - Runtime configuration lives alongside entry points (e.g. `appsettings.yml`, plus `embassies.yml`/`services.yml` for the Telegram app).
