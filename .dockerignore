@@ -10,6 +10,8 @@
 # Local env/config not needed in image builds
 .env
 .docker
+.codex
+.tasks
 AGENTS.md
 README.md
 
