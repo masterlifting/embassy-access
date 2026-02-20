@@ -457,3 +457,6 @@ bower_components
 Scripts/
 
 .env
+
+# Codex task tracker artifacts
+.tasks/
